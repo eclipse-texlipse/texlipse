@@ -15,8 +15,11 @@ import java.util.ArrayList;
 import net.sourceforge.texlipse.TexlipsePlugin;
 
 import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
@@ -190,9 +193,11 @@ public class ViewerConfigDialog extends Dialog {
         if (path != null && path.length() > 0) {
             File file = new File(path);
             if (!file.exists()) {
+                getButton(IDialogConstants.OK_ID).setEnabled(false);
                 return TexlipsePlugin.getResourceString("preferenceViewerDialogFileNotFound").replaceAll("%s", path);
             }
         }
+        getButton(IDialogConstants.OK_ID).setEnabled(true);
         return TexlipsePlugin.getResourceString("preferenceViewerDialogFileOk");
     }
 
@@ -235,6 +240,10 @@ public class ViewerConfigDialog extends Dialog {
         fileField.setText(registry.getCommand());
         fileField.setToolTipText(TexlipsePlugin.getResourceString("preferenceViewerCommandTooltip"));
         fileField.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        fileField.addModifyListener(new ModifyListener() {
+            public void modifyText(ModifyEvent e) {
+                statusField.setText(resolveStatus());
+            }});
         
         Button browseButton = new Button(browser, SWT.PUSH);
         browseButton.setText(JFaceResources.getString("openBrowse"));

@@ -589,6 +589,15 @@ public class LatexParser {
                     accumulatedLength = 0;
                     prevToken = null;
                     expectArg = false;
+                    
+                } else if ((t instanceof TCword) && (prevToken instanceof TCnew)) {
+                    // this handles the \newcommand\comx{...} -format
+                    currentCommand = new CommandEntry(t.getText().substring(1)); 
+                    expectArg2 = true;
+                    accumulatedLength = 0;
+                    prevToken = null;
+                    expectArg = false;
+
                 } else if (!(t instanceof TOptargument) && !(t instanceof TWhitespace)
                         && !(t instanceof TStar) && !(t instanceof TCommentline)) {
                     

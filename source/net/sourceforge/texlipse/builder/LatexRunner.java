@@ -9,10 +9,13 @@
  */
 package net.sourceforge.texlipse.builder;
 
+import java.util.Stack;
 import java.util.StringTokenizer;
 
 import net.sourceforge.texlipse.properties.TexlipseProperties;
 
+import org.eclipse.core.resources.IContainer;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 
 
@@ -75,10 +78,17 @@ public class LatexRunner extends AbstractProgramRunner {
         TexlipseProperties.setSessionProperty(resource.getProject(), TexlipseProperties.SESSION_LATEX_RERUN, null);
         TexlipseProperties.setSessionProperty(resource.getProject(), TexlipseProperties.SESSION_BIBTEX_RERUN, null);
         
+        IProject project = resource.getProject();
+        IContainer sourceDir = TexlipseProperties.getProjectSourceDir(project);
+        if (sourceDir == null) {
+            sourceDir = project;
+        }
+        
         boolean errorsFound = false;
+        String prevLine = "";
         StringTokenizer st = new StringTokenizer(output, "\r\n");
-        while (st.hasMoreTokens()) {
 
+        while (st.hasMoreTokens()) {
             String line = st.nextToken();
             if (line.startsWith("! Undefined control sequence.")) {
 
@@ -99,7 +109,19 @@ public class LatexRunner extends AbstractProgramRunner {
                         + part1.substring(index).trim() + part2.trim();
 
                 errorsFound = true;
-                createMarker(resource, lineNumber, error);
+
+                String causingSourceFile = determineSourceFile(prevLine);
+                //System.out.println("cause: " + causingSourceFile);
+                IResource extResource = null;
+                if (causingSourceFile != null) {
+                    extResource = sourceDir.findMember(causingSourceFile);
+                }
+                
+                if (extResource != null) {
+                    createMarker(extResource, lineNumber, error);
+                } else {
+                    createMarker(resource, lineNumber, error);
+                }
 
             } else if (line.startsWith("! LaTeX Error:")) {
 
@@ -154,9 +176,52 @@ public class LatexRunner extends AbstractProgramRunner {
                     // prepare to run bibtex
                     TexlipseProperties.setSessionProperty(resource.getProject(), TexlipseProperties.SESSION_BIBTEX_RERUN, "true");
                 }
+            } else if (line.indexOf("(.") != -1) {
+                prevLine = line;
+            }
+        }
+        return errorsFound;
+    }
+    
+    /**
+     * Datermines the source file we are currently parsing from the given
+     * line of latex' log
+     * 
+     * @param logLine A line from latex' output containing which file we are in
+     * @return The filename or null if no file could be determined
+     */
+    private String determineSourceFile(String logLine) {
+        Stack st = new Stack();
+        //System.out.println(logLine);
+        String partCommands[] = logLine.split("[^\\\\]\\s");
+        for (int i = 0; i < partCommands.length; i++) {
+            if (partCommands[i].startsWith("(.")) {
+                //System.out.println(partCommands[i]);
+                if (!partCommands[i].endsWith(")")) {
+                    st.push(partCommands[i]);
+                } else {
+                    int amount = -1;
+                    for (int j = partCommands[i].length() - 1; j >= 0; j--) {
+                        if (partCommands[i].charAt(j) == ')') {
+                            amount++;
+                        } else {
+                            break;
+                        }
+                    }
+                    for (;amount > 0; amount--) {
+                        if (!st.empty()) {
+                            st.pop();
+                        } else {
+                            break;
+                        }
+                    }
+                }
             }
         }
 
-        return errorsFound;
+        if (!st.empty())
+            return ((String) st.pop()).substring(1);
+        else
+            return null;
     }
 }

@@ -56,6 +56,8 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
 	protected IProject[] build(int kind, Map args, IProgressMonitor monitor)
 			throws CoreException {
         
+        BuilderRegistry.clearConsole();
+        
         Object s = TexlipseProperties.getProjectProperty(getProject(), TexlipseProperties.PARTIAL_BUILD_PROPERTY);
 		if (s != null) {
             
@@ -75,6 +77,7 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
 	protected void clean(IProgressMonitor monitor) throws CoreException {
         
         IProject project = getProject();
+        BuilderRegistry.clearConsole();
 
         // reset session variables
         TexlipseProperties.setSessionProperty(project, TexlipseProperties.SESSION_LATEX_RERUN, null);

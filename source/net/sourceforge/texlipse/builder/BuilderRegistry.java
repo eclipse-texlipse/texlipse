@@ -11,6 +11,7 @@ package net.sourceforge.texlipse.builder;
 
 import java.util.ArrayList;
 
+import net.sourceforge.texlipse.TexlipsePlugin;
 import net.sourceforge.texlipse.properties.TexlipseProperties;
 
 import org.eclipse.ui.console.ConsolePlugin;
@@ -40,6 +41,9 @@ public class BuilderRegistry {
     // stream to write builder status messages to
     private MessageConsoleStream consoleStream;
 
+    // the console for creating console streams
+    private MessageConsole console;
+
     
     /**
      * Print a message to the console.
@@ -49,15 +53,36 @@ public class BuilderRegistry {
     }
 
     /**
+     * Clear the console window.
+     */
+    public static void clearConsole() {
+        instance.consoleStream = null;
+        TexlipsePlugin.getDefault().getWorkbench().getDisplay().syncExec(new Runnable() {
+            public void run() {
+                instance.getConsole().getDocument().set("");
+            }});
+    }
+    
+    /**
+     * Return the console. Instantiate if necessary.
+     * @return the output console
+     */
+    private MessageConsole getConsole() {
+        if (console == null) {
+            console = new MessageConsole("Texlipse", null);
+            IConsoleManager mgr = ConsolePlugin.getDefault().getConsoleManager();
+            mgr.addConsoles(new IConsole[] { console });
+        }
+        return console;
+    }
+    
+    /**
      * Return the console output stream. Instantiate if necessary.
      * @return the output stream to console
      */
     private MessageConsoleStream getConsoleStream() {
         if (consoleStream == null) {
-            MessageConsole console = new MessageConsole("Texlipse", null);
-            IConsoleManager mgr = ConsolePlugin.getDefault().getConsoleManager();
-            mgr.addConsoles(new IConsole[] { console });
-            consoleStream = console.newMessageStream();
+            consoleStream = getConsole().newMessageStream();
         }
         return consoleStream;
     }

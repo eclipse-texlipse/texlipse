@@ -136,9 +136,16 @@ public class TexSourceViewerConfiguration extends SourceViewerConfiguration {
         assistant.setDocumentPartitioning(getConfiguredDocumentPartitioning(sourceViewer));
         
         // note that partitioning affects completions
-        assistant.setContentAssistProcessor(new TexCompletionProcessor(this.editor.getDocumentModel()),
-                IDocument.DEFAULT_CONTENT_TYPE);
+        TexCompletionProcessor tcp = new TexCompletionProcessor(this.editor.getDocumentModel());
+//        assistant.setContentAssistProcessor(new TexCompletionProcessor(this.editor.getDocumentModel()),
+//                IDocument.DEFAULT_CONTENT_TYPE);
 
+        assistant.setContentAssistProcessor(tcp, IDocument.DEFAULT_CONTENT_TYPE);
+        assistant.setContentAssistProcessor(tcp, TexPartitionScanner.TEX_MATH);
+        assistant.setContentAssistProcessor(tcp, TexPartitionScanner.TEX_CURLY_BRACKETS);
+        assistant.setContentAssistProcessor(tcp, TexPartitionScanner.TEX_SQUARE_BRACKETS);
+
+        
         assistant.enableAutoActivation(TexlipsePlugin.getDefault().getPreferenceStore().getBoolean(TexlipseProperties.TEX_COMPLETION));
         assistant.enableAutoInsert(true);
         assistant.setAutoActivationDelay(TexlipsePlugin.getDefault().getPreferenceStore().getInt(TexlipseProperties.TEX_COMPLETION_DELAY));

@@ -11,7 +11,6 @@ package net.sourceforge.texlipse.templates;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 
 import net.sourceforge.texlipse.TexlipsePlugin;
 
@@ -26,26 +25,32 @@ import org.eclipse.swt.graphics.Image;
 
 
 /**
- * @author Esa Seuranen, Oskar Ojala
+ * A class for handling (tex)template completitions.
  * 
- * A class for handling template completitions
+ * @author Esa Seuranen
+ * @author Oskar Ojala
  */
 public class TexTemplateCompletion extends TemplateCompletionProcessor {
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.eclipse.jface.text.templates.TemplateCompletionProcessor#getTemplates(java.lang.String)
+    /**
+     * Returns the templates valid for the context type specified by <code>contextTypeId</code>.
+     * This implementation always returns the shared TexTemplateStore.
+     * @see net.sourceforge.texlipse.TexlipsePlugin#getTexTemplateStore()
+     * @param contextTypeId the context type id
+     * @return the templates valid for this context type id
      */
     protected Template[] getTemplates(String contextTypeId) {
         return TexlipsePlugin.getDefault().getTexTemplateStore().getTemplates();
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.eclipse.jface.text.templates.TemplateCompletionProcessor#getContextType(org.eclipse.jface.text.ITextViewer,
-     *      org.eclipse.jface.text.IRegion)
+    /**
+     * Returns the context type that can handle template insertion at the given
+     * region in the viewer's document.
+     * This implementation always returns the TEX_CONTEXT_TYPE.
+     * @see TexContextType
+     * @param viewer the text viewer
+     * @param region the region into the document displayed by viewer
+     * @return the context type that can handle template expansion for the given location, or <code>null</code> if none exists
      */
     protected TemplateContextType getContextType(ITextViewer viewer,
             IRegion region) {
@@ -53,10 +58,12 @@ public class TexTemplateCompletion extends TemplateCompletionProcessor {
                 .getContextType(TexContextType.TEX_CONTEXT_TYPE);
     }
 
-    /*
-     * (non-Javadoc)
+    /**
+     * Returns an image for the given template.
+     * This implementation always returns the same icon (called "template").
      * 
-     * @see org.eclipse.jface.text.templates.TemplateCompletionProcessor#getImage(org.eclipse.jface.text.templates.Template)
+     * @param template template
+     * @return image for the given template
      */
     protected Image getImage(Template template) {
         return TexlipsePlugin.getImage("template");

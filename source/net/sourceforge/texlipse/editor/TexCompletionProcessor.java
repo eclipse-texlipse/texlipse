@@ -62,8 +62,8 @@ public class TexCompletionProcessor implements IContentAssistProcessor {
      * @see org.eclipse.jface.text.contentassist.IContentAssistProcessor#computeCompletionProposals(org.eclipse.jface.text.ITextViewer, int)
      */
     public ICompletionProposal[] computeCompletionProposals(ITextViewer viewer, int offset) {
-    	ICompletionProposal[] proposals=null;
-    	ICompletionProposal[] templateProposals=null;
+    	ICompletionProposal[] proposals = null;
+    	ICompletionProposal[] templateProposals = null;
     		
         if (refMana == null)
             this.refMana = this.model.getRefMana();
@@ -83,7 +83,7 @@ public class TexCompletionProcessor implements IContentAssistProcessor {
         if (seqStart.startsWith("\\")) {
             String replacement = seqStart.substring(1);
 //E            return computeComCompletions(offset, replacement.length(), replacement);
-            proposals=computeComCompletions(offset, replacement.length(), replacement);
+            proposals = computeComCompletions(offset, replacement.length(), replacement);
         } else if (seqStart.startsWith("{")) {
             String refCommand = resolveRefCommand(completeDoc, seqStartIdx);
             if (refCommand == null)
@@ -97,10 +97,10 @@ public class TexCompletionProcessor implements IContentAssistProcessor {
             
             if (refCommand.indexOf("cite") > -1) {
 //E                return computeBibCompletions(offset, replacement.length(), replacement);
-                proposals=computeBibCompletions(offset, replacement.length(), replacement);
+                proposals = computeBibCompletions(offset, replacement.length(), replacement);
             } else if (refCommand.startsWith("ref") || refCommand.startsWith("pageref")) {
 //E                return computeRefCompletions(offset, replacement.length(), replacement);
-                proposals=computeRefCompletions(offset, replacement.length(), replacement);
+                proposals = computeRefCompletions(offset, replacement.length(), replacement);
             }
         } 
 //E        else if (Character.isWhitespace(seqStart.charAt(0))) {
@@ -110,26 +110,33 @@ public class TexCompletionProcessor implements IContentAssistProcessor {
         
         if (Character.isWhitespace(seqStart.charAt(0))) {
             String replacement = seqStart.substring(1);
-            templateProposals=computeTemplateCompletions(offset, replacement.length(), replacement, viewer);            
+            templateProposals = computeTemplateCompletions(offset, replacement.length(), replacement, viewer);
         } else {
-            templateProposals=computeTemplateCompletions(offset, seqStart.length(), seqStart, viewer);                    	
+            templateProposals = computeTemplateCompletions(offset, seqStart.length(), seqStart, viewer);
         }
 
-        if((proposals!=null)&&(templateProposals!=null)){
-        	ICompletionProposal[] value= new ICompletionProposal[proposals.length+templateProposals.length];
-        	int i=0,j;
-        	for(j=0;j<proposals.length;j++) {
-        		value[i]=proposals[j];
-        		i++;
-        	}
-        	for(j=0;j<templateProposals.length;j++) {
-        		value[i]=templateProposals[j];
-        		i++;
-        	}
-        	return value;
+        if ((proposals != null) && (templateProposals != null)) {
+            ICompletionProposal[] value = new ICompletionProposal[proposals.length
+                    + templateProposals.length];
+            
+            System.arraycopy(proposals, 0, value, 0, proposals.length);
+            System.arraycopy(templateProposals, 0, value, proposals.length, templateProposals.length);
+//O:            
+//            int i = 0, j;
+//            for (j = 0; j < proposals.length; j++) {
+//                value[i] = proposals[j];
+//                i++;
+//            }
+//            for (j = 0; j < templateProposals.length; j++) {
+//                value[i] = templateProposals[j];
+//                i++;
+//            }
+            return value;
         } else {
-        	if (proposals!=null) return proposals;
-        	else return templateProposals;
+            if (proposals != null)
+                return proposals;
+            else
+                return templateProposals;
         }
     }
 

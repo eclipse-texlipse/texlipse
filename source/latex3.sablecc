@@ -15,7 +15,8 @@
  */
 
 //Package texparser2;
-Package fi.hut.soberit.texlipse.texparser;
+//Package fi.hut.soberit.texlipse.texparser;
+Package net.sourceforge.texlipse.texparser;
 
 // ----------------------------------------------------------------------------
 Helpers
@@ -35,6 +36,10 @@ Helpers
     line_terminator = lf | cr | cr lf;
 //    line_terminator = [lf + cr]; // BAD! windows linebreaks should be treated as one token
     input_character = [unicode_input_character - [[cr + lf] + [sp + ht]]];
+
+    skipped_not_percent = [unicode_input_character - '%'];
+    skipped_not_hash = [unicode_input_character - '#'];
+    skipped_char = [unicode_input_character - ['%' + '#']];
 
 // add special chars(???)
     input_character_nbs = [input_character - [[braces + brackets] + '\']];
@@ -125,6 +130,10 @@ Tokens
     {normal, comcapt->normal, blockcapt, optcapt} cspace = '\' (sp | ht | ff | line_terminator);
 
     {normal, comcapt->normal} word = input_character_nbs+;
+
+
+    {normal, comcapt} skipped_area = '%###' (skipped_not_percent* '%'+ skipped_char)*
+	skipped_not_percent* '%'+ '###' [unicode_input_character - [cr + lf]]* line_terminator?;
 
 // The optional line terminator is needed to handle comments at the end of the file (ie. without a line terminator)
 // Since the longest match is always attempted, this works

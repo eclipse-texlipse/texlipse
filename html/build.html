@@ -1,0 +1,239 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+	<link rel="STYLESHEET" href="book.css" charset="ISO-8859-1" type="text/css">
+	<title>Building and previewing</title>
+</head>
+
+<body>
+<h1>Building and previewing</h1>
+
+<h2> Building </h2>
+
+<p>
+Building a LaTeX project is as easy as building any other project in Eclipse.
+In the menu there is a <b>Project &gt; Build Project</b> -option.
+Also, the <b>Build Automatically</b> -option can be used.
+</p>
+<p>
+The TeXlipse plugin provides some kind of default options for building, but these
+may have to be changed depending on the user&#39;s system. More info can be found in the
+<a href="config.html#builders">configuration section</a>.
+</p>
+<p>
+Building LaTeX documents is possible not only in LaTeX projects but also
+in other types of projects. For example, a LaTeX file can be created inside
+a Java project and it will be built automatically every time the Java project
+is being built.
+</p>
+
+
+<h3><a name="part"> Partial Building </h3>
+
+<p>
+When writing big LaTeX documents it is sometimes handy to split the document into
+multiple files. The file containing document preamble (<code>\usepackage{...}</code>-lines and
+<code>\begin{document}</code>) is called the <i>main file</i>. Other LaTeX-files in the
+project are usually included to the main file using <code>\input{file}</code> or
+<code>\include{file}</code>. It the included files are small compared to the total
+size of the LaTeX document, like chapters of a book, it would be handy to easily
+build just the file that is currently edited.
+</p>
+<p>
+Partial building does just this. In partial building mode, only the currently edited document
+is built. Partial building can be activated by
+choosing <b>Latex &gt; Partial Building</b> from the menu. Alternatively,
+the Partial Building -toolbar button can be used to toggle partial building mode.
+</p>
+<p>
+In practice, when in partial building mode, the document that is currently being
+edited is built. The current document means the last LaTeX document that was open
+in the editor. If the current document is not the main file, it does not contain a
+<code>\begin{document}</code> -tag and is therefore not a proper LaTeX document
+on it&#39;s own. That is why a temporary LaTeX file is constructed by prepending the
+preamble-section from the main file to the current file and appending the 
+bibliography-section to the end. This temporary document is saved to a file called
+&#39;tempPartial0000.tex&#39;, and then built. The project output file is overwritten
+with the output of the partial build. This enables an easy switching between
+partial and &quot;full&quot; building mode while the viewer application is running.
+</p>
+
+
+<h2><a name="preview"> Previewing </h2>
+
+<p>In this manual
+previewing a Latex project means launching an external viewer application
+to view the output file of a Latex project.
+</p>
+<p>
+The preview can be activated either from the Preview -button in the toolbar,
+or from the menu: <b>Latex &gt; Preview Document</b>.
+</p>
+
+<h3> Configuring preview </h3>
+
+<p>
+Almost any application capable of displaying output files (dvi, ps or pdf) can
+be used as a viewer. Configuring a viewer is done via the <b>Texlipse &gt; Viewer
+Settings</b> -preference page. Read more about it in the
+<a href="config.html#viewer">configuration section</a>.
+</p>
+<p>
+The Viewer Settings -preference page has multiple viewer configurations as
+examples. Read more about setting up a viewer program in the 
+<a href="config.html#viewer">configuration section</a>.
+</p>
+
+
+<h3> Using preview </h3>
+
+<p>
+The previewer always tries to open the output file of the current project.
+Because Eclipse can have multiple projects open at the same time,
+the previewer determines the current project by checking to which project
+the currently edited file belongs. So, if no files are open, no previewer will
+be launched. Also, if the project&#39;s output file has been deleted after the last build,
+or is not yet created, the viewer obviously can&#39;t view anything.
+</p>
+
+
+<a name="sourcelink">
+<h3> Using preview to source linking </h3>
+
+<p>
+Linking preview to source means that one can open the document source file from
+the correct position just by clicking a line of text in the output file.
+This is also called <i>inverse search</i>.
+Inverse search is usually achieved by the <code>latex</code> program inserting
+some special guiding points to the output file, so that the viewer program can
+read them. This requires a fairly recent version of LaTeX, which supports the
+<code>--src-specials</code> -parameter. At least LaTeX version 7.4.5 seems
+to support it.
+</p>
+<p>
+A special viewer that can handle the guiding points is required.
+On most Unix and MS Windows systems there is a DVI file viewer available,
+which supports inverse search. For Unix systems, there is <code>xdvi</code> 
+(and some others), and <code>yap</code>on MS Windows systems.
+</p>
+<p>
+TeXlipse supports two ways of linking preview to source. One is by reading
+standard output and one is by reading a socket.
+</p>
+
+<h3> Using preview to source linking by standard output </h3>
+
+<p> The <code>xdvi</code> program is configured by default to use the standard
+output way. So, if your system has a version of <code>xdvi</code> installed that
+supports the <code>-editor</code> parameter, chances are that linking preview
+to source is easy to configure on your system. Just choose <code>xdvi</code> as
+the default viewer program by moving to the top of the viewer list. Then check
+that the path is correct and you are ready to go. If your version of <code>xdvi</code>
+doesn&#39;t support <code>-editor</code> -parameter, then there is no way of getting
+the inverse search to work.
+</p>
+
+
+<h3><a name="yap"> Using preview to source linking by reading a socket </h3>
+
+<p>
+The <code>yap</code> viewer is by default configured to use the socket way.
+This is a bit more difficult to set up than using the standard output way (which doesn't
+actually need any setting up). 
+<ol>
+  <li>Check that you have right parameters in the <code>yap</code> configuration:
+      (Window &gt; Preferences &gt; Texlipse &gt; Viewer Settings) 
+      <strong>Viewer runs external command</strong>
+      <p><img src="images/yap1.gif" atl="Yap config in Texlipse"></p></li>
+
+  <li>You need to create a bat-file that contains the following line: 
+      <pre>java -classpath %ECLIPSEDIR%\plugins\texlipse\texlipse.jar net.sourceforge.texlipse.viewer.util.FileLocationClient -p 55000 -f %1 -l %2</pre>
+      where <code>%ECLIPSEDIR%</code> is the directory in which Eclipse is installed,
+      <code>texlipse</code> is the directory of TeXlipse under the <strong>plugins</strong>
+      ditectory (where TeXlipse is installed), <code>-p 55000</code> is the port that TeXlipse is listening
+      (must be the same than it is in the <strong>Viewer Settings</strong> Preferences page) and
+      <code>-f %1 -l %2</code> are file and line parameters for TeXlipse.
+      Notice that if the directory names contain white spaces, you need to surround
+      the directory name with "-marks.</li>
+
+  <li>After this the viewer program (yap in this example) has to be configured to use an 
+      external editor program. (You might need to consult the yap manual on this.)
+      (In Yap: <b>View &gt; Options... &gt; Inverse Search</b>)
+      <p><img src="images/yap2.gif" alt="Yap configuration"></p></li>
+
+  <li>Also check from your firewall that you can access the local port that is 
+      configured in the <b>Viewer Settings</b> -preference page. By default this is 
+      55000. If you change the port number, you also have to change the parameter for 
+      the external editor command.</li>
+      <p>
+  	  The external editor command in the above example launches a part of the TeXlipse
+	  plugin as a client program that outputs a line of text to the given port in the 
+	  following format: <code>[filename]:[linenumber]</code>. This line is then read 
+	  by another part of the TeXlipse plugin functioning as a server. The server then 
+	  opens the specified file from the specified place in the Eclipse window.
+	 </p>
+  </li>
+</ol>
+
+<h4>Some potential problems:</h4>
+<code>Exception in thread "main" java.lang.NoClassDefFoundError</code> 
+The class path is incorrect, check the path. In this example it is 
+<code>plugin</code> when it should be <code>plugins</code></p>
+<p><img src="images/err1.gif" alt="Error in class path"></p>
+
+<p><code>Couldn't get I/O for the connection to: localhost</code>
+Probably the firewall is blocking the connection, check the settings.</p>
+<p><img src="images/err2.gif" alt="Firewall blocks"></p>
+
+<p>No error, but nothing happens. Check that the port is correct both in the bat-file
+and on the <b>Viewer Settings</b> page.</p>
+
+<h3> Using preview to source linking on Mac OS X </h3>
+
+<p>
+<a name="itex">
+Mac OS X has very good PDF viewing support, so many users want to take
+advantage of it. Below is described one way of achieving &quot;PDF to 
+Latex-source-on-Eclipse&quot; -linking. Hopefully there is another way,
+because this is not so easy to configure.
+</p>
+<p>
+   <ol>
+      <li> Install iTeXMac (<a href="http://itexmac.sourceforge.net">http://itexmac.sourceforge.net</a>)
+      <li> Set iTeXMac as the default LaTeX previewer in Eclipse
+           (<b>Window &gt; Preferences &gt; Texlipse &gt; Viewer Settings</b>)
+      <li> Set the project output format as PDF in your LaTeX project, 
+      	   and build order as <code>pdflatex</code>
+           (Project_name &gt; Properties &gt; Latex Project Properties )
+      <li> Add the line <code><font color="purple">\usepackage</font><font color="blue">
+      		{pdfsync}</font></code> in to the preamble section of your Latex document. 
+      		(Also make sure that you have the pdfsync package installed. More info on 
+      		the iTeXMac homepage.)
+      <li> Build the project
+      <li> Launch the previewer
+      <li> Configure iTeXMac to use an external editor. <strong>iTeXMac -> 
+      	   Preferences... -> Editor </strong> Choose, for example, TextEdit 
+      	   as the editor.
+      <li> Configure iTeXMac to use a startup script for the configured external editor.
+           For TextEdit, this is done by creating a file called &quot;TextEdit&quot;
+           to: <code>~/Library/Application Support/iTexMac/bin/</code> -directory
+           (where &#39;~&#39; is your home directory).
+           To this file write the following line:
+           <pre>java -classpath $ECLIPSEDIR/plugins/texlipse/texlipse.jar net.sourceforge.texlipse.viewer.util.FileLocationClient -f ${file} -l ${line}</pre>
+           where <code>$ECLIPSEDIR</code> is the directory where Eclipse is installed.
+      <li> Now, bring the iTeXMac&#39;s PDF viewer window to the front. It should 
+      	   show the PDF document built in the previous steps. Double-clicking on the 
+      	   PDF-document should highlight a line in Eclipse&#39;s editor window.
+      	   <strong>NOTICE: with these instructions .tex, .pdf and .pdfsync files must 
+      	   be in the same directory. </strong>
+      	   <p><img src="images/itex1.gif" alt="list of files"></p>
+   </ol>
+</p>
+<p>
+&nbsp;
+</p>
+
+</body>
+</html>

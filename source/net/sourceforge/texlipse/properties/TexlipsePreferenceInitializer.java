@@ -1,0 +1,167 @@
+/*
+ * $Id$
+ *
+ * Copyright (c) 2004-2005 by the TeXlapse Team.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ */
+package net.sourceforge.texlipse.properties;
+
+import java.io.File;
+import java.util.Properties;
+import java.util.StringTokenizer;
+
+import net.sourceforge.texlipse.PathUtils;
+import net.sourceforge.texlipse.TexlipsePlugin;
+import net.sourceforge.texlipse.bibeditor.BibColorProvider;
+import net.sourceforge.texlipse.builder.BuilderRegistry;
+import net.sourceforge.texlipse.builder.ProgramRunner;
+import net.sourceforge.texlipse.editor.ColorManager;
+import net.sourceforge.texlipse.viewer.ViewerAttributeRegistry;
+import net.sourceforge.texlipse.viewer.util.FileLocationClient;
+
+import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
+import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.preference.PreferenceConverter;
+import org.eclipse.swt.graphics.RGB;
+
+
+/**
+ * Initialize the plugin preferences.
+ * 
+ * @author Kimmo Karlsson
+ */
+public class TexlipsePreferenceInitializer extends
+        AbstractPreferenceInitializer {
+
+    /**
+     * 
+     */
+    public TexlipsePreferenceInitializer() {
+        super();
+    }
+
+    /**
+     * Get the path containing the given binary from environment variables.
+     * 
+     * @param bin relative path and file name to search for
+     *        in the directories listed in the "path" environment variable
+     * @return the directory that contains the given file or null if file was not found
+     */
+    public String getEnvPath(String bin) {
+        
+        Properties prop = PathUtils.getEnv();
+        String path = prop.getProperty(PathUtils.findPathKey(prop));
+        if (path == null) {
+            return null;
+        }
+        
+        StringTokenizer st = new StringTokenizer(path, File.pathSeparator);
+        while (st.hasMoreTokens()) {
+            String latexPath = st.nextToken();
+
+            File latex = new File(latexPath + bin);
+            if (latex.exists() && latex.isFile()) {
+                return latexPath;
+            }
+        }
+        
+        return null;
+    }
+    
+    /**
+     * Save the program paths into preferences.
+     * @param pref preferences
+     */
+    private void initializePaths(IPreferenceStore pref) {
+        // default path to use if the environment variable "path" doesn't contain the latex path
+        String defaultPath = "/usr/bin";
+        // default binary file to search for in the path
+        String defaultBin = "/latex";
+        
+        // windows equivalents for the above
+        if (System.getProperty("os.name").indexOf("indow") > 0) {
+            defaultPath = "C:\\texmf\\miktex\\bin";
+            defaultBin = "\\latex.exe";
+        }
+        
+        // try to find latex program in the path
+        String path = getEnvPath(defaultBin);
+        if (path == null) {
+            path = defaultPath;
+        }
+        
+        int size = BuilderRegistry.getNumberOfRunners();
+        for (int i = 0; i < size; i++) {
+            ProgramRunner runner = BuilderRegistry.getRunner(i);
+            File prog = new File(path + File.separator + runner.getProgramName());
+            if (prog.exists()) {
+                runner.initializeDefaults(pref, prog.getAbsolutePath());
+            } else {
+                runner.initializeDefaults(pref, "");
+            }
+        }
+    }
+    
+    /**
+     * Initialize all preferences to some default values.
+     */
+    public void initializeDefaultPreferences() {
+        IPreferenceStore pref = TexlipsePlugin.getDefault().getPreferenceStore();
+        
+        pref.setDefault(TexlipseProperties.BIB_DIR, "");
+        pref.setDefault(TexlipseProperties.OUTPUT_FORMAT, TexlipseProperties.OUTPUT_FORMAT_DVI);
+        pref.setDefault(TexlipseProperties.BUILDER_NUMBER, 0);
+        pref.setDefault(TexlipseProperties.BUILDER_CONSOLE_OUTPUT, false);
+        pref.setDefault(TexlipseProperties.BUILD_BEFORE_VIEW, false);
+        pref.setDefault(TexlipseProperties.FILE_LOCATION_PORT, FileLocationClient.DEFAULT_PORTNUMBER);
+        
+        initializePaths(pref);
+        
+        ColorManager.initializeDefaults(pref);
+        
+        BibColorProvider.initializeDefaults(pref);
+        
+        ViewerAttributeRegistry.initializeDefaults(pref);
+        
+        pref.setDefault(TexlipseProperties.TEMP_FILE_EXTS, ".aux,.log,.toc,.ind,.ilg,.bbl,.blg,.lot,.lof");
+        
+        pref.setDefault(TexlipseProperties.BIB_COMPLETION, true);
+        pref.setDefault(TexlipseProperties.BIB_COMPLETION_DELAY, 500);
+        pref.setDefault(TexlipseProperties.TEX_COMPLETION, true);
+        pref.setDefault(TexlipseProperties.TEX_COMPLETION_DELAY, 500);
+        pref.setDefault(TexlipseProperties.AUTO_PARSING, true);
+        pref.setDefault(TexlipseProperties.AUTO_PARSING_DELAY, 2000);
+        
+        pref.setDefault(TexlipseProperties.CODE_FOLDING, true);
+        pref.setDefault(TexlipseProperties.CODE_FOLDING_PREAMBLE, false);
+        pref.setDefault(TexlipseProperties.CODE_FOLDING_PART, false);
+        pref.setDefault(TexlipseProperties.CODE_FOLDING_CHAPTER, false);
+        pref.setDefault(TexlipseProperties.CODE_FOLDING_SECTION, false);
+        pref.setDefault(TexlipseProperties.CODE_FOLDING_SUBSECTION, false);
+        pref.setDefault(TexlipseProperties.CODE_FOLDING_SUBSUBSECTION, false);
+        pref.setDefault(TexlipseProperties.CODE_FOLDING_PARAGRAPH, false);
+        pref.setDefault(TexlipseProperties.CODE_FOLDING_ENVS, "");
+        
+        pref.setDefault(TexlipseProperties.MATCHING_BRACKETS, true);
+        PreferenceConverter.setDefault(pref, TexlipseProperties.MATCHING_BRACKETS_COLOR, new RGB(192, 192, 192));
+        
+        pref.setDefault(TexlipseProperties.INDENTATION, true);
+        pref.setDefault(TexlipseProperties.INDENTATION_LEVEL, 2);
+        pref.setDefault(TexlipseProperties.INDENTATION_ENVS, "list,enumerate,itemize");
+        pref.setDefault(TexlipseProperties.WORDWRAP_LENGTH, 80);
+        pref.setDefault(TexlipseProperties.WORDWRAP_TYPE, TexlipseProperties.WORDWRAP_TYPE_HARD);
+        pref.setDefault(TexlipseProperties.TEX_ITEM_COMLETION, true);
+        
+        pref.setDefault(TexlipseProperties.OUTLINE_PREAMBLE, true);
+        pref.setDefault(TexlipseProperties.OUTLINE_PART, true);
+        pref.setDefault(TexlipseProperties.OUTLINE_CHAPTER, true);
+        pref.setDefault(TexlipseProperties.OUTLINE_SECTION, true);
+        pref.setDefault(TexlipseProperties.OUTLINE_SUBSECTION, true);
+        pref.setDefault(TexlipseProperties.OUTLINE_SUBSUBSECTION, true);
+        pref.setDefault(TexlipseProperties.OUTLINE_PARAGRAPH, true);
+        pref.setDefault(TexlipseProperties.OUTLINE_ENVS, "list,enumerate,itemize,figure,table,tabular");
+    }
+}

@@ -1,0 +1,890 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.0"?>
+<plugin
+   id="net.sourceforge.texlipse"
+   name="TeXlipse Plug-in"
+   version="1.0.0"
+   provider-name="TeXlapse Team"
+   class="net.sourceforge.texlipse.TexlipsePlugin">
+
+   <runtime>
+      <library name="texlipse.jar">
+         <export name="*"/>
+      </library>
+   </runtime>
+
+   <requires>
+      <import plugin="org.eclipse.ui"/>
+      <import plugin="org.eclipse.core.runtime"/>
+      <import plugin="org.eclipse.ui.editors"/>
+      <import plugin="org.eclipse.ui.workbench.texteditor"/>
+      <import plugin="org.eclipse.core.resources"/>
+      <import plugin="org.eclipse.ui.views"/>
+      <import plugin="org.eclipse.jface.text"/>
+      <import plugin="org.eclipse.ui.ide"/>
+      <import plugin="org.eclipse.ui.forms"/>
+      <import plugin="org.eclipse.help"/>
+      <import plugin="org.eclipse.debug.core"/>
+      <import plugin="org.eclipse.debug.ui"/>
+      <import plugin="org.eclipse.ui.console"/>
+   </requires>
+
+   <extension
+         point="org.eclipse.ui.actionSets">
+      <actionSet
+            label="TeXlipse Action Set"
+            visible="true"
+            id="texlipse.actionSet">
+         <menu
+               label="&amp;Latex"
+               id="LatexMenu">
+            <separator
+                  name="latexGroup">
+            </separator>
+            <separator name="sourceGroup"/>
+         </menu>
+         <action
+               toolbarPath="latexGroup"
+               label="&amp;Word Count"
+               class="net.sourceforge.texlipse.actions.WordCountAction"
+               icon="icons/wordcount.gif"
+               tooltip="Word Count"
+               style="push"
+               menubarPath="LatexMenu/sourceGroup"
+               id="net.sourceforge.texlipse.WordCountAction"/>
+         <action
+               toolbarPath="latexGroup"
+               label="Preview Document"
+               tooltip="Launch the previewer"
+               class="net.sourceforge.texlipse.actions.PreviewAction"
+               icon="icons/preview.gif"
+               style="push"
+               menubarPath="LatexMenu/sourceGroup"
+               id="net.sourceforge.texlipse.actions.PreviewAction"/>
+      </actionSet>
+   </extension>
+   <extension
+         point="org.eclipse.ui.editors">
+      <editor
+            class="net.sourceforge.texlipse.editor.TexEditor"
+            icon="icons/texfile.gif"
+            default="true"
+            contributorClass="org.eclipse.ui.editors.text.TextEditorActionContributor"
+            name="Latex Editor"
+            id="net.sourceforge.texlipse.TexEditor"
+            extensions="tex,ltx"/>
+      <editor
+            class="net.sourceforge.texlipse.bibeditor.BibEditor"
+            icon="icons/bibfile.gif"
+            contributorClass="org.eclipse.ui.editors.text.TextEditorActionContributor"
+            name="BibTeX Editor"
+            id="net.sourceforge.texlipse.bibeditor.BibEditor"
+            extensions="bib"/>
+   </extension>
+   <extension
+         id="builder.TexlipseBuilder"
+         name="Latex Builder"
+         point="org.eclipse.core.resources.builders">
+      <builder >
+         <run class="net.sourceforge.texlipse.builder.TexlipseBuilder"/>
+      </builder>
+   </extension>
+   <extension
+         id="builder.TexlipseNature"
+         name="Latex Nature"
+         point="org.eclipse.core.resources.natures">
+      <runtime>
+         <run class="net.sourceforge.texlipse.builder.TexlipseNature"/>
+      </runtime>
+   </extension>
+   <extension
+         id="properties.projectNatureImage1"
+         name="Latex Nature"
+         point="org.eclipse.ui.ide.projectNatureImages">
+      <image
+            natureId="net.sourceforge.texlipse.builder.TexlipseNature"
+            icon="icons/texnature.gif"
+            id="net.sourceforge.texlipse.ui.projectNatureImage"/>
+   </extension>
+   <extension
+         point="org.eclipse.ui.newWizards">
+      <wizard
+            class="net.sourceforge.texlipse.wizards.TexlipseProjectCreationWizard"
+            icon="icons/logo.gif"
+            category="texlipse.category1"
+            project="true"
+            name="New Latex Project"
+            id="texlipse.wizard1"/>
+      <category
+            name="Texlipse"
+            id="texlipse.category1"/>
+   </extension>
+   <extension
+         id="properties.propertyPage1"
+         name="Latex Properties Page"
+         point="org.eclipse.ui.propertyPages">
+      <page
+            objectClass="org.eclipse.core.resources.IProject"
+            class="net.sourceforge.texlipse.properties.TexlipseProjectPropertyPage"
+            nameFilter="*"
+            name="Latex Project Properties"
+            id="properties.TexlipseProjectPropertyPage">
+         <filter
+               value="net.sourceforge.texlipse.builder.TexlipseNature"
+               name="projectNature"/>
+      </page>
+   </extension>
+   <extension
+         point="org.eclipse.ui.views">
+      <category
+            name="TeXlipse"
+            id="TeXlipse"/>
+      <view
+            icon="icons/tableview.gif"
+            class="net.sourceforge.texlipse.tableview.views.TexTableView"
+            category="TeXlipse"
+            name="LaTeX Table View"
+            id="Texlipse.view1"/>
+   </extension>
+   <extension
+         point="org.eclipse.ui.perspectiveExtensions">
+      <perspectiveExtension targetID="Texlipse.perspectiveExtension1">
+         <view
+               ratio="0.5"
+               relationship="right"
+               relative="Texlipse.view1"
+               id="Texlipse.view1"/>
+      </perspectiveExtension>
+   </extension>
+   <extension
+         point="org.eclipse.ui.preferencePages">
+      <page
+            class="net.sourceforge.texlipse.properties.TexlipsePreferencePage"
+            name="Texlipse"
+            id="TexlipsePreferencePage"/>
+      <page
+            class="net.sourceforge.texlipse.properties.BibtexPreferencePage"
+            category="TexlipsePreferencePage"
+            name="BibTeX Editor"
+            id="BibtexPreferencePage"/>
+      <page
+            class="net.sourceforge.texlipse.properties.BibColoringPreferencePage"
+            category="BibtexPreferencePage"
+            name="Syntax Highlighting"
+            id="net.sourceforge.texlipse.properties.BibColoringPreferencePage"/>            
+      <page
+            class="net.sourceforge.texlipse.templates.BibTexTemplatePreferencesPage"
+            category="BibtexPreferencePage"
+            name="Templates"
+            id="net.sourceforge.texlipse.templates.BibTexTemplatePreferencesPage"/>
+      <page
+            class="net.sourceforge.texlipse.properties.TexEditorPreferencePage"
+            category="TexlipsePreferencePage"
+            name="Editor"
+            id="TexlipseEditorPreferencePage"/>
+      <page
+            class="net.sourceforge.texlipse.properties.ColoringPreferencePage"
+            category="TexlipseEditorPreferencePage"
+            name="Syntax Highlighting"
+            id="net.sourceforge.texlipse.properties.ColoringPreferencePage"/>
+      <page
+            class="net.sourceforge.texlipse.properties.OutlinePreferencePage"
+            category="TexlipseEditorPreferencePage"
+            name="Outline"
+            id="net.sourceforge.texlipse.properties.OutlinePreferencePage"/>
+      <page
+            class="net.sourceforge.texlipse.properties.CodeFoldingPreferencePage"
+            category="TexlipseEditorPreferencePage"
+            name="Code Folding"
+            id="net.sourceforge.texlipse.properties.CodeFoldingPreferencePage"/>
+      <page
+            class="net.sourceforge.texlipse.templates.TexTemplatePreferencesPage"
+            category="TexlipseEditorPreferencePage"
+            name="Templates"
+            id="net.sourceforge.texlipse.properties.TeXPreferencePage"/>
+      <page
+            class="net.sourceforge.texlipse.properties.IndentationPreferencePage"
+            category="TexlipseEditorPreferencePage"
+            name="Indentation"
+            id="net.sourceforge.texlipse.properties.IndentationPreferencePage"/>
+      <page
+            class="net.sourceforge.texlipse.properties.ProjectTemplatesPreferencePage"
+            category="TexlipsePreferencePage"
+            name="Document Templates"
+            id="net.sourceforge.texlipse.properties.ProjectTemplatesPreferencePage"/>
+      <page
+            class="net.sourceforge.texlipse.properties.BuilderSettingsPreferencePage"
+            category="TexlipsePreferencePage"
+            name="Builder Settings"
+            id="TexlipseBuilderPreferencePage"/>
+      <page
+            class="net.sourceforge.texlipse.properties.LatexTempExtsPreferencePage"
+            category="TexlipseBuilderPreferencePage"
+            name="Latex Temp Files"
+            id="net.sourceforge.texlipse.properties.LatexTempExtsPreferencePage"/>            
+      <page
+            class="net.sourceforge.texlipse.properties.ViewerSettingsPreferencePage"
+            category="TexlipsePreferencePage"
+            name="Viewer Settings"
+            id="net.sourceforge.texlipse.properties.ViewerSettingsPreferencePage"/>
+   </extension>
+   <extension
+         point="org.eclipse.core.runtime.preferences">
+      <initializer class="net.sourceforge.texlipse.properties.TexlipsePreferenceInitializer"/>
+   </extension>
+
+   <extension
+	     id="BibDocumentSetupParticipant"
+         name="%documentSetupParticipantName"
+	     point="org.eclipse.core.filebuffers.documentSetup">
+	  <participant
+		    extensions="bib"
+		    class="net.sourceforge.texlipse.bibeditor.BibSetupParticipant">
+	  </participant>
+   <participant
+         class="net.sourceforge.texlipse.editor.TexDocumentSetupParticipant"
+         extensions="tex,ltx"/>
+   </extension>
+   <extension
+         point="org.eclipse.help.toc">
+      <toc
+            primary="true"
+            file="toc.xml"/>
+   </extension>
+   <extension
+         point="org.eclipse.debug.core.launchConfigurationTypes">
+      <launchConfigurationType
+            delegate="net.sourceforge.texlipse.viewer.TexLaunchConfigurationDelegate"
+            name="View Latex Document"
+            modes="run"
+            id="net.sourceforge.texlipse.viewer.launchConfigurationType"/>
+   </extension>
+   <extension
+         point="org.eclipse.debug.ui.launchConfigurationTabGroups">
+      <launchConfigurationTabGroup
+            type="net.sourceforge.texlipse.viewer.launchConfigurationType"
+            class="net.sourceforge.texlipse.viewer.TexLaunchConfigurationTabGroup"
+            id="net.sourceforge.texlipse.viewer.launchConfigurationTabGroup"/>
+   </extension>
+   <extension
+         point="org.eclipse.ui.editors.templates">
+      <contextType
+            class="net.sourceforge.texlipse.templates.TexContextType"
+            id="net.sourceforge.texlipse.templates.tex"/>
+		<template
+        contextTypeId="net.sourceforge.texlipse.templates.tex"
+        icon="icons/template.gif"
+        description="Template for a list (description)"
+        name="description"
+        id="net.sourceforge.texlipse.templates.tex.description">
+       	<pattern>
+\begin{description}
+  \item[${item}] ${cursor}
+\end{description}
+        </pattern>
+        </template>
+		<template
+        contextTypeId="net.sourceforge.texlipse.templates.tex"
+        icon="icons/template.gif"
+        description="Template for a list (enumerate)"
+        name="enumerate"
+        id="net.sourceforge.texlipse.templates.tex.enumerate">
+       	<pattern>
+\begin{enumerate}
+  \item ${cursor}
+\end{enumerate}
+        </pattern>
+        </template>
+		<template
+        contextTypeId="net.sourceforge.texlipse.templates.tex"
+        icon="icons/template.gif"
+        description="Template for a list (itemize)"
+        name="itemize"
+        id="net.sourceforge.texlipse.templates.tex.itemize">
+       	<pattern>
+\begin{itemize}
+  \item ${cursor}
+\end{itemize}
+        </pattern>
+        </template>
+		<template
+        contextTypeId="net.sourceforge.texlipse.templates.tex"
+        icon="icons/template.gif"
+        description="Template for a table"
+        name="table"
+        id="net.sourceforge.texlipse.templates.tex.table">
+		<pattern>
+\begin{table}
+\begin{tabular}{${columns}}
+${cursor}
+\end{tabular}
+\caption{${tablecaption}}
+\label{${tablelabel}}
+\end{table}
+		</pattern>
+		</template>
+		<template
+        contextTypeId="net.sourceforge.texlipse.templates.tex"
+        icon="icons/template.gif"
+        description="Begin/end pattern"
+        name="begin"
+        id="net.sourceforge.texlipse.templates.tex.begin">
+		<pattern>
+\begin{${environment}} ${cursor}
+\end{${environment}}
+		</pattern>
+		</template>
+		<template
+        contextTypeId="net.sourceforge.texlipse.templates.tex"
+        icon="icons/template.gif"
+        description="Template for Figure"
+        name="figure"
+        id="net.sourceforge.texlipse.templates.tex.figure">
+		<pattern>
+%%\usepackage{graphics} is needed for \includegraphics
+\begin{figure}[htp]
+\begin{center}
+  \includegraphics[width=${figureWidth}]{${filename}}
+  \caption[${labelInTOC}]{${figureCaption}}
+  \label{${figureLabel}}
+\end{center}
+\end{figure}
+		</pattern>
+		</template>
+  <contextType
+        class="net.sourceforge.texlipse.templates.BibTexContextType"
+        id="net.sourceforge.texlipse.templates.bibtex"/>
+  <template
+        contextTypeId="net.sourceforge.texlipse.templates.bibtex"
+        icon="icons/template.gif"
+        description="Book"
+        name="@book"
+        id="net.sourceforge.texlipse.templates.bibtex.book">
+     <pattern>
+@Book{${ID},
+  ALTauthor = 	 {${Author}},
+  ALTeditor = 	 {${Editor}},
+  title = 	 {${Title}},
+  publisher = 	 {${Publisher}},
+  year = 	 {${Year}},
+  OPTkey = 	 {},
+  OPTvolume = 	 {},
+  OPTnumber = 	 {},
+  OPTseries = 	 {},
+  OPTaddress = 	 {},
+  OPTedition = 	 {},
+  OPTmonth = 	 {},
+  OPTnote = 	 {},
+  OPTannote = 	 {}
+}
+     </pattern>
+  </template>		
+  <template
+        contextTypeId="net.sourceforge.texlipse.templates.bibtex"
+        icon="icons/template.gif"
+        description="Booklet"
+        name="@booklet"
+        id="net.sourceforge.texlipse.templates.bibtex.booklet">
+     <pattern>
+@Booklet{${ID},
+  title = 	 {${Title}},
+  OPTkey = 	 {},
+  OPTauthor = 	 {},
+  OPThowpublished = {},
+  OPTaddress = 	 {},
+  OPTmonth = 	 {},
+  OPTyear = 	 {},
+  OPTnote = 	 {},
+  OPTannote = 	 {}
+}
+     </pattern>
+  </template>		
+  <template
+        contextTypeId="net.sourceforge.texlipse.templates.bibtex"
+        icon="icons/template.gif"
+        description="Article in Journal"
+        name="@article"
+        id="net.sourceforge.texlipse.templates.bibtex.article">
+     <pattern>
+@Article{${ID},
+  author = 	 {${Author}},
+  title = 	 {${Title}},
+  journal = 	 {${Journal}},
+  year = 	 {${Year}},
+  OPTkey = 	 {},
+  OPTvolume = 	 {},
+  OPTnumber = 	 {},
+  OPTpages = 	 {},
+  OPTmonth = 	 {},
+  OPTnote = 	 {},
+  OPTannote = 	 {}
+}
+     </pattern>
+  </template>
+  <template
+        contextTypeId="net.sourceforge.texlipse.templates.bibtex"
+        icon="icons/template.gif"
+        description="Article in Conference Proceedings"
+        name="@inproceedings"
+        id="net.sourceforge.texlipse.templates.bibtex.inproceedings">
+     <pattern>
+@InProceedings{${ID},
+  author = 	 {${Author}},
+  title = 	 {${Title}},
+  OPTcrossref =  {},
+  OPTkey = 	 {},
+  OPTbooktitle = {},
+  OPTpages = 	 {},
+  OPTyear = 	 {},
+  OPTeditor = 	 {},
+  OPTvolume = 	 {},
+  OPTnumber = 	 {},
+  OPTseries = 	 {},
+  OPTaddress = 	 {},
+  OPTmonth = 	 {},
+  OPTorganization = {},
+  OPTpublisher = {},
+  OPTnote = 	 {},
+  OPTannote = 	 {}
+}
+     </pattern>
+  </template>
+  <template
+        contextTypeId="net.sourceforge.texlipse.templates.bibtex"
+        icon="icons/template.gif"
+        description="Article in a Collection"        
+        name="@incollection"
+        id="net.sourceforge.texlipse.templates.bibtex.incollection">
+     <pattern>
+@InCollection{${ID},
+  author = 	 {${Author}},
+  title = 	 {${Title}},
+  booktitle = 	 {${Booktitle}},
+  OPTcrossref =  {},
+  OPTkey = 	 {},
+  OPTpages = 	 {},
+  OPTpublisher = {},
+  OPTyear = 	 {},
+  OPTeditor = 	 {},
+  OPTvolume = 	 {},
+  OPTnumber = 	 {},
+  OPTseries = 	 {},
+  OPTtype = 	 {},
+  OPTchapter = 	 {},
+  OPTaddress = 	 {},
+  OPTedition = 	 {},
+  OPTmonth = 	 {},
+  OPTnote = 	 {},
+  OPTannote = 	 {}
+}
+     </pattern>
+  </template>
+  <template
+        contextTypeId="net.sourceforge.texlipse.templates.bibtex"
+        icon="icons/template.gif"
+        description="Chapter or Pages in a Book"        
+        name="@inbook"
+        id="net.sourceforge.texlipse.templates.bibtex.inbook">
+     <pattern>
+@InBook{${ID},
+  ALTauthor = 	 {${Author}},
+  ALTeditor = 	 {${Editor}},
+  title = 	 {${Title}},
+  chapter = 	 {${Chapter}},
+  publisher = 	 {${Publisher}},
+  year = 	 {${Year}},
+  OPTkey = 	 {},
+  OPTvolume = 	 {},
+  OPTnumber = 	 {},
+  OPTseries = 	 {},
+  OPTtype = 	 {},
+  OPTaddress = 	 {},
+  OPTedition = 	 {},
+  OPTmonth = 	 {},
+  OPTpages = 	 {},
+  OPTnote = 	 {},
+  OPTannote = 	 {}
+}
+     </pattern>
+  </template>
+  <template
+        contextTypeId="net.sourceforge.texlipse.templates.bibtex"
+        icon="icons/template.gif"
+        description="Conference Proceedings"        
+        name="@proceedings"
+        id="net.sourceforge.texlipse.templates.bibtex.proceedings">
+     <pattern>
+@Proceedings{${ID},
+  title = 	 {${Title}},
+  year = 	 {${Year}},
+  OPTkey = 	 {},
+  OPTbooktitle = {},
+  OPTeditor = 	 {},
+  OPTvolume = 	 {},
+  OPTnumber = 	 {},
+  OPTseries = 	 {},
+  OPTaddress = 	 {},
+  OPTmonth = 	 {},
+  OPTorganization = {},
+  OPTpublisher = {},
+  OPTnote = 	 {},
+  OPTannote = 	 {}
+}
+     </pattern>
+  </template>
+  <template
+        contextTypeId="net.sourceforge.texlipse.templates.bibtex"
+        icon="icons/template.gif"
+        description="PhD. Thesis"        
+        name="@phdthesis"
+        id="net.sourceforge.texlipse.templates.bibtex.phdthesis">
+     <pattern>
+@PhdThesis{${ID},
+  author = 	 {${Author}},
+  title = 	 {${Title}},
+  school = 	 {${School}},
+  year = 	 {${Year}},
+  OPTkey = 	 {},
+  OPTtype = 	 {},
+  OPTaddress = 	 {},
+  OPTmonth = 	 {},
+  OPTnote = 	 {},
+  OPTannote = 	 {}
+}
+     </pattern>
+  </template>
+  <template
+        contextTypeId="net.sourceforge.texlipse.templates.bibtex"
+        icon="icons/template.gif"
+        description="Master's Thesis"
+        name="@mastersthesis"
+        id="net.sourceforge.texlipse.templates.bibtex.mastersthesis">
+     <pattern>
+@MastersThesis{${ID},
+  author = 	 {${Author}},
+  title = 	 {${Title}},
+  school = 	 {${School}},
+  year = 	 {${Year}},
+  OPTkey = 	 {},
+  OPTtype = 	 {},
+  OPTaddress = 	 {},
+  OPTmonth = 	 {},
+  OPTnote = 	 {},
+  OPTannote = 	 {}
+}
+     </pattern>
+  </template>
+  <template
+        contextTypeId="net.sourceforge.texlipse.templates.bibtex"
+        icon="icons/template.gif"
+        description="Technical Report"        
+        name="@techreport"
+        id="net.sourceforge.texlipse.templates.bibtex.techreport">
+     <pattern>
+@TechReport{${ID},
+  author = 	 {${Author}},
+  title = 	 {${Title}},
+  institution =  {${Institution}},
+  year = 	 {${Year}},
+  OPTkey = 	 {},
+  OPTtype = 	 {},
+  OPTnumber = 	 {},
+  OPTaddress = 	 {},
+  OPTmonth = 	 {},
+  OPTnote = 	 {},
+  OPTannote = 	 {}
+}
+     </pattern>
+  </template>
+  <template
+        contextTypeId="net.sourceforge.texlipse.templates.bibtex"
+        icon="icons/template.gif"
+        description="Technical Manual"
+        name="@manual"
+        id="net.sourceforge.texlipse.templates.bibtex.manual">
+     <pattern>
+@Manual{${ID},
+  title = 	 {${Title}},
+  OPTkey = 	 {},
+  OPTauthor = 	 {},
+  OPTorganization = {},
+  OPTaddress = 	 {},
+  OPTedition = 	 {},
+  OPTmonth = 	 {},
+  OPTyear = 	 {},
+  OPTnote = 	 {},
+  OPTannote = 	 {}
+}
+     </pattern>
+  </template>
+  <template
+        contextTypeId="net.sourceforge.texlipse.templates.bibtex"
+        icon="icons/template.gif"
+        description="Unpublished"        
+        name="@unpublished"
+        id="net.sourceforge.texlipse.templates.bibtex.unpublished">
+     <pattern>
+@Unpublished{${ID},
+  author = 	 {${Author}},
+  title = 	 {${Title}},
+  note = 	 {${Note}},
+  OPTkey = 	 {},
+  OPTmonth = 	 {},
+  OPTyear = 	 {},
+  OPTannote = 	 {}
+}
+     </pattern>
+  </template>
+  <template
+        contextTypeId="net.sourceforge.texlipse.templates.bibtex"
+        icon="icons/template.gif"
+        description="Miscellaneous"        
+        name="@misc"
+        id="net.sourceforge.texlipse.templates.bibtex.misc">
+     <pattern>
+@Misc{${ID},
+  OPTkey = 	 {},
+  OPTauthor = 	 {},
+  OPTtitle = 	 {},
+  OPThowpublished = {},
+  OPTmonth = 	 {},
+  OPTyear = 	 {},
+  OPTnote = 	 {},
+  OPTannote = 	 {}
+}
+     </pattern>
+  </template>
+  <template
+        contextTypeId="net.sourceforge.texlipse.templates.bibtex"
+        icon="icons/template.gif"
+        description="String"        
+        name="@string"
+        id="net.sourceforge.texlipse.templates.bibtex.string">
+     <pattern>
+@String{${variable} = {${value}}}
+     </pattern>
+  </template>
+  <template
+        contextTypeId="net.sourceforge.texlipse.templates.bibtex"
+        icon="icons/template.gif"
+        description="Preamble"        
+        name="@preamble"
+        id="net.sourceforge.texlipse.templates.bibtex.preamble">
+     <pattern>
+@Preamble{}
+     </pattern>
+  </template>		
+   </extension>
+   <extension
+         point="org.eclipse.ui.popupMenus">
+      <viewerContribution
+            targetID="net.sourceforge.texlipse.TexEditor.EditorContext"
+            id="net.sourceforge.texlipse.editor.viewerContribution">
+         <menu
+               label="Source"
+               id="SourceMenu">
+            <groupMarker name="texlipseGroup"/>
+         </menu>
+         <action
+               label="Set As &amp;Main File"
+               definitionId="actions.MainFileAction"
+               class="net.sourceforge.texlipse.actions.SetMainFileAction"
+               style="push"
+               menubarPath="SourceMenu/texlipseGroup"
+               id="actions.MainFileAction"/>
+         <action
+               label="Save As Template"
+               definitionId="actions.SaveAsTemplateAction"
+               class="net.sourceforge.texlipse.actions.SaveAsTemplateAction"
+               style="push"
+               menubarPath="SourceMenu/texlipseGroup"
+               id="actions.SaveAsTemplateAction"/>
+         <action
+               label="&amp;Uncomment"
+               definitionId="actions.TexUncomment"
+               class="net.sourceforge.texlipse.actions.TexUncomment"
+               style="push"
+               menubarPath="SourceMenu/texlipseGroup"
+               id="actions.TexUncomment"/>
+         <action
+               label="&amp;Comment"
+               definitionId="actions.TexComment"
+               class="net.sourceforge.texlipse.actions.TexComment"
+               style="push"
+               menubarPath="SourceMenu/texlipseGroup"
+               id="actions.TexComment"/>
+         <action
+               label="Correct &amp;Indentation"
+               definitionId="actions.TexCorrectIndentation"
+               class="net.sourceforge.texlipse.actions.TexCorrectIndentationAction"
+               style="push"
+               menubarPath="SourceMenu/texlipseGroup"
+               id="actions.TexCorrectIndentation"/>
+         <action
+               label="Correct &amp;Line Wrap"
+               definitionId="actions.TexHardLineWrap"
+               class="net.sourceforge.texlipse.actions.TexHardLineWrapAction"
+               style="push"
+               menubarPath="SourceMenu/texlipseGroup"
+               id="actions.TexHardLineWrap"/>
+      </viewerContribution>
+   </extension>
+   <extension
+         point="org.eclipse.ui.editorActions">
+      <editorContribution
+            targetID="net.sourceforge.texlipse.TexEditor"
+            id="net.sourceforge.texlipse.editor.editorContribution">
+         <menu
+               label="&amp;Latex"
+               id="LatexMenu">
+            <separator name="commentGroup"/>
+            <separator name="latexGroup"/>
+         </menu>
+         <action
+               label="Set As &amp;Main File"
+               class="net.sourceforge.texlipse.actions.SetMainFileAction"
+               definitionId="actions.MainFileAction"
+               style="push"
+               menubarPath="LatexMenu/commentGroup"
+               id="actions.MainFileAction"/>
+         <action
+               toolbarPath="latexGroup"
+               label="Save As &amp;Template"
+               tooltip="Save this file as a project template"
+               icon="icons/savetemplate.gif"
+               definitionId="actions.SaveAsTemplateAction"
+               class="net.sourceforge.texlipse.actions.SaveAsTemplateAction"
+               style="push"
+               menubarPath="LatexMenu/commentGroup"
+               id="actions.SaveAsTemplateAction"/>
+         <action
+               toolbarPath="latexGroup"
+               label="Build &amp;Partially"
+               class="net.sourceforge.texlipse.actions.PartialBuildAction"
+               icon="icons/buildpartially.gif"
+               tooltip="Toggle partial building on current project"
+               definitionId="actions.PartialBuildAction"
+               style="toggle"
+               menubarPath="LatexMenu/commentGroup"
+               id="actions.PartialBuildAction"/>
+         <action
+               toolbarPath="latexGroup"
+               label="&amp;Wrap text"
+               class="net.sourceforge.texlipse.actions.TexWordWrapAction"
+               definitionId="actions.MainFileAction"
+               icon="icons/wrap.gif"
+               tooltip="Use word wrap"
+               style="toggle"
+               menubarPath="LatexMenu/commentGroup"
+               id="actions.TexWordWrap"/>
+         <action
+               toolbarPath="latexGroup"
+               label="&amp;Uncomment"
+               definitionId="actions.TexUncomment"
+               class="net.sourceforge.texlipse.actions.TexUncomment"
+               icon="icons/uncomment.gif"
+               tooltip="Uncomment selection"
+               style="push"
+               menubarPath="LatexMenu/commentGroup"
+               id="actions.TexUncomment"/>
+         <action
+               toolbarPath="latexGroup"
+               label="&amp;Comment"
+               definitionId="actions.TexComment"
+               class="net.sourceforge.texlipse.actions.TexComment"
+               icon="icons/comment.gif"
+               tooltip="Comment selection"
+               style="push"
+               menubarPath="LatexMenu/commentGroup"
+               id="actions.TexComment"/>
+         <action
+               label="Correct &amp;Indentation"
+               definitionId="actions.TexCorrectIndentation"
+               class="net.sourceforge.texlipse.actions.TexCorrectIndentationAction"
+               style="push"
+               menubarPath="LatexMenu/commentGroup"
+               id="actions.TexCorrectIndentation"/>
+         <action
+               label="Correct &amp;Line Wrap"
+               definitionId="actions.TexHardLineWrap"
+               class="net.sourceforge.texlipse.actions.TexHardLineWrapAction"
+               style="push"
+               menubarPath="LatexMenu/commentGroup"
+               id="actions.TexHardLineWrap"/>
+      </editorContribution>
+   </extension>
+   <extension
+         point="org.eclipse.ui.commands">
+      <category
+            description="Latex editing"
+            name="Texlipse"
+            id="Texlipse"/>
+      <command
+            category="Texlipse"
+            categoryId="Texlipse"
+            name="Set As Main File"
+            id="actions.MainFileAction"/>
+      <command
+            category="Texlipse"
+            categoryId="Texlipse"
+            name="Save As Template"
+            id="actions.SaveAsTemplateAction"/>
+      <command
+            category="Texlipse"
+            categoryId="Texlipse"
+            name="Partial Build"
+            id="actions.PartialBuildAction"/>
+      <command
+            category="Texlipse"
+            categoryId="Texlipse"
+            name="Wrap text"
+            id="actions.TexWordWrap"/>
+      <command
+            category="Texlipse"
+            categoryId="Texlipse"
+            name="Comment"
+            id="actions.TexComment"/>
+      <keyBinding
+            command="actions.TexComment"
+            string="Ctrl+5"
+            configuration="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+      <command
+            category="Texlipse"
+            categoryId="Texlipse"
+            name="Uncomment"
+            id="actions.TexUncomment"/>
+      <keyBinding
+            command="actions.TexUncomment"
+            string="Esc Ctrl+5"
+            configuration="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+      <command
+            category="Texlipse"
+            categoryId="Texlipse"
+            name="Correct Line Wrap"
+            id="actions.TexHardLineWrap"/>
+      <keyBinding
+            command="actions.TexHardLineWrap"
+            string="Esc q"
+            configuration="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+      <command
+            category="Texlipse"
+            categoryId="Texlipse"
+            name="Correct Indentation"
+            id="actions.TexCorrectIndentation"/>
+      <keyBinding
+            command="actions.TexCorrectIndentation"
+            string="Ctrl+I"
+            configuration="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+   </extension>
+   <extension
+         id="builderproblem"
+         name="Builder Problem Marker"
+         point="org.eclipse.core.resources.markers">
+      <super type="org.eclipse.core.resources.problemmarker"/>
+      <persistent value="true"/>
+   </extension>
+   <extension
+         point="org.eclipse.help.contexts">
+      <contexts file="contexts.xml"/>
+   </extension>
+</plugin>

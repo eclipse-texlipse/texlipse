@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<contexts>
+	<context id="builder_list">
+		<description>This the list of builders.</description>
+		<topic href="html/config.html#builders" label="Builder list"/>
+	</context>
+	<context id="tex_dir">
+		<description>This field configures the directory of the TeX distribution.</description>
+		<topic href="html/config.html#builders" label="Tex dist"/>
+	</context>
+	<context id="console_out">
+		<description>Enables the output of external program messages.</description>
+		<topic href="html/config.html#builders" label="Enabling console"/>
+	</context>
+	<context id="wrap_len">
+		<description>Configures the word wrap column.</description>
+		<topic href="html/wrapping.html" label="Word wrap"/>
+	</context>
+	<context id="viewer_list">
+		<description>This is the list of viewers.</description>
+		<topic href="html/config.html#viewer" label="Viewer list"/>
+	</context>
+	<context id="viewer_port">
+		<description>Sets the port number for external viewers.</description>
+		<topic href="html/config.html#viewer" label="Viewer port"/>
+	</context>
+</contexts>
+

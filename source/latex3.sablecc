@@ -1,0 +1,142 @@
+/** 
+ * Simplified LaTeX lexer
+ *
+ * @author Oskar Ojala
+ */
+
+//Package texparser2;
+Package fi.hut.soberit.texlipse.texparser;
+
+// ----------------------------------------------------------------------------
+Helpers
+
+    unicode_input_character = [0..0xffff];
+    ht  = 0x0009;
+    lf  = 0x000a;
+    ff  = 0x000c;
+    cr  = 0x000d;
+    sp  = ' ';
+
+    letter = [['a'..'z'] + ['A'..'Z']];
+
+    braces = ['{' + '}'];
+    brackets = ['[' + ']'];
+
+    line_terminator = lf | cr | cr lf;
+//    line_terminator = [lf + cr]; // BAD! windows linebreaks should be treated as one token
+    input_character = [unicode_input_character - [[cr + lf] + [sp + ht]]];
+
+// add special chars(???)
+    input_character_nbs = [input_character - [[braces + brackets] + '\']];
+
+    input_character_symbol = [input_character - letter];
+
+    wspace = (sp | ht | ff | line_terminator)+;
+
+// ----------------------------------------------------------------------------
+States
+
+normal, comcapt, blockcapt, optcapt, verbatim, verb;
+
+// ----------------------------------------------------------------------------
+Tokens
+
+    {normal, comcapt, blockcapt, optcapt, verbatim, verb} whitespace = (sp | ht | ff | line_terminator)+;
+
+// then there is part, chapter, ..., paragraph, subparagraph and appendix,
+// of which the first two might be of interest
+
+    {normal->comcapt, comcapt} cpart = '\part';
+    {normal->comcapt, comcapt} cchapter = '\chapter';
+    {normal->comcapt, comcapt} csection = '\section';
+    {normal->comcapt, comcapt} cssection = '\subsection';
+    {normal->comcapt, comcapt} csssection = '\subsubsection';
+    {normal->comcapt, comcapt} cparagraph = '\paragraph';
+
+    {normal->comcapt, comcapt} cbib = '\bibliography';
+    {normal->comcapt, comcapt} cbibstyle = '\bibliographystyle';
+    {normal->comcapt, comcapt} clabel = '\label';
+
+    {normal->comcapt, comcapt} cref = '\ref' | '\pageref';
+// can be eg. \cite[pages 90--93]{knuth} or \nocite{*}
+// supporting Harvard and JuraBib, eg. '\possessivecite'
+    {normal->comcapt, comcapt} ccite = '\cite' letter* | '\' letter+ 'cite' | '\nextcite' letter+;
+
+    {normal->comcapt, comcapt} cbegin = '\begin';
+    {normal->comcapt, comcapt} cend = '\end';
+
+// also: include, includeonly
+    {normal->comcapt, comcapt} cinput = '\input';
+    {normal->comcapt, comcapt} cinclude = '\include';
+
+
+// \newcommand{cmd}[args][opt]{def}
+// braces might be skipped in the first arg, some commands might be done with def,
+// neither is apparently recommended
+    {normal->comcapt, comcapt} cnew = '\newcommand' | '\providecommand';
+    {normal->comcapt, comcapt} crenew = '\renewcommand';
+
+// "The \providecommand command is identical to the \newcommand  command if a command with this name does not exist;
+// if it does already exist, the \providecommand does nothing and the old definition remains in effect."
+
+
+    {normal} cpindex = '\printindex';
+
+    {normal->verbatim, comcapt->verbatim} bverbatim = '\begin' wspace* '{verbatim' ('*}' | '}');
+    {verbatim->normal} everbatim = '\end{verbatim' ('*}' | '}');
+    {verbatim, verb} vtext = input_character;
+
+    {normal->verb, comcapt->verb} cverb = '\verb' '*'?;
+
+
+// This is bogus: this token is always recognized in the custom lexer,
+// so it's only a placeholder for the argument found
+
+//    {blockcapt} argument = ([input_character - braces] | '\\' | '\{' | '\}')+;
+//    {optcapt} optargument = ([input_character - [braces + brackets]] | '\\' | '\{' | '\}')+;
+
+
+    {blockcapt} argument = [input_character - [braces + '\']]+;
+    {optcapt} optargument = input_character_nbs+;
+
+
+    {comcapt} star = '*';
+
+    {normal, comcapt->blockcapt, blockcapt, optcapt} l_brace = '{';
+    {normal, comcapt->normal, blockcapt, optcapt} r_brace = '}';
+
+// we might not want to detect these in normal mode, but it's no big deal
+    {normal, comcapt->optcapt, optcapt} l_bracket = '[';
+    {normal, comcapt->normal, optcapt} r_bracket = ']';
+
+
+    {normal->comcapt, comcapt, blockcapt, optcapt} cword = '\' letter+;
+    {normal, comcapt->normal, blockcapt, optcapt} csymbol = '\' input_character_symbol;
+    {normal, comcapt->normal, blockcapt, optcapt} cspace = '\' (sp | ht | ff | line_terminator);
+
+    {normal, comcapt->normal} word = input_character_nbs+;
+
+// The optional line terminator is needed to handle comments at the end of the file (ie. without a line terminator)
+// Since the longest match is always attempted, this works
+    {normal, comcapt} commentline = '%' [unicode_input_character - [cr + lf]]* line_terminator?;
+
+
+/*
+// ----------------------------------------------------------------------------
+Ignored Tokens
+
+    word,
+    whitespace,
+    commentline;
+
+// ----------------------------------------------------------------------------
+Productions
+
+latex = texword*;
+texword = {cw} cword | {cs} csymbol;
+
+
+optarg = l_bracket (optargument | argument)* r_bracket
+
+
+*/

@@ -44,26 +44,56 @@ public class SetMainFileAction implements IWorkbenchWindowActionDelegate, IEdito
 	    IResource file = ((FileEditorInput)editor.getEditorInput()).getFile();
 	    IProject project = file.getProject();
 	    
+        //load settings, if changed on disk
+        if (TexlipseProperties.isProjectPropertiesFileChanged(project)) {
+            TexlipseProperties.loadProjectProperties(project);
+        }
+        
         // check that there is an output format property
         String format = TexlipseProperties.getProjectProperty(project, TexlipseProperties.OUTPUT_FORMAT);
         if (format == null || format.length() == 0) {
             TexlipseProperties.setProjectProperty(project, TexlipseProperties.OUTPUT_FORMAT, TexlipsePlugin.getPreference(TexlipseProperties.OUTPUT_FORMAT));
         }
         
+        // check that there is a builder number
+        String builderNum = TexlipseProperties.getProjectProperty(project, TexlipseProperties.BUILDER_NUMBER);
+        if (builderNum == null || builderNum.length() == 0) {
+            TexlipseProperties.setProjectProperty(project, TexlipseProperties.BUILDER_NUMBER, TexlipsePlugin.getPreference(TexlipseProperties.BUILDER_NUMBER));
+        }
+        
 	    String name = file.getName();
+        
+        // check if this is already the main file
+        if (name.equals(TexlipseProperties.getProjectProperty(project, TexlipseProperties.MAINFILE_PROPERTY))) {
+            return;
+        }
+        
+        // set main file
 	    TexlipseProperties.setProjectProperty(project, TexlipseProperties.MAINFILE_PROPERTY, name);
 	    
+        // set output files
 	    String output = name.substring(0, name.lastIndexOf('.')+1) + format;
 	    TexlipseProperties.setProjectProperty(project, TexlipseProperties.OUTPUTFILE_PROPERTY, output);
-	    
+
+        // set source directory
 	    IPath path = file.getFullPath();
 	    String dir = path.removeFirstSegments(1).removeLastSegments(1).toString();
-	    
-	    if (dir.length() > 0) {
-	        TexlipseProperties.setProjectProperty(project, TexlipseProperties.SOURCE_DIR_PROPERTY, dir);
-	        TexlipseProperties.setProjectProperty(project, TexlipseProperties.OUTPUT_DIR_PROPERTY, dir);
-	        TexlipseProperties.setProjectProperty(project, TexlipseProperties.TEMP_DIR_PROPERTY, dir);
-	    }
+        TexlipseProperties.setProjectProperty(project, TexlipseProperties.SOURCE_DIR_PROPERTY, dir);
+        
+        // make sure there is output directory setting
+        String oldOut = TexlipseProperties.getProjectProperty(project, TexlipseProperties.OUTPUT_DIR_PROPERTY);
+        if (oldOut == null) {
+            TexlipseProperties.setProjectProperty(project, TexlipseProperties.OUTPUT_DIR_PROPERTY, dir);
+        }
+        
+        // make sure there is temp directory setting
+        String oldTmp = TexlipseProperties.getProjectProperty(project, TexlipseProperties.TEMP_DIR_PROPERTY);
+        if (oldTmp == null) {
+            TexlipseProperties.setProjectProperty(project, TexlipseProperties.TEMP_DIR_PROPERTY, dir);
+        }
+
+        //save settings to file
+        TexlipseProperties.saveProjectProperties(project);
 	}
 
 	/**

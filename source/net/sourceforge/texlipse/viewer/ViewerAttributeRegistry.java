@@ -33,6 +33,7 @@ public class ViewerAttributeRegistry implements Cloneable {
     public static final String ATTRIBUTE_ARGUMENTS = ".arguments";
     public static final String ATTRIBUTE_FORMAT = ".format";
     public static final String ATTRIBUTE_INVERSE_SEARCH = ".inverse";
+    public static final String ATTRIBUTE_FORWARD_SEARCH = ".forward";
     
     // inverse search attibute values
     public static final String INVERSE_SEARCH_NO = "no";
@@ -59,9 +60,9 @@ public class ViewerAttributeRegistry implements Cloneable {
     private static final String DEFAULT_COMMAND_KDVI = "/usr/bin/kdvi";
     private static final String DEFAULT_ARGUMENTS_KDVI = "%file";
     private static final String DEFAULT_COMMAND_XDVI = "/usr/bin/xdvi";
-    private static final String DEFAULT_ARGUMENTS_XDVI = "-editor \"echo %f:%l\" %file";
+    private static final String DEFAULT_ARGUMENTS_XDVI = "-editor \"echo %f:%l\" -sourceposition \"%line %texfile\" %file";
     private static final String DEFAULT_COMMAND_YAP = "C:\\texmf\\miktex\\bin\\yap.exe";
-    private static final String DEFAULT_ARGUMENTS_YAP = "%file";
+    private static final String DEFAULT_ARGUMENTS_YAP = "-1 -s \"%line %texfile\" %file";
 
     private static final String DEFAULT_COMMAND_GV = "/usr/bin/gv";
     private static final String DEFAULT_ARGUMENTS_GV = "%file";
@@ -127,36 +128,43 @@ public class ViewerAttributeRegistry implements Cloneable {
         prefs.setDefault(VIEWER_NONE + ATTRIBUTE_ARGUMENTS, "");
         prefs.setDefault(VIEWER_NONE + ATTRIBUTE_FORMAT, TexlipseProperties.OUTPUT_FORMAT_PDF);
         prefs.setDefault(VIEWER_NONE + ATTRIBUTE_INVERSE_SEARCH, INVERSE_SEARCH_NO);
+        prefs.setDefault(VIEWER_NONE + ATTRIBUTE_FORWARD_SEARCH, "false");
         
         prefs.setDefault(VIEWER_KDVI + ATTRIBUTE_COMMAND, DEFAULT_COMMAND_KDVI);
         prefs.setDefault(VIEWER_KDVI + ATTRIBUTE_ARGUMENTS, DEFAULT_ARGUMENTS_KDVI);
         prefs.setDefault(VIEWER_KDVI + ATTRIBUTE_FORMAT, TexlipseProperties.OUTPUT_FORMAT_DVI);
         prefs.setDefault(VIEWER_KDVI + ATTRIBUTE_INVERSE_SEARCH, INVERSE_SEARCH_RUN);
+        prefs.setDefault(VIEWER_KDVI + ATTRIBUTE_FORWARD_SEARCH, "true");
         
         prefs.setDefault(VIEWER_XDVI + ATTRIBUTE_COMMAND, DEFAULT_COMMAND_XDVI);
         prefs.setDefault(VIEWER_XDVI + ATTRIBUTE_ARGUMENTS, DEFAULT_ARGUMENTS_XDVI);
         prefs.setDefault(VIEWER_XDVI + ATTRIBUTE_FORMAT, TexlipseProperties.OUTPUT_FORMAT_DVI);
         prefs.setDefault(VIEWER_XDVI + ATTRIBUTE_INVERSE_SEARCH, INVERSE_SEARCH_STD);
+        prefs.setDefault(VIEWER_XDVI + ATTRIBUTE_FORWARD_SEARCH, "true");
         
         prefs.setDefault(VIEWER_YAP + ATTRIBUTE_COMMAND, DEFAULT_COMMAND_YAP);
         prefs.setDefault(VIEWER_YAP + ATTRIBUTE_ARGUMENTS, DEFAULT_ARGUMENTS_YAP);
         prefs.setDefault(VIEWER_YAP + ATTRIBUTE_FORMAT, TexlipseProperties.OUTPUT_FORMAT_DVI);
         prefs.setDefault(VIEWER_YAP + ATTRIBUTE_INVERSE_SEARCH, INVERSE_SEARCH_RUN);
+        prefs.setDefault(VIEWER_YAP + ATTRIBUTE_FORWARD_SEARCH, "true");
 
         prefs.setDefault(VIEWER_GV + ATTRIBUTE_COMMAND, DEFAULT_COMMAND_GV);
         prefs.setDefault(VIEWER_GV + ATTRIBUTE_ARGUMENTS, DEFAULT_ARGUMENTS_GV);
         prefs.setDefault(VIEWER_GV + ATTRIBUTE_FORMAT, TexlipseProperties.OUTPUT_FORMAT_PS);
         prefs.setDefault(VIEWER_GV + ATTRIBUTE_INVERSE_SEARCH, INVERSE_SEARCH_NO);
+        prefs.setDefault(VIEWER_GV + ATTRIBUTE_FORWARD_SEARCH, "false");
 
         prefs.setDefault(VIEWER_ACROBAT + ATTRIBUTE_COMMAND, DEFAULT_COMMAND_ACROBAT);
         prefs.setDefault(VIEWER_ACROBAT + ATTRIBUTE_ARGUMENTS, DEFAULT_ARGUMENTS_ACROBAT);
         prefs.setDefault(VIEWER_ACROBAT + ATTRIBUTE_FORMAT, TexlipseProperties.OUTPUT_FORMAT_PDF);
         prefs.setDefault(VIEWER_ACROBAT + ATTRIBUTE_INVERSE_SEARCH, INVERSE_SEARCH_NO);
+        prefs.setDefault(VIEWER_ACROBAT + ATTRIBUTE_FORWARD_SEARCH, "false");
 
         prefs.setDefault(VIEWER_ITEXMAC + ATTRIBUTE_COMMAND, DEFAULT_COMMAND_ITEXMAC);
         prefs.setDefault(VIEWER_ITEXMAC + ATTRIBUTE_ARGUMENTS, DEFAULT_ARGUMENTS_ITEXMAC);
         prefs.setDefault(VIEWER_ITEXMAC + ATTRIBUTE_FORMAT, TexlipseProperties.OUTPUT_FORMAT_PDF);
         prefs.setDefault(VIEWER_ITEXMAC + ATTRIBUTE_INVERSE_SEARCH, INVERSE_SEARCH_RUN);
+        prefs.setDefault(VIEWER_ITEXMAC + ATTRIBUTE_FORWARD_SEARCH, "false");
     }
 
     /**
@@ -167,6 +175,7 @@ public class ViewerAttributeRegistry implements Cloneable {
         registry.put(activeViewer + ATTRIBUTE_ARGUMENTS, TexlipsePlugin.getPreference(activeViewer + ATTRIBUTE_ARGUMENTS));
         registry.put(activeViewer + ATTRIBUTE_FORMAT, TexlipsePlugin.getPreference(activeViewer + ATTRIBUTE_FORMAT));
         registry.put(activeViewer + ATTRIBUTE_INVERSE_SEARCH, TexlipsePlugin.getPreference(activeViewer + ATTRIBUTE_INVERSE_SEARCH));
+        registry.put(activeViewer + ATTRIBUTE_FORWARD_SEARCH, TexlipsePlugin.getPreference(activeViewer + ATTRIBUTE_FORWARD_SEARCH));
     }
 
     /**
@@ -184,6 +193,7 @@ public class ViewerAttributeRegistry implements Cloneable {
                 registry.put(names[i] + ATTRIBUTE_ARGUMENTS, pref.getString(names[i] + ATTRIBUTE_ARGUMENTS));
                 registry.put(names[i] + ATTRIBUTE_FORMAT, pref.getString(names[i] + ATTRIBUTE_FORMAT));
                 registry.put(names[i] + ATTRIBUTE_INVERSE_SEARCH, pref.getString(names[i] + ATTRIBUTE_INVERSE_SEARCH));
+                registry.put(names[i] + ATTRIBUTE_FORWARD_SEARCH, pref.getString(names[i] + ATTRIBUTE_FORWARD_SEARCH));
             }
             if (names.length > 0) {
                 activeViewer = names[0];
@@ -194,6 +204,7 @@ public class ViewerAttributeRegistry implements Cloneable {
             setArguments(pref.getString(list + ATTRIBUTE_ARGUMENTS));
             setFormat(pref.getString(list + ATTRIBUTE_FORMAT));
             setInverse(pref.getString(list + ATTRIBUTE_INVERSE_SEARCH));
+            setForward(pref.getString(list + ATTRIBUTE_FORWARD_SEARCH));
         }
     }
     
@@ -214,11 +225,13 @@ public class ViewerAttributeRegistry implements Cloneable {
             String argKey = name + ATTRIBUTE_ARGUMENTS;
             String formatKey = name + ATTRIBUTE_FORMAT;
             String invKey = name + ATTRIBUTE_INVERSE_SEARCH;
+            String frwKey = name + ATTRIBUTE_FORWARD_SEARCH;
             
             pref.setValue(cmdKey, (String) registry.get(cmdKey));
             pref.setValue(argKey, (String) registry.get(argKey));
             pref.setValue(formatKey, (String) registry.get(formatKey));
             pref.setValue(invKey, (String) registry.get(invKey));
+            pref.setValue(frwKey, (String) registry.get(frwKey));
             
             sb.append(name);
             sb.append(',');
@@ -352,6 +365,25 @@ public class ViewerAttributeRegistry implements Cloneable {
     }
 
     /**
+     * @return the current viewer's forward search support
+     */
+    public boolean getForward() {
+        String value = (String) registry.get(activeViewer + ATTRIBUTE_FORWARD_SEARCH);
+        if (value == null) {
+            return false;
+        }
+        return value.equals("true");
+    }
+    
+    /**
+     * Set the current viewer's forward search support.
+     * @param inv forward search support
+     */
+    public void setForward(String forw) {
+        registry.put(activeViewer + ATTRIBUTE_FORWARD_SEARCH, forw);
+    }
+
+    /**
      * Overwrite the attributes of this registry with the given values.
      * @param regMap hashmap containing new values for viewer attributes
      */
@@ -390,6 +422,7 @@ public class ViewerAttributeRegistry implements Cloneable {
         registry.remove(item + ATTRIBUTE_ARGUMENTS);
         registry.remove(item + ATTRIBUTE_FORMAT);
         registry.remove(item + ATTRIBUTE_INVERSE_SEARCH);
+        registry.remove(item + ATTRIBUTE_FORWARD_SEARCH);
     }
 
     /**

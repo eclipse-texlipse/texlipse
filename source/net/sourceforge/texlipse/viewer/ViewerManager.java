@@ -17,6 +17,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import net.sourceforge.texlipse.PathUtils;
+import net.sourceforge.texlipse.SelectedResourceManager;
 import net.sourceforge.texlipse.TexlipsePlugin;
 import net.sourceforge.texlipse.builder.BuilderRegistry;
 import net.sourceforge.texlipse.builder.TexlipseBuilder;
@@ -31,7 +32,10 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.NullProgressMonitor;
-
+import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.text.ITextSelection;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.ui.IWorkbenchPage;
 
 
 /**
@@ -54,15 +58,28 @@ class FileLocationOpener implements FileLocationListener {
  * Previewer helper class. Includes methods for launching the previewer.
  * There's no need to create instances of this class.
  * 
+ * @author Anton Klimovsky
  * @author Kimmo Karlsson
  */
 public class ViewerManager {
 
-    // attribute for session properties to hold the viewer process object
-    private static final String SESSION_ATTRIBUTE_VIEWER = "active.viewer";
-    
-    // the file name variable in the configurations
+    // the file name variable in the arguments
     public static final String FILENAME_PATTERN = "%file";
+
+    // the line number variable in the arguments
+    public static final String LINE_NUMBER_PATTERN = "%line";
+
+    // the source file name variable in the arguments
+    public static final String TEX_FILENAME_PATTERN = "%texfile";
+
+    // viewer attributes
+    private ViewerAttributeRegistry registry;
+
+    // environment variables to add to current environment
+    private Map envSettings;
+
+    // the current project
+    private IProject project;
 
     
     /**
@@ -84,15 +101,54 @@ public class ViewerManager {
      * @throws CoreException if launching the viewer fails
      */
     public static Process preview(ViewerAttributeRegistry reg, Map addEnv) throws CoreException {
-
-        IProject project = TexlipsePlugin.getCurrentProject();
-        if (project == null) {
-            BuilderRegistry.printToConsole(TexlipsePlugin.getResourceString("viewerNoCurrentProject"));
+        
+        ViewerManager mgr = new ViewerManager(reg, addEnv);
+        if (!mgr.initialize()) {
             return null;
         }
         
-        // check if viewer already running
-        Object o = TexlipseProperties.getSessionProperty(project, SESSION_ATTRIBUTE_VIEWER);
+        Process process = mgr.getExisting();
+        if (process != null) {
+            return process;
+        }
+        
+        return mgr.execute();
+    }
+
+    /**
+     * Construct a new viewer launcher.
+     * @param reg viewer attributes
+     * @param addEnv environment variables to add to the current environment
+     */
+    protected ViewerManager(ViewerAttributeRegistry reg, Map addEnv) {
+        this.registry = reg;
+        this.envSettings = addEnv;
+    }
+    
+    /**
+     * Find out the current project.
+     * @return true, if success
+     */
+    protected boolean initialize() {
+        
+        project = TexlipsePlugin.getCurrentProject();
+        if (project == null) {
+            BuilderRegistry.printToConsole(TexlipsePlugin.getResourceString("viewerNoCurrentProject"));
+            return false;
+        }
+        return true;
+    }
+    
+    /**
+     * Check if viewer already running.
+     * This method returns false also, if the user has enabled multiple viewer instances.
+     * @return the running viewer process, or null if viewer has already terminated
+     */
+    protected Process getExisting() {
+        
+        Object o = TexlipseProperties.getSessionProperty(project,
+                TexlipseProperties.SESSION_ATTRIBUTE_VIEWER);
+        
         if (o != null) {
             
             if (o instanceof Process) {
@@ -103,18 +159,19 @@ public class ViewerManager {
                     code = p.exitValue();
                 } catch (IllegalThreadStateException e) {
                 }
-                
-                if (code == -1) {
+
+                // there is a viewer running and forward search is not supported
+                if (code == -1 && !registry.getForward()) {
+                    // ... so don't launch another viewer window
                     return p;
                 }
             }
             
-            TexlipseProperties.setSessionProperty(project, SESSION_ATTRIBUTE_VIEWER, null);
+            TexlipseProperties.setSessionProperty(project,
+                    TexlipseProperties.SESSION_ATTRIBUTE_VIEWER, null);
         }
         
-        Process process = checkViewer(project, reg, addEnv);
-        TexlipseProperties.setSessionProperty(project, SESSION_ATTRIBUTE_VIEWER, process);
-        return process;
+        return null;
     }
     
     /**
@@ -123,38 +180,45 @@ public class ViewerManager {
      * The viewer program is given a relative pathname and filename as a command line
      * argument. 
      * 
-     * @param project the current project
-     * @param reg the viewer attributes
-     * @param addEnv additional environment variables, or null
      * @return the viewer process
      * @throws CoreException if launching the viewer fails
      */
-    private static Process checkViewer(IProject project, ViewerAttributeRegistry reg, Map addEnv) throws CoreException {
+    protected Process execute() throws CoreException {
 
-        String outFileName = TexlipseProperties.getProjectProperty(project, TexlipseProperties.OUTPUTFILE_PROPERTY);
-        if (outFileName == null || outFileName.length() == 0) {
-            throw new CoreException(TexlipsePlugin.stat("Empty output file name."));
+        //load settings, if changed on disk
+        if (TexlipseProperties.isProjectPropertiesFileChanged(project)) {
+            TexlipseProperties.loadProjectProperties(project);
         }
         
         // rebuild, if needed
-        if (TexlipsePlugin.getDefault().getPreferenceStore().getBoolean(TexlipseProperties.BUILD_BEFORE_VIEW)) {
+        IPreferenceStore prefs = TexlipsePlugin.getDefault().getPreferenceStore();
+        if (prefs.getBoolean(TexlipseProperties.BUILD_BEFORE_VIEW)) {
 
             if (TexlipseBuilder.needsRebuild()) {
                 try {
                     project.build(TexlipseBuilder.FULL_BUILD, new NullProgressMonitor());
                 } catch (CoreException e) {
+                    // build failed, so no output file
                     return null;
                 }
             }
         }
         
+        String outFileName = TexlipseProperties.getProjectProperty(project,
+                TexlipseProperties.OUTPUTFILE_PROPERTY);
+        if (outFileName == null || outFileName.length() == 0) {
+            throw new CoreException(TexlipsePlugin.stat("Empty output file name."));
+        }
+        
         // find out the directory where the file should be
         IContainer outputDir = null;
-        if (reg.getFormat().equals(TexlipseProperties.getProjectProperty(project, TexlipseProperties.OUTPUT_FORMAT))) {
+        String fmtProp = TexlipseProperties.getProjectProperty(project,
+                TexlipseProperties.OUTPUT_FORMAT);
+        if (registry.getFormat().equals(fmtProp)) {
             outputDir = TexlipseProperties.getProjectOutputDir(project);
         } else {
             String base = outFileName.substring(0, outFileName.lastIndexOf('.') + 1);
-            outFileName = base + reg.getFormat();
+            outFileName = base + registry.getFormat();
             outputDir = TexlipseProperties.getProjectTempDir(project);
         }
         if (outputDir == null) {
@@ -164,7 +228,8 @@ public class ViewerManager {
         // check if file exists
         IResource outputRes = outputDir.findMember(outFileName);
         if (outputRes == null || !outputRes.exists()) {
-            BuilderRegistry.printToConsole(TexlipsePlugin.getResourceString("viewerNothingWithExtension").replaceAll("%s", reg.getFormat()));
+            String msg = TexlipsePlugin.getResourceString("viewerNothingWithExtension");
+            BuilderRegistry.printToConsole(msg.replaceAll("%s", registry.getFormat()));
             return null;
         }
 
@@ -176,12 +241,13 @@ public class ViewerManager {
         File dir = sourceDir.getLocation().toFile();
         
         // resolve relative path to the output file
-        outFileName = resolveRelativePath(sourceDir.getFullPath(), outputDir.getFullPath()) + outFileName;
+        outFileName = resolveRelativePath(sourceDir.getFullPath(),
+                outputDir.getFullPath()) + outFileName;
         
         try {
-            return runViewer(dir, outFileName, reg, addEnv, project);
+            return execute(dir, outFileName);
         } catch (IOException e) {
-            throw new CoreException(TexlipsePlugin.stat("Could not start previewer."));
+            throw new CoreException(TexlipsePlugin.stat("Could not start previewer.", e));
         }
     }
 
@@ -194,7 +260,7 @@ public class ViewerManager {
      * @param outputPath a directory to end up to
      * @return a relative path from sourcePath to outputPath
      */
-    private static String resolveRelativePath(IPath sourcePath, IPath outputPath) {
+    private String resolveRelativePath(IPath sourcePath, IPath outputPath) {
 
         int same = sourcePath.matchingFirstSegments(outputPath);
         if (same == sourcePath.segmentCount()
@@ -219,48 +285,117 @@ public class ViewerManager {
     }
 
     /**
+     * Returns the current line number of the current page, if possible.
+     * 
+     * @author Anton Klimovsky
+     * @return the current line number of the current page
+     */
+    private int getCurrentLineNumber() {
+        
+        int lineNumber = 0;
+        IWorkbenchPage currentWorkbenchPage = TexlipsePlugin.getCurrentWorkbenchPage();
+        if (currentWorkbenchPage != null) {
+            
+            ISelection selection = currentWorkbenchPage.getSelection();
+            if (selection != null) {
+                if (selection instanceof ITextSelection) {
+                    ITextSelection textSelection = (ITextSelection) selection;
+                    // The "srcltx" package's line numbers seem to start from 1
+                    // it is also the case with latex's --source-specials option
+                    lineNumber = textSelection.getStartLine() + 1;
+                }
+            }
+        }
+        
+        return lineNumber;
+    }
+    
+    /**
      * Run the given viewer in the given directory with the given file.
      * Also start viewer output listener to enable inverse search.
      * 
      * @param dir the directory to run the viewer in
      * @param file the file name command line argument
-     * @param reg the viewer attributes
-     * @param addEnv additional environment variables or null
      * @return viewer process
      * @throws IOException if launching the viewer fails
      */
-    private static Process runViewer(File dir, String file, ViewerAttributeRegistry registry, Map addEnv, IProject project) throws IOException {
-        Runtime runtime = Runtime.getRuntime();
-        
-        String viewer = registry.getActiveViewer();
-        String command = registry.getCommand();
-        String arguments = registry.getArguments();
+    private Process execute(File dir, String file) throws IOException {
 
+        // argument list
         ArrayList list = new ArrayList();
+        
+        // add command as arg0
+        String command = registry.getCommand();
         if (command.indexOf(' ') > 0) {
             command = "\"" + command + "\"";
         }
         list.add(command);
 
-        String args = null;
-        if (arguments.indexOf(FILENAME_PATTERN) >= 0) {
-            args = arguments.replaceAll(FILENAME_PATTERN, escapeBackslashes(file));
-        } else {
-            args = arguments + " " + file;
-        }
+        // add arguments
+        String args = createArgumentString(file);
         PathUtils.tokenizeEscapedString(args, list);
         
+        // create environment
         Properties env = PathUtils.getEnv();
-        if (addEnv != null) {
-            env.putAll(addEnv);
+        if (envSettings != null) {
+            env.putAll(envSettings);
         }
         String envp[] = PathUtils.getStrings(env);
         
-        BuilderRegistry.printToConsole(TexlipsePlugin.getResourceString("viewerRunning") + " " + command + " " + args);
-        Process proc = runtime.exec((String[]) list.toArray(new String[0]), envp, dir);
-        startOutputListener(proc.getInputStream(), registry.getInverse(), project);
-        new Thread(new ViewerErrorScanner(proc)).start();
-        return proc;
+        // print command
+        BuilderRegistry.printToConsole(TexlipsePlugin.getResourceString("viewerRunning")
+                + " " + command + " " + args);
+
+        // start viewer process
+        Runtime runtime = Runtime.getRuntime();
+        Process process = runtime.exec((String[]) list.toArray(new String[0]), envp, dir);
+        
+        // save attribute
+        TexlipseProperties.setSessionProperty(project,
+                TexlipseProperties.SESSION_ATTRIBUTE_VIEWER, process);
+        
+        // start viewer listener
+        startOutputListener(process.getInputStream(), registry.getInverse());
+        // start error reader
+        new Thread(new ViewerErrorScanner(process)).start();
+        
+        return process;
+    }
+
+    /**
+     * Format argument string.
+     * @param file input file for the viewer
+     * @return the argument string
+     */
+    private String createArgumentString(String file) {
+        
+        String args = null;
+        String argumentsTemplate = registry.getArguments();
+
+        if (argumentsTemplate.indexOf(FILENAME_PATTERN) >= 0) {
+            args = argumentsTemplate.replaceAll(FILENAME_PATTERN, escapeBackslashes(file));
+        } else {
+            args = argumentsTemplate + " " + file;
+        }
+
+        if (args.indexOf(LINE_NUMBER_PATTERN) >= 0) {
+            args = args.replaceAll(LINE_NUMBER_PATTERN, ""+getCurrentLineNumber());
+        }
+        
+        IContainer srcDir = TexlipseProperties.getProjectSourceDir(project);
+        if (srcDir == null) {
+            srcDir = project;
+        }
+        
+        IResource selectedRes = SelectedResourceManager.getDefault().getSelectedResource();
+        String relPath = resolveRelativePath(srcDir.getFullPath(), selectedRes.getFullPath().removeLastSegments(1));
+        String texFile = relPath + selectedRes.getName();
+        
+        if (args.indexOf(TEX_FILENAME_PATTERN) >= 0) {
+            args = args.replaceAll(TEX_FILENAME_PATTERN, texFile);
+        }
+        
+        return args;
     }
 
     /**
@@ -269,7 +404,7 @@ public class ViewerManager {
      * @param file input string, typically a filename
      * @return the input string with backslashes doubled
      */
-    private static String escapeBackslashes(String file) {
+    private String escapeBackslashes(String file) {
         StringBuffer sb = new StringBuffer();
         for (int i = 0; i < file.length(); i++) {
             char c = file.charAt(i);
@@ -287,7 +422,7 @@ public class ViewerManager {
      * @param in input stream where the output of a viewer program will be available
      * @param viewer the name of the viewer
      */
-    private static void startOutputListener(InputStream in, String inverse, IProject project) {
+    private void startOutputListener(InputStream in, String inverse) {
         
         if (inverse.equals(ViewerAttributeRegistry.INVERSE_SEARCH_RUN)) {
             

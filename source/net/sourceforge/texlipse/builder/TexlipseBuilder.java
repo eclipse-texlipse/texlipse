@@ -189,6 +189,11 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
         
         IProject project = getProject();
         
+        //load settings, if changed on disk
+        if (TexlipseProperties.isProjectPropertiesFileChanged(project)) {
+            TexlipseProperties.loadProjectProperties(project);
+        }
+        
         String preamble = (String) TexlipseProperties.getSessionProperty(project, TexlipseProperties.PREAMBLE_PROPERTY);
         String bibsty = (String) TexlipseProperties.getSessionProperty(project, TexlipseProperties.BIBSTYLE_PROPERTY);
         String[] bibli = (String[]) TexlipseProperties.getSessionProperty(project, TexlipseProperties.BIBFILE_PROPERTY);
@@ -447,6 +452,11 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
         
         IProject project = getProject();
         
+        //load settings, if changed on disk
+        if (TexlipseProperties.isProjectPropertiesFileChanged(project)) {
+            TexlipseProperties.loadProjectProperties(project);
+        }
+        
         // check settings
         IResource resource = null;
         try {
@@ -543,28 +553,32 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
         }
         
         IFolder outputDir = TexlipseProperties.getProjectOutputDir(project);
-        if (outputDir != null) {
+        IContainer sourceDir = TexlipseProperties.getProjectSourceDir(project);
+        if (sourceDir == null) {
+            sourceDir = project;
+        }
+        
+        String outputFileName = TexlipseProperties.getProjectProperty(project, TexlipseProperties.OUTPUTFILE_PROPERTY);
+        IResource outputFile = sourceDir.findMember(outputFileName);
+        if (outputFile != null && outputFile.exists()) {
             
-            IContainer sourceDir = TexlipseProperties.getProjectSourceDir(project);
-            if (sourceDir == null) {
-                sourceDir = project;
+            IResource dest = null;
+            if (outputDir != null) {
+                dest = outputDir.getFile(outputFileName);
+            } else {
+                dest = project.getFile(outputFileName);
+            }
+            if (dest != null && dest.exists()) {
+                dest.delete(true, monitor);
             }
             
-            String outputFileName = TexlipseProperties.getProjectProperty(project, TexlipseProperties.OUTPUTFILE_PROPERTY);
-            IResource outputFile = sourceDir.findMember(outputFileName);
-            if (outputFile != null && outputFile.exists()) {
-                
-                IResource dest = outputDir.getFile(outputFileName);
-                if (dest != null && dest.exists()) {
-                    dest.delete(true, monitor);
-                }
-                
-                outputFile.move(dest.getFullPath(), true, monitor);
-                monitor.worked(1);
-                
-                // refresh the directories whose contents changed
-                sourceDir.refreshLocal(IProject.DEPTH_ONE, monitor);
-                monitor.worked(1);
+            outputFile.move(dest.getFullPath(), true, monitor);
+            monitor.worked(1);
+            
+            // refresh the directories whose contents changed
+            sourceDir.refreshLocal(IProject.DEPTH_ONE, monitor);
+            monitor.worked(1);
+            if (outputDir != null) {
                 outputDir.refreshLocal(IProject.DEPTH_ONE, monitor);
                 monitor.worked(1);
             }

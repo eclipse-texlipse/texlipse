@@ -69,7 +69,7 @@ public class TexlipseProjectCreationOperation implements IRunnableWithProgress {
         
         try {
 
-            monitor.beginTask(TexlipsePlugin.getResourceString("projectWizardProgressCreating"), 10);
+            monitor.beginTask(TexlipsePlugin.getResourceString("projectWizardProgressCreating"), 12);
 
             IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
             String name = attributes.getProjectName();
@@ -91,6 +91,10 @@ public class TexlipseProjectCreationOperation implements IRunnableWithProgress {
             monitor.worked(1);
             
             createMainFile(project, monitor);
+            monitor.worked(1);
+            
+            monitor.subTask(TexlipsePlugin.getResourceString("projectWizardProgressSettingsFile"));
+            TexlipseProperties.saveProjectProperties(project);
             monitor.worked(1);
             
             IDE.openEditor(TexlipsePlugin.getCurrentWorkbenchPage(),
@@ -115,7 +119,7 @@ public class TexlipseProjectCreationOperation implements IRunnableWithProgress {
     private void createProject(IProject project, IProgressMonitor monitor)
             throws CoreException {
 
-        monitor.beginTask(TexlipsePlugin.getResourceString("projectWizardProgressDirectory"), 1);
+        monitor.subTask(TexlipsePlugin.getResourceString("projectWizardProgressDirectory"));
         
         if (!project.exists()) {
             project.create(monitor);
@@ -124,10 +128,6 @@ public class TexlipseProjectCreationOperation implements IRunnableWithProgress {
         if (!project.isOpen()) {
             project.open(monitor);
         }
-
-        // set default output format 
-        TexlipseProperties.setProjectProperty(project, TexlipseProperties.OUTPUT_FORMAT,
-                TexlipsePlugin.getDefault().getPreferenceStore().getString(TexlipseProperties.OUTPUT_FORMAT));
     }
 
     /**
@@ -140,7 +140,7 @@ public class TexlipseProjectCreationOperation implements IRunnableWithProgress {
     public static void addProjectNature(IProject project, IProgressMonitor monitor)
             throws CoreException {
 
-        monitor.beginTask(TexlipsePlugin.getResourceString("projectWizardProgressNature"), 1);
+        monitor.subTask(TexlipsePlugin.getResourceString("projectWizardProgressNature"));
 
         IProjectDescription desc = project.getDescription();
         String[] natures = desc.getNatureIds();
@@ -168,7 +168,7 @@ public class TexlipseProjectCreationOperation implements IRunnableWithProgress {
     private void createProjectDirs(IProject project, IProgressMonitor monitor)
             throws CoreException {
 
-        monitor.beginTask(TexlipsePlugin.getResourceString("projectWizardProgressSubdirs"), 1);
+        monitor.subTask(TexlipsePlugin.getResourceString("projectWizardProgressSubdirs"));
         
         String outputDir = attributes.getOutputDir();
         String sourceDir = attributes.getSourceDir();
@@ -208,7 +208,7 @@ public class TexlipseProjectCreationOperation implements IRunnableWithProgress {
     private void createMainFile(IProject project, IProgressMonitor monitor)
             throws CoreException {
 
-        monitor.beginTask(TexlipsePlugin.getResourceString("projectWizardProgressFile"), 1);
+        monitor.subTask(TexlipsePlugin.getResourceString("projectWizardProgressFile"));
 
         String name = attributes.getSourceFile();
         if (name == null || name.length() == 0) {
@@ -216,7 +216,7 @@ public class TexlipseProjectCreationOperation implements IRunnableWithProgress {
         }
 
         TexlipseProperties.setProjectProperty(project, TexlipseProperties.MAINFILE_PROPERTY, name);
-
+        
         byte[] template = getTemplate(attributes.getTemplate());
         if (template == null) {
             template = new byte[0];

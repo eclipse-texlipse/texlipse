@@ -9,12 +9,14 @@
  */
 package net.sourceforge.texlipse.properties;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Properties;
 
 import net.sourceforge.texlipse.TexlipsePlugin;
 
@@ -24,6 +26,7 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.QualifiedName;
 
 
@@ -36,6 +39,8 @@ public class TexlipseProperties {
 	
     // properties
     public static final String PACKAGE_NAME = TexlipsePlugin.class.getPackage().getName();
+    private static final String LATEX_PROJECT_SETTINGS_FILE = ".texlipse";
+
     public static final String MAINFILE_PROPERTY = "mainTexFile";
     public static final String OUTPUTFILE_PROPERTY = "outputFile";
     public static final String BIBFILE_PROPERTY = "bibFiles";
@@ -45,7 +50,7 @@ public class TexlipseProperties {
     public static final String PARTIAL_BUILD_FILE = "partialFile";
     public static final String BIBFILES_CHANGED = "bibFilesChanged";
     
-    public static final String OUTPUT_DIR_PROPERTY = "oputDir";
+    public static final String OUTPUT_DIR_PROPERTY = "outputDir";
     public static final String SOURCE_DIR_PROPERTY = "srcDir";
     public static final String TEMP_DIR_PROPERTY = "tempDir";
     
@@ -117,6 +122,9 @@ public class TexlipseProperties {
     public static final String SESSION_BIBTEX_RERUN = "rerunBibtex";
     public static final String SESSION_LATEX_RERUN = "rerunLatex";
     public static final String SESSION_MAKEINDEX_RERUN = "rerunMakeindex";
+    public static final String SESSION_PROPERTIES_LOAD = "propsLoaded";
+    // attribute for session properties to hold the viewer process object
+    public static final String SESSION_ATTRIBUTE_VIEWER = "active.viewer";
     
     /**
        * A named preference that controls whether bracket matching highlighting is turned on or off.
@@ -167,7 +175,7 @@ public class TexlipseProperties {
        in.close();
        String contents = null;
        try {
-           // this will succeed, because we have already checked for it to be a file
+           // cast will succeed, because we have already checked for it to be a file
            contents = out.toString(((IFile) resource).getCharset());
        } catch (UnsupportedEncodingException e) {
            // if the correct encoding is not supported, try with default
@@ -301,6 +309,99 @@ public class TexlipseProperties {
             return project.getFolder(dir);
         }
         return null;
+    }
+    
+    /**
+     * Loads the project properties from a file.
+     * 
+     * @param project current project
+     */
+    public static void loadProjectProperties(IProject project) {
+        
+        IFile settingsFile = project.getFile(LATEX_PROJECT_SETTINGS_FILE);
+        if (!settingsFile.exists()) {
+            return;
+        }
+        
+        Properties prop = new Properties();
+        try {
+            prop.load(settingsFile.getContents());
+        } catch (CoreException e) {
+            TexlipsePlugin.log("Loading project property file", e);
+            return;
+        } catch (IOException e) {
+            TexlipsePlugin.log("Loading project property file", e);
+            return;
+        }
+        
+        setSessionProperty(project, SESSION_PROPERTIES_LOAD, new Long(System.currentTimeMillis()));
+        setProjectProperty(project, MAINFILE_PROPERTY, prop.getProperty(MAINFILE_PROPERTY, ""));
+        setProjectProperty(project, OUTPUTFILE_PROPERTY, prop.getProperty(OUTPUTFILE_PROPERTY, ""));
+        setProjectProperty(project, SOURCE_DIR_PROPERTY, prop.getProperty(SOURCE_DIR_PROPERTY, ""));
+        setProjectProperty(project, OUTPUT_DIR_PROPERTY, prop.getProperty(OUTPUT_DIR_PROPERTY, ""));
+        setProjectProperty(project, TEMP_DIR_PROPERTY, prop.getProperty(TEMP_DIR_PROPERTY, ""));
+        setProjectProperty(project, BUILDER_NUMBER, prop.getProperty(BUILDER_NUMBER, ""));
+        setProjectProperty(project, OUTPUT_FORMAT, prop.getProperty(OUTPUT_FORMAT, ""));
+    }
+    
+    /**
+     * Saves the project properties to a file.
+     * 
+     * @param project current project
+     */
+    public static void saveProjectProperties(IProject project) {
+        
+        IFile settingsFile = project.getFile(LATEX_PROJECT_SETTINGS_FILE);
+        Properties prop = new Properties();
+        
+        prop.setProperty(MAINFILE_PROPERTY, getProjectProperty(project, MAINFILE_PROPERTY));
+        prop.setProperty(OUTPUTFILE_PROPERTY, getProjectProperty(project, OUTPUTFILE_PROPERTY));
+        prop.setProperty(SOURCE_DIR_PROPERTY, getProjectProperty(project, SOURCE_DIR_PROPERTY));
+        prop.setProperty(OUTPUT_DIR_PROPERTY, getProjectProperty(project, OUTPUT_DIR_PROPERTY));
+        prop.setProperty(TEMP_DIR_PROPERTY, getProjectProperty(project, TEMP_DIR_PROPERTY));
+        prop.setProperty(BUILDER_NUMBER, getProjectProperty(project, BUILDER_NUMBER));
+        prop.setProperty(OUTPUT_FORMAT, getProjectProperty(project, OUTPUT_FORMAT));
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try {
+            prop.store(baos, "TeXlipse project settings");
+        } catch (IOException e) {}
+        
+        NullProgressMonitor mon = new NullProgressMonitor();
+        ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+        try {
+            
+            if (settingsFile.exists()) {
+                settingsFile.setContents(bais, true, false, mon);
+            } else {
+                settingsFile.create(bais, true, mon);
+            }
+            
+        } catch (CoreException e) {
+            TexlipsePlugin.log("Saving project property file", e);
+        }
+    }
+
+    /**
+     * Check if the project properties should be read from disk.
+     * 
+     * @param project current project
+     * @return true, if the project properties should be read from disk
+     */
+    public static boolean isProjectPropertiesFileChanged(IProject project) {
+        
+        IResource settingsFile = project.findMember(LATEX_PROJECT_SETTINGS_FILE);
+        if (settingsFile == null) {
+            return false;
+        }
+        
+        Long lastLoadTime = (Long) getSessionProperty(project, SESSION_PROPERTIES_LOAD);
+        if (lastLoadTime == null) {
+            return true;
+        }
+        
+        long timeStamp = settingsFile.getLocalTimeStamp();
+        return timeStamp > lastLoadTime.longValue();
     }
     
     /**

@@ -338,6 +338,13 @@ public class TexlipseProjectPropertyPage extends PropertyPage {
 
         IResource project = (IResource) getElement();
 
+        if (project.getType() == IResource.PROJECT) {
+            //load settings, if changed on disk
+            if (TexlipseProperties.isProjectPropertiesFileChanged((IProject) project)) {
+                TexlipseProperties.loadProjectProperties((IProject) project);
+            }
+        }        
+        
         // read source file name
         String srcDir = TexlipseProperties.getProjectProperty(project,
                 TexlipseProperties.SOURCE_DIR_PROPERTY);
@@ -397,8 +404,8 @@ public class TexlipseProjectPropertyPage extends PropertyPage {
     public boolean performOk() {
 
         IResource project = (IResource) getElement();
-        String srcDir = null;
-        String outDir = null;
+        String srcDir = "";
+        String outDir = "";
         
         // check source file & source dir
         String srcFile = sourceFileField.getText();
@@ -467,6 +474,11 @@ public class TexlipseProjectPropertyPage extends PropertyPage {
         TexlipseProperties.setProjectProperty(project,
                 TexlipseProperties.OUTPUT_FORMAT, format);
 
+        //save settings to file
+        if (project.getType() == IResource.PROJECT) {
+            TexlipseProperties.saveProjectProperties((IProject) project);
+        }
+        
         return true;
     }
     

@@ -57,6 +57,8 @@ public class ViewerConfigDialog extends Dialog {
     private ArrayList nameList;
     private boolean newConfig;
 
+    private Button forwardChoice;
+
 
     /**
      * Create a new config editor dialog.
@@ -146,6 +148,7 @@ public class ViewerConfigDialog extends Dialog {
         registry.setArguments(argsField.getText());
         registry.setFormat(formatChooser.getItem(formatChooser.getSelectionIndex()));
         registry.setInverse(inverseSearchValues[inverseChooser.getSelectionIndex()]);
+        registry.setForward(forwardChoice.getSelection() +"");
         
         setReturnCode(OK);
         close();
@@ -172,6 +175,7 @@ public class ViewerConfigDialog extends Dialog {
         addArgumentsField(composite);
         addFormatChooser(composite);
         addInverseChooser(composite);
+        addForwardChooser(composite);
         
         Group group = new Group(composite, SWT.SHADOW_IN);
         group.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -193,11 +197,19 @@ public class ViewerConfigDialog extends Dialog {
         if (path != null && path.length() > 0) {
             File file = new File(path);
             if (!file.exists()) {
-                getButton(IDialogConstants.OK_ID).setEnabled(false);
+                Button b = getButton(IDialogConstants.OK_ID);
+                if (b != null) {
+                    // set button status
+                    b.setEnabled(false);
+                }
                 return TexlipsePlugin.getResourceString("preferenceViewerDialogFileNotFound").replaceAll("%s", path);
             }
         }
-        getButton(IDialogConstants.OK_ID).setEnabled(true);
+        Button b = getButton(IDialogConstants.OK_ID);
+        if (b != null) {
+            // set button status
+            b.setEnabled(true);
+        }
         return TexlipsePlugin.getResourceString("preferenceViewerDialogFileOk");
     }
 
@@ -344,5 +356,19 @@ public class ViewerConfigDialog extends Dialog {
         inverseChooser.setToolTipText(TexlipsePlugin.getResourceString("preferenceViewerInverseTooltip"));
         inverseChooser.setItems(list);
         inverseChooser.select(index);
+    }
+    
+    /**
+     * Creates the forward search support -checkbox.
+     * @param parent parent component
+     */
+    private void addForwardChooser(Composite parent) {
+
+        forwardChoice = new Button(parent, SWT.CHECK);
+        forwardChoice.setText(TexlipsePlugin.getResourceString("preferenceViewerForwardLabel"));
+        GridData gd = new GridData();
+        gd.horizontalSpan = 2;
+        forwardChoice.setLayoutData(gd);
+        forwardChoice.setSelection(registry.getForward());
     }
 }

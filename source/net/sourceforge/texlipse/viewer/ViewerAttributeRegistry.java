@@ -84,22 +84,7 @@ public class ViewerAttributeRegistry implements Cloneable {
         
         registry = new HashMap();
         
-        activeViewer = VIEWER_ACROBAT;
-        setDefaults();
-        activeViewer = VIEWER_GV;
-        setDefaults();
-        activeViewer = VIEWER_NONE;
-        setDefaults();
-        activeViewer = VIEWER_YAP;
-        setDefaults();
-        activeViewer = VIEWER_KDVI;
-        setDefaults();
-        activeViewer = VIEWER_XDVI;
-        setDefaults();
-        activeViewer = VIEWER_ITEXMAC;
-        setDefaults();
-        
-        setActiveViewer(TexlipsePlugin.getPreference(VIEWER_CURRENT));
+        load(TexlipsePlugin.getDefault().getPreferenceStore());
     }
     
     /**

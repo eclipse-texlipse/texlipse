@@ -26,11 +26,14 @@ import org.eclipse.core.resources.IResource;
  */
 public class LatexRunner extends AbstractProgramRunner {
 
+    private Stack parsingStack;
+    
     /**
      * Create a new ProgramRunner.
      */
     public LatexRunner() {
         super();
+        this.parsingStack = new Stack();
     }
     
     protected String getWindowsProgramName() {
@@ -85,7 +88,7 @@ public class LatexRunner extends AbstractProgramRunner {
         }
         
         boolean errorsFound = false;
-        String prevLine = "";
+        //String prevLine = "";
         StringTokenizer st = new StringTokenizer(output, "\r\n");
 
         while (st.hasMoreTokens()) {
@@ -113,8 +116,8 @@ public class LatexRunner extends AbstractProgramRunner {
 
                 errorsFound = true;
 
-                String causingSourceFile = determineSourceFile(prevLine);
-                //System.out.println("cause: " + causingSourceFile);
+                String causingSourceFile = determineSourceFile();
+                System.out.println("cause: " + causingSourceFile);
                 IResource extResource = null;
                 if (causingSourceFile != null) {
                     extResource = sourceDir.findMember(causingSourceFile);
@@ -168,7 +171,7 @@ public class LatexRunner extends AbstractProgramRunner {
 
                 errorsFound = true;
                 
-                String causingSourceFile = determineSourceFile(prevLine);
+                String causingSourceFile = determineSourceFile();
                 IResource extResource = null;
                 if (causingSourceFile != null) {
                     extResource = sourceDir.findMember(causingSourceFile);
@@ -188,22 +191,21 @@ public class LatexRunner extends AbstractProgramRunner {
                     // prepare to run bibtex
                     TexlipseProperties.setSessionProperty(resource.getProject(), TexlipseProperties.SESSION_BIBTEX_RERUN, "true");
                 }
-            } else if (line.indexOf("(") != -1) {
-                prevLine = line;
+            } else if (line.indexOf("(") != -1 || line.indexOf(")") != -1) {
+                this.updateParsedFile(line);
             }
         }
         return errorsFound;
     }
-    
+
     /**
-     * Determines the source file we are currently parsing from the given
-     * line of latex' log
+     * Updates the source file we are currently parsing from the given
+     * line of latex' log.
      * 
      * @param logLine A line from latex' output containing which file we are in
-     * @return The filename or null if no file could be determined
      */
-    private String determineSourceFile(String logLine) {
-        Stack st = new Stack();
+    private void updateParsedFile(String logLine) {
+        //Stack st = new Stack();
         //System.out.println(logLine);
         //TODO this still might not properly handle file names with spaces
 //        String partCommands[] = logLine.split("[^\\\\]\\s");
@@ -212,29 +214,48 @@ public class LatexRunner extends AbstractProgramRunner {
             if (partCommands[i].startsWith("(")) {
                 //System.out.println(partCommands[i]);
                 if (!partCommands[i].endsWith(")")) {
-                    st.push(partCommands[i]);
+                    parsingStack.push(partCommands[i]);
                 } else {
-                    int amount = -1;
-                    for (int j = partCommands[i].length() - 1; j >= 0; j--) {
-                        if (partCommands[i].charAt(j) == ')') {
-                            amount++;
-                        } else {
-                            break;
-                        }
-                    }
-                    for (;amount > 0; amount--) {
-                        if (!st.empty()) {
-                            st.pop();
-                        } else {
-                            break;
-                        }
-                    }
+                    this.removeClosingParentheses(partCommands[i]);
                 }
+            } else if (partCommands[i].endsWith(")")) {
+                this.removeClosingParentheses(partCommands[i]);
             }
         }
+    }
 
-        if (!st.empty())
-            return ((String) st.pop()).substring(1);
+    /**
+     * Calculates how many closing parentheses the command has and
+     * pops the equivalent number of entries from the stack.
+     * 
+     * @param command A command containing closing parentheses
+     */
+    private void removeClosingParentheses(String command) {
+        int amount = -1;
+        for (int j = command.length() - 1; j >= 0; j--) {
+            if (command.charAt(j) == ')') {
+                amount++;
+            } else {
+                break;
+            }
+        }
+        for (;amount > 0; amount--) {
+            if (!parsingStack.empty()) {
+                parsingStack.pop();
+            } else {
+                break;
+            }
+        }
+    }
+    
+    /**
+     * Determines the source file we are currently parsing.
+     * 
+     * @return The filename or null if no file could be determined
+     */
+    private String determineSourceFile() {
+        if (!parsingStack.empty())
+            return ((String) parsingStack.pop()).substring(1);
         else
             return null;
     }

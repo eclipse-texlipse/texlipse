@@ -22,7 +22,7 @@ import org.eclipse.swt.widgets.Display;
 /**
  * Scans the input stream for the given trigger strings and produces a query dialog if sees one.
  * 
- * @author kpkarlss
+ * @author Kimmo Karlsson
  */
 public class OutputScanner {
 
@@ -116,7 +116,7 @@ public class OutputScanner {
                 if ((char)nextByte == '\n' && consoleOutput != null) {
                     int lf = 1;
                     if (sb.charAt(sb.length()-2) == '\r') { // fix for windows linefeeds
-                        lf--;
+                        lf++;
                     }
                     // don't print the whole buffer as the printToConsole() outputs a linefeed
                     BuilderRegistry.printToConsole(consoleOutput + "> " + sb.substring(startOfLine, sb.length()-lf));

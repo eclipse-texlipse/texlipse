@@ -3,7 +3,7 @@
 <plugin
    id="net.sourceforge.texlipse"
    name="TeXlipse Plug-in"
-   version="1.0.0"
+   version="1.0.1"
    provider-name="TeXlapse Team"
    class="net.sourceforge.texlipse.TexlipsePlugin">
 
@@ -46,21 +46,23 @@
          <action
                toolbarPath="latexGroup"
                label="&amp;Word Count"
-               class="net.sourceforge.texlipse.actions.WordCountAction"
-               icon="icons/wordcount.gif"
+               definitionId="actions.WordCountAction"
                tooltip="Word Count"
+               icon="icons/wordcount.gif"
+               class="net.sourceforge.texlipse.actions.WordCountAction"
                style="push"
                menubarPath="LatexMenu/sourceGroup"
-               id="net.sourceforge.texlipse.WordCountAction"/>
+               id="actions.WordCountAction"/>
          <action
                toolbarPath="latexGroup"
-               label="Preview Document"
-               tooltip="Launch the previewer"
-               class="net.sourceforge.texlipse.actions.PreviewAction"
+               label="Pre&amp;view Document"
+               definitionId="actions.PreviewAction"
                icon="icons/preview.gif"
+               class="net.sourceforge.texlipse.actions.PreviewAction"
+               tooltip="Launch the previewer"
                style="push"
                menubarPath="LatexMenu/sourceGroup"
-               id="net.sourceforge.texlipse.actions.PreviewAction"/>
+               id="actions.PreviewAction"/>
       </actionSet>
    </extension>
    <extension
@@ -218,6 +220,11 @@
             name="Builder Settings"
             id="TexlipseBuilderPreferencePage"/>
       <page
+            class="net.sourceforge.texlipse.properties.BuilderEnvPreferencePage"
+            category="TexlipseBuilderPreferencePage"
+            name="Environment"
+            id="net.sourceforge.texlipse.properties.BuilderEnvPreferencePage"/>
+      <page
             class="net.sourceforge.texlipse.properties.LatexTempExtsPreferencePage"
             category="TexlipseBuilderPreferencePage"
             name="Latex Temp Files"
@@ -226,7 +233,12 @@
             class="net.sourceforge.texlipse.properties.ViewerSettingsPreferencePage"
             category="TexlipsePreferencePage"
             name="Viewer Settings"
-            id="net.sourceforge.texlipse.properties.ViewerSettingsPreferencePage"/>
+            id="TexlipseViewerSettingsPreferencePage"/>
+      <page
+            class="net.sourceforge.texlipse.properties.ViewerEnvPreferencePage"
+            category="TexlipseViewerSettingsPreferencePage"
+            name="Environment"
+            id="net.sourceforge.texlipse.properties.ViewerEnvPreferencePage"/>
    </extension>
    <extension
          point="org.eclipse.core.runtime.preferences">
@@ -769,11 +781,11 @@ ${cursor}
                id="actions.PartialBuildAction"/>
          <action
                toolbarPath="latexGroup"
-               label="&amp;Wrap text"
-               class="net.sourceforge.texlipse.actions.TexWordWrapAction"
-               definitionId="actions.MainFileAction"
-               icon="icons/wrap.gif"
+               label="W&amp;rap text"
                tooltip="Use word wrap"
+               icon="icons/wrap.gif"
+               definitionId="actions.MainFileAction"
+               class="net.sourceforge.texlipse.actions.TexWordWrapAction"
                style="toggle"
                menubarPath="LatexMenu/commentGroup"
                id="actions.TexWordWrap"/>
@@ -874,6 +886,24 @@ ${cursor}
       <keyBinding
             command="actions.TexCorrectIndentation"
             string="Ctrl+I"
+            configuration="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+      <command
+            category="Texlipse"
+            categoryId="Texlipse"
+            name="Word Count"
+            id="actions.WordCountAction"/>
+      <keyBinding
+            command="actions.WordCountAction"
+            string="Ctrl+3"
+            configuration="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+      <command
+            category="Texlipse"
+            categoryId="Texlipse"
+            name="Preview document"
+            id="actions.PreviewAction"/>
+      <keyBinding
+            command="actions.PreviewAction"
+            string="Ctrl+4"
             configuration="org.eclipse.ui.defaultAcceleratorConfiguration"/>
    </extension>
    <extension

@@ -63,6 +63,8 @@ public class TexlipseProperties {
     public static final String BIB_DIR = "bibDir";
     public static final String TEMP_FILE_EXTS = "tempFileExts";
     public static final String FILE_LOCATION_PORT = "fileLocPort";
+    public static final String BUILD_ENV_SETTINGS = "buildEnvSet";
+    public static final String VIEWER_ENV_SETTINGS = "viewerEnvSet";
 
     public static final String TEX_COMPLETION = "texCompletion";
     public static final String TEX_COMPLETION_DELAY = "texDelay";

@@ -183,6 +183,7 @@ public class ViewerListFieldEditor extends ListEditor {
             registry.setArguments(reg.getArguments());
             registry.setFormat(reg.getFormat());
             registry.setInverse(reg.getInverse());
+            registry.setForward(reg.getForward());
             list.setItem(index, reg.getActiveViewer() + " (" + reg.getCommand() + ")");
         }
     }
@@ -259,6 +260,7 @@ public class ViewerListFieldEditor extends ListEditor {
             registry.setArguments(reg.getArguments());
             registry.setFormat(reg.getFormat());
             registry.setInverse(reg.getInverse());
+            registry.setForward(reg.getForward());
             
             return name + " (" + reg.getCommand() + ")";
             

@@ -72,6 +72,9 @@ public class ViewerManager {
     // the source file name variable in the arguments
     public static final String TEX_FILENAME_PATTERN = "%texfile";
 
+    // file name with absolute path
+    public static final String FILENAME_FULLPATH_PATTERN = "%fullfile";
+    
     // viewer attributes
     private ViewerAttributeRegistry registry;
 
@@ -80,6 +83,9 @@ public class ViewerManager {
 
     // the current project
     private IProject project;
+
+    // project output file to display 
+    private IResource outputRes;
 
     
     /**
@@ -225,8 +231,7 @@ public class ViewerManager {
             outputDir = project;
         }
         
-        // check if file exists
-        IResource outputRes = outputDir.findMember(outFileName);
+        outputRes = outputDir.findMember(outFileName);
         if (outputRes == null || !outputRes.exists()) {
             String msg = TexlipsePlugin.getResourceString("viewerNothingWithExtension");
             BuilderRegistry.printToConsole(msg.replaceAll("%s", registry.getFormat()));
@@ -340,7 +345,8 @@ public class ViewerManager {
         if (envSettings != null) {
             env.putAll(envSettings);
         }
-        String envp[] = PathUtils.getStrings(env);
+        //String envp[] = PathUtils.getStrings(env);
+        String envp[] = PathUtils.mergeEnvFromPrefs(env, TexlipseProperties.VIEWER_ENV_SETTINGS);
         
         // print command
         BuilderRegistry.printToConsole(TexlipsePlugin.getResourceString("viewerRunning")
@@ -393,6 +399,10 @@ public class ViewerManager {
         
         if (args.indexOf(TEX_FILENAME_PATTERN) >= 0) {
             args = args.replaceAll(TEX_FILENAME_PATTERN, texFile);
+        }
+        
+        if (args.indexOf(FILENAME_FULLPATH_PATTERN) >= 0) {
+            args = args.replaceAll(FILENAME_FULLPATH_PATTERN, outputRes.getLocation().toFile().getAbsolutePath());
         }
         
         return args;

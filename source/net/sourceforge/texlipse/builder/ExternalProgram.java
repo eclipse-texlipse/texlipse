@@ -18,6 +18,7 @@ import java.io.StringWriter;
 import java.util.Properties;
 
 import net.sourceforge.texlipse.PathUtils;
+import net.sourceforge.texlipse.properties.TexlipseProperties;
 
 
 /**
@@ -160,7 +161,8 @@ public class ExternalProgram {
 	            envProp.setProperty(key, envProp.getProperty(key) + File.pathSeparatorChar + commandPath);
             }
             
-            String[] env = PathUtils.getStrings(envProp);
+            //String[] env = PathUtils.getStrings(envProp);
+            String[] env = PathUtils.mergeEnvFromPrefs(envProp, TexlipseProperties.BUILD_ENV_SETTINGS);
             process = rt.exec(command, env, dir);
             
         } else {

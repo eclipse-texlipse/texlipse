@@ -126,6 +126,8 @@ public class TexlipsePreferenceInitializer extends
         
         ViewerAttributeRegistry.initializeDefaults(pref);
         
+        pref.setDefault(TexlipseProperties.BUILD_ENV_SETTINGS, "");
+        pref.setDefault(TexlipseProperties.VIEWER_ENV_SETTINGS, "");
         pref.setDefault(TexlipseProperties.TEMP_FILE_EXTS, ".aux,.log,.toc,.ind,.ilg,.bbl,.blg,.lot,.lof");
         
         pref.setDefault(TexlipseProperties.BIB_COMPLETION, true);

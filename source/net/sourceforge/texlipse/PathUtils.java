@@ -14,8 +14,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
+
+import net.sourceforge.texlipse.properties.StringListFieldEditor;
 
 /**
  * Helper methods for environment variable handling.
@@ -28,12 +32,100 @@ public class PathUtils {
 	 * This class needs not to be instantiated.
 	 */
 	private PathUtils() {}
-	
+
+    /**
+     * Merge the given environment variables to the additional environment variables
+     * that are defined in the preferences. The variables defined in the preferences
+     * override the variables given as a parameter.
+     * 
+     * @param env current environment variables
+     * @param prefName preference name where to read additional environment variable map
+     * @return merged environment variables as a suitable array for the Process.exec() -method
+     */
+    public static String[] mergeEnvFromPrefs(Properties envProp, String prefName) {
+        
+        HashMap environment = new HashMap();
+        environment.putAll(envProp);
+        Map prefsMap = getPreferenceMap(prefName);
+        String[] keys = (String[]) prefsMap.keySet().toArray(new String[0]);
+        for (int i = 0; i < keys.length; i++) {
+            String value = (String) prefsMap.get(keys[i]);
+            value = replaceVar(envProp, value);
+            environment.put(keys[i], value);
+        }
+        return getStrings(environment);
+    }
+    
+    /**
+     * Replaces environment variable names with their values in the given string.
+     * 
+     * @param envProp environment variables
+     * @param str value for a new environment variable
+     * @return the given value with variables expanded
+     */
+    private static String replaceVar(Properties envProp, String str) {
+        // TODO: perform variable expansion
+        return str;
+    }
+
+    /**
+     * Convert a Map object to an array of "key=value" -Strings.
+     * 
+     * @param map key/value mappings as a Map
+     * @return array of "key=value" Strings
+     */
+    public static String[] getStrings(Map map) {
+        
+        String[] array = new String[map.size()];
+        String[] keys = (String[]) map.keySet().toArray(new String[0]);
+        
+        for (int i = 0; i < keys.length; i++) {
+            array[i] = keys[i] + '=' + (String) map.get(keys[i]);
+        }
+        
+        return array;
+    }
+
+    /**
+     * Load a Map from preferences. The map is encoded into a String object
+     * by separating keys from values with a '=' and key/value-pairs with a ','.
+     * E.g.: "key1=val1,key2=val2"
+     * 
+     * @param name preference name
+     * @return always non-null Map of String to String -mappings
+     */
+    public static Map getPreferenceMap(String name) {
+        Map map = new HashMap();
+        
+        String str = TexlipsePlugin.getPreference(name);
+        if (str == null) {
+            return map;
+        }
+        
+        String[] binds = str.split(StringListFieldEditor.SEPARATOR);
+        if (binds == null) {
+            return map;
+        }
+        
+        for (int i = 0; i < binds.length; i++) {
+            
+            int index = binds[i].indexOf('=');
+            if (index <= 0) {
+                continue;
+            }
+            
+            map.put(binds[i].substring(0, index),
+                    binds[i].substring(index+1));
+        }
+        
+        return map;
+    }
+    
 	/**
-	 * Convert a properties object to a list of "key=value" Strings.
+	 * Convert a Properties object to an array of "key=value" -Strings.
 	 * 
-	 * @param prop
-	 * @return
+	 * @param prop key/value -mappings as properties
+	 * @return an array of "key=value" -Strings.
 	 */
 	public static String[] getStrings(Properties prop) {
 	    

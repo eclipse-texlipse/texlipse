@@ -30,7 +30,7 @@ is being built.
 </p>
 
 
-<h3><a name="part"> Partial Building </h3>
+<h3><a name="part"></a> Partial Building </h3>
 
 <p>
 When writing big LaTeX documents it is sometimes handy to split the document into
@@ -61,7 +61,7 @@ partial and &quot;full&quot; building mode while the viewer application is runni
 </p>
 
 
-<h2><a name="preview"> Previewing </h2>
+<h2><a name="preview"></a> Previewing </h2>
 
 <p>In this manual
 previewing a Latex project means launching an external viewer application
@@ -99,7 +99,7 @@ or is not yet created, the viewer obviously can&#39;t view anything.
 </p>
 
 
-<a name="sourcelink">
+<a name="sourcelink"></a>
 <h3> Using preview to source linking </h3>
 
 <p>
@@ -136,7 +136,7 @@ the inverse search to work.
 </p>
 
 
-<h3><a name="yap"> Using preview to source linking by reading a socket </h3>
+<h3><a name="yap"></a> Using preview to source linking by reading a socket </h3>
 
 <p>
 The <code>yap</code> viewer is by default configured to use the socket way.
@@ -176,24 +176,28 @@ actually need any setting up).
 	 </p>
   </li>
 </ol>
+</p>
 
 <h4>Some potential problems:</h4>
-<code>Exception in thread "main" java.lang.NoClassDefFoundError</code> 
+
+<p><code>Exception in thread "main" java.lang.NoClassDefFoundError</code> 
 The class path is incorrect, check the path. In this example it is 
 <code>plugin</code> when it should be <code>plugins</code></p>
+
 <p><img src="images/err1.gif" alt="Error in class path"></p>
 
 <p><code>Couldn't get I/O for the connection to: localhost</code>
 Probably the firewall is blocking the connection, check the settings.</p>
+
 <p><img src="images/err2.gif" alt="Firewall blocks"></p>
 
 <p>No error, but nothing happens. Check that the port is correct both in the bat-file
 and on the <b>Viewer Settings</b> page.</p>
 
 <h3> Using preview to source linking on Mac OS X </h3>
+<a name="itex"></a>
 
 <p>
-<a name="itex">
 Mac OS X has very good PDF viewing support, so many users want to take
 advantage of it. Below is described one way of achieving &quot;PDF to 
 Latex-source-on-Eclipse&quot; -linking. Hopefully there is another way,
@@ -231,6 +235,7 @@ because this is not so easy to configure.
       	   <p><img src="images/itex1.gif" alt="list of files"></p>
    </ol>
 </p>
+
 <p>
 &nbsp;
 </p>

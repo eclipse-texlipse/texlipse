@@ -95,6 +95,9 @@ public class LatexRunner extends AbstractProgramRunner {
                 String part1 = st.nextToken();
                 String part2 = st.nextToken();
                 int index = part1.indexOf(' ');
+                int comIndex = part1.indexOf('\\');
+                if (comIndex == -1)
+                    comIndex = index; // just in case...
                 
                 String lineNumberString = part1.substring(2, index);
                 
@@ -106,7 +109,7 @@ public class LatexRunner extends AbstractProgramRunner {
                 }
                 
                 String error = "Undefined control sequence: "
-                        + part1.substring(index).trim() + part2.trim();
+                        + part1.substring(comIndex).trim() + " (followed by: " + part2.trim() + ")";
 
                 errorsFound = true;
 
@@ -159,14 +162,23 @@ public class LatexRunner extends AbstractProgramRunner {
                                     lineNumber = new Integer(lineNum);
                                 }
                             }
-
                         }
                     }
                 }
 
                 errorsFound = true;
-                createMarker(resource, lineNumber, error);
                 
+                String causingSourceFile = determineSourceFile(prevLine);
+                IResource extResource = null;
+                if (causingSourceFile != null) {
+                    extResource = sourceDir.findMember(causingSourceFile);
+                }
+                
+                if (extResource != null) {
+                    createMarker(extResource, lineNumber, error);
+                } else {
+                    createMarker(resource, lineNumber, error);
+                }
             } else if (line.startsWith("LaTeX Warning: ")) {
                 
                 if (line.indexOf("Label(s) may have changed.") > 0) {
@@ -184,7 +196,7 @@ public class LatexRunner extends AbstractProgramRunner {
     }
     
     /**
-     * Datermines the source file we are currently parsing from the given
+     * Determines the source file we are currently parsing from the given
      * line of latex' log
      * 
      * @param logLine A line from latex' output containing which file we are in
@@ -193,6 +205,7 @@ public class LatexRunner extends AbstractProgramRunner {
     private String determineSourceFile(String logLine) {
         Stack st = new Stack();
         //System.out.println(logLine);
+        //TODO this still might not properly handle file names with spaces
         String partCommands[] = logLine.split("[^\\\\]\\s");
         for (int i = 0; i < partCommands.length; i++) {
             if (partCommands[i].startsWith("(.")) {

@@ -377,10 +377,18 @@ public class ViewerAttributeRegistry implements Cloneable {
     
     /**
      * Set the current viewer's forward search support.
-     * @param inv forward search support
+     * @param forward forward search support
      */
-    public void setForward(String forw) {
-        registry.put(activeViewer + ATTRIBUTE_FORWARD_SEARCH, forw);
+    public void setForward(String forward) {
+        registry.put(activeViewer + ATTRIBUTE_FORWARD_SEARCH, forward);
+    }
+
+    /**
+     * Set the current viewer's forward search support.
+     * @param forward forward search support
+     */
+    public void setForward(boolean forward) {
+        registry.put(activeViewer + ATTRIBUTE_FORWARD_SEARCH, forward + "");
     }
 
     /**

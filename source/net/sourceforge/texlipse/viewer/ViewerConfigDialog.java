@@ -148,7 +148,7 @@ public class ViewerConfigDialog extends Dialog {
         registry.setArguments(argsField.getText());
         registry.setFormat(formatChooser.getItem(formatChooser.getSelectionIndex()));
         registry.setInverse(inverseSearchValues[inverseChooser.getSelectionIndex()]);
-        registry.setForward(forwardChoice.getSelection() +"");
+        registry.setForward(forwardChoice.getSelection());
         
         setReturnCode(OK);
         close();

@@ -21,7 +21,7 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 /**
  * The page to set syntax highlighting colors.
  * 
- * @author kimmo
+ * @author Kimmo Karlsson
  */
 public class ColoringPreferencePage
     extends FieldEditorPreferencePage
@@ -46,7 +46,7 @@ public class ColoringPreferencePage
         addField(new ColorFieldEditor(ColorManager.SQUARE_BRACKETS, TexlipsePlugin.getResourceString("preferenceColorOptionalLabel"), getFieldEditorParent()));
         addField(new ColorFieldEditor(ColorManager.EQUATION, TexlipsePlugin.getResourceString("preferenceColorMathLabel"), getFieldEditorParent()));
         addField(new ColorFieldEditor(ColorManager.COMMENT, TexlipsePlugin.getResourceString("preferenceColorCommentLabel"), getFieldEditorParent()));
-        //addField(new ColorFieldEditor(ColorManager.TEX_NUMBER, TexlipsePlugin.getResourceString("preferenceColorNumberLabel"), getFieldEditorParent()));
+        addField(new ColorFieldEditor(ColorManager.TEX_NUMBER, TexlipsePlugin.getResourceString("preferenceColorNumberLabel"), getFieldEditorParent()));
         addField(new ColorFieldEditor(ColorManager.TEX_SPECIAL, TexlipsePlugin.getResourceString("preferenceColorSpeLabel"), getFieldEditorParent()));
     }
     

@@ -62,6 +62,9 @@ public class TexCompletionProcessor implements IContentAssistProcessor {
      * @see org.eclipse.jface.text.contentassist.IContentAssistProcessor#computeCompletionProposals(org.eclipse.jface.text.ITextViewer, int)
      */
     public ICompletionProposal[] computeCompletionProposals(ITextViewer viewer, int offset) {
+    	ICompletionProposal[] proposals=null;
+    	ICompletionProposal[] templateProposals=null;
+    		
         if (refMana == null)
             this.refMana = this.model.getRefMana();
         
@@ -79,7 +82,8 @@ public class TexCompletionProcessor implements IContentAssistProcessor {
         // Now resolve if we want to complete commands, references or templates
         if (seqStart.startsWith("\\")) {
             String replacement = seqStart.substring(1);
-            return computeComCompletions(offset, replacement.length(), replacement);
+//E            return computeComCompletions(offset, replacement.length(), replacement);
+            proposals=computeComCompletions(offset, replacement.length(), replacement);
         } else if (seqStart.startsWith("{")) {
             String refCommand = resolveRefCommand(completeDoc, seqStartIdx);
             if (refCommand == null)
@@ -92,15 +96,41 @@ public class TexCompletionProcessor implements IContentAssistProcessor {
             }
             
             if (refCommand.indexOf("cite") > -1) {
-                return computeBibCompletions(offset, replacement.length(), replacement);
+//E                return computeBibCompletions(offset, replacement.length(), replacement);
+                proposals=computeBibCompletions(offset, replacement.length(), replacement);
             } else if (refCommand.startsWith("ref") || refCommand.startsWith("pageref")) {
-                return computeRefCompletions(offset, replacement.length(), replacement);
+//E                return computeRefCompletions(offset, replacement.length(), replacement);
+                proposals=computeRefCompletions(offset, replacement.length(), replacement);
             }
-        } else if (Character.isWhitespace(seqStart.charAt(0))) {
+        } 
+//E        else if (Character.isWhitespace(seqStart.charAt(0))) {
+//E            String replacement = seqStart.substring(1);
+//E            return computeTemplateCompletions(offset, replacement.length(), replacement, viewer);            
+//E        }
+        
+        if (Character.isWhitespace(seqStart.charAt(0))) {
             String replacement = seqStart.substring(1);
-            return computeTemplateCompletions(offset, replacement.length(), replacement, viewer);            
+            templateProposals=computeTemplateCompletions(offset, replacement.length(), replacement, viewer);            
+        } else {
+            templateProposals=computeTemplateCompletions(offset, seqStart.length(), seqStart, viewer);                    	
         }
-        return null;
+
+        if((proposals!=null)&&(templateProposals!=null)){
+        	ICompletionProposal[] value= new ICompletionProposal[proposals.length+templateProposals.length];
+        	int i=0,j;
+        	for(j=0;j<proposals.length;j++) {
+        		value[i]=proposals[j];
+        		i++;
+        	}
+        	for(j=0;j<templateProposals.length;j++) {
+        		value[i]=templateProposals[j];
+        		i++;
+        	}
+        	return value;
+        } else {
+        	if (proposals!=null) return proposals;
+        	else return templateProposals;
+        }
     }
 
     /*

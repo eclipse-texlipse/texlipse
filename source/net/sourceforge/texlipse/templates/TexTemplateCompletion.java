@@ -10,6 +10,8 @@
 package net.sourceforge.texlipse.templates;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import net.sourceforge.texlipse.TexlipsePlugin;
 
@@ -82,6 +84,9 @@ public class TexTemplateCompletion extends TemplateCompletionProcessor {
                 propList.add(templateProposals[j]);
             }
         }
+        
+        Collections.sort(propList,new CompletitionProposalComparator());
+        
         return propList;
     }
 

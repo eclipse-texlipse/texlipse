@@ -9,6 +9,7 @@
  */
 package net.sourceforge.texlipse.templates;
 
+import java.util.Collections;
 import java.util.List;
 
 import net.sourceforge.texlipse.TexlipsePlugin;
@@ -76,6 +77,8 @@ public class BibTexTemplateCompletion extends TemplateCompletionProcessor {
         for (int j = 0; j < templateProposals.length; j++) {
             propList.add(templateProposals[j]);
         }
+        
+        Collections.sort(propList,new CompletitionProposalComparator());
     }
 
     /**

@@ -28,7 +28,7 @@ public class TexCommandContainer {
             new CommandEntry("abstract", "\\abstract{}\n\nPrepares an abstract page.", 1),
             new CommandEntry("addcontentsline", "\\addcontentsline{}{}{}\n\nAdds a chapter title to the contents page.", 3),
             new CommandEntry("author", "\\author{name}\n\nDefines the author, used for output if \\maketitle is used.", 1),
-            new CommandEntry("backlash", "\\backlash\n\nOutputs a backslash in math mode. (Enclose by two dollar symbols.)", 0),
+            new CommandEntry("backslash", "\\backslash\n\nOutputs a backslash in math mode. (Enclose by two dollar symbols.)", 0),
             new CommandEntry("bf", "\\bf{text}\n\nOutputs the text in bold font.", 1),
             new CommandEntry("bffamily", "\\bffamily{text}\n\nOutputs the text in bold font.", 1),
             new CommandEntry("bibitem", "\\bibitem{cite key}{item}\n\n\\bibitem requires two arguments for parsing. LaTeX syntax allows writing this as if it were two arguments, even though it is only one. This command is used within a \\thebibliography environment.", 2),

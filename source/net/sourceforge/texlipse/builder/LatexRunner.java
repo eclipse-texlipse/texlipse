@@ -188,7 +188,7 @@ public class LatexRunner extends AbstractProgramRunner {
                     // prepare to run bibtex
                     TexlipseProperties.setSessionProperty(resource.getProject(), TexlipseProperties.SESSION_BIBTEX_RERUN, "true");
                 }
-            } else if (line.indexOf("(.") != -1) {
+            } else if (line.indexOf("(") != -1) {
                 prevLine = line;
             }
         }
@@ -206,9 +206,10 @@ public class LatexRunner extends AbstractProgramRunner {
         Stack st = new Stack();
         //System.out.println(logLine);
         //TODO this still might not properly handle file names with spaces
-        String partCommands[] = logLine.split("[^\\\\]\\s");
+//        String partCommands[] = logLine.split("[^\\\\]\\s");
+        String partCommands[] = logLine.split("\\s");
         for (int i = 0; i < partCommands.length; i++) {
-            if (partCommands[i].startsWith("(.")) {
+            if (partCommands[i].startsWith("(")) {
                 //System.out.println(partCommands[i]);
                 if (!partCommands[i].endsWith(")")) {
                     st.push(partCommands[i]);

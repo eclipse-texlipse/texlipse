@@ -142,7 +142,24 @@ public abstract class AbstractProgramRunner implements ProgramRunner {
             inputName = "\"" + inputName + "\"";
             outputName = "\"" + outputName + "\"";
         }
-        return args.replaceAll("%input", inputName).replaceAll("%output", outputName);
+        
+        if (args.indexOf("%input") >= 0) {
+            args = args.replaceAll("%input", inputName);
+        }
+        if (args.indexOf("%output") >= 0) {
+            args = args.replaceAll("%output", outputName);
+        }
+        if (args.indexOf("%fullinput") >= 0) {
+            args = args.replaceAll("%fullinput",
+                    resource.getParent().getLocation().toFile().getAbsolutePath()
+                    + File.separator + inputName);
+        }
+        if (args.indexOf("%fulloutput") >= 0) {
+            args = args.replaceAll("%fulloutput",
+                    resource.getParent().getLocation().toFile().getAbsolutePath()
+                    + File.separator + outputName);
+        }
+        return args;
     }
     
     /**
@@ -298,7 +315,7 @@ public abstract class AbstractProgramRunner implements ProgramRunner {
      */
     public static void createMarker(IResource resource, Integer lineNumber, String message) {
         
-        String markerType = TexlipseBuilder.MARKER_TYPE;//IMarker.PROBLEM;
+        String markerType = TexlipseBuilder.MARKER_TYPE;
         int severity = IMarker.SEVERITY_ERROR;
         
         IMarker marker = AbstractProgramRunner.findMarker(resource, message, markerType);

@@ -117,7 +117,7 @@ public class LatexRunner extends AbstractProgramRunner {
                 errorsFound = true;
 
                 String causingSourceFile = determineSourceFile();
-                System.out.println("cause: " + causingSourceFile);
+                //System.out.println("cause: " + causingSourceFile);
                 IResource extResource = null;
                 if (causingSourceFile != null) {
                     extResource = sourceDir.findMember(causingSourceFile);

@@ -35,6 +35,7 @@ public class TexParser {
 
     private IDocument inputDoc;
     private LatexParser lparser;
+//    private LatexLexer llexer;
     
     private ArrayList errors;
     private boolean fatalErrors;
@@ -51,6 +52,15 @@ public class TexParser {
         this.fatalErrors = false;
     }
 
+//    public LatexLexer getLexer(String str) {
+//        if (llexer == null) {
+//            llexer = new LatexLexer(new PushbackReader(new StringReader(str), 4096));
+//        } else {
+//            llexer.resetState(new PushbackReader(new StringReader(str), 4096));
+//        }
+//        return llexer;
+//    }
+    
     /**
      * Removes trailing whitespace from the document. This is needed since
      * the lexer and Eclipse have a different view of how the positions in
@@ -115,6 +125,7 @@ public class TexParser {
         try {
             // start the parse
             LatexLexer lexer = new LatexLexer(new PushbackReader(new StringReader(input), 1024));
+            //LatexLexer lexer = this.getLexer(input); 
             if (this.preamble != null) {
                 OutlineNode on = new OutlineNode("Preamble",
                         OutlineNode.TYPE_PREAMBLE,

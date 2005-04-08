@@ -188,7 +188,7 @@ public class LatexParser {
      * @throws LexerException If the given lexer cannot tokenize the document
      * @throws IOException If the document is unreadable
      */
-    public void parse(Lexer lex, ReferenceContainer definedLabels, ReferenceContainer definedBibs) throws LexerException, IOException {
+    public void parse(LatexLexer lex, ReferenceContainer definedLabels, ReferenceContainer definedBibs) throws LexerException, IOException {
         parse(lex, definedLabels, definedBibs, null);
     }
 
@@ -206,7 +206,7 @@ public class LatexParser {
      * @throws IOException If the document is unreadable
      */
 
-    public void parse(Lexer lexer, ReferenceContainer definedLabels, ReferenceContainer definedBibs, OutlineNode preamble) throws LexerException, IOException {
+    public void parse(LatexLexer lexer, ReferenceContainer definedLabels, ReferenceContainer definedBibs, OutlineNode preamble) throws LexerException, IOException {
         initializeDatastructs();
         Stack2 blocks = new Stack2();
         
@@ -581,7 +581,8 @@ public class LatexParser {
                         inputs.add(t.getText());
                     
                     } else if (prevToken instanceof TCnew) {
-                        currentCommand = new CommandEntry(t.getText().substring(1)); 
+                        currentCommand = new CommandEntry(t.getText().substring(1));
+                        lexer.registerCommand(currentCommand.key);
                         expectArg2 = true;
                     }
                     
@@ -592,7 +593,8 @@ public class LatexParser {
                     
                 } else if ((t instanceof TCword) && (prevToken instanceof TCnew)) {
                     // this handles the \newcommand\comx{...} -format
-                    currentCommand = new CommandEntry(t.getText().substring(1)); 
+                    currentCommand = new CommandEntry(t.getText().substring(1));
+                    lexer.registerCommand(currentCommand.key);
                     expectArg2 = true;
                     accumulatedLength = 0;
                     prevToken = null;

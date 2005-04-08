@@ -10,12 +10,15 @@
 package net.sourceforge.texlipse.texparser;
 
 import java.io.PushbackReader;
+import java.util.HashSet;
 
 import net.sourceforge.texlipse.texparser.lexer.Lexer;
 import net.sourceforge.texlipse.texparser.lexer.LexerException;
 import net.sourceforge.texlipse.texparser.node.EOF;
 import net.sourceforge.texlipse.texparser.node.TArgument;
 import net.sourceforge.texlipse.texparser.node.TBverbatim;
+import net.sourceforge.texlipse.texparser.node.TCnew;
+import net.sourceforge.texlipse.texparser.node.TCword;
 import net.sourceforge.texlipse.texparser.node.TLBrace;
 import net.sourceforge.texlipse.texparser.node.TOptargument;
 import net.sourceforge.texlipse.texparser.node.TRBrace;
@@ -48,6 +51,9 @@ public class LatexLexer extends Lexer {
     
     private int vline, vpos;
     
+    private HashSet defCommands;
+    private boolean commandDef;
+    
     /**
      * Creates a new lexer.
      * 
@@ -55,6 +61,8 @@ public class LatexLexer extends Lexer {
      */
     public LatexLexer(PushbackReader in) {
         super(in);
+        defCommands = new HashSet();
+        commandDef = false;
     }
     
     /**
@@ -62,11 +70,24 @@ public class LatexLexer extends Lexer {
      */
     protected void filter() throws LexerException {
         
+        if (state.equals(State.COMCAPT)) {
+//            if (token instanceof TCword) {
+//                System.out.println(token.getText().substring(1));
+//                System.out.println(defCommands.contains(token.getText().substring(1)));
+//            }
+            if (token instanceof TCnew) {
+                commandDef = true;
+            } else if (token instanceof TCword && !commandDef 
+                    && !defCommands.contains(token.getText().substring(1))) {
+                state = State.NORMAL;
+                return;
+            }
+
         // if we're to capture a brace-block
-        if (state.equals(State.BLOCKCAPT)) {
+        } else if (state.equals(State.BLOCKCAPT)) {
             
             // if we are just entering this state
-            if (argStart == null) {
+            if (argStart == null) {                
                 argStart = token;
                 text = new StringBuffer("");
                 count = 1;
@@ -95,6 +116,7 @@ public class LatexLexer extends Lexer {
                     token = targ;
                     state = State.COMCAPT;
                     argStart = null;
+                    commandDef = false;
                 }
             }
             // Capture optional argument
@@ -129,6 +151,7 @@ public class LatexLexer extends Lexer {
                     token = tsl;
                     state = State.COMCAPT;
                     argStart = null;
+                    commandDef = false;
                 }
             }
         } else if (state.equals(State.VERBATIM)) {
@@ -167,5 +190,12 @@ public class LatexLexer extends Lexer {
                         "," + argStart.getPos() + "] The verb-command isn't closed: unexpected end of file");
             }
         }
+    }
+    
+    public void registerCommand(String command) {
+//        System.out.println("---------------------");
+//        System.out.println(command);
+//        System.out.println("---------------------");
+        defCommands.add(command);
     }
 }

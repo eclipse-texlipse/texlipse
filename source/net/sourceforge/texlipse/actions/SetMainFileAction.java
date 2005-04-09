@@ -62,9 +62,11 @@ public class SetMainFileAction implements IWorkbenchWindowActionDelegate, IEdito
         }
         
 	    String name = file.getName();
+        IPath path = file.getFullPath();
         
+        IResource currentMainFile = TexlipseProperties.getProjectSourceFile(project);
         // check if this is already the main file
-        if (name.equals(TexlipseProperties.getProjectProperty(project, TexlipseProperties.MAINFILE_PROPERTY))) {
+        if (currentMainFile != null && path.equals(currentMainFile.getFullPath())) {
             return;
         }
         
@@ -76,7 +78,6 @@ public class SetMainFileAction implements IWorkbenchWindowActionDelegate, IEdito
 	    TexlipseProperties.setProjectProperty(project, TexlipseProperties.OUTPUTFILE_PROPERTY, output);
 
         // set source directory
-	    IPath path = file.getFullPath();
 	    String dir = path.removeFirstSegments(1).removeLastSegments(1).toString();
         TexlipseProperties.setProjectProperty(project, TexlipseProperties.SOURCE_DIR_PROPERTY, dir);
         

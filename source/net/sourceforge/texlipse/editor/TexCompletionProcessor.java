@@ -17,6 +17,7 @@ import net.sourceforge.texlipse.model.CommandEntry;
 import net.sourceforge.texlipse.model.ReferenceEntry;
 import net.sourceforge.texlipse.model.ReferenceManager;
 import net.sourceforge.texlipse.model.TexDocumentModel;
+import net.sourceforge.texlipse.spelling.SpellChecker;
 import net.sourceforge.texlipse.templates.TexTemplateCompletion;
 
 import org.eclipse.jface.text.ITextViewer;
@@ -107,6 +108,13 @@ public class TexCompletionProcessor implements IContentAssistProcessor {
 //E            String replacement = seqStart.substring(1);
 //E            return computeTemplateCompletions(offset, replacement.length(), replacement, viewer);            
 //E        }
+        
+        //---------------------spell-checking-code-starts----------------------
+        ICompletionProposal[] prop = SpellChecker.getSpellingProposal(offset);
+        if (prop != null && prop.length > 0) {
+            return prop;
+        }
+        //---------------------spell-checking-code-ends------------------------
         
         if (Character.isWhitespace(seqStart.charAt(0))) {
             String replacement = seqStart.substring(1);

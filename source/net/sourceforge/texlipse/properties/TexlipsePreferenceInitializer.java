@@ -19,6 +19,7 @@ import net.sourceforge.texlipse.bibeditor.BibColorProvider;
 import net.sourceforge.texlipse.builder.BuilderRegistry;
 import net.sourceforge.texlipse.builder.ProgramRunner;
 import net.sourceforge.texlipse.editor.ColorManager;
+import net.sourceforge.texlipse.spelling.SpellChecker;
 import net.sourceforge.texlipse.viewer.ViewerAttributeRegistry;
 import net.sourceforge.texlipse.viewer.util.FileLocationClient;
 
@@ -125,6 +126,8 @@ public class TexlipsePreferenceInitializer extends
         BibColorProvider.initializeDefaults(pref);
         
         ViewerAttributeRegistry.initializeDefaults(pref);
+        
+        SpellChecker.initializeDefaults(pref);
         
         pref.setDefault(TexlipseProperties.BUILD_ENV_SETTINGS, "");
         pref.setDefault(TexlipseProperties.VIEWER_ENV_SETTINGS, "");

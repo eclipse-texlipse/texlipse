@@ -269,15 +269,12 @@ public abstract class AbstractProgramRunner implements ProgramRunner {
             return;
         }
         
-        IContainer sourceDir = TexlipseProperties.getProjectSourceDir(project);
-        if (sourceDir == null) {
-            sourceDir = project;
-        }
-        
+        IContainer sourceDir = resource.getParent();
         try {
             sourceDir.refreshLocal(IContainer.DEPTH_ONE, new NullProgressMonitor());
         } catch (CoreException e) {
         }
+        
         IResource outputFile = sourceDir.findMember(outputFileName);
         if (outputFile == null) {
             return;

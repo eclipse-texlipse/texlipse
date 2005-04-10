@@ -239,6 +239,16 @@
             category="TexlipseViewerSettingsPreferencePage"
             name="Environment"
             id="net.sourceforge.texlipse.properties.ViewerEnvPreferencePage"/>
+      <page
+            class="net.sourceforge.texlipse.spelling.SpellCheckerPreferencePage"
+            category="TexlipsePreferencePage"
+            name="Spell Checker"
+            id="TexlipseSpellChecker"/>
+      <page
+            class="net.sourceforge.texlipse.spelling.SpellCheckerEnvPreferencePage"
+            category="TexlipseSpellChecker"
+            name="Environment"
+            id="net.sourceforge.texlipse.spelling.SpellCheckerEnvPreferencePage"/>
    </extension>
    <extension
          point="org.eclipse.core.runtime.preferences">
@@ -823,6 +833,20 @@ ${cursor}
                style="push"
                menubarPath="LatexMenu/commentGroup"
                id="actions.TexHardLineWrap"/>
+         <action
+               label="Check Spelling"
+               definitionId="actions.SpellCheckAction"
+               class="net.sourceforge.texlipse.spelling.SpellCheckAction"
+               style="push"
+               menubarPath="LatexMenu/commentGroup"
+               id="actions.SpellCheckAction"/>
+         <action
+               label="Change Spelling Language"
+               definitionId="actions.SpellCheckLanguageAction"
+               class="net.sourceforge.texlipse.spelling.SpellCheckLanguageAction"
+               style="push"
+               menubarPath="LatexMenu/commentGroup"
+               id="actions.SpellCheckLanguageAction"/>
       </editorContribution>
    </extension>
    <extension
@@ -905,10 +929,27 @@ ${cursor}
             command="actions.PreviewAction"
             string="Ctrl+4"
             configuration="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+      <command
+            category="Texlipse"
+            categoryId="Texlipse"
+            name="Check Spelling"
+            id="actions.SpellCheckAction"/>
+      <command
+            category="Texlipse"
+            categoryId="Texlipse"
+            name="Change Spelling Language"
+            id="actions.SpellCheckLanguageAction"/>
    </extension>
    <extension
          id="builderproblem"
-         name="Builder Problem Marker"
+         name="Texlipse Build Error"
+         point="org.eclipse.core.resources.markers">
+      <super type="org.eclipse.core.resources.problemmarker"/>
+      <persistent value="true"/>
+   </extension>
+   <extension
+         id="spellingproblem"
+         name="Texlipse Spelling Error"
          point="org.eclipse.core.resources.markers">
       <super type="org.eclipse.core.resources.problemmarker"/>
       <persistent value="true"/>
@@ -916,5 +957,11 @@ ${cursor}
    <extension
          point="org.eclipse.help.contexts">
       <contexts file="contexts.xml"/>
+   </extension>
+   <extension
+         point="org.eclipse.ui.ide.markerResolution">
+      <markerResolutionGenerator
+            class="net.sourceforge.texlipse.spelling.SpellingResolutionGenerator"
+            markerType="net.sourceforge.texlipse.spellingproblem"/>
    </extension>
 </plugin>

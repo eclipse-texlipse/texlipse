@@ -143,8 +143,10 @@ public class SpellChecker implements IPropertyChangeListener {
      * @param prefs the plugin preferences
      */
     public static void initializeDefaults(IPreferenceStore prefs) {
+        
+        String aspell = PathUtils.findEnvFile("aspell", "/usr/bin", "aspell.exe", "C:\\gnu\\aspell");
+        prefs.setDefault(SPELL_CHECKER_COMMAND, aspell);
         // -a == ispell compatibility mode, -t == tex mode
-        prefs.setDefault(SPELL_CHECKER_COMMAND, "/usr/bin/aspell");
         prefs.setDefault(SPELL_CHECKER_ARGUMENTS, "-a -t --encoding=%encoding --lang=%language");
         prefs.setDefault(SPELL_CHECKER_ENV, "");
         prefs.setDefault(SPELL_CHECKER_LANGUAGE, "en");

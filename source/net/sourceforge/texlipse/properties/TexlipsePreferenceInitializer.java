@@ -10,8 +10,6 @@
 package net.sourceforge.texlipse.properties;
 
 import java.io.File;
-import java.util.Properties;
-import java.util.StringTokenizer;
 
 import net.sourceforge.texlipse.PathUtils;
 import net.sourceforge.texlipse.TexlipsePlugin;
@@ -45,54 +43,11 @@ public class TexlipsePreferenceInitializer extends
     }
 
     /**
-     * Get the path containing the given binary from environment variables.
-     * 
-     * @param bin relative path and file name to search for
-     *        in the directories listed in the "path" environment variable
-     * @return the directory that contains the given file or null if file was not found
-     */
-    public String getEnvPath(String bin) {
-        
-        Properties prop = PathUtils.getEnv();
-        String path = prop.getProperty(PathUtils.findPathKey(prop));
-        if (path == null) {
-            return null;
-        }
-        
-        StringTokenizer st = new StringTokenizer(path, File.pathSeparator);
-        while (st.hasMoreTokens()) {
-            String latexPath = st.nextToken();
-
-            File latex = new File(latexPath + bin);
-            if (latex.exists() && latex.isFile()) {
-                return latexPath;
-            }
-        }
-        
-        return null;
-    }
-    
-    /**
      * Save the program paths into preferences.
      * @param pref preferences
      */
     private void initializePaths(IPreferenceStore pref) {
-        // default path to use if the environment variable "path" doesn't contain the latex path
-        String defaultPath = "/usr/bin";
-        // default binary file to search for in the path
-        String defaultBin = "/latex";
-        
-        // windows equivalents for the above
-        if (System.getProperty("os.name").indexOf("indow") > 0) {
-            defaultPath = "C:\\texmf\\miktex\\bin";
-            defaultBin = "\\latex.exe";
-        }
-        
-        // try to find latex program in the path
-        String path = getEnvPath(defaultBin);
-        if (path == null) {
-            path = defaultPath;
-        }
+        String path = PathUtils.findInEnvPath("latex", "/usr/bin", "latex.exe", "C:\\texmf\\miktex\\bin");
         
         int size = BuilderRegistry.getNumberOfRunners();
         for (int i = 0; i < size; i++) {

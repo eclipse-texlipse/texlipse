@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import net.sourceforge.texlipse.PathUtils;
 import net.sourceforge.texlipse.TexlipsePlugin;
 import net.sourceforge.texlipse.properties.TexlipseProperties;
 
@@ -57,18 +58,13 @@ public class ViewerAttributeRegistry implements Cloneable {
     private static final String VIEWER_ITEXMAC = "itexmac";
 
     // default viewer attribute values 
-    private static final String DEFAULT_COMMAND_KDVI = "/usr/bin/kdvi";
     private static final String DEFAULT_ARGUMENTS_KDVI = "%file";
-    private static final String DEFAULT_COMMAND_XDVI = "/usr/bin/xdvi";
     private static final String DEFAULT_ARGUMENTS_XDVI = "-editor \"echo %f:%l\" -sourceposition \"%line %texfile\" %file";
-    private static final String DEFAULT_COMMAND_YAP = "C:\\texmf\\miktex\\bin\\yap.exe";
+    private static final String DEFAULT_DIR_YAP = "C:\\texmf\\miktex\\bin";
     private static final String DEFAULT_ARGUMENTS_YAP = "-1 -s \"%line %texfile\" %file";
 
-    private static final String DEFAULT_COMMAND_GV = "/usr/bin/gv";
     private static final String DEFAULT_ARGUMENTS_GV = "%file";
-    private static final String DEFAULT_COMMAND_ACROBAT = "acroread";
     private static final String DEFAULT_ARGUMENTS_ACROBAT = "%file";
-    private static final String DEFAULT_COMMAND_ITEXMAC = "/usr/bin/open";
     private static final String DEFAULT_ARGUMENTS_ITEXMAC = "-a \"/Applications/iTeXMac 1.3.15/iTeXMac.app\" %file";
     
     
@@ -86,6 +82,24 @@ public class ViewerAttributeRegistry implements Cloneable {
         registry = new HashMap();
         
         load(TexlipsePlugin.getDefault().getPreferenceStore());
+    }
+    
+    /**
+     * Finds a file from all of the directories listed in the
+     * "path" environment variable. Unix default is assumed to be "/usr/bin"
+     * 
+     * @param filename filename in unix-based systems
+     * @param winFilename filename in windows systems
+     * @param winPath default path in windows systems
+     * @return
+     */
+    private static String findFromEnvPath(String filename, String winFilename, String winPath) {
+        if (filename.length() == 0) {
+            filename = winFilename;
+        } else if (winFilename.length() == 0) {
+            winFilename = filename;
+        }
+        return PathUtils.findEnvFile(filename, "/usr/bin", winFilename, winPath);
     }
     
     /**
@@ -130,37 +144,37 @@ public class ViewerAttributeRegistry implements Cloneable {
         prefs.setDefault(VIEWER_NONE + ATTRIBUTE_INVERSE_SEARCH, INVERSE_SEARCH_NO);
         prefs.setDefault(VIEWER_NONE + ATTRIBUTE_FORWARD_SEARCH, "false");
         
-        prefs.setDefault(VIEWER_KDVI + ATTRIBUTE_COMMAND, DEFAULT_COMMAND_KDVI);
+        prefs.setDefault(VIEWER_KDVI + ATTRIBUTE_COMMAND, findFromEnvPath("kdvi", "", ""));
         prefs.setDefault(VIEWER_KDVI + ATTRIBUTE_ARGUMENTS, DEFAULT_ARGUMENTS_KDVI);
         prefs.setDefault(VIEWER_KDVI + ATTRIBUTE_FORMAT, TexlipseProperties.OUTPUT_FORMAT_DVI);
         prefs.setDefault(VIEWER_KDVI + ATTRIBUTE_INVERSE_SEARCH, INVERSE_SEARCH_RUN);
         prefs.setDefault(VIEWER_KDVI + ATTRIBUTE_FORWARD_SEARCH, "true");
         
-        prefs.setDefault(VIEWER_XDVI + ATTRIBUTE_COMMAND, DEFAULT_COMMAND_XDVI);
+        prefs.setDefault(VIEWER_XDVI + ATTRIBUTE_COMMAND, findFromEnvPath("xdvi", "", ""));
         prefs.setDefault(VIEWER_XDVI + ATTRIBUTE_ARGUMENTS, DEFAULT_ARGUMENTS_XDVI);
         prefs.setDefault(VIEWER_XDVI + ATTRIBUTE_FORMAT, TexlipseProperties.OUTPUT_FORMAT_DVI);
         prefs.setDefault(VIEWER_XDVI + ATTRIBUTE_INVERSE_SEARCH, INVERSE_SEARCH_STD);
         prefs.setDefault(VIEWER_XDVI + ATTRIBUTE_FORWARD_SEARCH, "true");
         
-        prefs.setDefault(VIEWER_YAP + ATTRIBUTE_COMMAND, DEFAULT_COMMAND_YAP);
+        prefs.setDefault(VIEWER_YAP + ATTRIBUTE_COMMAND, findFromEnvPath("", "yap.exe", DEFAULT_DIR_YAP));
         prefs.setDefault(VIEWER_YAP + ATTRIBUTE_ARGUMENTS, DEFAULT_ARGUMENTS_YAP);
         prefs.setDefault(VIEWER_YAP + ATTRIBUTE_FORMAT, TexlipseProperties.OUTPUT_FORMAT_DVI);
         prefs.setDefault(VIEWER_YAP + ATTRIBUTE_INVERSE_SEARCH, INVERSE_SEARCH_RUN);
         prefs.setDefault(VIEWER_YAP + ATTRIBUTE_FORWARD_SEARCH, "true");
 
-        prefs.setDefault(VIEWER_GV + ATTRIBUTE_COMMAND, DEFAULT_COMMAND_GV);
+        prefs.setDefault(VIEWER_GV + ATTRIBUTE_COMMAND, findFromEnvPath("gv", "ghostview.exe", ""));
         prefs.setDefault(VIEWER_GV + ATTRIBUTE_ARGUMENTS, DEFAULT_ARGUMENTS_GV);
         prefs.setDefault(VIEWER_GV + ATTRIBUTE_FORMAT, TexlipseProperties.OUTPUT_FORMAT_PS);
         prefs.setDefault(VIEWER_GV + ATTRIBUTE_INVERSE_SEARCH, INVERSE_SEARCH_NO);
         prefs.setDefault(VIEWER_GV + ATTRIBUTE_FORWARD_SEARCH, "false");
 
-        prefs.setDefault(VIEWER_ACROBAT + ATTRIBUTE_COMMAND, DEFAULT_COMMAND_ACROBAT);
+        prefs.setDefault(VIEWER_ACROBAT + ATTRIBUTE_COMMAND, findFromEnvPath("acroread", "acroread.exe", ""));
         prefs.setDefault(VIEWER_ACROBAT + ATTRIBUTE_ARGUMENTS, DEFAULT_ARGUMENTS_ACROBAT);
         prefs.setDefault(VIEWER_ACROBAT + ATTRIBUTE_FORMAT, TexlipseProperties.OUTPUT_FORMAT_PDF);
         prefs.setDefault(VIEWER_ACROBAT + ATTRIBUTE_INVERSE_SEARCH, INVERSE_SEARCH_NO);
         prefs.setDefault(VIEWER_ACROBAT + ATTRIBUTE_FORWARD_SEARCH, "false");
 
-        prefs.setDefault(VIEWER_ITEXMAC + ATTRIBUTE_COMMAND, DEFAULT_COMMAND_ITEXMAC);
+        prefs.setDefault(VIEWER_ITEXMAC + ATTRIBUTE_COMMAND, findFromEnvPath("open", "", ""));
         prefs.setDefault(VIEWER_ITEXMAC + ATTRIBUTE_ARGUMENTS, DEFAULT_ARGUMENTS_ITEXMAC);
         prefs.setDefault(VIEWER_ITEXMAC + ATTRIBUTE_FORMAT, TexlipseProperties.OUTPUT_FORMAT_PDF);
         prefs.setDefault(VIEWER_ITEXMAC + ATTRIBUTE_INVERSE_SEARCH, INVERSE_SEARCH_RUN);

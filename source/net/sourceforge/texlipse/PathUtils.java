@@ -10,6 +10,7 @@
 package net.sourceforge.texlipse;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -175,7 +176,95 @@ public class PathUtils {
 	    }
 	}
 
-	/**
+    /**
+     * Get the path containing the given binary from environment variables.
+     * 
+     * @param bin relative path and file name to search for
+     *        in the directories listed in the "path" environment variable
+     * @return the directory that contains the given file or null if file was not found
+     */
+    public static String getEnvPath(String bin) {
+        
+        Properties prop = getEnv();
+        String path = prop.getProperty(findPathKey(prop));
+        if (path == null) {
+            return null;
+        }
+        
+        StringTokenizer st = new StringTokenizer(path, File.pathSeparator);
+        while (st.hasMoreTokens()) {
+            String latexPath = st.nextToken();
+
+            File latex = new File(latexPath + bin);
+            if (latex.exists() && latex.isFile()) {
+                return latexPath;
+            }
+        }
+        
+        return null;
+    }
+
+    /**
+     * 
+     * @param file file to search for
+     * @param path default path to use if the environment variable "path" doesn't contain the searched file
+     * @param winFile file to search for in windows
+     * @param winPath default path in windows
+     * @return the complete filename and path of the searched file
+     */
+    public static String findEnvFile(String file, String path, String winFile, String winPath) {
+        // default binary file to search for in the path
+        String defaultFile = file;
+        String defaultPath = path;
+        
+        // windows equivalents for the above
+        if (System.getProperty("os.name").indexOf("indow") > 0) {
+            defaultPath = winPath;
+            defaultFile = winFile;
+        }
+        
+        // try to find the file in the path
+        String envPath = getEnvPath(File.separator + defaultFile);
+        if (envPath == null) {
+            envPath = defaultPath;
+        }
+        
+        File envFile = new File(envPath, defaultFile);
+        if (envFile.exists()) {
+            return envFile.getAbsolutePath();
+        }
+        
+        return "";
+    }
+
+    /**
+     * 
+     * @param file file to search for
+     * @param path default path to use if the environment variable "path" doesn't contain the searched file
+     * @param winFile file to search for in windows
+     * @param winPath default path in windows
+     * @return the path containing the file or default path
+     */
+    public static String findInEnvPath(String file, String path, String winFile, String winPath) {
+        // default binary file to search for in the path
+        String defaultFile = file;
+        String defaultPath = path;
+        
+        // windows equivalents for the above
+        if (System.getProperty("os.name").indexOf("indow") > 0) {
+            defaultPath = winPath;
+            defaultFile = winFile;
+        }
+        
+        // try to find the file in the path
+        String envPath = getEnvPath(File.separator + defaultFile);
+        if (envPath == null) {
+            envPath = defaultPath;
+        }
+        return envPath;
+    }
+
+    /**
 	 * Read the operating system environment variables.
 	 * 
 	 * @see http://www.rgagnon.com/javadetails/java-0150.html

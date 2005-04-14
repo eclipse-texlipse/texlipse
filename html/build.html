@@ -98,6 +98,31 @@ be launched. Also, if the project&#39;s output file has been deleted after the l
 or is not yet created, the viewer obviously can&#39;t view anything.
 </p>
 
+<h3> Using source to output linking </h3>
+<p>
+Linking source to output means that the viewer is launched viewing the 
+position of output file which corresponds to the position of source 
+files where cursor is currently at. This is commonly referred as 
+<i>forward search</i>. Editors supporting forward search include at 
+least Xdvi in Linux and Yap in Windows.
+</p><p>
+Configuring forward search happens usually by adding <code>&quot;%line
+%texfile&quot;</code> to somewhere in the viewer arguments. For example,
+this is what the Yap viewer has as its default arguments:
+<code>-1 -s &quot;%line %texfile&quot; %file</code>. When the viewer 
+is launched, <code>%line</code> is replaced with the line number where 
+the cursor is, <code>%texfile</code> is replaced with the name of the 
+file that is currently being edited and <code>%file</code> is replaced 
+with the project output file name.
+</p><p>
+Using forward search is easy once it is configured correctly. Just press 
+the preview-button in the menubar, or hit the preview hotkey (usually Ctrl+4).
+<br/>
+preview button:
+<br/>
+<img alt="preview icon" src="images/preview.gif"/>
+</p>
+
 
 <a name="sourcelink"></a>
 <h3> Using preview to source linking </h3>

@@ -10,7 +10,6 @@
 package net.sourceforge.texlipse.viewer;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -22,8 +21,6 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.IWorkspaceRoot;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbenchPage;
@@ -104,58 +101,59 @@ public class ViewerOutputScanner implements Runnable {
      * Opens the given file from the given location if the file belongs
      * to the currently open project.
      * 
+     * There is basically two possibilities for the filename:
+     * 1) Path is relative: the filename represents a relative path
+     *    from the current directory (project source dir) to the output dir.
+     * 2) Path is absolute: the filename is an absolute
+     *    path from the filesystem root to the project dir.
+     * 
      * @param file the file name, relative or absolute
      * @param lineNumber line number
      */
     protected void openFileFromLineNumber(String file, int lineNumber) {
         
+        if (project == null) {
+            return;
+        }
+        
         IResource resource = null;
         
-        // resolve file path, which is hopefully always absolute
-        IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
-        String wsDir = root.getLocation().toOSString();
-
-        int index = file.indexOf(wsDir);
-        if (index != 0) {
+        // path may contain project path
+        String projDir = project.getLocation().addTrailingSeparator().toOSString();
+        int index = file.indexOf(projDir);
+        if (index == 0) {
             
-            // path not absolute, guess current project
-            if (project == null) {
-                return;
-            }
-            
-            IFolder srcDir = TexlipseProperties.getProjectSourceDir(project);
-            if (srcDir != null) {
-                resource = srcDir.findMember(file);
-            } else {
-                resource = project.findMember(file);
-            }
+            // remove the project path (external or inside workspace)
+            file = file.substring(projDir.length());
+            resource = project.findMember(file);
             
         } else {
             
-            // viewer reports full path, check that source/output dirs aren't mixed up
-            String path = file.substring(wsDir.length()+1+project.getName().length()+1);
+            // path is relative
+            if (file.startsWith("..")) {
+                // remove dots and 'File.separator'
+                file = file.substring(3);
+            }
             
             String outDir = TexlipseProperties.getProjectProperty(project, TexlipseProperties.OUTPUT_DIR_PROPERTY);
             if (outDir != null && outDir.length() > 0) {
                 
-                outDir = outDir.replace('/' , ' ');
-                outDir = outDir.replace('\\' , ' ');
+                if (outDir.endsWith("/") || outDir.endsWith("\\")) {
+                    outDir = outDir.substring(0, outDir.length()-1);
+                }
                 outDir = outDir.trim();
-                if (path.indexOf(outDir) == 0) {
-                    path = path.substring(outDir.length()+1);
+                if (file.indexOf(outDir) == 0) {
+                    // remove output dir from path
+                    file = file.substring(outDir.length()+1);
                 }
             }
             
-            String srcDir = TexlipseProperties.getProjectProperty(project, TexlipseProperties.SOURCE_DIR_PROPERTY);
-            if (srcDir != null && srcDir.length() > 0) {
-                
-                srcDir = srcDir.replace('/' , ' ');
-                srcDir = srcDir.replace('\\' , ' ');
-                srcDir = srcDir.trim();
-                path = srcDir + File.separator + path;
+            IFolder srcDir = TexlipseProperties.getProjectSourceDir(project);
+            if (srcDir == null) {
+                resource = project.findMember(file);
+            } else {
+                resource = srcDir.findMember(file);
             }
-            
-            resource = project.findMember(path);
         }
         
         if (resource == null) {

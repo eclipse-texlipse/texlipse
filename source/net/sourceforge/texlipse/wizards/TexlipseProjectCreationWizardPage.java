@@ -21,10 +21,12 @@ import net.sourceforge.texlipse.builder.BuilderChooser;
 import net.sourceforge.texlipse.properties.TexlipseProperties;
 import net.sourceforge.texlipse.templates.ProjectTemplateManager;
 
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -32,7 +34,11 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.DirectoryDialog;
+import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.List;
 import org.eclipse.swt.widgets.Text;
@@ -48,6 +54,9 @@ public class TexlipseProjectCreationWizardPage extends TexlipseWizardPage {
     // textfield for project name
     private Text projectNameField;
     
+    // project location, if not in workspace
+    private Text projectLocationField;
+    
     // textfield for template preview
     private Text descriptionField;
     
@@ -59,6 +68,8 @@ public class TexlipseProjectCreationWizardPage extends TexlipseWizardPage {
 
     // output format / build order chooser
     private BuilderChooser outputChooser;
+
+    private String workspacePath;
 
     /**
      * 
@@ -75,8 +86,13 @@ public class TexlipseProjectCreationWizardPage extends TexlipseWizardPage {
      */
     public void createComponents(Composite parent) {
         
+        // path to the workspace root directory
+        workspacePath = ResourcesPlugin.getWorkspace().getRoot().getLocation().addTrailingSeparator().toOSString();
+        
         createProjectNameControl(parent);
-        addSeparator(parent);
+        addSpacer(parent, 2);
+        createProjectLocationControl(parent);
+        addSpacer(parent, 2);
         createOutputFormatControl(parent);
         addSeparator(parent);
         addSpacer(parent, 2);
@@ -129,9 +145,115 @@ public class TexlipseProjectCreationWizardPage extends TexlipseWizardPage {
             public void modifyText(ModifyEvent e) {
                 if (!projectNameField.isDisposed()) {
                     validateProjectName(projectNameField.getText());
+                    if (!projectLocationField.isEnabled()) {
+                        projectLocationField.setText(workspacePath + projectNameField.getText());
+                    }
                 }
             }
         });
+    }
+
+    /**
+     * Create project name settings box.
+     * @param composite the parent container
+     */
+    private void createProjectLocationControl(Composite parent) {
+
+        // create borders
+        Group group = new Group(parent, SWT.NULL);
+        group.setText(TexlipsePlugin.getResourceString("projectWizardLocationTitle"));
+        group.setLayout(new GridLayout());
+        GridData lgd = new GridData(GridData.FILL_HORIZONTAL);
+        lgd.horizontalSpan = 2;
+        group.setLayoutData(lgd);
+        
+        // add radioButtons
+        Button createLocalProjectButton = new Button(group, SWT.RADIO | SWT.LEFT);
+        createLocalProjectButton.setLayoutData(new GridData());
+        createLocalProjectButton.setText(TexlipsePlugin.getResourceString("projectWizardLocationLocal"));
+        createLocalProjectButton.setSelection(true);
+        createLocalProjectButton.addSelectionListener(new SelectionAdapter() {
+            public void widgetSelected(SelectionEvent event) {
+                projectLocationField.setText(workspacePath + projectNameField.getText());
+                Control[] c = projectLocationField.getParent().getChildren();
+                for (int i = 0; i < c.length; i++) {
+                    c[i].setEnabled(false);
+                }
+                attributes.setProjectLocation(null);
+            }});
+        Button createExternalProjectButton = new Button(group, SWT.RADIO | SWT.LEFT);
+        createExternalProjectButton.setLayoutData(new GridData());
+        createExternalProjectButton.setText(TexlipsePlugin.getResourceString("projectWizardLocationExternal"));
+        createExternalProjectButton.addSelectionListener(new SelectionAdapter() {
+            public void widgetSelected(SelectionEvent event) {
+                Control[] c = projectLocationField.getParent().getChildren();
+                for (int i = 0; i < c.length; i++) {
+                    c[i].setEnabled(true);
+                }
+                projectLocationField.setText("");
+            }});
+        
+        Composite composite = new Composite(group, SWT.NULL);
+        composite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        GridLayout cgl = new GridLayout();
+        cgl.numColumns = 3;
+        composite.setLayout(cgl);
+        
+        // add location label
+        Label label = new Label(composite, SWT.LEFT);
+        label.setText(TexlipsePlugin.getResourceString("projectWizardLocationLabel"));
+        label.setLayoutData(new GridData());
+        label.setEnabled(false);
+        
+        // add location field
+        projectLocationField = new Text(composite, SWT.SINGLE | SWT.BORDER);
+        projectLocationField.setText(workspacePath);
+        projectLocationField.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        projectLocationField.setEnabled(false);
+        projectLocationField.addModifyListener(new ModifyListener() {
+            public void modifyText(ModifyEvent e) {
+                if (!projectLocationField.isDisposed() && projectLocationField.isEnabled()) {
+                    validateProjectLocation(projectLocationField.getText());
+                }
+            }});
+        
+        Button browseLocationButton = new Button(composite, SWT.PUSH);
+        browseLocationButton.setText(TexlipsePlugin.getResourceString("openBrowse"));
+        browseLocationButton.setLayoutData(new GridData());
+        browseLocationButton.setEnabled(false);
+        browseLocationButton.addSelectionListener(new SelectionAdapter() {
+            public void widgetSelected(SelectionEvent event) {
+                DirectoryDialog dialog = new DirectoryDialog(projectLocationField.getShell());
+                dialog.setMessage(TexlipsePlugin.getResourceString("projectWizardLocationSelect"));
+                dialog.setText(TexlipsePlugin.getResourceString("projectWizardLocationSelect"));
+                String current = projectLocationField.getText();
+                if (current == null || current.length() == 0) {
+                    current = workspacePath;
+                }
+                dialog.setFilterPath(current);
+                String dirStr = dialog.open();
+                if (dirStr != null) {
+                    File dir = new File(dirStr);
+                    if (dir.exists() && dir.isDirectory()) {
+                        projectLocationField.setText(dir.getAbsolutePath());
+                    }
+                }
+            }});
+    }
+
+    /**
+     * Check if the external project location is valid.
+     * This method updates the status message for the project location.
+     * @param text the path to project location
+     */
+    private void validateProjectLocation(String text) {
+        IWorkspace workspace = ResourcesPlugin.getWorkspace();
+        IProject p = workspace.getRoot().getProject(projectNameField.getText());
+        IStatus status = workspace.validateProjectLocation(p, new Path(text));
+        if (status.getSeverity() == IStatus.OK) {
+            attributes.setProjectLocation(text);
+        }
+        updateStatus(status, projectLocationField);
     }
 
     /**

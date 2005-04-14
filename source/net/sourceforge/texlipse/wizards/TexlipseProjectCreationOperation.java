@@ -25,8 +25,11 @@ import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.ui.ide.IDE;
 
@@ -111,9 +114,11 @@ public class TexlipseProjectCreationOperation implements IRunnableWithProgress {
 
     /**
      * Create the project directory.
+     * If the user has specified an external project location,
+     * the project is created with a custom description for the location.
      * 
-     * @param project
-     * @param monitor
+     * @param project project
+     * @param monitor progress monitor
      * @throws CoreException
      */
     private void createProject(IProject project, IProgressMonitor monitor)
@@ -122,9 +127,20 @@ public class TexlipseProjectCreationOperation implements IRunnableWithProgress {
         monitor.subTask(TexlipsePlugin.getResourceString("projectWizardProgressDirectory"));
         
         if (!project.exists()) {
-            project.create(monitor);
+            if (attributes.getProjectLocation() != null) {
+                IProjectDescription desc = project.getWorkspace().newProjectDescription(project.getName());
+                IPath projectPath = new Path(attributes.getProjectLocation());
+                IStatus stat = ResourcesPlugin.getWorkspace().validateProjectLocation(project, projectPath);
+                if (stat.getSeverity() != IStatus.OK) {
+                    // should not happen. the location should have been checked in the wizard page
+                    throw new CoreException(stat);
+                }
+                desc.setLocation(projectPath);
+                project.create(desc, monitor);
+            } else {
+                project.create(monitor);
+            }
         }
-        
         if (!project.isOpen()) {
             project.open(monitor);
         }
@@ -133,8 +149,8 @@ public class TexlipseProjectCreationOperation implements IRunnableWithProgress {
     /**
      * Add a nature to the project.
      * 
-     * @param project
-     * @param monitor
+     * @param project project
+     * @param monitor progress monitor
      * @throws CoreException
      */
     public static void addProjectNature(IProject project, IProgressMonitor monitor)
@@ -201,8 +217,8 @@ public class TexlipseProjectCreationOperation implements IRunnableWithProgress {
     /**
      * Create main file of the project from template.
      * 
-     * @param project
-     * @param monitor
+     * @param project project
+     * @param monitor progress monitor
      * @throws CoreException
      */
     private void createMainFile(IProject project, IProgressMonitor monitor)

@@ -30,6 +30,7 @@ public class TexlipseProjectAttributes {
     private String template;
     private String outputFormat;
     private int builder;
+    private String projectLocation;
 
     /**
      * 
@@ -102,5 +103,11 @@ public class TexlipseProjectAttributes {
     }
     public void setBuilder(int selectedBuilder) {
         this.builder = selectedBuilder;
+    }
+    public String getProjectLocation() {
+        return projectLocation;
+    }
+    public void setProjectLocation(String text) {
+        this.projectLocation = text;
     }
 }

@@ -14,4 +14,5 @@
 	<topic label="Using BibTeX" href="html/bibtex.html"/>
 	<topic label="Managing references" href="html/ref.html"/>
 	<topic label="Building and previewing" href="html/build.html"/>
+	<topic label="Spell checking" href="html/spelling.html"/>
 </toc>

@@ -15,6 +15,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.Reader;
 import java.util.HashMap;
+import java.util.Iterator;
 
 import net.sourceforge.texlipse.PathUtils;
 import net.sourceforge.texlipse.SelectedResourceManager;
@@ -24,6 +25,7 @@ import net.sourceforge.texlipse.editor.TexDocumentProvider;
 import net.sourceforge.texlipse.properties.TexlipseProperties;
 
 import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -102,7 +104,6 @@ public class SpellChecker implements IPropertyChangeListener {
     public static final String SPELL_CHECKER_COMMAND = "spellCmd";
     public static final String SPELL_CHECKER_ARGUMENTS = "spellArgs";
     public static final String SPELL_CHECKER_ENV = "spellEnv";
-    static final String SPELL_CHECKER_LANGUAGE = "spellLang";
     private static final String SPELL_CHECKER_ENCODING = "spellEnc";
     
     // the shared instance
@@ -129,11 +130,15 @@ public class SpellChecker implements IPropertyChangeListener {
     // map of proposals so far
     private HashMap proposalMap;
     
+    // the current language
+    private String language;
+    
     /**
      * Private constructor, because we want to keep this singleton.
      */
     private SpellChecker() {
         proposalMap = new HashMap();
+        language = "en";
     }
 
     /**
@@ -149,7 +154,6 @@ public class SpellChecker implements IPropertyChangeListener {
         // -a == ispell compatibility mode, -t == tex mode
         prefs.setDefault(SPELL_CHECKER_ARGUMENTS, "-a -t --encoding=%encoding --lang=%language");
         prefs.setDefault(SPELL_CHECKER_ENV, "");
-        prefs.setDefault(SPELL_CHECKER_LANGUAGE, "en");
         prefs.setDefault(SPELL_CHECKER_ENCODING, "ISO-8859-1");
         prefs.addPropertyChangeListener(instance);
         instance.readSettings();
@@ -176,10 +180,28 @@ public class SpellChecker implements IPropertyChangeListener {
         String args = TexlipsePlugin.getPreference(SPELL_CHECKER_ARGUMENTS);
         
         args = args.replaceAll("%encoding", TexlipsePlugin.getPreference(SPELL_CHECKER_ENCODING));
-        args = args.replaceAll("%language", TexlipsePlugin.getPreference(SPELL_CHECKER_LANGUAGE));
+        args = args.replaceAll("%language", language);
         
         command = f.getAbsolutePath() + " " + args;
         envp = PathUtils.mergeEnvFromPrefs(PathUtils.getEnv(), SPELL_CHECKER_ENV);
+    }
+
+    /**
+     * Check that the current language setting is correct.
+     */
+    private void checkLanguage() {
+        String pLang = null;
+        IProject prj = TexlipsePlugin.getCurrentProject();
+        if (prj != null) {
+            pLang = TexlipseProperties.getProjectProperty(prj, TexlipseProperties.LANGUAGE_PROPERTY);
+        }
+        
+        if (pLang != null && pLang.length() > 0) {
+            if (!pLang.equals(language)) {
+                language = pLang;
+                readSettings();
+            }
+        }
     }
 
     /**
@@ -209,6 +231,7 @@ public class SpellChecker implements IPropertyChangeListener {
      * Restart the program, if necessary.
      */
     protected void checkProgram() {
+        checkLanguage();
         if (spellProgram == null) {
             startProgram();
         } else {
@@ -262,6 +285,15 @@ public class SpellChecker implements IPropertyChangeListener {
         Thread.yield();
         String message = input.getBuffer();
         
+        // just a hack to wait for the aspell program to wake up
+        while (message.length() == 0 && errors.length() == 0) {
+            Thread.yield();
+            // aspell prints to either stdout...
+            message = input.getBuffer();
+            // ...or stderr, when it starts
+            errors = errorStream.getBuffer();
+        }
+        
         // choose message to print
         if (message.length() == 0) {
             message = errors;
@@ -278,15 +310,6 @@ public class SpellChecker implements IPropertyChangeListener {
             spellProgram.destroy();
             spellProgram = null;
         }
-    }
-    
-    /**
-     * Set the spell checker language.
-     * @param lang language to use
-     */
-    public static void setLanguage(String lang) {
-        TexlipsePlugin.getDefault().getPreferenceStore().setValue(SPELL_CHECKER_LANGUAGE, lang);
-        instance.stopProgram();
     }
 
     /**
@@ -311,6 +334,7 @@ public class SpellChecker implements IPropertyChangeListener {
         // check if we can mark the errors
         IResource res = SelectedResourceManager.getDefault().getSelectedResource();
         if (res == null) {
+            //BuilderRegistry.printToConsole("Can't find reference to selected file.");
             return;
         }
         
@@ -382,9 +406,12 @@ public class SpellChecker implements IPropertyChangeListener {
     }
 
     /**
-     * @param file
-     * @param integer
-     * @param proposals
+     * Adds a spelling error marker at the given offset in the file.
+     * 
+     * @param file file the was spell-checked
+     * @param begin beginning offset of the misspelled word
+     * @param end ending offset of the misspelled word
+     * @param proposals correction proposals for the misspelled word
      * @throws CoreException
      */
     private void addProposal(IResource file, int begin, int end, String[] proposals) throws CoreException {
@@ -403,8 +430,10 @@ public class SpellChecker implements IPropertyChangeListener {
     }
 
     /**
-     * @param marker
-     * @return
+     * Returns the spelling correction proposal words for the given marker.
+     * 
+     * @param marker a marker
+     * @return correction proposals
      */
     public static String[] getProposals(IMarker marker) {
         return (String[]) instance.proposalMap.get(marker);
@@ -416,7 +445,7 @@ public class SpellChecker implements IPropertyChangeListener {
      * @param doc the document
      */
     protected void checkDocumentSpelling(IDocument doc) {
-        proposalMap.clear();
+        deleteOldProposals();
         checkProgram();
         try {
             int num = doc.getNumberOfLines();
@@ -431,6 +460,23 @@ public class SpellChecker implements IPropertyChangeListener {
     }
 
     /**
+     * Deletes all the error markers of the previous check.
+     * This has to be done to avoid duplicates.
+     * Also, old markers are probably not anymore in the correct positions.
+     */
+    private void deleteOldProposals() {
+        Iterator iter = proposalMap.keySet().iterator();
+        while (iter.hasNext()) {
+            IMarker mark = (IMarker) iter.next();
+            try {
+                mark.delete();
+            } catch (CoreException e) {
+            }
+        }
+        proposalMap.clear();
+    }
+
+    /**
      * The IPropertyChangeListener method.
      * Re-reads the settings from preferences.
      */
@@ -442,8 +488,10 @@ public class SpellChecker implements IPropertyChangeListener {
     }
 
     /**
-     * @param offset
-     * @return
+     * Finds the spelling correction proposals for the word at the given offset.
+     * 
+     * @param offset text offset in the current file
+     * @return completion proposals, or null if there is no marker at the given offset
      */
     public static ICompletionProposal[] getSpellingProposal(int offset) {
         
@@ -464,7 +512,7 @@ public class SpellChecker implements IPropertyChangeListener {
             int charEnd = markers[i].getAttribute(IMarker.CHAR_END, -1);
             if (charBegin <= offset && offset <= charEnd) {
                 SpellingResolutionGenerator gen = new SpellingResolutionGenerator();
-                return convertAll(gen.getResolutions(markers[i]));
+                return convertAll(gen.getResolutions(markers[i]), markers[i]);
             }
         }
         
@@ -472,16 +520,19 @@ public class SpellChecker implements IPropertyChangeListener {
     }
 
     /**
-     * @param resolutions
-     * @return
+     * Converts the given marker resolutions to completion proposals.
+     * 
+     * @param resolutions marker resolutions
+     * @param marker marker that holds the given resolutions
+     * @return completion proposals for the given marker
      */
-    private static ICompletionProposal[] convertAll(IMarkerResolution[] resolutions) {
+    private static ICompletionProposal[] convertAll(IMarkerResolution[] resolutions, IMarker marker) {
         
         ICompletionProposal[] array = new ICompletionProposal[resolutions.length];
         
         for (int i = 0; i < resolutions.length; i++) {
             SpellingMarkerResolution smr = (SpellingMarkerResolution) resolutions[i];
-            array[i] = new SpellingCompletionProposal(smr.getSolution(), smr.getOffset(), smr.getLength());
+            array[i] = new SpellingCompletionProposal(smr.getSolution(), smr.getOffset(), smr.getLength(), marker);
         }
         
         return array;

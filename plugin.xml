@@ -74,7 +74,7 @@
             contributorClass="org.eclipse.ui.editors.text.TextEditorActionContributor"
             name="Latex Editor"
             id="net.sourceforge.texlipse.TexEditor"
-            extensions="tex,ltx"/>
+            extensions="tex,ltx,sty"/>
       <editor
             class="net.sourceforge.texlipse.bibeditor.BibEditor"
             icon="icons/bibfile.gif"
@@ -265,7 +265,7 @@
 	  </participant>
    <participant
          class="net.sourceforge.texlipse.editor.TexDocumentSetupParticipant"
-         extensions="tex,ltx"/>
+         extensions="tex,ltx,sty"/>
    </extension>
    <extension
          point="org.eclipse.help.toc">
@@ -840,13 +840,6 @@ ${cursor}
                style="push"
                menubarPath="LatexMenu/commentGroup"
                id="actions.SpellCheckAction"/>
-         <action
-               label="Change Spelling Language"
-               definitionId="actions.SpellCheckLanguageAction"
-               class="net.sourceforge.texlipse.spelling.SpellCheckLanguageAction"
-               style="push"
-               menubarPath="LatexMenu/commentGroup"
-               id="actions.SpellCheckLanguageAction"/>
       </editorContribution>
    </extension>
    <extension
@@ -934,11 +927,10 @@ ${cursor}
             categoryId="Texlipse"
             name="Check Spelling"
             id="actions.SpellCheckAction"/>
-      <command
-            category="Texlipse"
-            categoryId="Texlipse"
-            name="Change Spelling Language"
-            id="actions.SpellCheckLanguageAction"/>
+      <keyBinding
+            command="actions.SpellCheckAction"
+            string="Shift+Ctrl+6"
+            configuration="org.eclipse.ui.defaultAcceleratorConfiguration"/>
    </extension>
    <extension
          id="builderproblem"
@@ -963,5 +955,52 @@ ${cursor}
       <markerResolutionGenerator
             class="net.sourceforge.texlipse.spelling.SpellingResolutionGenerator"
             markerType="net.sourceforge.texlipse.spellingproblem"/>
+   </extension>
+   <extension
+         point="org.eclipse.ui.ide.resourceFilters">
+      <filter
+            selected="false"
+            pattern="*.aux">
+      </filter>
+      <filter
+            selected="false"
+            pattern="*.log">
+      </filter>
+      <filter
+            selected="false"
+            pattern="*.toc">
+      </filter>
+      <filter
+            selected="false"
+            pattern="*.dvi">
+      </filter>
+      <filter
+            selected="false"
+            pattern="*.ps">
+      </filter>
+      <filter
+            selected="false"
+            pattern="*.bbl">
+      </filter>
+      <filter
+            selected="false"
+            pattern="*.blg">
+      </filter>
+      <filter
+            selected="false"
+            pattern="*.ind">
+      </filter>
+      <filter
+            selected="false"
+            pattern="*.ilg">
+      </filter>
+      <filter
+            selected="false"
+            pattern="*.lot">
+      </filter>
+      <filter
+            selected="false"
+            pattern="*.lof">
+      </filter>
    </extension>
 </plugin>

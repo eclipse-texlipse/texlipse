@@ -53,6 +53,8 @@ public class TexlipseProperties {
     public static final String OUTPUT_DIR_PROPERTY = "outputDir";
     public static final String SOURCE_DIR_PROPERTY = "srcDir";
     public static final String TEMP_DIR_PROPERTY = "tempDir";
+    public static final String MARK_DERIVED_PROPERTY = "markDer";
+    public static final String LANGUAGE_PROPERTY = "langSpell";
     
     public static final String BIBCONTAINER_PROPERTY = "bibContainer";
     public static final String LABELCONTAINER_PROPERTY = "labelContainer";
@@ -344,6 +346,8 @@ public class TexlipseProperties {
         setProjectProperty(project, TEMP_DIR_PROPERTY, prop.getProperty(TEMP_DIR_PROPERTY, ""));
         setProjectProperty(project, BUILDER_NUMBER, prop.getProperty(BUILDER_NUMBER, ""));
         setProjectProperty(project, OUTPUT_FORMAT, prop.getProperty(OUTPUT_FORMAT, ""));
+        setProjectProperty(project, MARK_DERIVED_PROPERTY, prop.getProperty(MARK_DERIVED_PROPERTY, ""));
+        setProjectProperty(project, LANGUAGE_PROPERTY, prop.getProperty(LANGUAGE_PROPERTY, ""));
     }
     
     /**
@@ -363,6 +367,8 @@ public class TexlipseProperties {
         prop.setProperty(TEMP_DIR_PROPERTY, getProjectProperty(project, TEMP_DIR_PROPERTY));
         prop.setProperty(BUILDER_NUMBER, getProjectProperty(project, BUILDER_NUMBER));
         prop.setProperty(OUTPUT_FORMAT, getProjectProperty(project, OUTPUT_FORMAT));
+        prop.setProperty(MARK_DERIVED_PROPERTY, getProjectProperty(project, MARK_DERIVED_PROPERTY));
+        prop.setProperty(LANGUAGE_PROPERTY, getProjectProperty(project, LANGUAGE_PROPERTY));
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try {

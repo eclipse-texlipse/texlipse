@@ -333,6 +333,9 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
         // build finished successfully, so refresh the directory
         IContainer sourceDir = resource.getParent();
         sourceDir.refreshLocal(IProject.DEPTH_ONE, monitor);
+
+        // mark temp files as derived
+        markTempFiles(project, sourceDir);
         
         // move the output file to correct place
         moveOutput(project, sourceDir, monitor);
@@ -542,6 +545,9 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
         }
         sourceDir.refreshLocal(IProject.DEPTH_ONE, monitor);
         
+        // mark temp files as derived
+        markTempFiles(project, sourceDir);
+        
         // possibly move output & temp files away from the source dir
         moveOutput(project, sourceDir, monitor);
         moveTempFiles(project, monitor);
@@ -569,6 +575,40 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
         return true;
     }
 
+    /**
+     * Mark temporary files used by Latex program as "derived" to hide them from
+     * version control systems. 
+     * 
+     * @param project the current project
+     * @param srcDir the directory where the output file is (where the source file was built)
+     * @param monitor progress monitor
+     * @throws CoreException if an error occurs
+     */
+    private void markTempFiles(IProject project, IContainer sourceDir) throws CoreException {
+        
+        String mark = TexlipseProperties.getProjectProperty(project, TexlipseProperties.MARK_DERIVED_PROPERTY);
+        if (!"true".equals(mark)) {
+            return;
+        }
+        
+        IResource[] files = sourceDir.members();
+        if (files == null) {
+            return;
+        }
+        
+        String[] exts = TexlipsePlugin.getPreferenceArray(TexlipseProperties.TEMP_FILE_EXTS);
+        for (int i = 0; i < files.length; i++) {
+            
+            String fileName = files[i].getName();
+            for (int j = 0; j < exts.length; j++) {
+                
+                if (fileName.endsWith(exts[j])) {
+                    files[i].setDerived(true);
+                }
+            }
+        }
+    }
+    
     /**
      * Move output file to output directory.
      * 

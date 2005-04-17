@@ -11,6 +11,8 @@ package net.sourceforge.texlipse.spelling;
 
 import net.sourceforge.texlipse.TexlipsePlugin;
 
+import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
@@ -29,14 +31,17 @@ public class SpellingCompletionProposal implements ICompletionProposal {
     private String solution;
     private int offset;
     private int length;
+    private IMarker marker;
 
     /**
      * Constructs a new completion proposal for spelling correction.
+     * @param marker
      */
-    public SpellingCompletionProposal(String str, int begin, int len) {
+    public SpellingCompletionProposal(String str, int begin, int len, IMarker marker) {
         solution = str;
         offset = begin;
         length = len;
+        this.marker = marker;
     }
 
     /**
@@ -48,6 +53,10 @@ public class SpellingCompletionProposal implements ICompletionProposal {
         try {
             document.replace(offset, length, solution);
         } catch (BadLocationException e) {
+        }
+        try {
+            marker.delete();
+        } catch (CoreException e) {
         }
     }
 

@@ -21,6 +21,7 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
@@ -44,8 +45,14 @@ public class TexlipseProjectPropertyPage extends PropertyPage {
     // text field for bib file
     private Text tempDirField;
 
+    // checkbox for marking derived files
+    private Button derivedCheckbox;
+    
     // builder choosing component
     private BuilderChooser builderChooser;
+    
+    // language code
+    private Text languageField;
     
     /**
      * Constructor for the property page.
@@ -72,7 +79,11 @@ public class TexlipseProjectPropertyPage extends PropertyPage {
         TexlipsePreferencePage.addSeparator(1, composite);
         addTempDirSection(composite);
         TexlipsePreferencePage.addSeparator(1, composite);
+        addDerivedSection(composite);
+        TexlipsePreferencePage.addSeparator(1, composite);
         addFormatSection(composite);
+        TexlipsePreferencePage.addSeparator(1, composite);
+        addLangSection(composite);
 
         performDefaults();
 
@@ -220,7 +231,7 @@ public class TexlipseProjectPropertyPage extends PropertyPage {
     }
 
     /**
-     * Create the bib dir section of the page.
+     * Create the temp dir section of the page.
      * @param parent parent component
      */
     private void addTempDirSection(Composite parent) {
@@ -242,7 +253,8 @@ public class TexlipseProjectPropertyPage extends PropertyPage {
     }
 
     /**
-     * 
+     * Check that the directory name in the temp dir text field is a valid
+     * directory name.
      */
     private void validateTempFileField() {
         String text = tempDirField.getText();
@@ -263,6 +275,17 @@ public class TexlipseProjectPropertyPage extends PropertyPage {
     }
     
     /**
+     * Add the checkbox for controlling "derived"-flag.
+     * @param parent parent component
+     */
+    private void addDerivedSection(Composite parent) {
+        derivedCheckbox = new Button(parent, SWT.CHECK | SWT.LEFT);
+        derivedCheckbox.setLayoutData(new GridData());
+        derivedCheckbox.setText(TexlipsePlugin.getResourceString("propertiesDerivedFiles"));
+        derivedCheckbox.setToolTipText(TexlipsePlugin.getResourceString("propertiesDerivedFilesTooltip"));
+    }
+    
+    /**
      * Create output file format section of the page.
      * @param parent parent component
      */
@@ -278,6 +301,26 @@ public class TexlipseProjectPropertyPage extends PropertyPage {
             }});
     }
 
+    /**
+     * Create a text field for language setting.
+     * @param parent parent component
+     */
+    private void addLangSection(Composite parent) {
+        
+        Label descr = new Label(parent, SWT.LEFT | SWT.WRAP);
+        descr.setLayoutData(new GridData());
+        descr.setText(TexlipsePlugin.getResourceString("propertiesLanguageDescription"));
+        
+        Composite composite = createDefaultComposite(parent, 2);
+        
+        Label label = new Label(composite, SWT.LEFT);
+        label.setLayoutData(new GridData());
+        label.setText(TexlipsePlugin.getResourceString("propertiesLanguage"));
+        
+        languageField = new Text(composite, SWT.SINGLE | SWT.BORDER);
+        languageField.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+    }
+    
     /**
      * Change the output file's extension according to the parameter.
      * This method only changes the value in the textfield, 
@@ -343,7 +386,14 @@ public class TexlipseProjectPropertyPage extends PropertyPage {
             if (TexlipseProperties.isProjectPropertiesFileChanged((IProject) project)) {
                 TexlipseProperties.loadProjectProperties((IProject) project);
             }
-        }        
+        }
+        
+        // derived flag
+        String deriv = TexlipseProperties.getProjectProperty(project, TexlipseProperties.MARK_DERIVED_PROPERTY);
+        derivedCheckbox.setSelection("true".equals(deriv));
+        
+        // language code
+        languageField.setText(TexlipseProperties.getProjectProperty(project, TexlipseProperties.LANGUAGE_PROPERTY));
         
         // read source file name
         String srcDir = TexlipseProperties.getProjectProperty(project,
@@ -454,6 +504,12 @@ public class TexlipseProjectPropertyPage extends PropertyPage {
         }
         TexlipseProperties.setProjectProperty(project,
                 TexlipseProperties.BUILDER_NUMBER, num+"");
+        
+        TexlipseProperties.setProjectProperty(project,
+                TexlipseProperties.MARK_DERIVED_PROPERTY, derivedCheckbox.getSelection()+"");
+        
+        TexlipseProperties.setProjectProperty(project,
+                TexlipseProperties.LANGUAGE_PROPERTY, languageField.getText());
         
         // save values
         TexlipseProperties.setProjectProperty(project,

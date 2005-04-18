@@ -49,6 +49,8 @@ public class SelectedResourceManager implements IWindowListener, ISelectionListe
     
     // last tex file that was made active
     private IResource fSelectedTexResource = null;
+
+    private int fSelectedLine;
     
     /**
      * Private constructor to use with the singleton.
@@ -139,13 +141,15 @@ public class SelectedResourceManager implements IWindowListener, ISelectionListe
         
         if (selectedResource != null) {
             fSelectedResource = selectedResource;
-            if ("tex".equals(fSelectedResource.getFileExtension())) {
+            if ("tex".equalsIgnoreCase(fSelectedResource.getFileExtension()) ||
+                    "ltx".equalsIgnoreCase(fSelectedResource.getFileExtension())) {
                 fSelectedTexResource = fSelectedResource;
             }
         }
         
         if (selection instanceof ITextSelection) {
             fSelectedText = ((ITextSelection)selection).getText();
+            fSelectedLine = ((ITextSelection)selection).getStartLine();
         }
     }
     
@@ -178,5 +182,13 @@ public class SelectedResourceManager implements IWindowListener, ISelectionListe
      */
     public IResource getSelectedTexResource() {
         return fSelectedTexResource;
+    }
+    
+    /**
+     * Returns the number of the currently selected line.
+     * @return the number of the currently selected line
+     */
+    public int getSelectedLine() {
+        return fSelectedLine;
     }
 }

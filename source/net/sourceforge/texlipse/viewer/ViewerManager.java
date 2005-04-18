@@ -33,9 +33,6 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.jface.text.ITextSelection;
-import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.ui.IWorkbenchPage;
 
 
 /**
@@ -296,8 +293,13 @@ public class ViewerManager {
      * @return the current line number of the current page
      */
     private int getCurrentLineNumber() {
-        
+
         int lineNumber = 0;
+        /* Commented this out, because the selection-code did not work
+         * with launch configurations. IWorkbenchPage.getSelection() needs
+         * to run in a UI thread and ILaunchConfigurationDelegate is not one of those.
+         *  - Kimmo Karlsson
+         * 
         IWorkbenchPage currentWorkbenchPage = TexlipsePlugin.getCurrentWorkbenchPage();
         if (currentWorkbenchPage != null) {
             
@@ -311,7 +313,11 @@ public class ViewerManager {
                 }
             }
         }
-        
+        */
+        lineNumber = SelectedResourceManager.getDefault().getSelectedLine();
+        if (lineNumber <= 0) {
+            lineNumber = 1;
+        }
         return lineNumber;
     }
     
@@ -394,6 +400,9 @@ public class ViewerManager {
         }
         
         IResource selectedRes = SelectedResourceManager.getDefault().getSelectedResource();
+        if (selectedRes.getType() != IResource.FOLDER) {
+            selectedRes = SelectedResourceManager.getDefault().getSelectedTexResource();
+        }
         String relPath = resolveRelativePath(srcDir.getFullPath(), selectedRes.getFullPath().removeLastSegments(1));
         String texFile = relPath + selectedRes.getName();
         

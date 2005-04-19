@@ -29,18 +29,14 @@ import org.eclipse.swt.graphics.Point;
 public class SpellingCompletionProposal implements ICompletionProposal {
 
     private String solution;
-    private int offset;
-    private int length;
     private IMarker marker;
 
     /**
      * Constructs a new completion proposal for spelling correction.
      * @param marker
      */
-    public SpellingCompletionProposal(String str, int begin, int len, IMarker marker) {
+    public SpellingCompletionProposal(String str, IMarker marker) {
         solution = str;
-        offset = begin;
-        length = len;
         this.marker = marker;
     }
 
@@ -50,6 +46,9 @@ public class SpellingCompletionProposal implements ICompletionProposal {
      * @param document the document into which to insert the proposed completion
      */
     public void apply(IDocument document) {
+        int offset = marker.getAttribute(IMarker.CHAR_START, -1);
+        int offset2 = marker.getAttribute(IMarker.CHAR_END, -1);
+        int length = offset2-offset;
         try {
             document.replace(offset, length, solution);
         } catch (BadLocationException e) {
@@ -74,6 +73,10 @@ public class SpellingCompletionProposal implements ICompletionProposal {
      * @return the new selection in absolute document coordinates
      */
     public Point getSelection(IDocument document) {
+        int offset = marker.getAttribute(IMarker.CHAR_START, -1);
+        if (offset == -1) {
+            return null;
+        }
         return new Point(offset, solution.length());
     }
 

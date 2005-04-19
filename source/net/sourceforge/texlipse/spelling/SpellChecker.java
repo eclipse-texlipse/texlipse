@@ -74,6 +74,12 @@ class ReaderBuffer implements Runnable {
      * Read characters form the input as long as there is input.
      */
     public void run() {
+        
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e1) {
+        }
+        
         while (reader != null) {
             try {
                 int ch = reader.read();
@@ -227,6 +233,27 @@ public class SpellChecker implements IPropertyChangeListener {
     }
     
     /**
+     * Clear all spelling error markers.
+     */
+    public static void clearMarkers(IResource resource) {
+        if (resource != null) {
+            try {
+                resource.deleteMarkers(SPELLING_ERROR_MARKER_TYPE, false, IResource.DEPTH_ONE);
+            } catch (CoreException e) {
+            }
+        }/*
+        Iterator iter = instance.proposalMap.keySet().iterator();
+        while (iter.hasNext()) {
+            IMarker mark = (IMarker) iter.next();
+            try {
+                mark.delete();
+            } catch (CoreException e) {
+            }
+        }*/
+        instance.proposalMap.clear();
+    }
+    
+    /**
      * Check if the spelling program is still running.
      * Restart the program, if necessary.
      */
@@ -275,14 +302,14 @@ public class SpellChecker implements IPropertyChangeListener {
         input = new ReaderBuffer(reader);
         new Thread(input).start();
         
-        // read error message
+        // get error stream
         ReaderBuffer errorStream = new ReaderBuffer(new InputStreamReader(spellProgram.getErrorStream()));
         new Thread(errorStream).start();
-        Thread.yield();
+
+        // read error message
         String errors = errorStream.getBuffer();
         
         // read the version info
-        Thread.yield();
         String message = input.getBuffer();
         
         // just a hack to wait for the aspell program to wake up
@@ -446,7 +473,6 @@ public class SpellChecker implements IPropertyChangeListener {
      */
     protected void checkDocumentSpelling(IDocument doc) {
         deleteOldProposals();
-        checkProgram();
         try {
             int num = doc.getNumberOfLines();
             for (int i = 0; i < num; i++) {
@@ -532,7 +558,7 @@ public class SpellChecker implements IPropertyChangeListener {
         
         for (int i = 0; i < resolutions.length; i++) {
             SpellingMarkerResolution smr = (SpellingMarkerResolution) resolutions[i];
-            array[i] = new SpellingCompletionProposal(smr.getSolution(), smr.getOffset(), smr.getLength(), marker);
+            array[i] = new SpellingCompletionProposal(smr.getSolution(), marker);
         }
         
         return array;

@@ -840,6 +840,13 @@ ${cursor}
                style="push"
                menubarPath="LatexMenu/commentGroup"
                id="actions.SpellCheckAction"/>
+         <action
+               label="Clear Spelling Errors"
+               definitionId="actions.SpellUncheckAction"
+               class="net.sourceforge.texlipse.spelling.SpellUncheckAction"
+               style="push"
+               menubarPath="LatexMenu/commentGroup"
+               id="actions.SpellUncheckAction"/>
       </editorContribution>
    </extension>
    <extension
@@ -930,6 +937,15 @@ ${cursor}
       <keyBinding
             command="actions.SpellCheckAction"
             string="Shift+Ctrl+6"
+            configuration="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+      <command
+            category="Texlipse"
+            categoryId="Texlipse"
+            name="Clear Spelling Errors"
+            id="actions.SpellUncheckAction"/>
+      <keyBinding
+            command="actions.SpellUncheckAction"
+            string="Shift+Ctrl+7"
             configuration="org.eclipse.ui.defaultAcceleratorConfiguration"/>
    </extension>
    <extension

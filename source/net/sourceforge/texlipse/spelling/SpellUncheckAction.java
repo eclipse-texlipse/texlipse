@@ -9,7 +9,6 @@
  */
 package net.sourceforge.texlipse.spelling;
 
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.text.TextSelection;
 import org.eclipse.jface.viewers.ISelection;
@@ -21,16 +20,16 @@ import org.eclipse.ui.texteditor.ITextEditor;
 
 
 /**
- * Check the spelling of the currently edited document.
+ * Clear the spelling errors.
  * 
  * @author Kimmo Karlsson
  */
-public class SpellCheckAction implements IEditorActionDelegate {
+public class SpellUncheckAction implements IEditorActionDelegate {
     
 	private IEditorPart targetEditor;
 
     /**
-     * Run the spell check action.
+     * Clear the spelling error markers.
      * @param action the action
 	 */
 	public void run(IAction action) {
@@ -45,16 +44,9 @@ public class SpellCheckAction implements IEditorActionDelegate {
         ITextEditor textEditor = (ITextEditor) targetEditor;
         IEditorInput input = textEditor.getEditorInput();
         
-        // read encoding from the file
         if (input instanceof FileEditorInput) {
-            try {
-                String enc = ((FileEditorInput) input).getFile().getCharset();
-                SpellChecker.setEncoding(enc);
-            } catch (CoreException e) {
-            }
+            SpellChecker.clearMarkers(((FileEditorInput)input).getFile());
         }
-        
-        SpellChecker.checkSpelling(textEditor.getDocumentProvider().getDocument(input));
 	}
 
 	/**

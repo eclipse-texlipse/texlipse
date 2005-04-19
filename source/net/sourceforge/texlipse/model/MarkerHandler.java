@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 
 import net.sourceforge.texlipse.TexlipsePlugin;
+import net.sourceforge.texlipse.builder.TexlipseBuilder;
 
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
@@ -146,7 +147,11 @@ public class MarkerHandler {
             return;
         }
         try {
-            resource.deleteMarkers(IMarker.PROBLEM, true, IResource.DEPTH_INFINITE);
+            // regular problems == parsing errors
+            resource.deleteMarkers(IMarker.PROBLEM, false, IResource.DEPTH_INFINITE);
+            // builder markers == build problems
+            resource.deleteMarkers(TexlipseBuilder.MARKER_TYPE, false, IResource.DEPTH_INFINITE);
+            // don't clear spelling errors
         } catch (CoreException e) {
             TexlipsePlugin.log("Deleting markers", e);
         }

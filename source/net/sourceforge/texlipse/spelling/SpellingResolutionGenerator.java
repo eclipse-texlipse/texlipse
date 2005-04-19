@@ -56,12 +56,10 @@ public class SpellingResolutionGenerator implements IMarkerResolutionGenerator2 
         }
         
         IDocument doc = getProviderDocument();
-        int charBegin = marker.getAttribute(IMarker.CHAR_START, -1);
-        int charEnd = marker.getAttribute(IMarker.CHAR_END, -1);
         
         IMarkerResolution[] res = new IMarkerResolution[proposals.length];
         for (int i = 0; i < res.length; i++) {
-            res[i] = new SpellingMarkerResolution(charBegin, charEnd-charBegin, proposals[i], doc);
+            res[i] = new SpellingMarkerResolution(marker, proposals[i], doc);
         }
         return res;
     }

@@ -368,17 +368,7 @@ public class KeyValueListFieldEditor extends FieldEditor implements IInputValida
             valueTextField.setText(value);
             valueTextField.addModifyListener(new ModifyListener() {
                 public void modifyText(ModifyEvent e) {
-                    if (validator != null) {
-                        value = valueTextField.getText();
-                        if (value != null) {
-                            value = value.trim();
-                        }
-                        String error = validator.isValid(value);
-                        Button ok = getButton(IDialogConstants.OK_ID);
-                        ok.setEnabled(error == null);
-                    } else {
-                        value = valueTextField.getText();
-                    }
+                    value = valueTextField.getText();
                 }});
             
             return composite;

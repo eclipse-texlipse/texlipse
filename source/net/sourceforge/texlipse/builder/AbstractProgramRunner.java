@@ -309,11 +309,12 @@ public abstract class AbstractProgramRunner implements ProgramRunner {
      * @param resource the file where the problem occured
      * @param message error message
      * @param lineNumber line number
+     * @param severity severity of the marker
      */
-    public static void createMarker(IResource resource, Integer lineNumber, String message) {
+    public static void createMarker(IResource resource, Integer lineNumber, String message, int severity) {
         
         String markerType = TexlipseBuilder.MARKER_TYPE;
-        int severity = IMarker.SEVERITY_ERROR;
+        //int severity = IMarker.SEVERITY_ERROR;
         
         IMarker marker = AbstractProgramRunner.findMarker(resource, message, markerType);
         if (marker == null) {
@@ -336,6 +337,17 @@ public abstract class AbstractProgramRunner implements ProgramRunner {
         }
     }
 
+    /**
+     * Create a marker to the given resource. The marker's severity will be "ERROR".
+     * 
+     * @param resource the file where the problem occured
+     * @param message error message
+     * @param lineNumber line number
+     */
+    public static void createMarker(IResource resource, Integer lineNumber, String message) {
+        createMarker(resource, lineNumber, message, IMarker.SEVERITY_ERROR);
+    }
+    
     /**
      * Checks pre-existance of marker.
      * 

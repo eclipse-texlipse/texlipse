@@ -15,6 +15,7 @@ import java.util.StringTokenizer;
 import net.sourceforge.texlipse.properties.TexlipseProperties;
 
 import org.eclipse.core.resources.IContainer;
+import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 
@@ -23,6 +24,7 @@ import org.eclipse.core.resources.IResource;
  * Run the external latex program.
  * 
  * @author Kimmo Karlsson
+ * @author Oskar Ojala
  */
 public class LatexRunner extends AbstractProgramRunner {
 
@@ -109,6 +111,7 @@ public class LatexRunner extends AbstractProgramRunner {
                     int num = Integer.parseInt(lineNumberString);
                     lineNumber = new Integer(num);
                 } catch (NumberFormatException e) {
+                    continue;
                 }
                 
                 String error = "Undefined control sequence: "
@@ -191,7 +194,42 @@ public class LatexRunner extends AbstractProgramRunner {
                     // prepare to run bibtex
                     TexlipseProperties.setSessionProperty(resource.getProject(), TexlipseProperties.SESSION_BIBTEX_RERUN, "true");
                 }
+            } else if (line.startsWith("Overfull \\hbox") || line.startsWith("Underfull \\hbox")) {
+                
+                int startIndex = line.indexOf("lines ") + 6;
+                if (startIndex == -1)
+                    continue;
+                int endIndex = startIndex;
+                Integer lineNumber = null;
+                
+                //System.out.println(line.substring(startIndex));
+                for (; endIndex < line.length(); endIndex++) {
+                    if (!Character.isDigit(line.charAt(endIndex))) {
+                        try {
+                            //System.out.println(line.substring(startIndex, endIndex));
+                            int num = Integer.parseInt(line.substring(startIndex, endIndex));
+                            lineNumber = new Integer(num);
+                            break;
+                        } catch (NumberFormatException e) {}                        
+                    }
+                }
+                if (lineNumber != null) {
+                    String causingSourceFile = determineSourceFile();
+                    //System.out.println("cause: " + causingSourceFile);
+                    IResource extResource = null;
+                    if (causingSourceFile != null) {
+                        extResource = sourceDir.findMember(causingSourceFile);
+                    }
+                    
+                    if (extResource != null) {
+                        createMarker(extResource, lineNumber, line, IMarker.SEVERITY_WARNING);
+                    } else {
+                        createMarker(resource, lineNumber, line, IMarker.SEVERITY_WARNING);
+                    }                    
+                }
+                
             } else if (line.indexOf("(") != -1 || line.indexOf(")") != -1) {
+                // keep track of which source file we are parsing
                 this.updateParsedFile(line);
             }
         }
@@ -255,7 +293,7 @@ public class LatexRunner extends AbstractProgramRunner {
      */
     private String determineSourceFile() {
         if (!parsingStack.empty())
-            return ((String) parsingStack.pop()).substring(1);
+            return ((String) parsingStack.peek()).substring(1);
         else
             return null;
     }

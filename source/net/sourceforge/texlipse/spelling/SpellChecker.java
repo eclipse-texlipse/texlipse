@@ -519,7 +519,7 @@ public class SpellChecker implements IPropertyChangeListener {
      * @param offset text offset in the current file
      * @return completion proposals, or null if there is no marker at the given offset
      */
-    public static ICompletionProposal[] getSpellingProposal(int offset) {
+    public static ICompletionProposal[] getSpellingProposal(int offset, int replacementOffset, int replacementLength) {
         
         IResource res = SelectedResourceManager.getDefault().getSelectedResource();
         if (res == null) {
@@ -538,7 +538,7 @@ public class SpellChecker implements IPropertyChangeListener {
             int charEnd = markers[i].getAttribute(IMarker.CHAR_END, -1);
             if (charBegin <= offset && offset <= charEnd) {
                 SpellingResolutionGenerator gen = new SpellingResolutionGenerator();
-                return convertAll(gen.getResolutions(markers[i]), markers[i]);
+                return convertAll(gen.getResolutions(markers[i]), markers[i], replacementOffset, replacementLength);
             }
         }
         
@@ -550,15 +550,16 @@ public class SpellChecker implements IPropertyChangeListener {
      * 
      * @param resolutions marker resolutions
      * @param marker marker that holds the given resolutions
+     * @param 
      * @return completion proposals for the given marker
      */
-    private static ICompletionProposal[] convertAll(IMarkerResolution[] resolutions, IMarker marker) {
+    private static ICompletionProposal[] convertAll(IMarkerResolution[] resolutions, IMarker marker, int offset, int replacementLength) {
         
         ICompletionProposal[] array = new ICompletionProposal[resolutions.length];
         
         for (int i = 0; i < resolutions.length; i++) {
             SpellingMarkerResolution smr = (SpellingMarkerResolution) resolutions[i];
-            array[i] = new SpellingCompletionProposal(smr.getSolution(), marker);
+            array[i] = new SpellingCompletionProposal(smr.getSolution(), offset, replacementLength, marker);
         }
         
         return array;

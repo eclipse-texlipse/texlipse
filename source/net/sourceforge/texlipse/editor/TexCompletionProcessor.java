@@ -75,7 +75,7 @@ public class TexCompletionProcessor implements IContentAssistProcessor {
                 return null;
         }
 
-        int seqStartIdx = resolveCompletionEnd(completeDoc, offset - 1);
+        int seqStartIdx = resolveCompletionStart(completeDoc, offset - 1);
         if (seqStartIdx == -1)
             return null;
         String seqStart = completeDoc.substring(seqStartIdx, offset);
@@ -108,15 +108,18 @@ public class TexCompletionProcessor implements IContentAssistProcessor {
 //E            String replacement = seqStart.substring(1);
 //E            return computeTemplateCompletions(offset, replacement.length(), replacement, viewer);            
 //E        }
-        
-        //---------------------spell-checking-code-starts----------------------
-        ICompletionProposal[] prop = SpellChecker.getSpellingProposal(offset);
-        if (prop != null && prop.length > 0) {
-            return prop;
-        }
-        //---------------------spell-checking-code-ends------------------------
-        
+                
         if (Character.isWhitespace(seqStart.charAt(0))) {
+            //---------------------spell-checking-code-starts----------------------
+            // spell checking can't help with words not starting with a letter...
+            int wordEnd = resolveCompletionEnd(completeDoc, offset);
+            //System.out.println(wordEnd + ":" + seqStartIdx + " " + completeDoc.substring(seqStartIdx, wordEnd));
+            ICompletionProposal[] prop = SpellChecker.getSpellingProposal(offset, seqStartIdx + 1, wordEnd - seqStartIdx - 1);
+            if (prop != null && prop.length > 0) {
+                return prop;
+            }
+            //---------------------spell-checking-code-ends------------------------
+            
             String replacement = seqStart.substring(1);
             templateProposals = computeTemplateCompletions(offset, replacement.length(), replacement, viewer);
         } else {
@@ -205,7 +208,7 @@ public class TexCompletionProcessor implements IContentAssistProcessor {
      * @param offset The offset from where to search backwards
      * @return The offset where the activation char is found or -1 if it was not found
      */
-    public int resolveCompletionEnd(String doc, int offset) {
+    private int resolveCompletionStart(String doc, int offset) {
         while (offset >= 0) {
             if (Character.isWhitespace(doc.charAt(offset))
                     || doc.charAt(offset) == '{' || doc.charAt(offset) == '\\')
@@ -215,6 +218,16 @@ public class TexCompletionProcessor implements IContentAssistProcessor {
         return offset;
     }
 
+    private int resolveCompletionEnd(String doc, int offset) {
+        while (offset < doc.length()) {
+            if (!Character.isLetter(doc.charAt(offset)))
+                break;
+            offset++;
+        }
+        return offset;
+    }
+
+    
     /**
      * Resolves the command used for referencing (ie. from '\foo{bar' it resolves bar)
      * 
@@ -223,7 +236,7 @@ public class TexCompletionProcessor implements IContentAssistProcessor {
      * @return The string containing the LaTeX command for this reference or
      * null if there isn't any
      */
-    public String resolveRefCommand(String doc, int offset) {
+    private String resolveRefCommand(String doc, int offset) {
         int lastIndex = doc.lastIndexOf('\\', offset);
         if (lastIndex == -1)
             return null;

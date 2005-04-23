@@ -30,14 +30,18 @@ public class SpellingCompletionProposal implements ICompletionProposal {
 
     private String solution;
     private IMarker marker;
+    private int replacementLength;
+    private int offset;
 
     /**
      * Constructs a new completion proposal for spelling correction.
      * @param marker
      */
-    public SpellingCompletionProposal(String str, IMarker marker) {
+    public SpellingCompletionProposal(String str, int offset, int replacementLength, IMarker marker) {
         solution = str;
         this.marker = marker;
+        this.replacementLength = replacementLength;
+        this.offset = offset;
     }
 
     /**
@@ -46,11 +50,14 @@ public class SpellingCompletionProposal implements ICompletionProposal {
      * @param document the document into which to insert the proposed completion
      */
     public void apply(IDocument document) {
-        int offset = marker.getAttribute(IMarker.CHAR_START, -1);
-        int offset2 = marker.getAttribute(IMarker.CHAR_END, -1);
-        int length = offset2-offset;
+//        int offset = marker.getAttribute(IMarker.CHAR_START, -1);
+//        int offset2 = marker.getAttribute(IMarker.CHAR_END, -1);
+//        int length = offset2-offset;
         try {
-            document.replace(offset, length, solution);
+            //System.out.println(offset + ":" + length + ":" + solution);
+            //document.replace(offset, length, solution);
+            //System.out.println(offset + ":" + replacementLength + ":" + solution);
+            document.replace(this.offset, this.replacementLength, this.solution);
         } catch (BadLocationException e) {
         }
         try {

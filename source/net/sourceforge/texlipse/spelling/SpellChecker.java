@@ -30,7 +30,9 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.DocumentEvent;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IDocumentListener;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
@@ -38,70 +40,11 @@ import org.eclipse.ui.IMarkerResolution;
 import org.eclipse.ui.texteditor.MarkerUtilities;
 
 /**
- * Character buffer for external program output.
- * @author Kimmo Karlsson
- */
-class ReaderBuffer implements Runnable {
-    
-    // the input reader
-    private Reader reader;
-    
-    // buffer for the incoming data
-    private StringBuffer buffer;
-    
-    /**
-     * Create a new self-filling buffer.
-     * @param r reader
-     */
-    public ReaderBuffer(Reader r) {
-        reader = r;
-        buffer = new StringBuffer();
-    }
-    
-    /**
-     * @return the current contents of the buffer and clear the buffer
-     */
-    public String getBuffer() {
-        String str = null;
-        synchronized (buffer) {
-            str = buffer.toString();
-            buffer.delete(0, buffer.length());
-        }
-        return str;
-    }
-    
-    /**
-     * Read characters form the input as long as there is input.
-     */
-    public void run() {
-        
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e1) {
-        }
-        
-        while (reader != null) {
-            try {
-                int ch = reader.read();
-                if (ch == -1) {
-                    reader = null;
-                    return;
-                }
-                synchronized (buffer) {
-                    buffer.append((char)ch);
-                }
-            } catch (IOException e) {
-            }
-        }
-    }
-}
-
-/**
  * An abstraction to a spell checker program.
  * 
  * @author Kimmo Karlsson
  */
-public class SpellChecker implements IPropertyChangeListener {
+public class SpellChecker implements IPropertyChangeListener, IDocumentListener {
 
     // marker type for the spelling errors
     public static final String SPELLING_ERROR_MARKER_TYPE = TexlipseProperties.PACKAGE_NAME + ".spellingproblem";
@@ -138,6 +81,64 @@ public class SpellChecker implements IPropertyChangeListener {
     
     // the current language
     private String language;
+    
+    /**
+     * Character buffer for external program output.
+     */
+    class ReaderBuffer implements Runnable {
+        
+        // the input reader
+        private Reader reader;
+        
+        // buffer for the incoming data
+        private StringBuffer buffer;
+        
+        /**
+         * Create a new self-filling buffer.
+         * @param r reader
+         */
+        public ReaderBuffer(Reader r) {
+            reader = r;
+            buffer = new StringBuffer();
+        }
+        
+        /**
+         * @return the current contents of the buffer and clear the buffer
+         */
+        public String getBuffer() {
+            String str = null;
+            synchronized (buffer) {
+                str = buffer.toString();
+                buffer.delete(0, buffer.length());
+            }
+            return str;
+        }
+        
+        /**
+         * Read characters form the input as long as there is input.
+         */
+        public void run() {
+            
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e1) {
+            }
+            
+            while (reader != null) {
+                try {
+                    int ch = reader.read();
+                    if (ch == -1) {
+                        reader = null;
+                        return;
+                    }
+                    synchronized (buffer) {
+                        buffer.append((char)ch);
+                    }
+                } catch (IOException e) {
+                }
+            }
+        }
+    }
     
     /**
      * Private constructor, because we want to keep this singleton.
@@ -236,21 +237,11 @@ public class SpellChecker implements IPropertyChangeListener {
      * Clear all spelling error markers.
      */
     public static void clearMarkers(IResource resource) {
-        if (resource != null) {
-            try {
-                resource.deleteMarkers(SPELLING_ERROR_MARKER_TYPE, false, IResource.DEPTH_ONE);
-            } catch (CoreException e) {
-            }
-        }/*
-        Iterator iter = instance.proposalMap.keySet().iterator();
-        while (iter.hasNext()) {
-            IMarker mark = (IMarker) iter.next();
-            try {
-                mark.delete();
-            } catch (CoreException e) {
-            }
-        }*/
-        instance.proposalMap.clear();
+        instance.deleteOldProposals();
+        try {
+            resource.deleteMarkers(SPELLING_ERROR_MARKER_TYPE, false, IResource.DEPTH_ONE);
+        } catch (CoreException e) {
+        }
     }
     
     /**
@@ -473,6 +464,7 @@ public class SpellChecker implements IPropertyChangeListener {
      */
     protected void checkDocumentSpelling(IDocument doc) {
         deleteOldProposals();
+        doc.addDocumentListener(instance);
         try {
             int num = doc.getNumberOfLines();
             for (int i = 0; i < num; i++) {
@@ -563,5 +555,40 @@ public class SpellChecker implements IPropertyChangeListener {
         }
         
         return array;
+    }
+
+    /**
+     * The manipulation described by the document event will be performed.
+     * This implementation does nothing.
+     * @param event the document event describing the document change 
+     */
+    public void documentAboutToBeChanged(DocumentEvent event) {
+    }
+
+    /**
+     * The manipulation described by the document event has been performed.
+     * This implementation updates spelling error markers to get the positions
+     * right.
+     * @param event the document event describing the document change
+     */
+    public void documentChanged(DocumentEvent event) {
+        int origLength = event.getLength();
+        int length = event.getText().length();
+        int offset = event.getOffset();
+        int diff = length - origLength;
+        
+        Iterator iter = proposalMap.keySet().iterator();
+        while (iter.hasNext()) {
+            IMarker marker = (IMarker) iter.next();
+            int start = marker.getAttribute(IMarker.CHAR_START, -1);
+            if (start > offset) {
+                int end = marker.getAttribute(IMarker.CHAR_END, -1);
+                try {
+                    marker.setAttribute(IMarker.CHAR_START, start + diff);
+                    marker.setAttribute(IMarker.CHAR_END, end + diff);
+                } catch (CoreException e) {
+                }
+            }
+        }
     }
 }

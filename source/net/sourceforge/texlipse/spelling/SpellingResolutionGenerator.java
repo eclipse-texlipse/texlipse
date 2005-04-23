@@ -59,7 +59,7 @@ public class SpellingResolutionGenerator implements IMarkerResolutionGenerator2 
         
         IMarkerResolution[] res = new IMarkerResolution[proposals.length];
         for (int i = 0; i < res.length; i++) {
-            res[i] = new SpellingMarkerResolution(marker, proposals[i], doc);
+            res[i] = new SpellingMarkerResolution(proposals[i], doc);
         }
         return res;
     }

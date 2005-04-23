@@ -27,7 +27,6 @@ public class SpellingMarkerResolution implements IMarkerResolution2 {
 
     private String solution;
     private IDocument document;
-    private IMarker marker;
 
     /**
      * Create a spelling resolution.
@@ -37,15 +36,18 @@ public class SpellingMarkerResolution implements IMarkerResolution2 {
      * @param str replacement string (might be of different length than the replacable area)
      * @param doc the document where the replacing occurs
      */
-    public SpellingMarkerResolution(IMarker marker, String str, IDocument doc) {
+    public SpellingMarkerResolution(String str, IDocument doc) {
         document = doc;
         solution = str;
-        this.marker = marker;
     }
     
+    /**
+     * @return the solution string
+     */
     public String getSolution() {
         return solution;
     }
+    
     /**
      * @return label for the resolution dialog 
      */
@@ -59,8 +61,21 @@ public class SpellingMarkerResolution implements IMarkerResolution2 {
      * @param marker the marker to resolve
      */
     public void run(IMarker marker) {
+        
         int charBegin = marker.getAttribute(IMarker.CHAR_START, -1);
         int charEnd = marker.getAttribute(IMarker.CHAR_END, -1);
+
+        String str = document.get();
+        
+        if (charBegin > 0 && str.charAt(charBegin-1) != ' ' || str.charAt(charEnd) != ' ') {
+            charBegin++;
+            charEnd++;
+            while (str.charAt(charBegin-1) != ' ') {
+                charBegin++;
+                charEnd++;
+            }
+        }
+        
         try {
             document.replace(charBegin, charEnd-charBegin, solution);
         } catch (BadLocationException e) {

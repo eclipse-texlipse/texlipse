@@ -67,10 +67,12 @@ public class SpellingMarkerResolution implements IMarkerResolution2 {
 
         String str = document.get();
         
-        if (charBegin > 0 && str.charAt(charBegin-1) != ' ' || str.charAt(charEnd) != ' ') {
+        if (charBegin > 0 && str.length() < charEnd
+                && (!Character.isWhitespace(str.charAt(charBegin-1))
+                    || !Character.isWhitespace(str.charAt(charEnd)))) {
             charBegin++;
             charEnd++;
-            while (str.charAt(charBegin-1) != ' ') {
+            while (str.length() < charEnd && !Character.isWhitespace(str.charAt(charBegin-1))) {
                 charBegin++;
                 charEnd++;
             }

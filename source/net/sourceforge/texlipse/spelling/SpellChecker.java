@@ -24,10 +24,15 @@ import net.sourceforge.texlipse.builder.BuilderRegistry;
 import net.sourceforge.texlipse.editor.TexDocumentProvider;
 import net.sourceforge.texlipse.properties.TexlipseProperties;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.DocumentEvent;
@@ -54,33 +59,6 @@ public class SpellChecker implements IPropertyChangeListener, IDocumentListener 
     public static final String SPELL_CHECKER_ARGUMENTS = "spellArgs";
     public static final String SPELL_CHECKER_ENV = "spellEnv";
     private static final String SPELL_CHECKER_ENCODING = "spellEnc";
-    
-    // the shared instance
-    private static SpellChecker instance = new SpellChecker();
-    
-    // the external spelling program
-    private Process spellProgram;
-    
-    // the stream to the program
-    private PrintWriter output;
-    
-    // the stream from the program
-    private ReaderBuffer input;
-
-    // spelling program command with arguments
-    private String command;
-
-    // environment variables for the program
-    private String[] envp;
-    
-    // document provider to use with editors
-    private TexDocumentProvider provider;
-    
-    // map of proposals so far
-    private HashMap proposalMap;
-    
-    // the current language
-    private String language;
     
     /**
      * Character buffer for external program output.
@@ -121,7 +99,7 @@ public class SpellChecker implements IPropertyChangeListener, IDocumentListener 
             
             try {
                 Thread.sleep(1000);
-            } catch (InterruptedException e1) {
+            } catch (InterruptedException e) {
             }
             
             while (reader != null) {
@@ -129,16 +107,75 @@ public class SpellChecker implements IPropertyChangeListener, IDocumentListener 
                     int ch = reader.read();
                     if (ch == -1) {
                         reader = null;
-                        return;
+                        break;
                     }
                     synchronized (buffer) {
                         buffer.append((char)ch);
                     }
                 } catch (IOException e) {
+                    break;
                 }
             }
         }
     }
+    
+    /**
+     * A Spell-checker job.
+     */
+    class SpellCheckJob extends Job {
+
+        // the document to check for spelling
+        private IDocument document;
+        
+        // the file that contains the document
+        private IFile file;
+
+        /**
+         * Create a new spell-checker job for the given document.
+         * @param name document name
+         * @param doc document
+         */
+        public SpellCheckJob(String name, IDocument doc, IFile file) {
+            super(name);
+            document = doc;
+            this.file = file;
+        }
+        
+        /**
+         * Run the spell checker.
+         */
+        protected IStatus run(IProgressMonitor monitor) {
+            SpellChecker.checkSpellingDirectly(document, file);
+            return new Status(IStatus.OK, TexlipsePlugin.getPluginId(), IStatus.OK, "ok", null);
+        }
+    }
+    
+    // the shared instance
+    private static SpellChecker instance = new SpellChecker();
+    
+    // the external spelling program
+    private Process spellProgram;
+    
+    // the stream to the program
+    private PrintWriter output;
+    
+    // the stream from the program
+    private ReaderBuffer input;
+
+    // spelling program command with arguments
+    private String command;
+
+    // environment variables for the program
+    private String[] envp;
+    
+    // document provider to use with editors
+    private TexDocumentProvider provider;
+    
+    // map of proposals so far
+    private HashMap proposalMap;
+    
+    // the current language
+    private String language;
     
     /**
      * Private constructor, because we want to keep this singleton.
@@ -196,60 +233,30 @@ public class SpellChecker implements IPropertyChangeListener, IDocumentListener 
     /**
      * Check that the current language setting is correct.
      */
-    private void checkLanguage() {
+    private void checkLanguage(IFile file) {
         String pLang = null;
-        IProject prj = TexlipsePlugin.getCurrentProject();
+        IProject prj = file.getProject();
         if (prj != null) {
             pLang = TexlipseProperties.getProjectProperty(prj, TexlipseProperties.LANGUAGE_PROPERTY);
         }
         
         if (pLang != null && pLang.length() > 0) {
             if (!pLang.equals(language)) {
+                // current project is different language than currently running process, so change
                 language = pLang;
+                stopProgram();
                 readSettings();
             }
         }
     }
 
     /**
-     * Check spelling of a single line.
-     * 
-     * @param line the line of text
-     * @param offset start offset of the line in the document
-     * @return fix proposals, or empty array if all correct
-     */
-    public static void checkSpelling(String line, int offset, int lineNumber) {
-        instance.checkProgram();
-        instance.checkLineSpelling(line, offset, lineNumber);
-    }
-    
-    /**
-     * Check spelling of the entire document.
-     * 
-     * @param document document editor
-     */
-    public static void checkSpelling(IDocument document) {
-        instance.checkProgram();
-        instance.checkDocumentSpelling(document);
-    }
-    
-    /**
-     * Clear all spelling error markers.
-     */
-    public static void clearMarkers(IResource resource) {
-        instance.deleteOldProposals();
-        try {
-            resource.deleteMarkers(SPELLING_ERROR_MARKER_TYPE, false, IResource.DEPTH_ONE);
-        } catch (CoreException e) {
-        }
-    }
-    
-    /**
      * Check if the spelling program is still running.
      * Restart the program, if necessary.
+     * @param file
      */
-    protected void checkProgram() {
-        checkLanguage();
+    protected void checkProgram(IFile file) {
+        checkLanguage(file);
         if (spellProgram == null) {
             startProgram();
         } else {
@@ -296,7 +303,7 @@ public class SpellChecker implements IPropertyChangeListener, IDocumentListener 
         // get error stream
         ReaderBuffer errorStream = new ReaderBuffer(new InputStreamReader(spellProgram.getErrorStream()));
         new Thread(errorStream).start();
-
+        
         // read error message
         String errors = errorStream.getBuffer();
         
@@ -336,25 +343,99 @@ public class SpellChecker implements IPropertyChangeListener, IDocumentListener 
      */
     public static void setEncoding(String enc) {
         TexlipsePlugin.getDefault().getPreferenceStore().setValue(SPELL_CHECKER_ENCODING, enc);
-        instance.stopProgram();
+        // don't stop program yet, because the given encoding might not be different from current setting
+    }
+
+    /**
+     * The IPropertyChangeListener method.
+     * Re-reads the settings from preferences.
+     */
+    public void propertyChange(PropertyChangeEvent event) {
+        String prop = event.getProperty();
+        if (prop.startsWith("spell")) {
+            // encoding, program args or program path changed
+            //BuilderRegistry.printToConsole("spelling property changed: " + prop);
+            stopProgram();
+            readSettings();
+        }
     }
     
+    /**
+     * Check spelling of a single line.
+     * 
+     * @param line the line of text
+     * @param offset start offset of the line in the document
+     * @param file file
+     * @return fix proposals, or empty array if all correct
+     */
+    public static void checkSpelling(String line, int offset, int lineNumber, IFile file) {
+        instance.checkProgram(file);
+        instance.checkLineSpelling(line, offset, lineNumber, file);
+    }
+    
+    /**
+     * Check spelling of the entire document.
+     * This method returns after scheduling a spell-checker job.
+     * @param document document from the editor
+     * @param file
+     */
+    public static void checkSpelling(IDocument document, IFile file) {
+        instance.startSpellCheck(document, file);
+    }
+    
+    /**
+     * Check spelling of the entire document.
+     * This method returns after scheduling a spell-checker job.
+     * @param document document from the editor
+     */
+    private void startSpellCheck(IDocument document, IFile file) {
+        Job job = new SpellCheckJob("Spellchecker", document, file);
+        job.setUser(true);
+        job.schedule();
+    }
+    
+    /**
+     * Check spelling of the entire document.
+     * This method actually checks the spelling.
+     * @param document document from the editor
+     */
+    private static void checkSpellingDirectly(IDocument document, IFile file) {
+        instance.checkProgram(file);
+        instance.checkDocumentSpelling(document, file);
+    }
+
+    /**
+     * Check spelling of the entire document.
+     * 
+     * @param doc the document
+     * @param file
+     */
+    private void checkDocumentSpelling(IDocument doc, IFile file) {
+        deleteOldProposals(file);
+        doc.addDocumentListener(instance);
+        try {
+            int num = doc.getNumberOfLines();
+            for (int i = 0; i < num; i++) {
+                int offset = doc.getLineOffset(i);
+                int length = doc.getLineLength(i);
+                String line = doc.get(offset, length);
+                checkLineSpelling(line, offset, i+1, file);
+            }
+        } catch (BadLocationException e) {
+            TexlipsePlugin.log("Checking spelling on a line", e);
+        }
+    }
+
     /**
      * Check spelling of a single line.
      * This method parses ispell-style spelling error proposals.
      * 
      * @param line the line of text
      * @param offset start offset of the line in the document
+     * @param file
      * @return fix proposals, or empty array if all correct
      */
-    protected void checkLineSpelling(String line, int offset, int lineNumber) {
-        
-        // check if we can mark the errors
-        IResource res = SelectedResourceManager.getDefault().getSelectedResource();
-        if (res == null) {
-            //BuilderRegistry.printToConsole("Can't find reference to selected file.");
-            return;
-        }
+    private void checkLineSpelling(String line, int offset, int lineNumber, IFile file) {
         
         // give the speller something to parse
         line = line.replace('%', ' ');
@@ -392,11 +473,11 @@ public class SpellChecker implements IPropertyChangeListener, IDocumentListener 
                 int index = tmp.indexOf(':');
                 String[] proposals = tmp.substring(index+2).split(", ");
                 
-                createMarker(res, proposals, offset + column, wordLength, lineNumber);
+                createMarker(file, proposals, offset + column, wordLength, lineNumber);
             }
         }
     }
-    
+
     /**
      * Adds a spelling error marker to the given file.
      * 
@@ -448,33 +529,10 @@ public class SpellChecker implements IPropertyChangeListener, IDocumentListener 
     }
 
     /**
-     * Returns the spelling correction proposal words for the given marker.
-     * 
-     * @param marker a marker
-     * @return correction proposals
+     * Clear all spelling error markers.
      */
-    public static String[] getProposals(IMarker marker) {
-        return (String[]) instance.proposalMap.get(marker);
-    }
-    
-    /**
-     * Check spelling of the entire document.
-     * 
-     * @param doc the document
-     */
-    protected void checkDocumentSpelling(IDocument doc) {
-        deleteOldProposals();
-        doc.addDocumentListener(instance);
-        try {
-            int num = doc.getNumberOfLines();
-            for (int i = 0; i < num; i++) {
-                int offset = doc.getLineOffset(i);
-                int length = doc.getLineLength(i);
-                String line = doc.get(offset, length);
-                checkLineSpelling(line, offset, i+1);
-            }
-        } catch (BadLocationException e) {
-        }
+    public static void clearMarkers(IResource resource) {
+        instance.deleteOldProposals(resource);
     }
 
     /**
@@ -482,27 +540,38 @@ public class SpellChecker implements IPropertyChangeListener, IDocumentListener 
      * This has to be done to avoid duplicates.
      * Also, old markers are probably not anymore in the correct positions.
      */
-    private void deleteOldProposals() {
+    private void deleteOldProposals(IResource res) {
+        
+        // delete all markers with proposals, because there might be something in the other files
         Iterator iter = proposalMap.keySet().iterator();
         while (iter.hasNext()) {
-            IMarker mark = (IMarker) iter.next();
+            IMarker marker = (IMarker) iter.next();
             try {
-                mark.delete();
+                marker.delete();
             } catch (CoreException e) {
+                TexlipsePlugin.log("Deleting marker", e);
             }
         }
+        
+        // just in case delete all markers from this file
+        try {
+            res.deleteMarkers(SPELLING_ERROR_MARKER_TYPE, false, IResource.DEPTH_ONE);
+        } catch (CoreException e) {
+            TexlipsePlugin.log("Deleting markers", e);
+        }
+        
+        // clear the old proposals
         proposalMap.clear();
     }
 
     /**
-     * The IPropertyChangeListener method.
-     * Re-reads the settings from preferences.
+     * Returns the spelling correction proposal words for the given marker.
+     * 
+     * @param marker a marker
+     * @return correction proposals
      */
-    public void propertyChange(PropertyChangeEvent event) {
-        String prop = event.getProperty();
-        if (prop.startsWith("spell")) {
-            readSettings();
-        }
+    public static String[] getProposals(IMarker marker) {
+        return (String[]) instance.proposalMap.get(marker);
     }
 
     /**
@@ -587,6 +656,7 @@ public class SpellChecker implements IPropertyChangeListener, IDocumentListener 
                     marker.setAttribute(IMarker.CHAR_START, start + diff);
                     marker.setAttribute(IMarker.CHAR_END, end + diff);
                 } catch (CoreException e) {
+                    TexlipsePlugin.log("Setting marker location", e);
                 }
             }
         }

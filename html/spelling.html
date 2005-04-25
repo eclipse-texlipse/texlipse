@@ -34,7 +34,7 @@ can be specified. The default arguments should work with at least Aspell version
 <h3> Running spell checker </h3>
 
 <p> Once the setup is complete, the spell checker can be run by for the currently
-open LaTeX document by selecting <b>Latex &gt; Check document spelling</b> from
+open LaTeX document by selecting <b>Latex &gt; Check spelling</b> from
 the menu. If all goes well, the incorrectly spelt words in the document should
 get a yellow line under them (only the misspelled words!). By default, Aspell
 will skip the words appearing to be LaTeX commands. (This is controlled by the
@@ -56,10 +56,17 @@ corrections by pressing <code>Ctrl+space</code> (or what ever is the
 auto-completion hot key).
 </p>
 
+<p><strong>NOTE:</strong> the spell-checker is still of experimental nature and thus
+	contains some features which don't work as the user would expect. One is that after
+	correcting many spelling errors, the markers go out of sync and further correction
+	might not be possible unless the document is saved and re-checked.
+</p>
+
 <h3> Choosing language </h3>
 <p>
 Not all documents are written in English, so the language of the spell checker
-can be changed by selecting <b>Latex &gt; Change Spelling Language</b> from the menu.
+can be changed by selecting <b>Latex &gt; Change Spelling Language</b> from the project
+properties.
 This opens a dialog box where you can type the language code of the document you
 are about to check. <b>NOTE:</b> what ever you type into this text box is passed as
 is to Aspell as the language argument. Therefore, make sure you type the correct

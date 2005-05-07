@@ -642,7 +642,11 @@ public class SpellChecker implements IPropertyChangeListener, IDocumentListener 
      */
     public void documentChanged(DocumentEvent event) {
         int origLength = event.getLength();
-        int length = event.getText().length();
+        String eventText = event.getText();
+        if (eventText == null) {
+            eventText = "";
+        }
+        int length = eventText.length();
         int offset = event.getOffset();
         int diff = length - origLength;
         

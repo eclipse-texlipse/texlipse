@@ -244,6 +244,7 @@ public class TexDocumentModel implements IDocumentListener {
      * an instance, otherwise parsing may fail.
      */
     public void initializeModel() {
+		MarkerHandler.getInstance().clearMarkers(editor);
         createReferenceContainers();
     }
 
@@ -682,7 +683,8 @@ public class TexDocumentModel implements IDocumentListener {
             for (int i = 0; i < files.length; i++) {
                 IPath path = files[i].getFullPath();
                 String ext = files[i].getFileExtension();
-                if ("tex".equals(ext) || "ltx".equals(ext)) {
+				// here are the file types we want to parse
+                if ("tex".equals(ext) || "ltx".equals(ext) || "sty".equals(ext)) {
                     try {
                         String input = TexlipseProperties.getFileContents(files[i]);
                         LatexRefExtractingParser lrep = new LatexRefExtractingParser();

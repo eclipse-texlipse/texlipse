@@ -92,7 +92,7 @@ public class LatexParser {
          * @return The item at the top of the stack
          */
         public Object peek() {
-            return stack[size];
+            return stack[size-1];
         }
         
         /**
@@ -101,9 +101,9 @@ public class LatexParser {
          * @return The item at the top of the stack
          */
         public Object pop() {
+            size--;
             Object top = stack[size];
             stack[size] = null;
-            size--;
             return top;
         }
         
@@ -113,7 +113,7 @@ public class LatexParser {
          * @param item The item to push on the stack
          */
         public void push(Object item) {
-            size++;
+			// what if size would be where to put the next item?
             if (size >= capacity) {
                 capacity *= growthFactor;
                 Object[] newStack = new Object[capacity];
@@ -121,13 +121,14 @@ public class LatexParser {
                 stack = newStack;
             }
             stack[size] = item;
+			size++;
         }
         
         /**
          * Clears the stack; removes all entries.
          */
         public void clear() {
-            for (; size >= 0; size--) {
+            for (size--; size >= 0; size--) {
                 stack[size] = null;
             }
             size = 0;

@@ -11,6 +11,7 @@ package net.sourceforge.texlipse.editor;
 
 import net.sourceforge.texlipse.model.OutlineNode;
 
+import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotation;
 
 
@@ -47,6 +48,13 @@ public class TexProjectionAnnotation extends ProjectionAnnotation {
         this.node = node;
     }
     
+	/**
+	 * @return The position data of this annotation
+	 */
+	public Position getPosition() {
+		return node.getPosition();
+	}
+	
     /**
      * Tests whether this annotation corresponds to the same
      * document area as the argument.
@@ -64,4 +72,27 @@ public class TexProjectionAnnotation extends ProjectionAnnotation {
         }
         return true;
     }
+	
+	/**
+	 * Checks whether the given offset is contained within this annotation
+	 * 
+	 * @param offset The offset inside the document that this annotation belongs to
+	 * @return True if the offset is contained, false otherwise
+	 */
+	public boolean contains(int offset) {
+		Position pos = node.getPosition();
+		if (offset >= pos.getOffset() 
+				&& offset < (pos.getOffset() + pos.getLength()))
+			return true;
+		return false;		
+	}
+	
+	public boolean isDeeperThan(TexProjectionAnnotation tpa) {
+		Position thisPos = node.getPosition();
+		Position alienPos = tpa.getPosition();
+		if (thisPos.offset > alienPos.offset
+				&& (thisPos.offset + thisPos.length) <= (alienPos.offset + alienPos.length))
+			return true;
+		return false;
+	}
 }

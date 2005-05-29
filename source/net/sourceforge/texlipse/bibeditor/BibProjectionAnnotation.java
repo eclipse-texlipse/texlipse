@@ -32,7 +32,19 @@ public class BibProjectionAnnotation extends ProjectionAnnotation {
         super();
         this.node = node;
     }
-    
+
+    /**
+     * Creates a new annotation for the given node
+     * 
+     * @param node The node for creating the annotation
+     * @param isCollaped Whether this node should initially be collapsed or not
+     */
+    public BibProjectionAnnotation(ReferenceEntry node, boolean isCollapsed) {
+        super(isCollapsed);
+        this.node = node;
+    }
+
+	
     /**
      * Tests whether this annotation corresponds to the same
      * document area as the argument.

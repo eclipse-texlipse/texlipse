@@ -10,9 +10,14 @@
 package net.sourceforge.texlipse.bibeditor;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.ListIterator;
+import java.util.Map;
 
+import net.sourceforge.texlipse.editor.TexProjectionAnnotation;
+import net.sourceforge.texlipse.model.OutlineNode;
 import net.sourceforge.texlipse.model.ReferenceEntry;
 
 import org.eclipse.jface.text.Position;
@@ -31,6 +36,8 @@ public class BibCodeFolder {
     private ArrayList oldNodes;
 //    private ArrayList<TexProjectionAnnotation> oldNodes;
     
+	private boolean firstRun;
+	
     /**
      * Creates a new code folder.
      * 
@@ -38,6 +45,7 @@ public class BibCodeFolder {
      */
     public BibCodeFolder(BibEditor editor) {
         this.editor = editor;
+		this.firstRun = true;
     }
     
     /**
@@ -58,18 +66,25 @@ public class BibCodeFolder {
      * @param outline The outline data structure containing the document positions
      */
     private void addMarks(ArrayList outline) {
-        oldNodes = new ArrayList();
-
-        // save old nodes
-        for (Iterator iter = model.getAnnotationIterator(); iter.hasNext();) {
-            oldNodes.add((BibProjectionAnnotation) iter.next());
-        }
-
-        markTreeNodes(outline);
-        
-        BibProjectionAnnotation[] deletes = new BibProjectionAnnotation[oldNodes.size()];
-        oldNodes.toArray(deletes);
-        model.modifyAnnotations(deletes, null, null);
+		if (firstRun) {
+            Map map = new HashMap();
+            fillAnnotationMap(outline, map);
+            model.modifyAnnotations(null, map, null);
+            firstRun = false;	
+		} else {
+			oldNodes = new ArrayList();
+			
+			// save old nodes
+			for (Iterator iter = model.getAnnotationIterator(); iter.hasNext();) {
+				oldNodes.add((BibProjectionAnnotation) iter.next());
+			}
+			
+			markTreeNodes(outline);
+			
+			BibProjectionAnnotation[] deletes = new BibProjectionAnnotation[oldNodes.size()];
+			oldNodes.toArray(deletes);
+			model.modifyAnnotations(deletes, null, null);
+		}
     }
 
     /**
@@ -92,6 +107,18 @@ public class BibCodeFolder {
                 }
             }
             model.addAnnotation(new BibProjectionAnnotation(re), pos);
+        }
+    }
+	
+    private void fillAnnotationMap(List documentTree, Map map) {
+        for (ListIterator iter = documentTree.listIterator(); iter.hasNext();) {
+			ReferenceEntry node = (ReferenceEntry) iter.next();
+
+            Position pos = node.position;
+
+			// FIXME last arg
+            BibProjectionAnnotation tpa = new BibProjectionAnnotation(node, true);
+            map.put(tpa, pos);
         }
     }
 }

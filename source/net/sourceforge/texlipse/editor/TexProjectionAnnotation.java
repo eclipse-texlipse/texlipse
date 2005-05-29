@@ -84,14 +84,29 @@ public class TexProjectionAnnotation extends ProjectionAnnotation {
 		if (offset >= pos.getOffset() 
 				&& offset < (pos.getOffset() + pos.getLength()))
 			return true;
-		return false;		
+		return false;
 	}
 	
+	/**
+	 * Checks whether this annotation is deeper than the given annotation
+	 * by comparing offsets and lengths of the annotations. 
+	 * 
+	 * @param tpa The annotation to compare to
+	 * @return True if this annotation is deeper, false otherwise
+	 */
 	public boolean isDeeperThan(TexProjectionAnnotation tpa) {
 		Position thisPos = node.getPosition();
 		Position alienPos = tpa.getPosition();
 		if (thisPos.offset > alienPos.offset
 				&& (thisPos.offset + thisPos.length) <= (alienPos.offset + alienPos.length))
+			return true;
+		return false;
+	}
+	
+	public boolean isBetween(int startOffset, int endOffset) {
+		Position pos = node.getPosition();
+		if (startOffset <= pos.offset
+				&& (pos.length + pos.offset) < endOffset)
 			return true;
 		return false;
 	}

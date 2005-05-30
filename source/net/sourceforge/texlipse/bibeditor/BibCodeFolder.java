@@ -16,9 +16,9 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 
-import net.sourceforge.texlipse.editor.TexProjectionAnnotation;
-import net.sourceforge.texlipse.model.OutlineNode;
+import net.sourceforge.texlipse.TexlipsePlugin;
 import net.sourceforge.texlipse.model.ReferenceEntry;
+import net.sourceforge.texlipse.properties.TexlipseProperties;
 
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotationModel;
@@ -30,14 +30,14 @@ import org.eclipse.jface.text.source.projection.ProjectionAnnotationModel;
  * @author Oskar Ojala
  */
 public class BibCodeFolder {
-
+    
     private BibEditor editor;
     private ProjectionAnnotationModel model;
     private ArrayList oldNodes;
-//    private ArrayList<TexProjectionAnnotation> oldNodes;
+    //private ArrayList<TexProjectionAnnotation> oldNodes;
     
-	private boolean firstRun;
-	
+    private boolean firstRun;
+    
     /**
      * Creates a new code folder.
      * 
@@ -45,7 +45,7 @@ public class BibCodeFolder {
      */
     public BibCodeFolder(BibEditor editor) {
         this.editor = editor;
-		this.firstRun = true;
+        this.firstRun = true;
     }
     
     /**
@@ -66,27 +66,28 @@ public class BibCodeFolder {
      * @param outline The outline data structure containing the document positions
      */
     private void addMarks(ArrayList outline) {
-		if (firstRun) {
+        if (firstRun) {
             Map map = new HashMap();
-            fillAnnotationMap(outline, map);
+            fillAnnotationMap(outline, map,
+                    TexlipsePlugin.getDefault().getPreferenceStore().getBoolean(TexlipseProperties.BIB_FOLD_INITIAL));
             model.modifyAnnotations(null, map, null);
             firstRun = false;	
-		} else {
-			oldNodes = new ArrayList();
-			
-			// save old nodes
-			for (Iterator iter = model.getAnnotationIterator(); iter.hasNext();) {
-				oldNodes.add((BibProjectionAnnotation) iter.next());
-			}
-			
-			markTreeNodes(outline);
-			
-			BibProjectionAnnotation[] deletes = new BibProjectionAnnotation[oldNodes.size()];
-			oldNodes.toArray(deletes);
-			model.modifyAnnotations(deletes, null, null);
-		}
+        } else {
+            oldNodes = new ArrayList();
+            
+            // save old nodes
+            for (Iterator iter = model.getAnnotationIterator(); iter.hasNext();) {
+                oldNodes.add((BibProjectionAnnotation) iter.next());
+            }
+            
+            markTreeNodes(outline);
+            
+            BibProjectionAnnotation[] deletes = new BibProjectionAnnotation[oldNodes.size()];
+            oldNodes.toArray(deletes);
+            model.modifyAnnotations(deletes, null, null);
+        }
     }
-
+    
     /**
      * Adds new folding markers for positions that do not yet have markers.
      * 
@@ -94,30 +95,36 @@ public class BibCodeFolder {
      */
     private void markTreeNodes(ArrayList outline) {
         markloop:
-        for (ListIterator iter = outline.listIterator(); iter.hasNext();) {
-            ReferenceEntry re = (ReferenceEntry) iter.next();
-
-            Position pos = re.position;
-            for (ListIterator li2 = oldNodes.listIterator(); li2.hasNext();) {
-                BibProjectionAnnotation cAnnotation = (BibProjectionAnnotation) li2.next();
-                if (cAnnotation.isSame(re)) {
-                    oldNodes.remove(cAnnotation);
-//                    model.modifyAnnotationPosition(cAnnotation, pos);
-                    continue markloop;
+            for (ListIterator iter = outline.listIterator(); iter.hasNext();) {
+                ReferenceEntry re = (ReferenceEntry) iter.next();
+                
+                Position pos = re.position;
+                for (ListIterator li2 = oldNodes.listIterator(); li2.hasNext();) {
+                    BibProjectionAnnotation cAnnotation = (BibProjectionAnnotation) li2.next();
+                    if (cAnnotation.isSame(re)) {
+                        oldNodes.remove(cAnnotation);
+                        //                    model.modifyAnnotationPosition(cAnnotation, pos);
+                        continue markloop;
+                    }
                 }
+                model.addAnnotation(new BibProjectionAnnotation(re), pos);
             }
-            model.addAnnotation(new BibProjectionAnnotation(re), pos);
-        }
     }
-	
-    private void fillAnnotationMap(List documentTree, Map map) {
+    
+    /**
+     * Fills the given annotation map with all the annotations from this document.
+     * 
+     * @param documentTree Document tree representing this document
+     * @param map The annotation map to fill
+     * @param fold Whether entries should be set as folded or not
+     */
+    private void fillAnnotationMap(List documentTree, Map map, boolean fold) {
         for (ListIterator iter = documentTree.listIterator(); iter.hasNext();) {
-			ReferenceEntry node = (ReferenceEntry) iter.next();
-
+            ReferenceEntry node = (ReferenceEntry) iter.next();
+            
             Position pos = node.position;
-
-			// FIXME last arg
-            BibProjectionAnnotation tpa = new BibProjectionAnnotation(node, true);
+            
+            BibProjectionAnnotation tpa = new BibProjectionAnnotation(node, fold);
             map.put(tpa, pos);
         }
     }

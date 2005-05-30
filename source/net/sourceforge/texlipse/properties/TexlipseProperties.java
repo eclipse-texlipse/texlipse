@@ -79,6 +79,8 @@ public class TexlipseProperties {
     
     public static final String BIB_COMPLETION = "bibCompletion";
     public static final String BIB_COMPLETION_DELAY = "bibDelay";
+    public static final String BIB_CODE_FOLDING = "bibCodeFolding";
+    public static final String BIB_FOLD_INITIAL = "bibFoldInitial";
 
     public static final String INDENTATION = "indent";
     public static final String INDENTATION_LEVEL = "indentLevel";

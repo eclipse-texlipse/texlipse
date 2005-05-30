@@ -95,6 +95,9 @@ public class TexlipsePreferenceInitializer extends
         pref.setDefault(TexlipseProperties.AUTO_PARSING, true);
         pref.setDefault(TexlipseProperties.AUTO_PARSING_DELAY, 2000);
         
+        pref.setDefault(TexlipseProperties.BIB_CODE_FOLDING, true);
+        pref.setDefault(TexlipseProperties.BIB_FOLD_INITIAL, false);
+        
         pref.setDefault(TexlipseProperties.CODE_FOLDING, true);
         pref.setDefault(TexlipseProperties.CODE_FOLDING_PREAMBLE, false);
         pref.setDefault(TexlipseProperties.CODE_FOLDING_PART, false);

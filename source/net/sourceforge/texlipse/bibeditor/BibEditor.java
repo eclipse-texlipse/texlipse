@@ -109,8 +109,10 @@ public class BibEditor extends TextEditor {
         .addSummarizableAnnotationType("org.eclipse.ui.workbench.texteditor.warning");
         fProjectionSupport.install();
         
-        projectionViewer.doOperation(ProjectionViewer.TOGGLE);
-
+        if (TexlipsePlugin.getDefault().getPreferenceStore().getBoolean(TexlipseProperties.BIB_CODE_FOLDING)) {
+            projectionViewer.doOperation(ProjectionViewer.TOGGLE);
+        }
+        
         this.documentModel.update();
     }
 

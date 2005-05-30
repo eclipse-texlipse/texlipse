@@ -27,38 +27,41 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
  * @author Kimmo Karlsson
  */
 public class BibtexPreferencePage
-	extends FieldEditorPreferencePage
-	implements IWorkbenchPreferencePage {
-	
-	//delay limits
+extends FieldEditorPreferencePage
+implements IWorkbenchPreferencePage {
+    
+    //delay limits
     private static final int MAX_DELAY = 10000;
     private static final int MIN_DELAY = 0;
     
     /**
      * Creates the preference page.
-	 */
-	public BibtexPreferencePage() {
-		super(GRID);
-		setPreferenceStore(TexlipsePlugin.getDefault().getPreferenceStore());
-		//setDescription(TexlipsePlugin.getResourceString("preferenceBibtexPageDescription"));
-	}
-
+     */
+    public BibtexPreferencePage() {
+        super(GRID);
+        setPreferenceStore(TexlipsePlugin.getDefault().getPreferenceStore());
+        //setDescription(TexlipsePlugin.getResourceString("preferenceBibtexPageDescription"));
+    }
+    
     /**
      * Creates the field editors. Field editors are abstractions of
      * the common GUI blocks needed to manipulate various types
      * of preferences. Each field editor knows how to save and
      * restore itself.
      */
-	public void createFieldEditors() {
+    public void createFieldEditors() {
         TexlipsePreferencePage.addSpacer(3, getFieldEditorParent());
         addField(new BooleanFieldEditor(TexlipseProperties.BIB_COMPLETION, TexlipsePlugin.getResourceString("preferenceBibCompletion"), getFieldEditorParent()));
         String message = TexlipsePlugin.getResourceString("preferenceBibCompletionDelay").replaceFirst("%1", "" + MIN_DELAY).replaceFirst("%2", "" + MAX_DELAY);
         IntegerFieldEditor delay = new IntegerFieldEditor(TexlipseProperties.BIB_COMPLETION_DELAY, message, getFieldEditorParent());
-		delay.setValidateStrategy(IntegerFieldEditor.VALIDATE_ON_KEY_STROKE);
+        delay.setValidateStrategy(IntegerFieldEditor.VALIDATE_ON_KEY_STROKE);
         delay.setValidRange(MIN_DELAY, MAX_DELAY);
-        addField(delay);        
-	}
-
+        addField(delay);
+        
+        addField(new BooleanFieldEditor(TexlipseProperties.BIB_CODE_FOLDING, TexlipsePlugin.getResourceString("preferenceBibCodeFolding"), getFieldEditorParent()));
+        addField(new BooleanFieldEditor(TexlipseProperties.BIB_FOLD_INITIAL, TexlipsePlugin.getResourceString("preferenceBibFoldInitial"), getFieldEditorParent()));
+    }
+    
     /**
      * Initializes this preference page for the given workbench.
      * <p>
@@ -68,7 +71,7 @@ public class BibtexPreferencePage
      *
      * @param workbench the workbench
      */
-	public void init(IWorkbench workbench) {
+    public void init(IWorkbench workbench) {
         // nothing to do
-	}
+    }
 }

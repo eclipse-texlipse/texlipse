@@ -715,7 +715,7 @@ ${cursor}
                menubarPath="SourceMenu/texlipseGroup"
                id="actions.MainFileAction"/>
          <action
-               label="Save As Template"
+               label="Save As &amp;Template"
                definitionId="actions.SaveAsTemplateAction"
                class="net.sourceforge.texlipse.actions.SaveAsTemplateAction"
                style="push"
@@ -749,6 +749,20 @@ ${cursor}
                style="push"
                menubarPath="SourceMenu/texlipseGroup"
                id="actions.TexHardLineWrap"/>
+         <action
+               label="Coll&amp;apse"
+               definitionId="actions.TexCollapse"
+               class="net.sourceforge.texlipse.actions.TexCollapseAction"
+               style="push"
+               menubarPath="SourceMenu/texlipseGroup"
+               id="actions.TexCollapse"/>
+         <action
+               label="Uncolla&amp;pse"
+               definitionId="actions.TexUncollapse"
+               class="net.sourceforge.texlipse.actions.TexUncollapseAction"
+               style="push"
+               menubarPath="SourceMenu/texlipseGroup"
+               id="actions.TexUncollapse"/>
       </viewerContribution>
    </extension>
    <extension
@@ -847,6 +861,20 @@ ${cursor}
                style="push"
                menubarPath="LatexMenu/commentGroup"
                id="actions.SpellUncheckAction"/>
+         <action
+               label="Coll&amp;apse"
+               definitionId="actions.TexCollapse"
+               class="net.sourceforge.texlipse.actions.TexCollapseAction"
+               style="push"
+               menubarPath="LatexMenu/commentGroup"
+               id="actions.TexCollapse"/>
+         <action
+               label="Uncolla&amp;pse"
+               definitionId="actions.TexUncollapse"
+               class="net.sourceforge.texlipse.actions.TexUncollapseAction"
+               style="push"
+               menubarPath="LatexMenu/commentGroup"
+               id="actions.TexUncollapse"/>
       </editorContribution>
    </extension>
    <extension
@@ -946,6 +974,24 @@ ${cursor}
       <keyBinding
             command="actions.SpellUncheckAction"
             string="Shift+Ctrl+7"
+            configuration="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+      <command
+            category="Texlipse"
+            categoryId="Texlipse"
+            name="Collapse foldings"
+            id="actions.TexCollapse"/>
+      <keyBinding
+            command="actions.TexCollapse"
+            string="Shift+Ctrl+B"
+            configuration="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+      <command
+            category="Texlipse"
+            categoryId="Texlipse"
+            name="Uncollapse foldings"
+            id="actions.TexUncollapse"/>
+      <keyBinding
+            command="actions.TexUncollapse"
+            string="Shift+Ctrl+N"
             configuration="org.eclipse.ui.defaultAcceleratorConfiguration"/>
    </extension>
    <extension

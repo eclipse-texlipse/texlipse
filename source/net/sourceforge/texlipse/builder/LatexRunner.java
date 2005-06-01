@@ -88,16 +88,23 @@ public class LatexRunner extends AbstractProgramRunner {
         if (sourceDir == null) {
             sourceDir = project;
         }
-        
+
+		parsingStack.clear();
         boolean errorsFound = false;
-        //String prevLine = "";
         StringTokenizer st = new StringTokenizer(output, "\r\n");
 
+		logLineRead:
         while (st.hasMoreTokens()) {
             String line = st.nextToken();
             if (line.startsWith("! Undefined control sequence.")) {
 
                 String part1 = st.nextToken();
+				// in math mode, the error is not necessarily on the next line
+				while (!part1.startsWith("l.")) {
+					if (!st.hasMoreTokens())
+						continue logLineRead;
+					part1 = st.nextToken();
+				}
                 String part2 = st.nextToken();
                 int index = part1.indexOf(' ');
                 int comIndex = part1.indexOf('\\');
@@ -210,7 +217,9 @@ public class LatexRunner extends AbstractProgramRunner {
                             int num = Integer.parseInt(line.substring(startIndex, endIndex));
                             lineNumber = new Integer(num);
                             break;
-                        } catch (NumberFormatException e) {}                        
+                        } catch (NumberFormatException e) {
+							continue logLineRead;
+                        }
                     }
                 }
                 if (lineNumber != null) {
@@ -237,28 +246,21 @@ public class LatexRunner extends AbstractProgramRunner {
     }
 
     /**
-     * Updates the source file we are currently parsing from the given
-     * line of latex' log.
+     * Updates the stack that determines which file we are currently
+     * parsing, so that errors can be annotated in the correct file. 
      * 
      * @param logLine A line from latex' output containing which file we are in
      */
     private void updateParsedFile(String logLine) {
-        //Stack st = new Stack();
-        //System.out.println(logLine);
         //TODO this still might not properly handle file names with spaces
 //        String partCommands[] = logLine.split("[^\\\\]\\s");
-        String partCommands[] = logLine.split("\\s");
+        String partCommands[] = logLine.split("\\s+");
         for (int i = 0; i < partCommands.length; i++) {
-            if (partCommands[i].startsWith("(")) {
-                //System.out.println(partCommands[i]);
-                if (!partCommands[i].endsWith(")")) {
-                    parsingStack.push(partCommands[i]);
-                } else {
-                    this.removeClosingParentheses(partCommands[i]);
-                }
-            } else if (partCommands[i].endsWith(")")) {
-                this.removeClosingParentheses(partCommands[i]);
-            }
+			if (partCommands[i].endsWith(")")) {
+				this.removeClosingParentheses(partCommands[i]);
+			} else if (partCommands[i].startsWith("(")) {
+				parsingStack.push(partCommands[i]);
+			}
         }
     }
 
@@ -269,7 +271,7 @@ public class LatexRunner extends AbstractProgramRunner {
      * @param command A command containing closing parentheses
      */
     private void removeClosingParentheses(String command) {
-        int amount = -1;
+		int amount = command.startsWith("(") ? -1 : 0;
         for (int j = command.length() - 1; j >= 0; j--) {
             if (command.charAt(j) == ')') {
                 amount++;
@@ -283,7 +285,7 @@ public class LatexRunner extends AbstractProgramRunner {
             } else {
                 break;
             }
-        }
+        }		
     }
     
     /**

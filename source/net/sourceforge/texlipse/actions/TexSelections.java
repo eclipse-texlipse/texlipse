@@ -11,6 +11,7 @@ package net.sourceforge.texlipse.actions;
 
 import net.sourceforge.texlipse.TexlipsePlugin;
 
+import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextSelection;
@@ -130,7 +131,35 @@ public class TexSelections {
     public void selectCompleteLines() {
         this.selLength = this.endLine.getOffset() + this.endLine.getLength() - this.startLine.getOffset();		
     }
-    
+
+	/**
+	 * Selects a paragraph if nothing was selected or if something was
+	 * then selects complete lines (for HardWrapAction)
+	 */
+	public void selectParagraph() {
+		if (textSelection.getLength() == 0) {
+			try {
+			int offset = textSelection.getOffset();
+			String doc = document.get();
+			String paraBreak = endLineDelim + endLineDelim;
+			int paraBegin = doc.lastIndexOf(paraBreak, offset);
+			if (paraBegin == -1)
+				paraBegin = 0;
+			else
+				paraBegin += paraBreak.length();
+			startLineIndex = document.getLineOfOffset(paraBegin);
+			int paraEnd = doc.indexOf(paraBreak, offset);
+			if (paraEnd == -1)
+				paraEnd = doc.length();
+			endLineIndex = document.getLineOfOffset(paraEnd);
+			
+			selLength = paraEnd - paraBegin;
+			} catch (BadLocationException ble) {}
+		} else {
+			selectCompleteLines();
+		}
+	}
+	
     /**
      * Gets line from the document.
      * 

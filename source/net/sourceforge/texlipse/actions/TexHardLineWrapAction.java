@@ -95,7 +95,8 @@ public class TexHardLineWrapAction implements IEditorActionDelegate {
 	private void doWrap() throws BadLocationException{
 		boolean itemFound = false;
 		IDocument document = selection.getDocument();
-		selection.selectCompleteLines();
+		//selection.selectCompleteLines();
+		selection.selectParagraph();
 		String delimiter = document.getLineDelimiter(selection.getStartLineIndex());
 		String[] lines = document.get(document.getLineOffset(selection.getStartLineIndex()), selection.getSelLength()).split(delimiter);
 		if (lines.length == 0) return;

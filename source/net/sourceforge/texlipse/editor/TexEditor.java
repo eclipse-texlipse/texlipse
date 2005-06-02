@@ -134,6 +134,8 @@ public class TexEditor extends TextEditor {
         IAction a = new TextOperationAction(TexlipsePlugin.getDefault().getResourceBundle(), "ContentAssistProposal.", this, ISourceViewer.CONTENTASSIST_PROPOSALS);
         a.setActionDefinitionId(ITextEditorActionDefinitionIds.CONTENT_ASSIST_PROPOSALS);
         setAction("ContentAssistProposal", a);
+        
+        getDocumentProvider().getDocument(this.getEditorInput()).addDocumentListener(new TexQuoteListener(this));
     }
     
     /**

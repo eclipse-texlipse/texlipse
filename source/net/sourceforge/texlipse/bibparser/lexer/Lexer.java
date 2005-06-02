@@ -2,32 +2,9 @@
 
 package net.sourceforge.texlipse.bibparser.lexer;
 
-import java.io.BufferedInputStream;
-import java.io.DataInputStream;
-import java.io.IOException;
-import java.io.PushbackReader;
-
-import net.sourceforge.texlipse.bibparser.node.EOF;
-import net.sourceforge.texlipse.bibparser.node.TBString;
-import net.sourceforge.texlipse.bibparser.node.TComma;
-import net.sourceforge.texlipse.bibparser.node.TComment;
-import net.sourceforge.texlipse.bibparser.node.TEntryName;
-import net.sourceforge.texlipse.bibparser.node.TEquals;
-import net.sourceforge.texlipse.bibparser.node.TEstring;
-import net.sourceforge.texlipse.bibparser.node.TIdentifier;
-import net.sourceforge.texlipse.bibparser.node.TLBrace;
-import net.sourceforge.texlipse.bibparser.node.TLParen;
-import net.sourceforge.texlipse.bibparser.node.TNumber;
-import net.sourceforge.texlipse.bibparser.node.TPreamble;
-import net.sourceforge.texlipse.bibparser.node.TQuotec;
-import net.sourceforge.texlipse.bibparser.node.TRBrace;
-import net.sourceforge.texlipse.bibparser.node.TRParen;
-import net.sourceforge.texlipse.bibparser.node.TScribeComment;
-import net.sourceforge.texlipse.bibparser.node.TSharp;
-import net.sourceforge.texlipse.bibparser.node.TStringLiteral;
-import net.sourceforge.texlipse.bibparser.node.TWhitespace;
-import net.sourceforge.texlipse.bibparser.node.Token;
-
+import java.io.*;
+import java.util.*;
+import net.sourceforge.texlipse.bibparser.node.*;
 
 public class Lexer
 {
@@ -650,55 +627,53 @@ public class Lexer
             {{65, 122, -5}, },
         }
         { // INENTRY
-            {{9, 9, 1}, {10, 10, 2}, {12, 12, 3}, {13, 13, 4}, {32, 32, 5}, {40, 40, 6}, {41, 41, 7}, {44, 44, 8}, {61, 61, 9}, {65, 90, 10}, {97, 122, 11}, {123, 123, 12}, {125, 125, 13}, },
+            {{9, 9, 1}, {10, 10, 2}, {12, 12, 3}, {13, 13, 4}, {32, 32, 5}, {40, 40, 6}, {41, 41, 7}, {43, 43, 8}, {44, 44, 9}, {45, 45, 10}, {46, 46, 11}, {47, 47, 12}, {48, 57, 13}, {58, 58, 14}, {61, 61, 15}, {65, 90, 16}, {95, 95, 17}, {97, 122, 18}, {123, 123, 19}, {125, 125, 20}, },
             {{9, 32, -2}, },
             {{9, 32, -2}, },
             {{9, 32, -2}, },
-            {{9, 9, 1}, {10, 10, 14}, {12, 32, -2}, },
+            {{9, 9, 1}, {10, 10, 21}, {12, 32, -2}, },
             {{9, 32, -2}, },
             {},
             {},
+            {{43, 43, 8}, {45, 58, -2}, {65, 122, -2}, },
             {},
+            {{43, 122, -10}, },
+            {{43, 122, -10}, },
+            {{43, 122, -10}, },
+            {{43, 122, -10}, },
+            {{43, 122, -10}, },
             {},
-            {{43, 43, 15}, {45, 45, 16}, {46, 46, 17}, {47, 47, 18}, {48, 57, 19}, {58, 58, 20}, {65, 90, 21}, {97, 122, 22}, },
-            {{43, 122, -12}, },
+            {{43, 122, -10}, },
+            {{43, 122, -10}, },
+            {{43, 122, -10}, },
             {},
             {},
             {{9, 32, -2}, },
-            {{43, 122, -12}, },
-            {{43, 122, -12}, },
-            {{43, 122, -12}, },
-            {{43, 122, -12}, },
-            {{43, 122, -12}, },
-            {{43, 122, -12}, },
-            {{43, 122, -12}, },
-            {{43, 122, -12}, },
         }
         { // ASSIGN
-            {{9, 9, 1}, {10, 10, 2}, {12, 12, 3}, {13, 13, 4}, {32, 32, 5}, {34, 34, 6}, {35, 35, 7}, {41, 41, 8}, {44, 44, 9}, {48, 57, 10}, {65, 90, 11}, {97, 122, 12}, {123, 123, 13}, {125, 125, 14}, },
+            {{9, 9, 1}, {10, 10, 2}, {12, 12, 3}, {13, 13, 4}, {32, 32, 5}, {34, 34, 6}, {35, 35, 7}, {41, 41, 8}, {43, 43, 9}, {44, 44, 10}, {45, 45, 11}, {46, 46, 12}, {47, 47, 13}, {48, 57, 14}, {58, 58, 15}, {65, 90, 16}, {95, 95, 17}, {97, 122, 18}, {123, 123, 19}, {125, 125, 20}, },
             {{9, 32, -2}, },
             {{9, 32, -2}, },
             {{9, 32, -2}, },
-            {{9, 9, 1}, {10, 10, 15}, {12, 32, -2}, },
+            {{9, 9, 1}, {10, 10, 21}, {12, 32, -2}, },
             {{9, 32, -2}, },
             {},
             {},
             {},
+            {{43, 43, 9}, {45, 47, -2}, {48, 57, 22}, {58, 122, -2}, },
             {},
-            {{48, 57, 10}, },
-            {{43, 43, 16}, {45, 45, 17}, {46, 46, 18}, {47, 47, 19}, {48, 57, 20}, {58, 58, 21}, {65, 90, 22}, {97, 122, 23}, },
-            {{43, 122, -13}, },
+            {{43, 122, -11}, },
+            {{43, 122, -11}, },
+            {{43, 122, -11}, },
+            {{43, 47, -11}, {48, 122, -2}, },
+            {{43, 122, -11}, },
+            {{43, 122, -11}, },
+            {{43, 122, -11}, },
+            {{43, 122, -11}, },
             {},
             {},
             {{9, 32, -2}, },
-            {{43, 122, -13}, },
-            {{43, 122, -13}, },
-            {{43, 122, -13}, },
-            {{43, 122, -13}, },
-            {{43, 122, -13}, },
-            {{43, 122, -13}, },
-            {{43, 122, -13}, },
-            {{43, 122, -13}, },
+            {{43, 122, -11}, },
         }
         { // BRACESTRING
             {{0, 8, 1}, {9, 9, 2}, {10, 10, 3}, {11, 11, 1}, {12, 12, 4}, {13, 13, 5}, {14, 31, 1}, {32, 32, 6}, {33, 122, 1}, {123, 123, 7}, {124, 124, 1}, {125, 125, 8}, {126, 65535, 1}, },
@@ -738,9 +713,9 @@ public class Lexer
         // NORMAL
         {5, 5, -1, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 1, 1, 2, 2, 4, 4, 3, 3, },
         // INENTRY
-        {-1, 0, 0, 0, 0, 0, 9, 10, 11, 12, 15, 15, 6, 7, 0, 15, 15, 15, 15, 15, 15, 15, 15, },
+        {-1, 0, 0, 0, 0, 0, 9, 10, 15, 11, 15, 15, 15, 15, 15, 12, 15, 15, 15, 6, 7, 0, },
         // ASSIGN
-        {-1, 0, 0, 0, 0, 0, 16, 13, 10, 11, 14, 15, 15, 6, 7, 0, 15, 15, 15, 15, 15, 15, 15, 15, },
+        {-1, 0, 0, 0, 0, 0, 16, 13, 10, 15, 11, 15, 15, 15, 14, 15, 15, 15, 15, 6, 7, 0, 15, },
         // BRACESTRING
         {-1, 8, 0, 0, 0, 0, 0, 6, 7, 0, },
         // QSTRING

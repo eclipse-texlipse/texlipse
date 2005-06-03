@@ -16,7 +16,8 @@
 
 
 //Package fi.hut.soberit.texlipse.bibparser;
-Package bibtex6;
+//Package bibtex6;
+Package net.sourceforge.texlipse.bibparser;
 
 // ----------------------------------------------------------------------------
 Helpers
@@ -44,7 +45,7 @@ Helpers
 
     digit = ['0'..'9'];
     letter = ['a'..'z']|['A'..'Z'];
-    punctuation = ':'|'.'|'-'|'+'|'/'; // maybe add '
+    punctuation = ':'|'.'|'-'|'+'|'/'|'_'; // maybe add '
 
 // ----------------------------------------------------------------------------
 States
@@ -105,7 +106,7 @@ Tokens
 
 
     {assign} number = digit+;
-    {inentry, assign} identifier = letter (letter|digit|punctuation)*;
+    {inentry, assign} identifier = (letter|digit|punctuation)+;
 
 
     {assign->qstring, qstring->assign} quotec = '"';

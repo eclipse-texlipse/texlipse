@@ -8,11 +8,15 @@ package net.sourceforge.texlipse.editor;
 
 import java.util.HashMap;
 
+import net.sourceforge.texlipse.properties.TexlipseProperties;
+
+import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.DocumentEvent;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IDocumentListener;
 import org.eclipse.jface.text.ITextSelection;
+import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.texteditor.ITextEditor;
 
 /**
@@ -58,12 +62,13 @@ public class TexQuoteListener implements IDocumentListener {
             try {
                 char prev = document.getChar(textSelection.getOffset() - 1);
                 String replacement = "\"";
-                //IProject project = resource.getProject(); //IResource
-                //String lang = TexlipseProperties.getProjectProperty(project, TexlipseProperties.LANGUAGE_PROPERTY);
+                // TODO null checks?
+                IProject project = ((FileEditorInput)editor.getEditorInput()).getFile().getProject();
+                String lang = TexlipseProperties.getProjectProperty(project, TexlipseProperties.LANGUAGE_PROPERTY);
                 if (Character.isWhitespace(prev)) {
-                    replacement = (String) quotes.get("eno");
+                    replacement = (String) quotes.get(lang + "o");
                 } else if (Character.isLetterOrDigit(prev)) {
-                    replacement = (String) quotes.get("enc");
+                    replacement = (String) quotes.get(lang + "c");
                 } else {
                     return;
                 }

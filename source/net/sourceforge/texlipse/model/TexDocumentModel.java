@@ -244,7 +244,8 @@ public class TexDocumentModel implements IDocumentListener {
      * an instance, otherwise parsing may fail.
      */
     public void initializeModel() {
-		MarkerHandler.getInstance().clearMarkers(editor);
+        MarkerHandler.getInstance().clearErrorMarkers(editor);
+        MarkerHandler.getInstance().clearTaskMarkers(editor);
         createReferenceContainers();
     }
 
@@ -387,16 +388,21 @@ public class TexDocumentModel implements IDocumentListener {
         pollCancel(monitor);
         
         ArrayList errors = parser.getErrors();
+        List tasks = parser.getTasks();
         MarkerHandler marker = MarkerHandler.getInstance();
         // somewhat inelegantly ensures that errors marked in createProjectDatastructs()
         // aren't removed immediately
-        if (!firstRun)
-            marker.clearMarkers(editor);
-        else
+        if (!firstRun) {
+            marker.clearErrorMarkers(editor);
+            marker.clearTaskMarkers(editor);
+        } else {
             firstRun = false;
-        
+        }
         if (errors.size() > 0) {
             marker.createErrorMarkers(editor, errors);
+        }
+        if (tasks.size() > 0) {
+            marker.createTaskMarkers(editor, tasks);
         }
         if (parser.isFatalErrors()) {
             throw new TexDocumentParseException("Fatal errors in file, parsing aborted.");

@@ -12,6 +12,7 @@ package net.sourceforge.texlipse.model;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 
 import net.sourceforge.texlipse.TexlipsePlugin;
 import net.sourceforge.texlipse.builder.TexlipseBuilder;
@@ -56,8 +57,15 @@ public class MarkerHandler {
      * @param editor The editor to add the errors to
      * @param errors The errors to add as instances of <code>ParseErrorMessage</code>
      */
-    public void createErrorMarkers(TextEditor editor, ArrayList errors) {
-        
+    public void createErrorMarkers(TextEditor editor, List errors) {
+        createMarkers(editor, errors, IMarker.PROBLEM);
+    }
+
+    public void createTaskMarkers(TextEditor editor, List errors) {
+        createMarkers(editor, errors, IMarker.TASK);
+    }
+    
+    private void createMarkers(TextEditor editor, List errors, final String markerType) {
         IResource resource = ((FileEditorInput)editor.getEditorInput()).getFile();
         IDocument document = editor.getDocumentProvider().getDocument(editor.getEditorInput());
         
@@ -67,14 +75,16 @@ public class MarkerHandler {
                 int beginOffset = document.getLineOffset(msg.getLine() - 1) + msg.getPos();
                 
                 HashMap map = new HashMap();
-//                System.out.println("ErrMarker: " + msg.getLine() + ", " + msg.getPos());
                 map.put(IMarker.LINE_NUMBER, new Integer(msg.getLine()));
                 map.put(IMarker.CHAR_START, new Integer(beginOffset));
                 map.put(IMarker.CHAR_END, new Integer(beginOffset + msg.getLength()));
                 map.put(IMarker.MESSAGE, msg.getMsg());
-                map.put(IMarker.SEVERITY, new Integer(msg.getSeverity()));
                 
-                MarkerUtilities.createMarker(resource, map, IMarker.PROBLEM);
+                // we can do this since we're referring to a static field
+                if (IMarker.PROBLEM == markerType)
+                    map.put(IMarker.SEVERITY, new Integer(msg.getSeverity()));
+                
+                MarkerUtilities.createMarker(resource, map, markerType);
             } catch (CoreException ce) {
                 TexlipsePlugin.log("Creating marker", ce);
             } catch (BadLocationException ble) {
@@ -135,13 +145,12 @@ public class MarkerHandler {
         }
     }
 
-    
     /**
      * Delete all error markers from the currently open file.
      * 
      * @param editor The editor to clear the markers from
      */
-    public void clearMarkers(TextEditor editor) {
+    public void clearErrorMarkers(TextEditor editor) {
         IResource resource = ((FileEditorInput)editor.getEditorInput()).getFile();
         if (resource == null) {
             return;
@@ -153,7 +162,20 @@ public class MarkerHandler {
             resource.deleteMarkers(TexlipseBuilder.MARKER_TYPE, false, IResource.DEPTH_INFINITE);
             // don't clear spelling errors
         } catch (CoreException e) {
-            TexlipsePlugin.log("Deleting markers", e);
+            TexlipsePlugin.log("Deleting error markers", e);
         }
     }
+    
+    public void clearTaskMarkers(TextEditor editor) {
+        IResource resource = ((FileEditorInput)editor.getEditorInput()).getFile();
+        if (resource == null) {
+            return;
+        }
+        try {
+            resource.deleteMarkers(IMarker.TASK, false, IResource.DEPTH_INFINITE);
+        } catch (CoreException e) {
+            TexlipsePlugin.log("Deleting task markers", e);
+        }
+    }
+
 }

@@ -12,6 +12,7 @@ package net.sourceforge.texlipse.texparser;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import net.sourceforge.texlipse.model.CommandEntry;
 import net.sourceforge.texlipse.model.DocumentReference;
@@ -19,7 +20,6 @@ import net.sourceforge.texlipse.model.OutlineNode;
 import net.sourceforge.texlipse.model.ParseErrorMessage;
 import net.sourceforge.texlipse.model.ReferenceContainer;
 import net.sourceforge.texlipse.model.ReferenceEntry;
-import net.sourceforge.texlipse.texparser.lexer.Lexer;
 import net.sourceforge.texlipse.texparser.lexer.LexerException;
 import net.sourceforge.texlipse.texparser.node.EOF;
 import net.sourceforge.texlipse.texparser.node.TArgument;
@@ -43,6 +43,7 @@ import net.sourceforge.texlipse.texparser.node.TCsssection;
 import net.sourceforge.texlipse.texparser.node.TCword;
 import net.sourceforge.texlipse.texparser.node.TOptargument;
 import net.sourceforge.texlipse.texparser.node.TStar;
+import net.sourceforge.texlipse.texparser.node.TTaskcomment;
 import net.sourceforge.texlipse.texparser.node.TWhitespace;
 import net.sourceforge.texlipse.texparser.node.Token;
 
@@ -139,6 +140,7 @@ public class LatexParser {
     private ArrayList cites; //type: DocumentReference
     private ArrayList refs; //type: DocumentReference
     private ArrayList commands; //type: CommandEntry
+    private List tasks; //type: ParseErrorMessage
     
     private String[] bibs;
     private String bibstyle;
@@ -168,6 +170,8 @@ public class LatexParser {
         this.cites = new ArrayList();
         this.refs = new ArrayList();
         this.commands = new ArrayList();
+        this.tasks = new ArrayList();
+        
         this.inputs = new ArrayList();
         
         this.outlineTree = new ArrayList();
@@ -602,7 +606,8 @@ public class LatexParser {
                     expectArg = false;
 
                 } else if (!(t instanceof TOptargument) && !(t instanceof TWhitespace)
-                        && !(t instanceof TStar) && !(t instanceof TCommentline)) {
+                        && !(t instanceof TStar) && !(t instanceof TCommentline)
+                        && !(t instanceof TTaskcomment)) {
                     
                     // if we didn't get the mandatory argument we were expecting...
                     //fatalErrors = true;
@@ -653,7 +658,8 @@ public class LatexParser {
                         }
                     }
                     argCount++;
-                } else if (!(t instanceof TWhitespace) && !(t instanceof TCommentline)) {
+                } else if (!(t instanceof TWhitespace) && !(t instanceof TCommentline)
+                        && !(t instanceof TTaskcomment)) {
                     // if we didn't get the mandatory argument we were expecting...
                     errors.add(new ParseErrorMessage(t.getLine(), t.getPos(), t.getText().length(),
                             "No 2nd argument following newcommand",
@@ -697,8 +703,13 @@ public class LatexParser {
                         }
                         expectArg = true;
                     }
-                } else if (t instanceof TCpindex)
+                } else if (t instanceof TCpindex) {
                     this.index = true;
+                } else if (t instanceof TTaskcomment) {
+                    // TODO the severity option is redundant here
+                    String taskText = t.getText().substring(2).trim();
+                    tasks.add(new ParseErrorMessage(t.getLine(), t.getPos(), taskText.length(), taskText, IMarker.SEVERITY_INFO));
+                }
             }
         }
                 
@@ -779,6 +790,7 @@ public class LatexParser {
     public boolean isIndex() {
         return index;
     }
+    
     /**
      * @return Returns the documentEnv.
      */
@@ -798,5 +810,12 @@ public class LatexParser {
      */
     public ArrayList getCommands() {
         return commands;
+    }
+    
+    /**
+     * @return Returns the tasks.
+     */
+    public List getTasks() {
+        return tasks;
     }
 }

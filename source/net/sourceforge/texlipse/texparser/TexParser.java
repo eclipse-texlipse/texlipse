@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.io.PushbackReader;
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.List;
 
 import net.sourceforge.texlipse.model.OutlineNode;
 import net.sourceforge.texlipse.model.ParseErrorMessage;
@@ -228,5 +229,9 @@ public class TexParser {
      */
     public ArrayList getCommands() {
         return lparser.getCommands();
+    }
+    
+    public List getTasks() {
+        return lparser.getTasks();
     }
 }

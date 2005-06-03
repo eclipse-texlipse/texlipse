@@ -78,7 +78,7 @@ public class BibDocumentModel {
             
             ArrayList parseErrors = parser.getErrors();
             MarkerHandler marker = MarkerHandler.getInstance();
-            marker.clearMarkers(editor);
+            marker.clearErrorMarkers(editor);
             if (parseErrors.size() > 0) {
                 marker.createErrorMarkers(editor, parseErrors);
                 throw new TexDocumentParseException("Fatal errors in file");

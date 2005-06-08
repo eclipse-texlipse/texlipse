@@ -166,6 +166,11 @@ public class MarkerHandler {
         }
     }
     
+    /**
+     * Clears the task markers
+     * 
+     * @param editor The editor to clear the markers from
+     */
     public void clearTaskMarkers(TextEditor editor) {
         IResource resource = ((FileEditorInput)editor.getEditorInput()).getFile();
         if (resource == null) {

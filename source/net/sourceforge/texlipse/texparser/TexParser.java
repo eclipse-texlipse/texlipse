@@ -231,6 +231,9 @@ public class TexParser {
         return lparser.getCommands();
     }
     
+    /**
+     * @return The tasks to mark
+     */
     public List getTasks() {
         return lparser.getTasks();
     }

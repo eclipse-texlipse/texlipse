@@ -135,7 +135,8 @@ public class TexEditor extends TextEditor {
         a.setActionDefinitionId(ITextEditorActionDefinitionIds.CONTENT_ASSIST_PROPOSALS);
         setAction("ContentAssistProposal", a);
         
-        getDocumentProvider().getDocument(this.getEditorInput()).addDocumentListener(new TexQuoteListener(this));
+        // TODO fix and enable this
+        //getDocumentProvider().getDocument(this.getEditorInput()).addDocumentListener(new TexQuoteListener(this));
     }
     
     /**

@@ -114,7 +114,7 @@ public class LatexParser {
          * @param item The item to push on the stack
          */
         public void push(Object item) {
-			// what if size would be where to put the next item?
+            // what if size would be where to put the next item?
             if (size >= capacity) {
                 capacity *= growthFactor;
                 Object[] newStack = new Object[capacity];
@@ -122,7 +122,7 @@ public class LatexParser {
                 stack = newStack;
             }
             stack[size] = item;
-			size++;
+            size++;
         }
         
         /**
@@ -707,12 +707,14 @@ public class LatexParser {
                     this.index = true;
                 } else if (t instanceof TTaskcomment) {
                     // TODO the severity option is redundant here
-                    String taskText = t.getText().substring(2).trim();
+                    int start = t.getText().indexOf("TODO");
+                    String taskText = t.getText().substring(start + 4).trim();
+                    
                     tasks.add(new ParseErrorMessage(t.getLine(), t.getPos(), taskText.length(), taskText, IMarker.SEVERITY_INFO));
                 }
             }
         }
-                
+
         int endLine = t.getLine() + 1; //endline is exclusive
         while (!blocks.empty()) {
             OutlineNode prev = (OutlineNode) blocks.pop();

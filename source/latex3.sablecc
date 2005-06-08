@@ -135,6 +135,9 @@ Tokens
     {normal, comcapt} skipped_area = '%###' (skipped_not_percent* '%'+ skipped_char)*
 	skipped_not_percent* '%'+ '###' [unicode_input_character - [cr + lf]]* line_terminator?;
 
+
+    {normal, comcapt} taskcomment = '%' [sp + ht]* 'TODO' [unicode_input_character - [cr + lf]]* line_terminator?;
+
 // The optional line terminator is needed to handle comments at the end of the file (ie. without a line terminator)
 // Since the longest match is always attempted, this works
     {normal, comcapt} commentline = '%' [unicode_input_character - [cr + lf]]* line_terminator?;

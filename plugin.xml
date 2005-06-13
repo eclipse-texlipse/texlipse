@@ -3,7 +3,7 @@
 <plugin
    id="net.sourceforge.texlipse"
    name="TeXlipse Plug-in"
-   version="1.0.2"
+   version="1.0.3"
    provider-name="TeXlapse Team"
    class="net.sourceforge.texlipse.TexlipsePlugin">
 
@@ -982,7 +982,7 @@ ${cursor}
             id="actions.TexCollapse"/>
       <keyBinding
             command="actions.TexCollapse"
-            string="Shift+Ctrl+B"
+            string="Alt+C"
             configuration="org.eclipse.ui.defaultAcceleratorConfiguration"/>
       <command
             category="Texlipse"
@@ -991,7 +991,7 @@ ${cursor}
             id="actions.TexUncollapse"/>
       <keyBinding
             command="actions.TexUncollapse"
-            string="Shift+Ctrl+N"
+            string="Alt+X"
             configuration="org.eclipse.ui.defaultAcceleratorConfiguration"/>
    </extension>
    <extension

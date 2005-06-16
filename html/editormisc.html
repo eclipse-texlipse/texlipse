@@ -94,46 +94,6 @@ select the environment and click the <b>Remove</b>-button.</p>
 <p>The <i>Up</i> and <i>Down</i> buttons do not affect anything.</p>
 
 
-<h2><a name="anno"></a>Error annotations</a></h2>
-
-<p>
-The plug-in tries to indicate if there are errors in the document.
-For example, if <b><code>\ref</code></b> or <b><code>\cite</code></b> are 
-referring to references 
-that do not exist, a warning annotation is shown. Also, subsections without a
-preceding section (or subsubsection without a preceding subsection) cause
-a warning annotation (the warning annotation is a yellow triangle with a black
-exclamation mark).
-</p>
-
-<p>It is worth noting that referencing errors are displayed conservatively,
-i.e. a warning always indicates an unresolved reference (unless you use imports
-from outside of the project defining references), but some references without
-an error marker shown can be wrong. Since <code>\thebibliography</code> is not
-supported, bibliography entries defined with it are not taken into
-account when checking <code>\cite</code> -commands.</p>
-
-<p>If there are some serious problems, e.g. unbalanced begin-end -blocks, 
-the error annotation is shown (the error annotation is a red circle 
-with a white X-mark). A common problem is a missing } -brace. { and } are
-always special characters in LaTeX (excluding the <code>verb</code> 
-and <code>verbatim</code> environments) and in text you should escape
-them by writing \{ and \} if you want them to show up in the output.</p>
-
-<p>There are many cases where TeXlipse warns the user
-of a situation that is likely wrong and issues a warning, but in situations that
-are obviously wrong, an error is issued. In particular, unbalanced begin-end blocks
-and missing } make it impossible to continue parsing the document, so the outline and
-code folds cannot be updated until these problems are fixed in the document.
-Some of the errors come as a
-result of building from the <code>latex</code>-program and these are all
-shown as error annotations.</p>
-
-<p>The rule of thumb is that if the <code>latex</code>-program halts with 
-the problem it is annotated with an error annotation. Otherwise it is annotated
-with a warning annotation.</p>
-
-
 <h2><a name="wor"></a>Word counting</h2>
 
 <p>

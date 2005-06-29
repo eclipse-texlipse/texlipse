@@ -133,9 +133,9 @@ public class PathUtils {
 	    String[] env = new String[prop.size()];
 	    int i = 0;
 	    
-	    Enumeration enum = prop.keys();
-	    while (enum.hasMoreElements()) {
-	        String key = (String) enum.nextElement();
+	    Enumeration enumeration = prop.keys();
+	    while (enumeration.hasMoreElements()) {
+	        String key = (String) enumeration.nextElement();
 	        env[i++] = key + '=' + prop.getProperty(key);
 	    }
 	    
@@ -344,9 +344,9 @@ public class PathUtils {
 	 * @return the key of path environment variable
 	 */
 	public static String findPathKey(Properties prop) {
-	    Enumeration enum = prop.keys();
-	    while (enum.hasMoreElements()) {
-	        String key = (String) enum.nextElement();
+	    Enumeration enumeration = prop.keys();
+	    while (enumeration.hasMoreElements()) {
+	        String key = (String) enumeration.nextElement();
 	        if (key.toLowerCase().equals("path")) {
 	            return key;
 	        }

@@ -65,20 +65,25 @@ public class TexCompletionProcessor implements IContentAssistProcessor {
     public ICompletionProposal[] computeCompletionProposals(ITextViewer viewer, int offset) {
     	ICompletionProposal[] proposals = null;
     	ICompletionProposal[] templateProposals = null;
-    		
+
         if (refMana == null)
             this.refMana = this.model.getRefMana();
         
         String completeDoc = viewer.getDocument().get();
         if (offset >= 2) {
+        	// don't offer completions if the last thing typed was \\
             if (completeDoc.substring(offset-2, offset).endsWith("\\\\"))
                 return null;
         }
 
         int seqStartIdx = resolveCompletionStart(completeDoc, offset - 1);
-        if (seqStartIdx == -1)
+        String seqStart;
+        if (seqStartIdx == -1 && offset != 0)
             return null;
-        String seqStart = completeDoc.substring(seqStartIdx, offset);
+        else if (offset == 0)
+        	seqStart = " ";
+        else
+        	seqStart = completeDoc.substring(seqStartIdx, offset);
 
         // Now resolve if we want to complete commands, references or templates
         if (seqStart.startsWith("\\")) {

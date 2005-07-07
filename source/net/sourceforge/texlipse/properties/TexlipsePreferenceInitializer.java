@@ -97,6 +97,7 @@ public class TexlipsePreferenceInitializer extends
         
         pref.setDefault(TexlipseProperties.BIB_CODE_FOLDING, true);
         pref.setDefault(TexlipseProperties.BIB_FOLD_INITIAL, false);
+        pref.setDefault(TexlipseProperties.BIB_STRING, false);
         
         pref.setDefault(TexlipseProperties.CODE_FOLDING, true);
         pref.setDefault(TexlipseProperties.CODE_FOLDING_PREAMBLE, false);

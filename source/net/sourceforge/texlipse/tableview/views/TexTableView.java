@@ -184,7 +184,7 @@ public class TexTableView extends ViewPart {
                 if (index != -1)
                     rowList.insertRow(index);
                 else
-                    rowList.addRow();
+                    rowList.addRow(); // FIXME this is probably never executed
             }
         });
         mi = new MenuItem(menu, SWT.SINGLE);

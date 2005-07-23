@@ -118,7 +118,7 @@ public class TexRowList {
      * @param row to be removed
      */
     public void removeRow(TexRow row) {
-        rows.remove(row);
+        rows.remove(row); // FIXME now maxrowcount becomes one less, since the row isn't cleared
         Iterator iterator = changeListeners.iterator();
         while (iterator.hasNext())
             ((ITexRowListViewer) iterator.next()).removeRow(row);
@@ -286,7 +286,7 @@ public class TexRowList {
 
                 s = row.getCol(j).trim();
 
-                if (s.length() > 0) {
+                if (s.length() > 0 || first) {
                     if (s.compareTo("&") == 0)
                         value += " " + s;
                     else {

@@ -26,7 +26,7 @@ public class TexCellModifier implements ICellModifier {
     private String columnNames[];
 
     //Table viewer, to which the TexCellModifier belongs to
-    private TableViewer viewer;
+    //private TableViewer viewer;
 
     //The actual data in the table (list of rows)
     private TexRowList rowList;
@@ -39,7 +39,7 @@ public class TexCellModifier implements ICellModifier {
      */
     public TexCellModifier(TableViewer viewer, TexRowList rowList) {
         super();
-        this.viewer = viewer;
+        //this.viewer = viewer;
         this.rowList = rowList;
         columnNames = new String[TexRow.COLUMNS];
         for (int i = 0; i < TexRow.COLUMNS; i++)

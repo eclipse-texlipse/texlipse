@@ -83,6 +83,19 @@ public class TexRow {
     }
 
     /**
+     * Returns the last column of this row containing data
+     * 
+     * @return Last column with data (indexed from 0) or -1 if the row is empty
+     */
+    public int lastColumn() {
+    	int lastCol = -1;
+        for (int i = 0; i < COLUMNS; i++)
+            if (col[i].trim().length() > 0)
+                lastCol = i;    	
+    	return lastCol;
+    }
+    
+    /**
      * Clears all columns (i.e. sets them to "")
      */
     public void clear() {

@@ -279,23 +279,22 @@ public class TexRowList {
         TexRow row;
         for (int i = 0; i < rows.size(); i++) {
             row = (TexRow) rows.get(i);
-            if (row.empty())
+            int lastCol = row.lastColumn();
+            if (lastCol == -1)
                 continue;
             first = true;
-            for (int j = 0; j < TexRow.COLUMNS; j++) {
+            for (int j = 0; j <= lastCol; j++) {
 
                 s = row.getCol(j).trim();
 
-                if (s.length() > 0 || first) {
-                    if (s.compareTo("&") == 0)
-                        value += " " + s;
-                    else {
-                        if (first) {
-                            value += s;
-                            first = false;
-                        } else
-                            value += " & " + s;
-                    }
+                if (s.compareTo("&") == 0)
+                	value += " " + s;
+                else {
+                	if (first) {
+                		value += s;
+                		first = false;
+                	} else
+                		value += " & " + s;
                 }
             }
             value += "\\\\\n";

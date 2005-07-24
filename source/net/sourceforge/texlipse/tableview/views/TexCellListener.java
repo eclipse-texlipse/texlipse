@@ -17,24 +17,25 @@ import org.eclipse.swt.events.KeyListener;
 /**
  * @author Esa Seuranen
  * 
- * A key listener calss for individuall cells in the table viewer.
+ * A key listener class for individual cells in the table viewer.
  * 
  * The main purpose for this class is to enable better (more usable) controls
- * when editing table entiries in the table viewer (TableViewer) (which, as the
+ * when editing table entries in the table viewer (TableViewer), which, as the
  * name suggest, is not originally designed to be a table editor. However, this
  * class enables fast moving around between neighboring cells by using
  * CTRL+ArrowKeys.
  */
 public class TexCellListener implements KeyListener {
-    //Table Viewer, to which listener belongs
+    /** Table Viewer to which listener belongs */
     private TableViewer viewer;
 
-    //Column, which the listener listens
-    //This is here, because there seems to be no way
-    //to extract the "current column" information from the viewer....
+    /** Column, which the listener listens
+     * This is here, because there seems to be no way
+     * to extract the "current column" information from the viewer...
+     */
     private int column;
 
-    //The underlaying datastructure, TexRowList, of the whole table
+    /** The underlying datastructure, TexRowList, of the whole table */
     private TexRowList texRowList;
 
     /**
@@ -70,12 +71,11 @@ public class TexCellListener implements KeyListener {
      * Determines the actions to be taken, when a key is pressed. That means
      * either moving the editing controls to neigboring cell, if a)
      * CTRL+ArrowKey was pressed b) neighboring cell in that direction exists or
-     * calsulating a sum of cells in given direction (and copying it to
-     * clipboard) a) CTRL+KEYPAD_8,_2,_4 or _6 (up, down, left, right) is
+     * calculating a sum of cells in given direction (and copying it to
+     * clipboard) c) CTRL+KEYPAD_8,_2,_4 or _6 (up, down, left, right) is
      * pressed
      * 
-     * @param e
-     *            key event, that occurred
+     * @param e key event that occured
      */
     public void keyPressed(KeyEvent e) {
         if ((e.stateMask & (SWT.CTRL | SWT.ALT | SWT.SHIFT)) != SWT.CTRL)
@@ -84,8 +84,9 @@ public class TexCellListener implements KeyListener {
         int row = viewer.getTable().getSelectionIndex();
         int columns = viewer.getTable().getColumnCount();
         int rows = viewer.getTable().getItemCount();
+        // FIXME redundant test
         if ((e.stateMask & (SWT.CTRL | SWT.ALT | SWT.SHIFT)) == SWT.CTRL) {
-            TexRow texRow = (TexRow) texRowList.getRows().get(row);
+            //TexRow texRow = (TexRow) texRowList.getRows().get(row);
             double sum = 0.0;
             switch (e.keyCode) {
             case SWT.ARROW_UP:
@@ -93,8 +94,13 @@ public class TexCellListener implements KeyListener {
                     viewer.editElement(viewer.getElementAt(row - 1), column);
                 break;
             case SWT.ARROW_DOWN:
-                if (row < rows - 1)
+            	/*
+                if (row < rows - 1) // TODO else { add one row to the model }
                     viewer.editElement(viewer.getElementAt(row + 1), column);
+                    */
+            	if (row >= rows - 1)
+            		texRowList.addRow();
+            	viewer.editElement(viewer.getElementAt(row + 1), column);
                 break;
             case SWT.ARROW_LEFT:
                 if (column > 0)

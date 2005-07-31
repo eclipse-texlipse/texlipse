@@ -50,11 +50,19 @@
         from which it can be pasted into the document. A few notes about
         exporting: 
         <ul><li>Empty rows are not exported</li>
-            <li>Empty cells are not exported! To treat a cell
-            as a real empty cell, insert & to it
+            <li>Empty cells are not exported, except those that are
+				preceding data cells.<br>
+				To treat a cell as a real empty cell, insert & to it.
         </ul>
         </p>
-        
+    <li><b>Raw Export</b>
+      <p>The entire contents of the table editor is copied to the clipboard
+        in a raw text format suitable for use in e.g. Gnuplot. The data is
+		separated by tabs and rows by linefeeds. Otherwise, it works like
+		Export to Clipboard above.
+        </p>
+  </ul>
+		
       <p>A few examples:<br>
       <table>
       <tr>

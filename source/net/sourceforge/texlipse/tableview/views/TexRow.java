@@ -83,7 +83,7 @@ public class TexRow {
     }
 
     /**
-     * Returns the last column of this row containing data
+     * Returns the number of the last column of this row containing data
      * 
      * @return Last column with data (indexed from 0) or -1 if the row is empty
      */

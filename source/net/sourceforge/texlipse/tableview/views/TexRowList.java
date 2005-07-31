@@ -268,39 +268,73 @@ public class TexRowList {
     }
     
     /**
-     * Exports the table editor's content to clipboard.
+     * Exports the table editor's content to clipboard
+     * in LaTeX table format.
      * 
      * @return string representing the whole table
      */
     public String export() {			
         String s, value = "";
         boolean first;
-
-        TexRow row;
+        
         for (int i = 0; i < rows.size(); i++) {
-            row = (TexRow) rows.get(i);
+            TexRow row = (TexRow) rows.get(i);
             int lastCol = row.lastColumn();
             if (lastCol == -1)
                 continue;
+            
             first = true;
             for (int j = 0; j <= lastCol; j++) {
-
                 s = row.getCol(j).trim();
-
                 if (s.compareTo("&") == 0)
-                	value += " " + s;
+                    value += " " + s;
                 else {
-                	if (first) {
-                		value += s;
-                		first = false;
-                	} else
-                		value += " & " + s;
+                    if (first) {
+                        value += s;
+                        first = false;
+                    } else {
+                        value += " & " + s;
+                    }
                 }
             }
             value += "\\\\\n";
         }
-
         return value;
+    }
+
+    /**
+     * Returns the table editor's content in a raw,
+     * tabulated format suitable for e.g. gnuplot.
+     * 
+     * @return string representing the whole table
+     */
+    public String exportRaw() {
+        String s, value = "";
+        boolean first;
+        
+        for (int i = 0; i < rows.size(); i++) {
+            TexRow row = (TexRow) rows.get(i);
+            int lastCol = row.lastColumn();
+            if (lastCol == -1)
+                continue;
+            
+            first = true;
+            for (int j = 0; j <= lastCol; j++) {
+                s = row.getCol(j).trim();
+                if (s.compareTo("&") == 0)
+                    value += "\t" + s;
+                else {
+                    if (first) {
+                        value += s;
+                        first = false;
+                    } else {
+                        value += "\t" + s;
+                    }
+                }
+            }
+            value += "\n";
+        }
+        return value;        
     }
     
     /**

@@ -287,6 +287,22 @@ public class TexTableView extends ViewPart {
             }
         });
 
+        mi = new MenuItem(menu, SWT.SINGLE);
+        mi.setText(TexlipsePlugin.getResourceString("tableviewRawExport"));
+        mi.setEnabled(true);
+        mi.addSelectionListener(new SelectionAdapter() {
+            public void widgetSelected(SelectionEvent e) {
+                String value = rowList.exportRaw();
+
+                //transfer string to clipboard
+                Clipboard cb = new Clipboard(null);
+                TextTransfer textTransfer = TextTransfer.getInstance();
+                cb.setContents(new Object[] { value },
+                        new Transfer[] { textTransfer });
+            }
+        });
+
+        
         new MenuItem(menu, SWT.SEPARATOR);
 
         mi = new MenuItem(menu, SWT.SINGLE);

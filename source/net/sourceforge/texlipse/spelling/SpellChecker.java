@@ -21,7 +21,6 @@ import net.sourceforge.texlipse.PathUtils;
 import net.sourceforge.texlipse.SelectedResourceManager;
 import net.sourceforge.texlipse.TexlipsePlugin;
 import net.sourceforge.texlipse.builder.BuilderRegistry;
-import net.sourceforge.texlipse.editor.TexDocumentProvider;
 import net.sourceforge.texlipse.properties.TexlipseProperties;
 
 import org.eclipse.core.resources.IFile;
@@ -168,9 +167,6 @@ public class SpellChecker implements IPropertyChangeListener, IDocumentListener 
     // environment variables for the program
     private String[] envp;
     
-    // document provider to use with editors
-    private TexDocumentProvider provider;
-    
     // map of proposals so far
     private HashMap proposalMap;
     
@@ -196,7 +192,7 @@ public class SpellChecker implements IPropertyChangeListener, IDocumentListener 
         String aspell = PathUtils.findEnvFile("aspell", "/usr/bin", "aspell.exe", "C:\\gnu\\aspell");
         prefs.setDefault(SPELL_CHECKER_COMMAND, aspell);
         // -a == ispell compatibility mode, -t == tex mode
-        prefs.setDefault(SPELL_CHECKER_ARGUMENTS, "-a -t --encoding=%encoding --lang=%language");
+        prefs.setDefault(SPELL_CHECKER_ARGUMENTS, "-a -t --lang=%language");
         prefs.setDefault(SPELL_CHECKER_ENV, "");
         prefs.setDefault(SPELL_CHECKER_ENCODING, "ISO-8859-1");
         prefs.addPropertyChangeListener(instance);
@@ -437,8 +433,17 @@ public class SpellChecker implements IPropertyChangeListener, IDocumentListener 
      */
     private void checkLineSpelling(String line, int offset, int lineNumber, IFile file) {
         
-        // give the speller something to parse
+        // check that there is text for the checker
+        if (line == null || line.length() == 0) {
+            return;
+        }
+        
         line = line.replace('%', ' ');
+        if (line.trim().length() == 0) {
+            return;
+        }
+        
+        // give the speller something to parse
         output.println(line);
         output.flush();
         Thread.yield();
@@ -446,6 +451,14 @@ public class SpellChecker implements IPropertyChangeListener, IDocumentListener 
         // read the ReaderBuffer contents
         StringBuffer sb = new StringBuffer();
         String tmp = input.getBuffer();
+        
+        // wait until there is input
+        while (tmp.length() == 0) {
+            Thread.yield();
+            tmp = input.getBuffer();
+        }
+        
+        // wait until the end of input
         while (tmp.length() > 0) {
             sb.append(tmp);
             Thread.yield();

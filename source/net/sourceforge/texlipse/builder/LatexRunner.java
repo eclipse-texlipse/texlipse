@@ -55,7 +55,7 @@ public class LatexRunner extends AbstractProgramRunner {
     }
     
     public String getInputFormat() {
-        return TexlipseProperties.OUTPUT_FORMAT_TEX;
+        return TexlipseProperties.INPUT_FORMAT_TEX;
     }
     
     /**

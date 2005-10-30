@@ -51,6 +51,9 @@ public class TexlipseProjectPropertyPage extends PropertyPage {
     // builder choosing component
     private BuilderChooser builderChooser;
     
+    // makeindex style file
+    private Text indexStyleField;
+    
     // language code
     private Text languageField;
     
@@ -82,6 +85,8 @@ public class TexlipseProjectPropertyPage extends PropertyPage {
         addDerivedSection(composite);
         TexlipsePreferencePage.addSeparator(1, composite);
         addFormatSection(composite);
+        TexlipsePreferencePage.addSeparator(1, composite);
+        addIndexStyleSection(composite);
         TexlipsePreferencePage.addSeparator(1, composite);
         addLangSection(composite);
 
@@ -302,6 +307,21 @@ public class TexlipseProjectPropertyPage extends PropertyPage {
     }
 
     /**
+     * Create text field for makeindex style file parameter.
+     * @param parent parent component
+     */
+    private void addIndexStyleSection(Composite parent) {
+        Composite composite = createDefaultComposite(parent, 2);
+        
+        Label label = new Label(composite, SWT.LEFT | SWT.WRAP);
+        label.setLayoutData(new GridData());
+        label.setText(TexlipsePlugin.getResourceString("propertiesMakeindexStyle"));
+        
+        indexStyleField = new Text(composite, SWT.SINGLE | SWT.BORDER);
+        indexStyleField.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+    }
+    
+    /**
      * Create a text field for language setting.
      * @param parent parent component
      */
@@ -394,6 +414,9 @@ public class TexlipseProjectPropertyPage extends PropertyPage {
         
         // language code
         languageField.setText(TexlipseProperties.getProjectProperty(project, TexlipseProperties.LANGUAGE_PROPERTY));
+        
+        // makeindex style file
+        indexStyleField.setText(TexlipseProperties.getProjectProperty(project, TexlipseProperties.MAKEINDEX_STYLEFILE_PROPERTY));
         
         // read source file name
         String srcDir = TexlipseProperties.getProjectProperty(project,
@@ -498,6 +521,7 @@ public class TexlipseProjectPropertyPage extends PropertyPage {
             outDir = srcDir;
         }
 
+        // save values
         int num = builderChooser.getSelectedBuilder();
         if (num == -1) {
             num = 0;
@@ -511,7 +535,9 @@ public class TexlipseProjectPropertyPage extends PropertyPage {
         TexlipseProperties.setProjectProperty(project,
                 TexlipseProperties.LANGUAGE_PROPERTY, languageField.getText());
         
-        // save values
+        TexlipseProperties.setProjectProperty(project,
+                TexlipseProperties.MAKEINDEX_STYLEFILE_PROPERTY, indexStyleField.getText());
+        
         TexlipseProperties.setProjectProperty(project,
                 TexlipseProperties.MAINFILE_PROPERTY, srcFile);
 
@@ -529,7 +555,7 @@ public class TexlipseProjectPropertyPage extends PropertyPage {
                 
         TexlipseProperties.setProjectProperty(project,
                 TexlipseProperties.OUTPUT_FORMAT, format);
-
+        
         //save settings to file
         if (project.getType() == IResource.PROJECT) {
             TexlipseProperties.saveProjectProperties((IProject) project);

@@ -116,11 +116,11 @@ public class BibtexRunner extends AbstractProgramRunner {
     }
 
     public String getInputFormat() {
-        return "";
+        return TexlipseProperties.INPUT_FORMAT_BIB;
     }
     
     public String getOutputFormat() {
-        return TexlipseProperties.OUTPUT_FORMAT_BIB;
+        return TexlipseProperties.OUTPUT_FORMAT_AUX;
     }
 
     /**

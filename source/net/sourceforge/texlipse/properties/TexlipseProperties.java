@@ -28,6 +28,10 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.QualifiedName;
+import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.PlatformUI;
 
 
 /**
@@ -55,6 +59,7 @@ public class TexlipseProperties {
     public static final String TEMP_DIR_PROPERTY = "tempDir";
     public static final String MARK_DERIVED_PROPERTY = "markDer";
     public static final String LANGUAGE_PROPERTY = "langSpell";
+    public static final String MAKEINDEX_STYLEFILE_PROPERTY = "makeIndSty";
     
     public static final String BIBCONTAINER_PROPERTY = "bibContainer";
     public static final String LABELCONTAINER_PROPERTY = "labelContainer";
@@ -118,9 +123,11 @@ public class TexlipseProperties {
     
     public static final String OUTPUT_FORMAT = "outputFormat";
     public static final String OUTPUT_FORMAT_AUX = "aux";
-    public static final String OUTPUT_FORMAT_BIB = "bib";
+    public static final String INPUT_FORMAT_BIB = "bib";
     public static final String OUTPUT_FORMAT_IDX = "idx";
-    public static final String OUTPUT_FORMAT_TEX = "tex";
+    public static final String INPUT_FORMAT_NOMENCL = "nlo";
+    public static final String OUTPUT_FORMAT_NOMENCL = "nls";
+    public static final String INPUT_FORMAT_TEX = "tex";
     public static final String OUTPUT_FORMAT_DVI = "dvi";
     public static final String OUTPUT_FORMAT_PS = "ps";
     public static final String OUTPUT_FORMAT_PDF = "pdf";
@@ -351,6 +358,7 @@ public class TexlipseProperties {
         setProjectProperty(project, OUTPUT_FORMAT, prop.getProperty(OUTPUT_FORMAT, ""));
         setProjectProperty(project, MARK_DERIVED_PROPERTY, prop.getProperty(MARK_DERIVED_PROPERTY, ""));
         setProjectProperty(project, LANGUAGE_PROPERTY, prop.getProperty(LANGUAGE_PROPERTY, ""));
+        setProjectProperty(project, MAKEINDEX_STYLEFILE_PROPERTY, prop.getProperty(MAKEINDEX_STYLEFILE_PROPERTY, ""));
     }
     
     /**
@@ -361,6 +369,23 @@ public class TexlipseProperties {
     public static void saveProjectProperties(IProject project) {
         
         IFile settingsFile = project.getFile(LATEX_PROJECT_SETTINGS_FILE);
+        
+        // check if we can write to the properties file
+        if (settingsFile.isReadOnly()) {
+            IWorkbench workbench = PlatformUI.getWorkbench();
+            workbench.getDisplay().asyncExec(new Runnable() {
+                public void run() {
+                    IWorkbench workbench = PlatformUI.getWorkbench();
+                    // show an error message is the file is not writable
+                    MessageDialog dialog = new MessageDialog(workbench.getActiveWorkbenchWindow().getShell(),
+                            TexlipsePlugin.getResourceString("projectSettingsReadOnlyTitle"), null,
+                            TexlipsePlugin.getResourceString("projectSettingsReadOnly"), MessageDialog.ERROR, 
+                            new String[] { IDialogConstants.OK_LABEL }, 0);
+                    dialog.open();
+                }});
+            return;
+        }
+        
         Properties prop = new Properties();
         
         prop.setProperty(MAINFILE_PROPERTY, getProjectProperty(project, MAINFILE_PROPERTY));
@@ -372,7 +397,8 @@ public class TexlipseProperties {
         prop.setProperty(OUTPUT_FORMAT, getProjectProperty(project, OUTPUT_FORMAT));
         prop.setProperty(MARK_DERIVED_PROPERTY, getProjectProperty(project, MARK_DERIVED_PROPERTY));
         prop.setProperty(LANGUAGE_PROPERTY, getProjectProperty(project, LANGUAGE_PROPERTY));
-
+        prop.setProperty(MAKEINDEX_STYLEFILE_PROPERTY, getProjectProperty(project, MAKEINDEX_STYLEFILE_PROPERTY));
+        
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try {
             prop.store(baos, "TeXlipse project settings");

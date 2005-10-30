@@ -168,7 +168,8 @@ public class BuilderRegistry {
                 new MakeindexRunner(),
                 new DvipsRunner(),
                 new DvipdfRunner(),
-                new Ps2pdfRunner()
+                new Ps2pdfRunner(),
+                new MakeindexNomenclRunner()
         };
     }
 
@@ -279,3 +280,5 @@ public class BuilderRegistry {
         return instance.runnerList.length;
     }
 }
+
+

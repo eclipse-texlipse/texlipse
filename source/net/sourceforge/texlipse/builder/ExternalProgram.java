@@ -138,7 +138,7 @@ public class ExternalProgram {
     protected String run(boolean wait, String[] queryMessage) throws Exception {
         
         String output = null;
-        
+        String errorOutput = null;
         if ((command != null) && (dir != null)) {
             
         	StringBuffer commandSB = new StringBuffer();
@@ -161,7 +161,6 @@ public class ExternalProgram {
 	            envProp.setProperty(key, envProp.getProperty(key) + File.pathSeparatorChar + commandPath);
             }
             
-            //String[] env = PathUtils.getStrings(envProp);
             String[] env = PathUtils.mergeEnvFromPrefs(envProp, TexlipseProperties.BUILD_ENV_SETTINGS);
             process = rt.exec(command, env, dir);
             
@@ -170,19 +169,29 @@ public class ExternalProgram {
         }
 
         if (queryMessage != null) {
-            OutputScanner put = null;
             
-            put = new OutputScanner(process.getInputStream(), process.getOutputStream(),
+            // scan the standard output stream
+            OutputScanner scanner = null;
+            
+            // scan also the standard error stream
+            OutputScanner errorScanner = null;
+            
+            scanner = new OutputScanner(process.getInputStream(), process.getOutputStream(),
+                    queryMessage, consoleOutput);
+            errorScanner = new OutputScanner(process.getErrorStream(), process.getOutputStream(),
                     queryMessage, consoleOutput);
             
-            boolean success = put.scanOutput();
-            if (success) {
-                output = put.getText();
+            if (scanner.scanOutput()) {
+                output = scanner.getText();
+            }
+            if (errorScanner.scanOutput()) {
+                errorOutput = errorScanner.getText();
             }
             
         } else {
         
             output = readOutput(process.getInputStream());
+            errorOutput = readOutput(process.getErrorStream());
         }
         
         if (output == null) {
@@ -191,11 +200,18 @@ public class ExternalProgram {
         }
         
         if (wait) {
-            int code = process.waitFor();
+            // the process status code is not useful here
+            //int code = 
+            process.waitFor();
         }
         
         process = null;
         
+        // combine the error output with normal output
+        // to collect information from for example makeindex
+        if (errorOutput.length() > 0) {
+        	output += "\n" + errorOutput;
+        }
         return output;
     }
 }

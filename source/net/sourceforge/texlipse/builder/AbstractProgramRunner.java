@@ -52,14 +52,14 @@ public abstract class AbstractProgramRunner implements ProgramRunner {
      * @return the name of the program runner arguments -preference in the plugin preferences
      */
     private String getArgumentsPreferenceName() {
-        return getUnixProgramName() + "_args";
+        return getClass() + "_args";
     }
     
     /**
      * @return the name of the program runner path -preference in the plugin preferences
      */
     private String getCommandPreferenceName() {
-        return getUnixProgramName() + "_prog";
+        return getClass() + "_prog";
     }
     
     /**

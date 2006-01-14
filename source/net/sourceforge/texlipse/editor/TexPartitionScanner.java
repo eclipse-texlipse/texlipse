@@ -41,21 +41,26 @@ public class TexPartitionScanner extends RuleBasedPartitionScanner {
 	public TexPartitionScanner() {
 		IToken math 			= new Token(TEX_MATH);
 		IToken texComment 		= new Token(TEX_COMMENT);
-		IToken curly_bracket 	= new Token(TEX_CURLY_BRACKETS);
-		IToken square_bracket	= new Token(TEX_SQUARE_BRACKETS);
+		//IToken curly_bracket 	= new Token(TEX_CURLY_BRACKETS);
+		//IToken square_bracket	= new Token(TEX_SQUARE_BRACKETS);
 		
 		List rules= new ArrayList();
 				
 		rules.add(new SingleLineRule("\\%"," ", Token.UNDEFINED)); //no comment when using "\%" in LaTeX 
 		rules.add(new EndOfLineRule("%", texComment));
 		rules.add(new MultiLineRule("\\begin{comment}","\\end{comment}",texComment));
-		rules.add(  new SingleLineRule("\\\\[","]", Token.UNDEFINED));  //no math when using "\\[]" line breaks
+		rules.add( new SingleLineRule("\\\\[","]", Token.UNDEFINED));  //no math when using "\\[]" line breaks
 		rules.add( new MultiLineRule("\\[","\\]", math)); 
 		
 		rules.add(new SingleLineRule("\\$"," ",Token.UNDEFINED)); // not a math equation \$
 		rules.add(new MultiLineRule("\\begin{equation}","\\end{equation}", math)); 
 		rules.add(new MultiLineRule("\\begin{equation*}","\\end{equation*}", math)); 
+        rules.add(new MultiLineRule("$$","$$", math));
 		rules.add(new MultiLineRule("$","$", math)); 
+        rules.add(new MultiLineRule("\\begin{eqnarray}","\\end{eqnarray}", math));
+        rules.add(new MultiLineRule("\\begin{eqnarray*}","\\end{eqnarray*}", math));
+        rules.add(new MultiLineRule("\\begin{align}","\\end{align}", math));
+        rules.add(new MultiLineRule("\\begin{align*}","\\end{align*}", math));
 				
 		IPredicateRule[] result= new IPredicateRule[rules.size()];
 		rules.toArray(result);

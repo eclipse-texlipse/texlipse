@@ -478,7 +478,8 @@ public class TexDocumentModel implements IDocumentListener {
      * @param newOutlineInput
      * @return
      */
-    private int addNodePosition(OutlineNode node, IDocument document, int parentDepth, TexOutlineInput newOutlineInput) {        
+    private int addNodePosition(OutlineNode node, IDocument document,
+            int parentDepth, TexOutlineInput newOutlineInput) {        
         
         // add the Document position
         int beginOffset = 0;
@@ -487,7 +488,10 @@ public class TexDocumentModel implements IDocumentListener {
         
         try {
             beginOffset = document.getLineOffset(node.getBeginLine() - 1);
-            length =  document.getLineOffset(node.getEndLine() - 1) - beginOffset;
+            if (node.getEndLine() -1 == document.getNumberOfLines())
+            	length = document.getLength() - beginOffset;
+            else
+            	length =  document.getLineOffset(node.getEndLine() - 1) - beginOffset;
             position = new Position(beginOffset, length);
             document.addPosition("__outline", position);
         } catch (BadLocationException bpe) {

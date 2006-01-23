@@ -8,7 +8,7 @@
 	<topic label="Highlighting and indenting" href="html/highl.html"/>
 	<topic label="Wrapping text" href="html/wrapping.html"/>
 	<topic label="Using templates while editing" href="html/templates.html"/>
-	<topic label="Task and error markers" href="html/markers.html">
+	<topic label="Task and error markers" href="html/markers.html"/>
 	<topic label="Taking advantage of the document outline" href="html/outline.html"/>
 	<topic label="Miscellaneous editor functions" href="html/editormisc.html"/>
 	<topic label="LaTeX Table View" href="html/tableeditor.html"/>

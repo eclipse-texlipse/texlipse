@@ -102,6 +102,7 @@ public class TexCommandContainer {
             new CommandEntry("pageref", "\\pageref{label}\n\nCreates a page reference to the given label.", 1),
             new CommandEntry("pagestyle", "\\pagestyle{option}\n\nChanges the style from the current page on throughout the remainder of your document. Valid options are plain, empty, headings and myheadings.", 1),
             new CommandEntry("par", "\\par\n\nEnds paragraph.", 0),
+            new CommandEntry("part", "\\part{title}\n\nStarts a new part of a book.", 1),
             new CommandEntry("paragraph", "\\paragraph\n\nStarts a new paragraph with the specified heading.\nEssentially a lower level sectioning command than subsubsection.", 0),
             new CommandEntry("parindent", "\\parindent{indentation}\n\nIndents the first line of the next paragraphs by the specified amount.", 1),
             new CommandEntry("parskip", "\\parskip{}\n\nChanges the spacing between paragraphs.", 1),

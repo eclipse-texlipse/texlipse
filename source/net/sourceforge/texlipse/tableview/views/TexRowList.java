@@ -241,14 +241,17 @@ public class TexRowList {
             }
             if (line.endsWith("\\\\"))
                 line = line.substring(0, line.length() - 2);
+            //We need this to ensure that the last empty field will be recognized (Case: &\\)
+            if (line.endsWith("&")) line = line + " ";
             index2 = 0;
             column = 0;
             while ((index2 < line.length()) && (column < TexRow.COLUMNS)) {
                 item = readItemFromTexTableLine(line, index2);
                 index2 += item.length();
+                item = item.trim();
                 if (item.endsWith("&"))
                     item = item.substring(0, item.length() - 1);
-                item = item.trim();
+                if ("".equals(item)) item = "&";
                 ((TexRow) rows.get(row)).setCol(column, item);
                 column++;
             }
@@ -284,16 +287,23 @@ public class TexRowList {
                 continue;
             
             first = true;
+            boolean amp = false;
             for (int j = 0; j <= lastCol; j++) {
                 s = row.getCol(j).trim();
-                if (s.compareTo("&") == 0)
-                    value += " " + s;
+                if (s.compareTo("&") == 0){
+                	if (first) value += s;
+                	else value += " " + s;
+                	first = false;
+                	amp = true;
+                }
                 else {
                     if (first) {
                         value += s;
                         first = false;
                     } else {
-                        value += " & " + s;
+                        if (!amp) value += " & " + s;
+                        else value += " " + s;
+                        amp = false;
                     }
                 }
             }

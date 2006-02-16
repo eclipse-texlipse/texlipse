@@ -43,7 +43,10 @@ public class TexMathScanner extends RuleBasedScanner {
     public TexMathScanner(ColorManager manager, TexEditor editor) {
         IToken commentToken = new Token(
                 new TextAttribute(
-                        manager.getColor(ColorManager.COMMENT)));
+                        manager.getColor(ColorManager.COMMENT),
+                        null,
+                        manager.getStyle(ColorManager.COMMENT_STYLE)));
+
         
         List rules = new ArrayList();
         

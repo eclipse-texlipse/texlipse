@@ -17,6 +17,7 @@ import net.sourceforge.texlipse.TexlipsePlugin;
 
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferenceConverter;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Display;
@@ -48,6 +49,21 @@ public class ColorManager {
 	
 	public static final String TEX_SPECIAL = "spe.TexColor";
     
+	//The style for the syntax highlighting
+	public static final String DEFAULT_STYLE = "def.TexStyle";
+	
+	public static final String STRING_STYLE     = "str.TexStyle";
+	public static final String COMMAND_STYLE    = "cmd.TexStyle";
+	public static final String CURLY_BRACKETS_STYLE = "crl.TexStyle";
+	public static final String SQUARE_BRACKETS_STYLE = "sqr.TexStyle";
+	public static final String EQUATION_STYLE = "equ.TexStyle";
+	public static final String COMMENT_STYLE  = "com.TexStyle";
+	
+	//public static final String TEX_WHITE  = "whi.TexColor";
+	public static final String TEX_NUMBER_STYLE = "num.TexStyle";
+	
+	public static final String TEX_SPECIAL_STYLE = "spe.TexStyle";
+    
     // default colors
     private static final RGB DEFAULT_DEFAULT_COLOR = new RGB(0, 0, 0);
     
@@ -63,12 +79,28 @@ public class ColorManager {
     
     private static final RGB DEFAULT_TEX_SPECIAL_COLOR = new RGB(255, 0, 0);
     
-	// the color cache
-	protected Map fColorTable = new HashMap(10);
-
+    // default styles
+    private static final int DEFAULT_DEFAULT_STYLE = SWT.NORMAL;
+    
+    private static final int DEFAULT_STRING_STYLE = SWT.NORMAL;
+    private static final int DEFAULT_COMMAND_STYLE = SWT.BOLD;
+    private static final int DEFAULT_CURLY_BRACKETS_STYLE = SWT.NORMAL;
+    private static final int DEFAULT_SQUARE_BRACKETS_STYLE = SWT.NORMAL;
+    private static final int DEFAULT_EQUATION_STYLE = SWT.NORMAL;
+    private static final int DEFAULT_COMMENT_STYLE = SWT.NORMAL;
+    
+    //private static final RGB DEFAULT_TEX_WHITE_COLOR = new RGB(125, 125, 125);
+    private static final int DEFAULT_TEX_NUMBER_STYLE = SWT.NORMAL;
+    
+    private static final int DEFAULT_TEX_SPECIAL_STYLE = SWT.NORMAL;
+    // the color and style cache
+    
+    protected Map fColorTable = new HashMap(10);
+    protected Map fStyleTable = new HashMap(10);
+    protected Color bgColor;
 
     /**
-     * Initialize default colors to preferences.
+     * Initialize default colors and styles to preferences.
      * This should be called only from PreferenceInitializer.
      * @param preferences preferences
      */
@@ -86,6 +118,20 @@ public class ColorManager {
         PreferenceConverter.setDefault(preferences, TEX_NUMBER, DEFAULT_TEX_NUMBER_COLOR);
 
         PreferenceConverter.setDefault(preferences, TEX_SPECIAL, DEFAULT_TEX_SPECIAL_COLOR);
+
+        preferences.setDefault(DEFAULT_STYLE, DEFAULT_DEFAULT_STYLE);
+
+        preferences.setDefault(STRING_STYLE, DEFAULT_STRING_STYLE);
+        preferences.setDefault(COMMAND_STYLE, DEFAULT_COMMAND_STYLE);
+        preferences.setDefault(CURLY_BRACKETS_STYLE, DEFAULT_CURLY_BRACKETS_STYLE);
+        preferences.setDefault(SQUARE_BRACKETS_STYLE, DEFAULT_SQUARE_BRACKETS_STYLE);
+        preferences.setDefault(EQUATION_STYLE, DEFAULT_EQUATION_STYLE);
+        preferences.setDefault(COMMENT_STYLE, DEFAULT_COMMENT_STYLE);
+
+        //PreferenceConverter.setDefault(preferences, TEX_WHITE, DEFAULT_TEX_WHITE_COLOR);
+        preferences.setDefault(TEX_NUMBER_STYLE, DEFAULT_TEX_NUMBER_STYLE);
+
+        preferences.setDefault(TEX_SPECIAL_STYLE, DEFAULT_TEX_SPECIAL_STYLE);
     }
     
     /**
@@ -105,6 +151,20 @@ public class ColorManager {
 	}
 
     /**
+     * Returns the style for some style name
+     * @param styleC   one of the predefined styles
+     * @return the     color object
+     */
+       public int getStyle(String styleC) {
+               Integer style = (Integer) fStyleTable.get(styleC);
+               if (style == null) {
+                       style = new Integer(TexlipsePlugin.getDefault().getPreferenceStore().getInt(styleC));
+                       fColorTable.put(styleC, style);
+               }
+               return style.intValue();
+       }
+
+       /**
      * Dispose the color provider.
      */
 	public void dispose() {

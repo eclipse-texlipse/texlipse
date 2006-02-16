@@ -30,8 +30,6 @@ import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 
 
-
-
 /**
  * Configuration for the source viewer of the LaTeX
  * editor.
@@ -190,7 +188,9 @@ public class TexSourceViewerConfiguration extends SourceViewerConfiguration {
             scanner.setDefaultReturnToken(
                     new Token(
                             new TextAttribute(
-                                    colorManager.getColor(ColorManager.DEFAULT))));			
+                                    colorManager.getColor(ColorManager.DEFAULT),
+                                    null,
+                                    colorManager.getStyle(ColorManager.DEFAULT_STYLE))));
         }
         return scanner;
     }
@@ -206,7 +206,9 @@ public class TexSourceViewerConfiguration extends SourceViewerConfiguration {
             mathScanner.setDefaultReturnToken(
                     new Token(
                             new TextAttribute(
-                                    colorManager.getColor(ColorManager.EQUATION))));
+                                    colorManager.getColor(ColorManager.EQUATION),
+                                    null,
+                                    colorManager.getStyle(ColorManager.EQUATION_STYLE))));
         }
         return mathScanner;
     }
@@ -221,7 +223,9 @@ public class TexSourceViewerConfiguration extends SourceViewerConfiguration {
             commentScanner.setDefaultReturnToken(
                     new Token(
                             new TextAttribute(
-                                    colorManager.getColor(ColorManager.COMMENT))));
+                                    colorManager.getColor(ColorManager.COMMENT),
+                                    null,
+                                    colorManager.getStyle(ColorManager.COMMENT_STYLE))));
         }
         return commentScanner;
     }

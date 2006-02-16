@@ -45,19 +45,36 @@ public class TexScanner extends RuleBasedScanner {
     public TexScanner(ColorManager manager, TexEditor editor) {
         // A token that defines how to color numbers
         IToken numberToken = new Token(new TextAttribute(manager
-                .getColor(ColorManager.TEX_NUMBER)));
+                .getColor(ColorManager.TEX_NUMBER),
+                null,
+                manager.getStyle(ColorManager.TEX_NUMBER_STYLE)));
+
         // A token that defines how to color command words (\command_word)
         IToken commandToken = new Token(new TextAttribute(manager
-                .getColor(ColorManager.COMMAND)));
+                .getColor(ColorManager.COMMAND),
+                null,
+                manager.getStyle(ColorManager.COMMAND_STYLE)));
+
         IToken braketToken = new Token(new TextAttribute(manager
-                .getColor(ColorManager.CURLY_BRACKETS)));
+                .getColor(ColorManager.CURLY_BRACKETS),
+                null,
+                manager.getStyle(ColorManager.CURLY_BRACKETS_STYLE)));
+
         IToken squareToken = new Token(new TextAttribute(manager
-                .getColor(ColorManager.SQUARE_BRACKETS)));
+                .getColor(ColorManager.SQUARE_BRACKETS),
+                null,
+                manager.getStyle(ColorManager.SQUARE_BRACKETS_STYLE)));
+
         IToken commentToken = new Token(new TextAttribute(manager
-                .getColor(ColorManager.COMMENT)));
+                .getColor(ColorManager.COMMENT),
+                null,
+                manager.getStyle(ColorManager.COMMENT_STYLE)));
+
         // A token that defines how to color special characters (\_, \&, \~ ...)
         IToken specialCharToken = new Token(new TextAttribute(manager
-                .getColor(ColorManager.TEX_SPECIAL)));
+                .getColor(ColorManager.TEX_SPECIAL),
+                null,
+                manager.getStyle(ColorManager.TEX_SPECIAL_STYLE)));
         
         List rules = new ArrayList();
         rules.add(new TexSpecialCharRule(specialCharToken));

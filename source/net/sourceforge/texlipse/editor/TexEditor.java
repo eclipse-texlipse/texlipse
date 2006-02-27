@@ -19,6 +19,7 @@ import net.sourceforge.texlipse.properties.TexlipseProperties;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.text.ITextViewerExtension;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.IVerticalRuler;
 import org.eclipse.jface.text.source.projection.ProjectionSupport;
@@ -36,6 +37,7 @@ import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
  * 
  * @author Oskar Ojala
  * @author Taavi Hupponen
+ * @author Boris von Loesch
  */
 public class TexEditor extends TextEditor {
 
@@ -48,6 +50,7 @@ public class TexEditor extends TextEditor {
     private TexDocumentModel documentModel;
     private TexCodeFolder folder;
     private ProjectionSupport fProjectionSupport;
+    private BracketInserter fBracketInserter;
     
     /**
      * Constructs a new editor.
@@ -82,6 +85,13 @@ public class TexEditor extends TextEditor {
         this.getDocumentProvider().getDocument(getEditorInput()).addDocumentListener(this.documentModel);
         this.documentModel.initializeModel();
         this.documentModel.updateNow();
+
+        ISourceViewer sourceViewer = getSourceViewer();
+        if (sourceViewer instanceof ITextViewerExtension) {
+            if (fBracketInserter == null)
+                fBracketInserter = new BracketInserter(getSourceViewer(), this);
+            ((ITextViewerExtension) sourceViewer).prependVerifyKeyListener(fBracketInserter);
+        }
     }
 
     /** 

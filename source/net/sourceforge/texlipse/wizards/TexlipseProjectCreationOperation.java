@@ -88,6 +88,7 @@ public class TexlipseProjectCreationOperation implements IRunnableWithProgress {
             
             TexlipseProperties.setProjectProperty(project, TexlipseProperties.LANGUAGE_PROPERTY, "en");
             TexlipseProperties.setProjectProperty(project, TexlipseProperties.MARK_DERIVED_PROPERTY, "true");
+            TexlipseProperties.setProjectProperty(project, TexlipseProperties.MAKEINDEX_STYLEFILE_PROPERTY, "");
             TexlipseProperties.setProjectProperty(project, TexlipseProperties.OUTPUTFILE_PROPERTY, attributes.getOutputFile());
             TexlipseProperties.setProjectProperty(project, TexlipseProperties.OUTPUT_FORMAT, attributes.getOutputFormat());
             TexlipseProperties.setProjectProperty(project, TexlipseProperties.BUILDER_NUMBER, attributes.getBuilder()+"");

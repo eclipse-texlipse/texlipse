@@ -118,6 +118,9 @@ public class TexlipsePreferenceInitializer extends
         pref.setDefault(TexlipseProperties.WORDWRAP_LENGTH, 80);
         pref.setDefault(TexlipseProperties.WORDWRAP_TYPE, TexlipseProperties.WORDWRAP_TYPE_HARD);
         pref.setDefault(TexlipseProperties.TEX_ITEM_COMLETION, true);
+        pref.setDefault(TexlipseProperties.TEX_BRACKET_COMLETION, true);
+        pref.setDefault(TexlipseProperties.TEX_REPLACE_QUOTES, true);
+
         
         pref.setDefault(TexlipseProperties.OUTLINE_PREAMBLE, true);
         pref.setDefault(TexlipseProperties.OUTLINE_PART, true);

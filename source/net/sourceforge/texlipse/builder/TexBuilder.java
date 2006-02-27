@@ -52,7 +52,7 @@ public class TexBuilder extends AbstractBuilder {
             bibtex = BuilderRegistry.getRunner(TexlipseProperties.INPUT_FORMAT_BIB, TexlipseProperties.OUTPUT_FORMAT_AUX);
         }
         if (makeIndex == null || !makeIndex.isValid()) {
-            makeIndex = BuilderRegistry.getRunner(TexlipseProperties.INPUT_FORMAT_TEX, TexlipseProperties.OUTPUT_FORMAT_IDX);
+            makeIndex = BuilderRegistry.getRunner(TexlipseProperties.INPUT_FORMAT_IDX, TexlipseProperties.OUTPUT_FORMAT_IDX);
         }
         if (makeIndexNomencl == null || !makeIndexNomencl.isValid()) {
             makeIndexNomencl = BuilderRegistry.getRunner(TexlipseProperties.INPUT_FORMAT_NOMENCL, TexlipseProperties.OUTPUT_FORMAT_NOMENCL);
@@ -166,7 +166,7 @@ public class TexBuilder extends AbstractBuilder {
         }
         
         String name = source.getName();
-        String idxName = name.substring(0, name.length() - source.getFileExtension().length()) + TexlipseProperties.OUTPUT_FORMAT_IDX;
+        String idxName = name.substring(0, name.length() - source.getFileExtension().length()) + TexlipseProperties.INPUT_FORMAT_IDX;
         IResource idxFile = srcDir.findMember(idxName);
         if (idxFile == null) {
             return null;

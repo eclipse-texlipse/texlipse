@@ -79,6 +79,12 @@ public class TexlipseProperties {
     public static final String TEX_ITEM_COMLETION = "texItemCompletion"; 
     public static final String TEX_ITEM_COMLETION_VALUE = "true";
     
+    public static final String TEX_BRACKET_COMLETION = "texBracketCompletion";
+    public static final String TEX_BRACKET_COMLETION_VALUE = "true";
+    
+    public static final String TEX_REPLACE_QUOTES = "texReplaceQuotes";
+    public static final String TEX_REPLACE_QUOTES_VALUE = "true";
+    
     public static final String AUTO_PARSING = "autoParsing";
     public static final String AUTO_PARSING_DELAY = "autoParsingDelay";
     
@@ -124,7 +130,8 @@ public class TexlipseProperties {
     public static final String OUTPUT_FORMAT = "outputFormat";
     public static final String OUTPUT_FORMAT_AUX = "aux";
     public static final String INPUT_FORMAT_BIB = "bib";
-    public static final String OUTPUT_FORMAT_IDX = "idx";
+    public static final String INPUT_FORMAT_IDX = "idx";
+    public static final String OUTPUT_FORMAT_IDX = "ind";
     public static final String INPUT_FORMAT_NOMENCL = "nlo";
     public static final String OUTPUT_FORMAT_NOMENCL = "nls";
     public static final String INPUT_FORMAT_TEX = "tex";

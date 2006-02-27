@@ -72,13 +72,25 @@ public class TexEditorPreferencePage
         completionDelay.setValidateStrategy(IntegerFieldEditor.VALIDATE_ON_KEY_STROKE);
         completionDelay.setValidRange(MIN_COMPLETION_DELAY, MAX_COMPLETION_DELAY);
         addField(completionDelay);
-        TexlipsePreferencePage.addSpacer(getFieldEditorParent());
+        //TexlipsePreferencePage.addSpacer(getFieldEditorParent());
         
         // auto \item completion
         addField(new BooleanFieldEditor(TexlipseProperties.TEX_ITEM_COMLETION, TexlipsePlugin.getResourceString("preferenceTexItemCompletion"), getFieldEditorParent()));
         Label itemLabel = new Label(getFieldEditorParent(),SWT.LEFT | SWT.WRAP);
         itemLabel.setText(TexlipsePlugin.getResourceString("preferenceTexItemCompletionText"));        
-        TexlipsePreferencePage.addSpacer(getFieldEditorParent());
+        //TexlipsePreferencePage.addSpacer(getFieldEditorParent());
+        
+        // auto Bracket completion
+        addField(new BooleanFieldEditor(TexlipseProperties.TEX_BRACKET_COMLETION, TexlipsePlugin.getResourceString("preferenceTexBracketCompletion"), getFieldEditorParent()));
+        Label bracketLabel = new Label(getFieldEditorParent(),SWT.LEFT | SWT.WRAP);
+        bracketLabel.setText(TexlipsePlugin.getResourceString("preferenceTexBracketCompletionText"));
+        //TexlipsePreferencePage.addSpacer(getFieldEditorParent());
+        
+        // replace quotation marks
+        addField(new BooleanFieldEditor(TexlipseProperties.TEX_REPLACE_QUOTES, TexlipsePlugin.getResourceString("preferenceTexReplaceQuotes"), getFieldEditorParent()));
+        Label quotesLabel = new Label(getFieldEditorParent(),SWT.LEFT | SWT.WRAP);
+        quotesLabel.setText(TexlipsePlugin.getResourceString("preferenceTexReplaceQuotes"));
+        //TexlipsePreferencePage.addSpacer(getFieldEditorParent());
         
         // auto parsing
         addField(new BooleanFieldEditor(TexlipseProperties.AUTO_PARSING, TexlipsePlugin.getResourceString("preferenceAutoParsing"), getFieldEditorParent()));

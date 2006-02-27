@@ -65,7 +65,7 @@ public class MakeindexRunner extends AbstractProgramRunner {
     }
     
     public String getInputFormat() {
-        return TexlipseProperties.INPUT_FORMAT_TEX;
+        return TexlipseProperties.INPUT_FORMAT_IDX;
     }
     
     public String getOutputFormat() {

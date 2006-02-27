@@ -152,6 +152,38 @@ public class TexAutoIndentStrategy extends DefaultAutoIndentStrategy {
     }
 
     /**
+     * Decides if a "\begin{...}" needs a "\end{...}"
+     * @param environment	Name of the environment (...)
+     * @param document	The document as String
+     * @param coffset	The starting offset (just at the beginning of
+     * 					the "\begin{...}"
+     * @return	true, if it needs an end, else false
+     */
+    private boolean needsEnd(String environment, String document, int coffset) {
+        int counter = 1;
+        int offset = coffset;
+        String end = "\\end{" + environment + "}";
+        String begin = "\\begin{" + environment + "}";
+        while (counter > 0) {
+            int startof = document.indexOf(begin, offset + 5);
+            int endof = document.indexOf(end, offset + 3);
+            if (startof == -1 && endof >= 0) {
+                counter--;
+                offset = endof;
+            } else if (endof >= startof) {
+                offset = startof;
+                if (offset == -1)
+                    return true;
+                counter++;
+            } else {
+                counter--;
+                offset = endof;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Performs indentation after new line is detected.
      * 
      * @param document
@@ -181,7 +213,7 @@ public class TexAutoIndentStrategy extends DefaultAutoIndentStrategy {
                         .substring(beginIndex), "\\begin");
                 StringBuffer buf = new StringBuffer(command.text);
                 String prevIndentation = "";
-                //get identation of \begin
+                // get identation of \begin
                 prevIndentation = this.tools.getIndentation(document, line,
                         "\\begin", this.tabWidth); // NEW
 
@@ -213,18 +245,19 @@ public class TexAutoIndentStrategy extends DefaultAutoIndentStrategy {
                  * looks for the \begin-statement and inserts
                  * an equivalent \end-statement (respects \begin-indentation)
                  */
-                buf.append("\n" + prevIndentation + "\\end{"
+                if (needsEnd(this.tools.getEnvironment(endText), document.get(), lineOffset)){
+                	buf.append("\n" + prevIndentation + "\\end{"
                         + this.tools.getEnvironment(endText) + "}");
-                command.shiftsCaret = false;
+                    command.shiftsCaret = false;
+                    command.caretOffset = command.offset + buf.length()
+                    - prevIndentation.length() - 7
+                    - this.tools.getEnvironment(endText).length();
+                }
                 if (this.tools.getEnvironment(endText).equals("description")
                         && autoItem) {
                     command.caretOffset = command.offset + buf.length()
                             - prevIndentation.length() - "\\end{}".length()
                             - this.tools.getEnvironment(endText).length() - 2;
-                } else {
-                    command.caretOffset = command.offset + buf.length()
-                            - prevIndentation.length() - 7
-                            - this.tools.getEnvironment(endText).length();
                 }
                 command.text = buf.toString();
 

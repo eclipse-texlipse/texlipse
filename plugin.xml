@@ -3,7 +3,7 @@
 <plugin
    id="net.sourceforge.texlipse"
    name="TeXlipse Plug-in"
-   version="1.0.4"
+   version="1.0.5"
    provider-name="TeXlapse Team"
    class="net.sourceforge.texlipse.TexlipsePlugin">
 
@@ -30,12 +30,11 @@
    </requires>
 
    <extension
-         point="org.eclipse.ui.actionSets">
-      <actionSet
-            label="TeXlipse Action Set"
-            visible="true"
-            id="texlipse.actionSet">
-         <menu
+         point="org.eclipse.ui.editorActions">
+      <editorContribution
+            id="net.sourceforge.texlipse.editorContribution"
+            targetID="net.sourceforge.texlipse.TexEditor">
+                     <menu
                label="&amp;Latex"
                id="LatexMenu">
             <separator
@@ -63,7 +62,7 @@
                style="push"
                menubarPath="LatexMenu/sourceGroup"
                id="actions.PreviewAction"/>
-      </actionSet>
+            </editorContribution>
    </extension>
    <extension
          point="org.eclipse.ui.editors">

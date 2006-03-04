@@ -14,7 +14,8 @@ import net.sourceforge.texlipse.texparser.LatexWordCounter;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.IEditorActionDelegate;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 import org.eclipse.ui.texteditor.ITextEditor;
 
@@ -26,10 +27,10 @@ import org.eclipse.ui.texteditor.ITextEditor;
  * 
  * @see IWorkbenchWindowActionDelegate
  */
-public class WordCountAction implements IWorkbenchWindowActionDelegate {
+public class WordCountAction implements IEditorActionDelegate {
     
-    private IWorkbenchWindow window;
     private static TexSelections selection;
+    private ITextEditor textEditor;
     
     /**
      * Constructs a new word counter.
@@ -44,7 +45,6 @@ public class WordCountAction implements IWorkbenchWindowActionDelegate {
      * @see IWorkbenchWindowActionDelegate#run
      */
     public void run(IAction action) {
-        ITextEditor textEditor = (ITextEditor)this.window.getActivePage().getActiveEditor();
         if (textEditor == null)
             return;
         selection = new TexSelections(textEditor);
@@ -60,7 +60,7 @@ public class WordCountAction implements IWorkbenchWindowActionDelegate {
         int size = counter.countWords();
         
         MessageDialog.openInformation(
-                window.getShell(),
+                textEditor.getSite().getShell(),
                 "Texlipse Plug-in",
                 "Approximate words: " + size);
     }
@@ -75,20 +75,9 @@ public class WordCountAction implements IWorkbenchWindowActionDelegate {
     public void selectionChanged(IAction action, ISelection selection) {
     }
     
-    /**
-     * We can use this method to dispose of any system
-     * resources we previously allocated.
-     * @see IWorkbenchWindowActionDelegate#dispose
-     */
-    public void dispose() {
-    }
-    
-    /**
-     * We will cache window object in order to
-     * be able to provide parent shell for the message dialog.
-     * @see IWorkbenchWindowActionDelegate#init
-     */
-    public void init(IWorkbenchWindow window) {
-        this.window = window;
+    public void setActiveEditor(IAction action, IEditorPart targetEditor) {
+      if (targetEditor instanceof ITextEditor) {
+        this.textEditor = (ITextEditor) targetEditor;
+      }
     }
 }

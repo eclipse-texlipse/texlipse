@@ -9,11 +9,12 @@
  */
 package net.sourceforge.texlipse.spelling;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.io.Reader;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 
@@ -27,6 +28,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -47,6 +49,7 @@ import org.eclipse.ui.texteditor.MarkerUtilities;
  * An abstraction to a spell checker program.
  * 
  * @author Kimmo Karlsson
+ * @author Georg Lippold
  */
 public class SpellChecker implements IPropertyChangeListener, IDocumentListener {
 
@@ -58,66 +61,15 @@ public class SpellChecker implements IPropertyChangeListener, IDocumentListener 
     public static final String SPELL_CHECKER_ARGUMENTS = "spellArgs";
     public static final String SPELL_CHECKER_ENV = "spellEnv";
     private static final String SPELL_CHECKER_ENCODING = "spellEnc";
-    
-    /**
-     * Character buffer for external program output.
-     */
-    class ReaderBuffer implements Runnable {
-        
-        // the input reader
-        private Reader reader;
-        
-        // buffer for the incoming data
-        private StringBuffer buffer;
-        
-        /**
-         * Create a new self-filling buffer.
-         * @param r reader
-         */
-        public ReaderBuffer(Reader r) {
-            reader = r;
-            buffer = new StringBuffer();
-        }
-        
-        /**
-         * @return the current contents of the buffer and clear the buffer
-         */
-        public String getBuffer() {
-            String str = null;
-            synchronized (buffer) {
-                str = buffer.toString();
-                buffer.delete(0, buffer.length());
-            }
-            return str;
-        }
-        
-        /**
-         * Read characters form the input as long as there is input.
-         */
-        public void run() {
-            
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-            }
-            
-            while (reader != null) {
-                try {
-                    int ch = reader.read();
-                    if (ch == -1) {
-                        reader = null;
-                        break;
-                    }
-                    synchronized (buffer) {
-                        buffer.append((char)ch);
-                    }
-                } catch (IOException e) {
-                    break;
-                }
-            }
-        }
-    }
-    
+    private static final String encoding = ResourcesPlugin.getEncoding();
+
+    // These two strings have to have multiple words, because otherwise
+    // they may come up in aspells proposals.
+    public static String SPELL_CHECKER_ADD = "spellCheckerAddToUserDict";
+    // The values are resource bundle entry IDs at startup.
+    // They are converted to actual strings in the constructor.
+    public static String SPELL_CHECKER_IGNORE = "spellCheckerIgnoreWord";
+
     /**
      * A Spell-checker job.
      */
@@ -144,7 +96,7 @@ public class SpellChecker implements IPropertyChangeListener, IDocumentListener 
          * Run the spell checker.
          */
         protected IStatus run(IProgressMonitor monitor) {
-            SpellChecker.checkSpellingDirectly(document, file);
+            SpellChecker.checkSpellingDirectly(document, file, monitor);
             return new Status(IStatus.OK, TexlipsePlugin.getPluginId(), IStatus.OK, "ok", null);
         }
     }
@@ -159,7 +111,7 @@ public class SpellChecker implements IPropertyChangeListener, IDocumentListener 
     private PrintWriter output;
     
     // the stream from the program
-    private ReaderBuffer input;
+    private BufferedReader input;
 
     // spelling program command with arguments
     private String command;
@@ -179,6 +131,9 @@ public class SpellChecker implements IPropertyChangeListener, IDocumentListener 
     private SpellChecker() {
         proposalMap = new HashMap();
         language = "en";
+        // these two must be initialized in the constructor, otherwise the resource bundle may not be initialized
+        SPELL_CHECKER_ADD = TexlipsePlugin.getResourceString(SPELL_CHECKER_ADD);
+        SPELL_CHECKER_IGNORE = TexlipsePlugin.getResourceString(SPELL_CHECKER_IGNORE);
     }
 
     /**
@@ -192,13 +147,53 @@ public class SpellChecker implements IPropertyChangeListener, IDocumentListener 
         String aspell = PathUtils.findEnvFile("aspell", "/usr/bin", "aspell.exe", "C:\\gnu\\aspell");
         prefs.setDefault(SPELL_CHECKER_COMMAND, aspell);
         // -a == ispell compatibility mode, -t == tex mode
-        prefs.setDefault(SPELL_CHECKER_ARGUMENTS, "-a -t --lang=%language");
         prefs.setDefault(SPELL_CHECKER_ENV, "");
-        prefs.setDefault(SPELL_CHECKER_ENCODING, "ISO-8859-1");
+        prefs.setDefault(SPELL_CHECKER_ARGUMENTS,
+            "-a -t --lang=%language --encoding=%encoding");
+        prefs.setDefault(SPELL_CHECKER_ENCODING, encoding);
         prefs.addPropertyChangeListener(instance);
         instance.readSettings();
     }
     
+    /**
+     * Add the given word to Aspell user dictionary.
+     * @param word word to add
+     */
+    public static void addWordToAspell(String word) {
+        String path = TexlipsePlugin.getPreference(SPELL_CHECKER_COMMAND);
+        if (path == null || path.length() == 0) {
+            return;
+        }
+
+        File f = new File(path);
+        if (!f.exists() || f.isDirectory()) {
+            return;
+        }
+
+        String args = "--encoding=" + encoding
+                    + " --lang=" + instance.language + " -a";
+        BuilderRegistry.printToConsole("aspell> adding word: " + word);
+
+        String cmd = f.getAbsolutePath() + " " + args;
+        String[] environp = PathUtils.mergeEnvFromPrefs(PathUtils.getEnv(),
+                SPELL_CHECKER_ENV);
+        try {
+            Process p = Runtime.getRuntime().exec(cmd, environp);
+            PrintWriter w = new PrintWriter(p.getOutputStream());
+            w.println("*" + word);
+            w.println("#");
+            w.flush();
+            w.close();
+            p.getOutputStream().close();
+            p.waitFor();
+        } catch (Exception e) {
+            BuilderRegistry.printToConsole("Error adding word \""
+                    + word + "\" to Aspell user dict\n");
+            TexlipsePlugin.log("Adding word \""
+                    + word + "\" to Aspell user dict", e);
+        }
+    }
+
     /**
      * Read settings from the preferences.
      */
@@ -292,35 +287,19 @@ public class SpellChecker implements IPropertyChangeListener, IDocumentListener 
         output = new PrintWriter(spellProgram.getOutputStream());
         
         // get input stream
-        InputStreamReader reader = new InputStreamReader(spellProgram.getInputStream());
-        input = new ReaderBuffer(reader);
-        new Thread(input).start();
-        
-        // get error stream
-        ReaderBuffer errorStream = new ReaderBuffer(new InputStreamReader(spellProgram.getErrorStream()));
-        new Thread(errorStream).start();
-        
-        // read error message
-        String errors = errorStream.getBuffer();
-        
+        input = new BufferedReader(new InputStreamReader(spellProgram
+                        .getInputStream()));
         // read the version info
-        String message = input.getBuffer();
-        
-        // just a hack to wait for the aspell program to wake up
-        while (message.length() == 0 && errors.length() == 0) {
-            Thread.yield();
-            // aspell prints to either stdout...
-            message = input.getBuffer();
-            // ...or stderr, when it starts
-            errors = errorStream.getBuffer();
+        try {
+            String message = input.readLine();
+            BuilderRegistry.printToConsole("aspell> " + message.trim());
+            // Now it's up and running :)
+            // put it in terse mode, then it's faster
+            output.println("!");
+        } catch (IOException e) {
+            TexlipsePlugin.log("Aspell died", e);
+            BuilderRegistry.printToConsole(TexlipsePlugin.getResourceString("spellProgramStartError"));
         }
-        
-        // choose message to print
-        if (message.length() == 0) {
-            message = errors;
-        }
-        
-        BuilderRegistry.printToConsole("aspell> " + message.trim());
     }
 
     /**
@@ -395,9 +374,9 @@ public class SpellChecker implements IPropertyChangeListener, IDocumentListener 
      * This method actually checks the spelling.
      * @param document document from the editor
      */
-    private static void checkSpellingDirectly(IDocument document, IFile file) {
+    private static void checkSpellingDirectly(IDocument document, IFile file, IProgressMonitor monitor) {
         instance.checkProgram(file);
-        instance.checkDocumentSpelling(document, file);
+        instance.checkDocumentSpelling(document, file, monitor);
     }
 
     /**
@@ -406,20 +385,23 @@ public class SpellChecker implements IPropertyChangeListener, IDocumentListener 
      * @param doc the document
      * @param file
      */
-    private void checkDocumentSpelling(IDocument doc, IFile file) {
+    private void checkDocumentSpelling(IDocument doc, IFile file, IProgressMonitor monitor) {
         deleteOldProposals(file);
         doc.addDocumentListener(instance);
         try {
             int num = doc.getNumberOfLines();
+            monitor.beginTask("Check spelling", num);
             for (int i = 0; i < num; i++) {
                 int offset = doc.getLineOffset(i);
                 int length = doc.getLineLength(i);
                 String line = doc.get(offset, length);
                 checkLineSpelling(line, offset, i+1, file);
+                monitor.worked(1);
             }
         } catch (BadLocationException e) {
             TexlipsePlugin.log("Checking spelling on a line", e);
         }
+        stopProgram();
     }
 
     /**
@@ -438,56 +420,89 @@ public class SpellChecker implements IPropertyChangeListener, IDocumentListener 
             return;
         }
         
-        line = line.replace('%', ' ');
         if (line.trim().length() == 0) {
             return;
         }
         
         // give the speller something to parse
-        output.println(line);
-        output.flush();
-        Thread.yield();
+        String lineToPost = line;
+        if (language.equals("de")) {
+            // from Boris Brodski:
+            // This is very usefull for german texts
+            // It's not a clean solution.
+            // TODO The problem: if ASpell found a error in the word with \"... command
+            // a marker will set wrong.
+            lineToPost = lineToPost.replaceAll("\\\"a", "ä");
+            lineToPost = lineToPost.replaceAll("\\\"u", "ü");
+            lineToPost = lineToPost.replaceAll("\\\"o", "ö");
+            lineToPost = lineToPost.replaceAll("\\\"A", "Ä");
+            lineToPost = lineToPost.replaceAll("\\\"U", "Ü");
+            lineToPost = lineToPost.replaceAll("\\\"O", "Ö");
+            lineToPost = lineToPost.replaceAll("\\ss ", "ß");
+            lineToPost = lineToPost.replaceAll("\\ss\\", "ß\\");
+        }
         
-        // read the ReaderBuffer contents
-        StringBuffer sb = new StringBuffer();
-        String tmp = input.getBuffer();
+        /**
+         * a prefixed "^" tells aspell to parse the line without exceptions. From
+         * http://aspell.sourceforge.net/man-html/Through-A-Pipe.html#Through-A-Pipe:
+         * "lines of single words prefixed with any of `*', `&', `@', `+', `-',
+         * `~', `#', `!', `%', or `^'" are also valid and have a special meaning
+         * Special meaning of "^" is to ignore all other prefixes.
+         */
+        output.println("^" + lineToPost);
+        output.flush();
         
         // wait until there is input
-        while (tmp.length() == 0) {
-            Thread.yield();
-            tmp = input.getBuffer();
+        ArrayList lines = new ArrayList();
+        try {
+            String result = input.readLine();
+            while ((!"".equals(result)) && (result != null)) {
+                lines.add(result);
+                result = input.readLine();
+            }
+        } catch (IOException e) {
+            BuilderRegistry.printToConsole(TexlipsePlugin.getResourceString("spellProgramStartError"));
+            TexlipsePlugin.log("aspell error at line " + lineNumber + ": " + lineToPost, e);
         }
         
-        // wait until the end of input
-        while (tmp.length() > 0) {
-            sb.append(tmp);
-            Thread.yield();
-            tmp = input.getBuffer();
-        }
-        
-        // loop through the output lines
-        String[] lines = sb.toString().split(System.getProperty("line.separator"));
-        for (int i = 0; i < lines.length; i++) {
-            
-            if (lines[i] == null || lines[i].length() == 0) {
-                continue;
+        // loop through the output lines (they contain only errors)
+        for (int i = 0; i < lines.size(); i++) {
+            String[] tmp = ((String) lines.get(i)).split(":");
+            String[] error = tmp[0].split(" ");
+            String word = error[1].trim();
+            // column, where the word starts in the line of text
+            // is always the last entry in error (sometimes 3, if there
+            // are matches, else 2)
+            // we have to subtract 1 since the first char is always "^"
+            int column = Integer.valueOf(error[error.length - 1]).intValue() - 1;
+
+            // if we have multi byte chars (e.g. umlauts in utf-8), then aspell
+            // returns them as multiple columns. computing the difference
+            // between byte-length and String-length:
+            byte[] bytes = lineToPost.getBytes();
+            byte[] before = new byte[column];
+            for (int j = 0; j < column; j++) {
+                before[j] = bytes[j];
             }
-            tmp = lines[i];
-            if (tmp.charAt(0) == '&') {
-                
-                // word starts in column 2 in the message
-                int wordLength = tmp.indexOf(' ', 2) - 2;
-                String word = tmp.substring(2, wordLength+2);
-                
-                // column, where the word starts in the line of text
-                int column = line.indexOf(word);
-                
-                // list of proposals starts after the semicolon
-                int index = tmp.indexOf(':');
-                String[] proposals = tmp.substring(index+2).split(", ");
-                
-                createMarker(file, proposals, offset + column, wordLength, lineNumber);
+            int difference = column - (new String(before)).length();
+            column -= difference;
+
+            // list of proposals starts after the colon
+            String[] options;
+            if (tmp.length > 1) {
+                String[] proposals = (tmp[1].trim()).split(", ");
+                options = new String[proposals.length + 2];
+                for (int j = 0; j < proposals.length; j++) {
+                    options[j] = proposals[j].trim();
+                }
+            } else {
+                options = new String[2];
             }
+            options[options.length - 2] = SPELL_CHECKER_IGNORE;
+            options[options.length - 1] = SPELL_CHECKER_ADD;
+
+            createMarker(file, options, offset + column, word.length(),
+                    lineNumber);
         }
     }
 
@@ -496,7 +511,7 @@ public class SpellChecker implements IPropertyChangeListener, IDocumentListener 
      * 
      * @param file the resource to add the marker to
      * @param proposals list of proposals for correcting the error
-     * @param charBegin beginning offset in the file
+     * @param charBegin  beginning offset in the file
      * @param wordLength length of the misspelled word
      */
     private void createMarker(IResource file, String[] proposals, int charBegin, int wordLength, int lineNumber) {
@@ -593,7 +608,7 @@ public class SpellChecker implements IPropertyChangeListener, IDocumentListener 
      * @param offset text offset in the current file
      * @return completion proposals, or null if there is no marker at the given offset
      */
-    public static ICompletionProposal[] getSpellingProposal(int offset, int replacementOffset, int replacementLength) {
+    public static ICompletionProposal[] getSpellingProposal(int offset) {
         
         IResource res = SelectedResourceManager.getDefault().getSelectedResource();
         if (res == null) {
@@ -612,7 +627,7 @@ public class SpellChecker implements IPropertyChangeListener, IDocumentListener 
             int charEnd = markers[i].getAttribute(IMarker.CHAR_END, -1);
             if (charBegin <= offset && offset <= charEnd) {
                 SpellingResolutionGenerator gen = new SpellingResolutionGenerator();
-                return convertAll(gen.getResolutions(markers[i]), markers[i], replacementOffset, replacementLength);
+                return convertAll(gen.getResolutions(markers[i]), markers[i]);
             }
         }
         
@@ -624,16 +639,15 @@ public class SpellChecker implements IPropertyChangeListener, IDocumentListener 
      * 
      * @param resolutions marker resolutions
      * @param marker marker that holds the given resolutions
-     * @param 
      * @return completion proposals for the given marker
      */
-    private static ICompletionProposal[] convertAll(IMarkerResolution[] resolutions, IMarker marker, int offset, int replacementLength) {
+    private static ICompletionProposal[] convertAll(IMarkerResolution[] resolutions, IMarker marker) {
         
         ICompletionProposal[] array = new ICompletionProposal[resolutions.length];
         
         for (int i = 0; i < resolutions.length; i++) {
             SpellingMarkerResolution smr = (SpellingMarkerResolution) resolutions[i];
-            array[i] = new SpellingCompletionProposal(smr.getSolution(), offset, replacementLength, marker);
+            array[i] = new SpellingCompletionProposal(smr.getSolution(), marker);
         }
         
         return array;

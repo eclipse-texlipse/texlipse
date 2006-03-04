@@ -19,6 +19,8 @@ import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.ui.IActionDelegate2;
 import org.eclipse.ui.IEditorActionDelegate;
 import org.eclipse.ui.IEditorPart;
 
@@ -28,12 +30,12 @@ import org.eclipse.ui.IEditorPart;
  *
  * Listens word wrap actions. 
  */
-public class TexWordWrapAction implements IEditorActionDelegate {
+public class TexWordWrapAction implements IEditorActionDelegate, IActionDelegate2 {
 	private IEditorPart targetEditor;
 	private boolean off;
 	
 	public TexWordWrapAction() {
-		this.off = true;
+		this.off = !TexlipsePlugin.getDefault().getPreferenceStore().getBoolean(TexlipseProperties.WORDWRAP_DEFAULT);
 		TexlipsePlugin.getDefault().getPreferenceStore().addPropertyChangeListener(new  WrapPropertyChangeListener());
 	}
 	
@@ -56,6 +58,13 @@ public class TexWordWrapAction implements IEditorActionDelegate {
 				}
 			}
 		}
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.eclipse.ui.IActionDelegate2#init(org.eclipse.jface.action.IAction)
+	 */
+	public void init(IAction action) {
+		action.setChecked(!off);
 	}
 	
 	/* (non-Javadoc)
@@ -121,5 +130,17 @@ public class TexWordWrapAction implements IEditorActionDelegate {
 	 * @see org.eclipse.ui.IActionDelegate#selectionChanged(org.eclipse.jface.action.IAction, org.eclipse.jface.viewers.ISelection)
 	 */
 	public void selectionChanged(IAction action, ISelection selection) {		
+	}
+
+	/* (non-Javadoc)
+	 * @see org.eclipse.ui.IActionDelegate2#dispose()
+	 */
+	public void dispose() {
+	}
+
+	/* (non-Javadoc)
+	 * @see org.eclipse.ui.IActionDelegate2#runWithEvent(org.eclipse.jface.action.IAction, org.eclipse.swt.widgets.Event)
+	 */
+	public void runWithEvent(IAction action, Event event) {
 	}
 }

@@ -103,6 +103,7 @@ public class TexlipseProperties {
     public static final String WORDWRAP_TYPE_NONE = "none";
     public static final String WORDWRAP_TYPE_SOFT = "soft";
     public static final String WORDWRAP_TYPE_HARD = "hard";
+    public static final String WORDWRAP_DEFAULT = "wrapDefault";
     
     public static final String CODE_FOLDING = "codeFolding";
     public static final String CODE_FOLDING_PREAMBLE = "codeFoldingPreamble";

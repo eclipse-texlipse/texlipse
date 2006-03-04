@@ -110,6 +110,11 @@ public class TexEditorPreferencePage
         group.setLayoutData(layData);
         
         Composite wordWrapParent = getFieldEditorParent(group);
+
+        // default on/off wrapping
+        addField(new BooleanFieldEditor(TexlipseProperties.WORDWRAP_DEFAULT, TexlipsePlugin.getResourceString("preferenceWrappingDefault"), wordWrapParent));
+        TexlipsePreferencePage.addSpacer(wordWrapParent);
+        
         String message = TexlipsePlugin.getResourceString("preferenceWrapLineLength").replaceFirst("%1", ""+MIN_WRAP_LENGTH).replaceFirst("%2", ""+MAX_WRAP_LENGTH);
         IntegerFieldEditor wordWrapLength = new IntegerFieldEditor(TexlipseProperties.WORDWRAP_LENGTH, message, wordWrapParent);
         wordWrapLength.setValidateStrategy(IntegerFieldEditor.VALIDATE_ON_KEY_STROKE);

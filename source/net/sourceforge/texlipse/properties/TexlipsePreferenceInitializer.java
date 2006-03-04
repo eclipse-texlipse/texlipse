@@ -117,6 +117,7 @@ public class TexlipsePreferenceInitializer extends
         pref.setDefault(TexlipseProperties.INDENTATION_ENVS, "list,enumerate,itemize");
         pref.setDefault(TexlipseProperties.WORDWRAP_LENGTH, 80);
         pref.setDefault(TexlipseProperties.WORDWRAP_TYPE, TexlipseProperties.WORDWRAP_TYPE_HARD);
+        pref.setDefault(TexlipseProperties.WORDWRAP_DEFAULT, true);
         pref.setDefault(TexlipseProperties.TEX_ITEM_COMLETION, true);
         pref.setDefault(TexlipseProperties.TEX_BRACKET_COMLETION, true);
         pref.setDefault(TexlipseProperties.TEX_REPLACE_QUOTES, true);

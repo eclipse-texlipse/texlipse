@@ -88,7 +88,6 @@ public class TexCompletionProcessor implements IContentAssistProcessor {
         // Now resolve if we want to complete commands, references or templates
         if (seqStart.startsWith("\\")) {
             String replacement = seqStart.substring(1);
-//E            return computeComCompletions(offset, replacement.length(), replacement);
             proposals = computeComCompletions(offset, replacement.length(), replacement);
         } else if (seqStart.startsWith("{")) {
             String refCommand = resolveRefCommand(completeDoc, seqStartIdx);
@@ -102,24 +101,16 @@ public class TexCompletionProcessor implements IContentAssistProcessor {
             }
             
             if (refCommand.indexOf("cite") > -1) {
-//E                return computeBibCompletions(offset, replacement.length(), replacement);
                 proposals = computeBibCompletions(offset, replacement.length(), replacement);
             } else if (refCommand.startsWith("ref") || refCommand.startsWith("pageref")) {
-//E                return computeRefCompletions(offset, replacement.length(), replacement);
                 proposals = computeRefCompletions(offset, replacement.length(), replacement);
             }
         } 
-//E        else if (Character.isWhitespace(seqStart.charAt(0))) {
-//E            String replacement = seqStart.substring(1);
-//E            return computeTemplateCompletions(offset, replacement.length(), replacement, viewer);            
-//E        }
                 
         if (Character.isWhitespace(seqStart.charAt(0))) {
             //---------------------spell-checking-code-starts----------------------
             // spell checking can't help with words not starting with a letter...
-            int wordEnd = resolveCompletionEnd(completeDoc, offset);
-            //System.out.println(wordEnd + ":" + seqStartIdx + " " + completeDoc.substring(seqStartIdx, wordEnd));
-            ICompletionProposal[] prop = SpellChecker.getSpellingProposal(offset, seqStartIdx + 1, wordEnd - seqStartIdx - 1);
+            ICompletionProposal[] prop = SpellChecker.getSpellingProposal(offset);
             if (prop != null && prop.length > 0) {
                 return prop;
             }
@@ -137,16 +128,6 @@ public class TexCompletionProcessor implements IContentAssistProcessor {
             
             System.arraycopy(proposals, 0, value, 0, proposals.length);
             System.arraycopy(templateProposals, 0, value, proposals.length, templateProposals.length);
-//O:            
-//            int i = 0, j;
-//            for (j = 0; j < proposals.length; j++) {
-//                value[i] = proposals[j];
-//                i++;
-//            }
-//            for (j = 0; j < templateProposals.length; j++) {
-//                value[i] = templateProposals[j];
-//                i++;
-//            }
             return value;
         } else {
             if (proposals != null)

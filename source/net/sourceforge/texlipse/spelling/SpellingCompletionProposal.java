@@ -28,20 +28,20 @@ import org.eclipse.swt.graphics.Point;
  */
 public class SpellingCompletionProposal implements ICompletionProposal {
 
+    // solution string
     private String solution;
+
+    // error marker
     private IMarker marker;
-    private int replacementLength;
-    private int offset;
 
     /**
      * Constructs a new completion proposal for spelling correction.
-     * @param marker
+     * @param solution solution string
+     * @param marker spelling error marker
      */
-    public SpellingCompletionProposal(String str, int offset, int replacementLength, IMarker marker) {
-        solution = str;
+    public SpellingCompletionProposal(String solution, IMarker marker) {
+        this.solution = solution;
         this.marker = marker;
-        this.replacementLength = replacementLength;
-        this.offset = offset;
     }
 
     /**
@@ -50,19 +50,31 @@ public class SpellingCompletionProposal implements ICompletionProposal {
      * @param document the document into which to insert the proposed completion
      */
     public void apply(IDocument document) {
-//        int offset = marker.getAttribute(IMarker.CHAR_START, -1);
-//        int offset2 = marker.getAttribute(IMarker.CHAR_END, -1);
-//        int length = offset2-offset;
         try {
-            //System.out.println(offset + ":" + length + ":" + solution);
-            //document.replace(offset, length, solution);
-            //System.out.println(offset + ":" + replacementLength + ":" + solution);
-            document.replace(this.offset, this.replacementLength, this.solution);
+            int charStart = marker.getAttribute(IMarker.CHAR_START, -1);
+            int documentOffset = charStart;
+            int wordLength = marker.getAttribute(IMarker.CHAR_END, -1) - charStart;
+            
+            // add word to user dictionary
+            if (this.solution.equals(SpellChecker.SPELL_CHECKER_ADD)) {
+                String word = document.get(documentOffset, wordLength);
+                SpellChecker.addWordToAspell(word);
+            } else {
+                // replace word in document only if user chose a replacement word
+                if (!this.solution.equals(SpellChecker.SPELL_CHECKER_IGNORE)) {
+                    document.replace(documentOffset, wordLength, this.solution);
+                }
+            }
+            
         } catch (BadLocationException e) {
+            TexlipsePlugin.log("Replacing Spelling Marker", e);
         }
+        
+        // delete marker in any case
         try {
             marker.delete();
         } catch (CoreException e) {
+            TexlipsePlugin.log("Removing Spelling Marker", e);
         }
     }
 

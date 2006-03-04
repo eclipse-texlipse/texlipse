@@ -79,12 +79,25 @@ public class SpellingMarkerResolution implements IMarkerResolution2 {
         }
         
         try {
-            document.replace(charBegin, charEnd-charBegin, solution);
+            // add word to user dictionary
+            if (this.solution.equals(SpellChecker.SPELL_CHECKER_ADD)) {
+                String word = document.get(charBegin, charEnd-charBegin);
+                SpellChecker.addWordToAspell(word);
+            } else {
+                // replace word in document only if user chose a replacement word
+                if (!this.solution.equals(SpellChecker.SPELL_CHECKER_IGNORE)) {
+                    document.replace(charBegin, charEnd-charBegin, solution);
+                }
+            }
         } catch (BadLocationException e) {
+            TexlipsePlugin.log("Replacing Spelling Marker", e);
         }
+        
+        // delete marker
         try {
             marker.delete();
         } catch (CoreException e) {
+            TexlipsePlugin.log("Removing Spelling Marker", e);
         }
     }
 

@@ -45,6 +45,7 @@ public class TexCompletionProcessor implements IContentAssistProcessor {
     private ReferenceManager refManager;
     
     private static final String bracePair = "{}";
+    private static final int assistLineLength = 60;
     
     /**
      * A regexp pattern for resolving the command used for referencing (in the 1st group)
@@ -252,13 +253,16 @@ public class TexCompletionProcessor implements IContentAssistProcessor {
 
         ICompletionProposal[] result = new ICompletionProposal[bibEntries.length];
         
-        for (int i=0; i < bibEntries.length; i++) {         
+        for (int i=0; i < bibEntries.length; i++) {
+        	String infoText = bibEntries[i].info.length() > assistLineLength ?
+        			wrapString(bibEntries[i].info, assistLineLength)
+					: bibEntries[i].info;
             result[i] = new CompletionProposal(bibEntries[i].key,
                     offset - replacementLength, replacementLength,
                     bibEntries[i].key.length(), null, bibEntries[i].key, null,
-                    bibEntries[i].info);
+                    infoText);
         }
-        return result;        
+        return result;
     }
 
     /**
@@ -345,23 +349,33 @@ public class TexCompletionProcessor implements IContentAssistProcessor {
     private String wrapString(String input, int width) {
         StringBuffer sbout = new StringBuffer();
         
-        String[] paragraphs = input.split("\n|\r"); // TODO
+        // TODO format the strings neatly in the parsing stage?
+        
+        String[] paragraphs = input.split("\r\n|\n|\r");
         for (int i = 0; i < paragraphs.length; i++) {
+        	// skip if short
+        	if (paragraphs[i].length() < width) {
+        		sbout.append(paragraphs[i]);
+        		sbout.append("\n");
+        		continue;
+        	}
+        	// imagine how much better this would be with functional programming...
             String[] words = paragraphs[i].split("\\s");
             int currLength = 0;
             for (int j = 0; j < words.length; j++) {
                 if (words[j].length() + currLength <= width) {
+                	if (currLength > 0)
+                		sbout.append(" ");
                     sbout.append(words[j]);
-                    currLength += words[j].length(); 
+                    currLength += 1 + words[j].length(); 
                 } else {
                     sbout.append("\n");
                     sbout.append(words[j]);
-                    currLength = 0;
+                    currLength = words[j].length();
                 }
             }
             sbout.append("\n");
         }
-        
         return sbout.toString();
     }
 }

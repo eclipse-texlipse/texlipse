@@ -22,6 +22,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.editors.text.TextEditor;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.texteditor.MarkerUtilities;
@@ -133,7 +134,7 @@ public class MarkerHandler {
      */
     public void addFatalError(TextEditor editor, String error) {
         IResource resource = ((FileEditorInput)editor.getEditorInput()).getFile();
-        IDocument document = editor.getDocumentProvider().getDocument(editor.getEditorInput());
+        //IDocument document = editor.getDocumentProvider().getDocument(editor.getEditorInput());
         try {
             HashMap map = new HashMap();
             map.put(IMarker.MESSAGE, error);
@@ -151,10 +152,15 @@ public class MarkerHandler {
      * @param editor The editor to clear the markers from
      */
     public void clearErrorMarkers(TextEditor editor) {
-        IResource resource = ((FileEditorInput)editor.getEditorInput()).getFile();
-        if (resource == null) {
+    	// talk about ugly code...
+    	IEditorInput ei = editor.getEditorInput();
+    	if (!(ei instanceof FileEditorInput))
+    		return;
+
+    	IResource resource = ((FileEditorInput) ei).getFile();
+        if (resource == null)
             return;
-        }
+
         try {
             // regular problems == parsing errors
             resource.deleteMarkers(IMarker.PROBLEM, false, IResource.DEPTH_INFINITE);

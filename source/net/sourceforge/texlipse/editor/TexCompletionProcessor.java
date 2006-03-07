@@ -42,12 +42,14 @@ public class TexCompletionProcessor implements IContentAssistProcessor {
     private TexTemplateCompletion templatesCompletion = new TexTemplateCompletion();
 
     private TexDocumentModel model;
-    private ReferenceManager refMana;
+    private ReferenceManager refManager;
+    
+    private static final String bracePair = "{}";
     
     /**
      * A regexp pattern for resolving the command used for referencing (in the 1st group)
      */
-    private static Pattern comCapt = Pattern.compile("([a-z]+)\\s*(?:\\[.*?\\]\\s*)?");
+    private static final Pattern comCapt = Pattern.compile("([a-z]+)\\s*(?:\\[.*?\\]\\s*)?");
 
     /**
      * Receives the document model from the editor (one model/editor view)
@@ -66,8 +68,8 @@ public class TexCompletionProcessor implements IContentAssistProcessor {
     	ICompletionProposal[] proposals = null;
     	ICompletionProposal[] templateProposals = null;
 
-        if (refMana == null)
-            this.refMana = this.model.getRefMana();
+        if (refManager == null)
+            this.refManager = this.model.getRefMana();
         
         String completeDoc = viewer.getDocument().get();
         if (offset >= 2) {
@@ -88,7 +90,7 @@ public class TexCompletionProcessor implements IContentAssistProcessor {
         // Now resolve if we want to complete commands, references or templates
         if (seqStart.startsWith("\\")) {
             String replacement = seqStart.substring(1);
-            proposals = computeComCompletions(offset, replacement.length(), replacement);
+            proposals = computeCommandCompletions(offset, replacement.length(), replacement);
         } else if (seqStart.startsWith("{")) {
             String refCommand = resolveRefCommand(completeDoc, seqStartIdx);
             if (refCommand == null)
@@ -122,6 +124,7 @@ public class TexCompletionProcessor implements IContentAssistProcessor {
             templateProposals = computeTemplateCompletions(offset, seqStart.length(), seqStart, viewer);
         }
 
+        // Concatenate the lists if necessary
         if ((proposals != null) && (templateProposals != null)) {
             ICompletionProposal[] value = new ICompletionProposal[proposals.length
                     + templateProposals.length];
@@ -204,14 +207,14 @@ public class TexCompletionProcessor implements IContentAssistProcessor {
         return offset;
     }
 
-    private int resolveCompletionEnd(String doc, int offset) {
-        while (offset < doc.length()) {
-            if (!Character.isLetter(doc.charAt(offset)))
-                break;
-            offset++;
-        }
-        return offset;
-    }
+//    private int resolveCompletionEnd(String doc, int offset) {
+//        while (offset < doc.length()) {
+//            if (!Character.isLetter(doc.charAt(offset)))
+//                break;
+//            offset++;
+//        }
+//        return offset;
+//    }
 
     
     /**
@@ -243,7 +246,7 @@ public class TexCompletionProcessor implements IContentAssistProcessor {
      * @return An array of completion proposals to use directly or null
      */
     private ICompletionProposal[] computeBibCompletions(int offset, int replacementLength, String prefix) {
-        ReferenceEntry[] bibEntries = refMana.getCompletionsBib(prefix);
+        ReferenceEntry[] bibEntries = refManager.getCompletionsBib(prefix);
         if (bibEntries == null)
             return null;
 
@@ -267,7 +270,7 @@ public class TexCompletionProcessor implements IContentAssistProcessor {
      * @return An array of completion proposals to use directly or null
      */
     private ICompletionProposal[] computeRefCompletions(int offset, int replacementLength, String prefix) {
-        ReferenceEntry[] refEntries = refMana.getCompletionsRef(prefix);
+        ReferenceEntry[] refEntries = refManager.getCompletionsRef(prefix);
         if (refEntries == null)
             return null;
 
@@ -289,21 +292,20 @@ public class TexCompletionProcessor implements IContentAssistProcessor {
      * @param prefix The already typed prefix of the entry to assist with
      * @return An array of completion proposals to use directly or null
      */
-    private ICompletionProposal[] computeComCompletions(int offset, int replacementLength, String prefix) {
-        CommandEntry[] comEntries = refMana.getCompletionsCom(prefix);
+    private ICompletionProposal[] computeCommandCompletions(int offset, int replacementLength, String prefix) {
+        CommandEntry[] comEntries = refManager.getCompletionsCom(prefix);
         if (comEntries == null)
             return null;
 
         ICompletionProposal[] result = new ICompletionProposal[comEntries.length];
-        
-        String bracePair = "{}";
-        String braces = bracePair;
+
+        String braces;
         for (int i=0; i < comEntries.length; i++) {
             if (comEntries[i].arguments == 0) {
-            result[i] = new CompletionProposal(comEntries[i].key,
-                    offset - replacementLength, replacementLength,
-                    comEntries[i].key.length(), null, comEntries[i].key, null,
-                    comEntries[i].info);
+                result[i] = new CompletionProposal(comEntries[i].key,
+                        offset - replacementLength, replacementLength,
+                        comEntries[i].key.length(), null, comEntries[i].key, null,
+                        comEntries[i].info);
             } else {
                 braces = bracePair;
                 if (comEntries[i].arguments > 1) {
@@ -319,7 +321,6 @@ public class TexCompletionProcessor implements IContentAssistProcessor {
         }
         return result;
     }
-
     
     /**
      * Calculates and returns the template completions proposals.
@@ -338,5 +339,29 @@ public class TexCompletionProcessor implements IContentAssistProcessor {
         returnProposals.toArray(proposals);
         
         return proposals;        
+    }
+    
+    
+    private String wrapString(String input, int width) {
+        StringBuffer sbout = new StringBuffer();
+        
+        String[] paragraphs = input.split("\n|\r"); // TODO
+        for (int i = 0; i < paragraphs.length; i++) {
+            String[] words = paragraphs[i].split("\\s");
+            int currLength = 0;
+            for (int j = 0; j < words.length; j++) {
+                if (words[j].length() + currLength <= width) {
+                    sbout.append(words[j]);
+                    currLength += words[j].length(); 
+                } else {
+                    sbout.append("\n");
+                    sbout.append(words[j]);
+                    currLength = 0;
+                }
+            }
+            sbout.append("\n");
+        }
+        
+        return sbout.toString();
     }
 }

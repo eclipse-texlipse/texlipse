@@ -360,10 +360,10 @@ public class TexCompletionProcessor implements IContentAssistProcessor {
         		continue;
         	}
         	// imagine how much better this would be with functional programming...
-            String[] words = paragraphs[i].split("\\s");
+            String[] words = paragraphs[i].split("\\s+");
             int currLength = 0;
             for (int j = 0; j < words.length; j++) {
-                if (words[j].length() + currLength <= width) {
+                if (words[j].length() + currLength <= width || currLength == 0) {
                 	if (currLength > 0)
                 		sbout.append(" ");
                     sbout.append(words[j]);

@@ -12,16 +12,16 @@ package net.sourceforge.texlipse.editor.scanner;
 import org.eclipse.jface.text.rules.IWordDetector;
 
 /**
- * A class detecs command words. These strings begin with '\' character
- * that is followed by some string. Note that we define a list of special 
- * characters that are not allowed to be found from the string.
+ * Detects command words. These strings begin with '\' character
+ * that is followed by some string consisting solely of letters.
  * 
  * @author Antti Pirinen
+ * @author Oskar Ojala
  */
 public class TexWord implements IWordDetector {
 
 	/**
-	 * Tests is the character '\' character
+	 * Tests if the character is the '\' character
 	 * @param c		the character to test
 	 * @return 		<code>true</code> if the character is '\',
 	 * 				<code>false</code> otherwise. 
@@ -34,17 +34,15 @@ public class TexWord implements IWordDetector {
 	}
 
 	/**
-	 * Tests is character one of these:
-	 * ' ', '[', '{', '\n', '\\' or '}' 
+	 * Tests if the character is part of a command, i.e. letter
+	 * 
 	 * @param c 	the character to test
-	 * @return 		<code>true</code> if the character is NOT the one of
-	 * 				the listed,
+	 * @return 		<code>true</code> if the character is a letter
 	 * 				<code>false</code> otherwise 
 	 * @see org.eclipse.jface.text.rules.IWordDetector#isWordPart(char)
 	 */
 	public boolean isWordPart(char c) {
-		if (c != ' ' && c != '[' && c != '{' && c != '\n' && c != '\\'
-			&& c != '}')
+		if (Character.isLetter(c))
 			return true;
 		return false;
 	}

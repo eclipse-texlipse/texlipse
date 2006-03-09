@@ -289,7 +289,7 @@ public class TexCompletionProcessor implements IContentAssistProcessor {
     }
 
     /**
-     * Computes and returns commnad-proposals
+     * Computes and returns command-proposals
      * 
      * @param offset Current cursor offset
      * @param replacementLength The length of the string to be replaced
@@ -305,11 +305,15 @@ public class TexCompletionProcessor implements IContentAssistProcessor {
 
         String braces;
         for (int i=0; i < comEntries.length; i++) {
+        	String infoText = comEntries[i].info.length() > assistLineLength ?
+        			wrapString(comEntries[i].info, assistLineLength)
+					: comEntries[i].info;
+
             if (comEntries[i].arguments == 0) {
                 result[i] = new CompletionProposal(comEntries[i].key,
                         offset - replacementLength, replacementLength,
                         comEntries[i].key.length(), null, comEntries[i].key, null,
-                        comEntries[i].info);
+                        infoText);
             } else {
                 braces = bracePair;
                 if (comEntries[i].arguments > 1) {
@@ -320,7 +324,7 @@ public class TexCompletionProcessor implements IContentAssistProcessor {
                 result[i] = new CompletionProposal(comEntries[i].key + braces,
                         offset - replacementLength, replacementLength,
                         comEntries[i].key.length() + 1, null, comEntries[i].key, null,
-                        comEntries[i].info);
+                        infoText);
             }
         }
         return result;
@@ -348,9 +352,8 @@ public class TexCompletionProcessor implements IContentAssistProcessor {
     
     private String wrapString(String input, int width) {
         StringBuffer sbout = new StringBuffer();
-        
-        // TODO format the strings neatly in the parsing stage?
-        
+
+        // \n should suffice since we prettify in parsing...
         String[] paragraphs = input.split("\r\n|\n|\r");
         for (int i = 0; i < paragraphs.length; i++) {
         	// skip if short
@@ -360,7 +363,7 @@ public class TexCompletionProcessor implements IContentAssistProcessor {
         		continue;
         	}
         	// imagine how much better this would be with functional programming...
-            String[] words = paragraphs[i].split("\\s+");
+            String[] words = paragraphs[i].split("\\s");
             int currLength = 0;
             for (int j = 0; j < words.length; j++) {
                 if (words[j].length() + currLength <= width || currLength == 0) {

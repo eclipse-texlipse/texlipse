@@ -133,7 +133,7 @@ public final class EntryRetriever extends DepthFirstAdapter {
     }
     
     public void outAValueValOrSid(AValueValOrSid node) {
-        currEntryInfo.append(node.getStringLiteral().getText());
+        currEntryInfo.append(node.getStringLiteral().getText().replaceAll("\\s+", " "));
     }
     
     public void inANumValOrSid(ANumValOrSid node) {

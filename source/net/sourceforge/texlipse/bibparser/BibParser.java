@@ -83,6 +83,7 @@ public class BibParser {
 
             return er.getEntries();
 
+            // TODO modularize SableCC error parsing
         } catch (LexerException le) {
             String msg = le.getMessage();
             int first = msg.indexOf('[');

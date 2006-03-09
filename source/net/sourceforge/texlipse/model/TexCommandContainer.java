@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.TreeSet;
 
 /**
  * Contains the LaTeX commands that can be completed.
@@ -216,9 +217,14 @@ public class TexCommandContainer {
             allRefs = (ArrayList) iter.next();
         }
         
-        sortedCommands = new CommandEntry[allRefs.size() + builtIn.length];
-        allRefs.toArray(sortedCommands);
-        System.arraycopy(builtIn, 0, sortedCommands, allRefs.size(), builtIn.length);
+        TreeSet ts = new TreeSet(allRefs);
+        
+        //sortedCommands = new CommandEntry[allRefs.size() + builtIn.length];
+        sortedCommands = new CommandEntry[ts.size() + builtIn.length];
+        //allRefs.toArray(sortedCommands);
+        ts.toArray(sortedCommands);
+        //System.arraycopy(builtIn, 0, sortedCommands, allRefs.size(), builtIn.length);
+        System.arraycopy(builtIn, 0, sortedCommands, ts.size(), builtIn.length);
         Arrays.sort(sortedCommands);
     }
     

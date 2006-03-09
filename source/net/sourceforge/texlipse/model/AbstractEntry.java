@@ -35,4 +35,8 @@ public abstract class AbstractEntry implements Comparable {
     public int compareTo(Object ae) {
         return key.compareTo(((AbstractEntry) ae).key);
     }
+    
+    public boolean equals(AbstractEntry ae) {
+    	return (key.equals(ae.key));
+    }
 }

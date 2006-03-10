@@ -189,9 +189,9 @@ public class ExternalProgram {
             }
             
         } else {
-        
-            output = readOutput(process.getInputStream());
+            //TODO: Better solve the weird problem with dvips, maybe processing both streams together
             errorOutput = readOutput(process.getErrorStream());
+            output = readOutput(process.getInputStream());  
         }
         
         if (output == null) {

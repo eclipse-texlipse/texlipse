@@ -735,6 +735,20 @@ ${cursor}
                menubarPath="SourceMenu/texlipseGroup"
                id="actions.TexComment"/>
          <action
+               label="(un-)&amp;Bold"
+               definitionId="actions.TexBold"
+               class="net.sourceforge.texlipse.actions.TexBold"
+               style="push"
+               menubarPath="SourceMenu/texlipseGroup"
+               id="actions.TexBold"/>
+         <action
+               label="(un-)&amp;Italicize"
+               definitionId="actions.TexSlant"
+               class="net.sourceforge.texlipse.actions.TexSlant"
+               style="push"
+               menubarPath="SourceMenu/texlipseGroup"
+               id="actions.TexSlant"/>
+         <action
                label="Correct &amp;Indentation"
                definitionId="actions.TexCorrectIndentation"
                class="net.sourceforge.texlipse.actions.TexCorrectIndentationAction"
@@ -832,6 +846,22 @@ ${cursor}
                style="push"
                menubarPath="LatexMenu/commentGroup"
                id="actions.TexComment"/>
+          <action
+               label="(un-)&amp;Bold"
+               definitionId="actions.TexBold"
+               class="net.sourceforge.texlipse.actions.TexBold"
+               tooltip="Bolds (textbf) selection"
+               style="push"
+               menubarPath="LatexMenu/commentGroup"
+               id="actions.TexBold"/>
+          <action
+               label="(un-)&amp;Italicize"
+               definitionId="actions.TexSlant"
+               class="net.sourceforge.texlipse.actions.TexSlant"
+               tooltip="Italicizes (textsl) selection"
+               style="push"
+               menubarPath="LatexMenu/commentGroup"
+               id="actions.TexSlant"/>
          <action
                label="Correct &amp;Indentation"
                definitionId="actions.TexCorrectIndentation"
@@ -928,6 +958,24 @@ ${cursor}
       <keyBinding
             command="actions.TexHardLineWrap"
             string="Esc q"
+            configuration="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+      <command
+            category="Texlipse"
+            categoryId="Texlipse"
+            name="(un-)Bold"
+            id="actions.TexBold"/>
+      <keyBinding
+            command="actions.TexBold"
+            string="Alt+Ctrl+B"
+            configuration="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+      <command
+            category="Texlipse"
+            categoryId="Texlipse"
+            name="(un-)Italicize"
+            id="actions.TexSlant"/>
+      <keyBinding
+            command="actions.TexSlant"
+            string="Alt+Ctrl+I"
             configuration="org.eclipse.ui.defaultAcceleratorConfiguration"/>
       <command
             category="Texlipse"

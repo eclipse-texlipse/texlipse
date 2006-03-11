@@ -26,41 +26,36 @@ import org.eclipse.ui.texteditor.ITextEditor;
  * for example commenting blocks feature.
  */
 public class TexSelections {
+    
     //Text editor
     private ITextEditor editor;
+    
     //Document from where the selection is made
     private IDocument document;
+    
     //The start line number of the selection 
     private int startLineIndex;
+    
     //The end line number of the selection
     private int endLineIndex;
+    
     //Length of selected text
     private int selLength;
+    
     //The selected text
-    private String selection;
+    private String selection = "";
+    
     //End line delimiter
-    private String endLineDelim;
+    private String endLineDelim = "";
+    
     //Start line region
     private IRegion startLine;
+    
     //End line region
     private IRegion endLine;
+    
     //Selection
     private ITextSelection textSelection;
-    
-    /**
-     * Initializes parameters
-     */
-    private void init() {
-        this.editor = null;
-        this.document = null;
-        this.startLineIndex	= 0;
-        this.endLineIndex = 0;
-        this.selLength = 0;
-        this.selection = "";
-        this.endLineDelim = "";
-        this.startLine = null;
-        this.endLine = null;
-    }
 
     /**
      * Takes a text editor as a parameter and sets variables 
@@ -69,8 +64,7 @@ public class TexSelections {
      * @param textEditor The currenct text editor
      */
     public TexSelections(ITextEditor textEditor) {
-        init();
-        
+         
         // Get the document
         this.document = textEditor.getDocumentProvider().getDocument(textEditor.getEditorInput());
         this.editor = textEditor;

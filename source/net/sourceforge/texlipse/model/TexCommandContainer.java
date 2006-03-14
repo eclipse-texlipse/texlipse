@@ -67,7 +67,6 @@ public class TexCommandContainer {
             new CommandEntry("hline", "\\hline\n\nDraws a horizontal line below the current row within a \\tabular environment.", 0),
             new CommandEntry("hrule", "\\hrule\n\nDraws a horizontal line below the current paragraph.", 0),
             new CommandEntry("huge", "{\\huge text}\n\nOutputs the text in huge font.", 0),
-            new CommandEntry("HUGE", "{\\HUGE text}\n\nOutputs the text in even more huge font than \\Huge", 0),
             new CommandEntry("Huge", "{\\Huge text}\n\nOutputs the text in even more huge font than \\huge", 0),
             new CommandEntry("hyphenation", "\\hyphenation{words}\n\nDeclares allowed hyphenation points, where words is a list of words, separated by spaces, in which each hyphenation point is indicated by a - character. For example, \\hyphenation{fortran,er-go-no-mic} indicates that 'fortran' cannot be hyphenated and indicates allowed hyphenation points for 'ergonomic'.\nThe argument to this command should contain words composed only of normal letters. To suggest hyphenation points for strings containing nonletters or accented letters, use the \\- command in the input text.\nThis command is normally given in the preamble.", 1),
             new CommandEntry("ldots", "\\ldots\n\nOutputs 3 dots.", 0),

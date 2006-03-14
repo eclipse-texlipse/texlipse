@@ -11,6 +11,8 @@ package net.sourceforge.texlipse.builder;
 
 import java.util.Stack;
 import java.util.StringTokenizer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import net.sourceforge.texlipse.properties.TexlipseProperties;
 
@@ -25,6 +27,7 @@ import org.eclipse.core.resources.IResource;
  * 
  * @author Kimmo Karlsson
  * @author Oskar Ojala
+ * @author Boris von Loesch
  */
 public class LatexRunner extends AbstractProgramRunner {
     
@@ -71,6 +74,31 @@ public class LatexRunner extends AbstractProgramRunner {
         return new String[] { "\nPlease type another input file name:" , "\nEnter file name:" };
     }
     
+    private void addProblemMarker(String error, String causingSourceFile,
+            int linenr, int severity, IResource resource, boolean layout) {
+        
+        IProject project = resource.getProject();
+        IContainer sourceDir = TexlipseProperties.getProjectSourceDir(project);
+        if (sourceDir == null)
+            sourceDir = project;
+
+        IResource extResource = null;
+        if (causingSourceFile != null)
+            extResource = sourceDir.findMember(causingSourceFile);
+        if (extResource == null)
+            createMarker(resource, null, error + " (Occurance: "
+                    + causingSourceFile + ")", severity);
+        else {
+            if (linenr >= 0) {
+                if (layout)
+                    createLayoutMarker(extResource, new Integer(linenr), error);
+                else
+                    createMarker(extResource, new Integer(linenr), error, severity);
+            } else
+                createMarker(extResource, null, error, severity);
+        }
+    }
+    
     /**
      * Parse the output of the LaTeX program.
      * 
@@ -83,166 +111,162 @@ public class LatexRunner extends AbstractProgramRunner {
         TexlipseProperties.setSessionProperty(resource.getProject(), TexlipseProperties.SESSION_LATEX_RERUN, null);
         TexlipseProperties.setSessionProperty(resource.getProject(), TexlipseProperties.SESSION_BIBTEX_RERUN, null);
         
-        IProject project = resource.getProject();
-        IContainer sourceDir = TexlipseProperties.getProjectSourceDir(project);
-        if (sourceDir == null) {
-            sourceDir = project;
-        }
-        
         parsingStack.clear();
         boolean errorsFound = false;
         StringTokenizer st = new StringTokenizer(output, "\r\n");
+
+        final Pattern LATEXERROR = Pattern.compile("^! LaTeX Error: (.*)$");
+        final Pattern TEXERROR = Pattern.compile("^!\\s+(.*)$");
+        final Pattern FULLBOX = Pattern.compile("^(?:Over|Under)full \\\\[hv]box .* at lines? (\\d+)-?-?(\\d+)?");
+        final Pattern WARNING = Pattern.compile("^.+Warning.*: (.*)$");
+        final Pattern ATLINE =  Pattern.compile("^l\\.(\\d+)(.*)$");
+        final Pattern ATLINE2 =  Pattern.compile(".* line (\\d+).*");
         
-        logLineRead:
-            while (st.hasMoreTokens()) {
-                String line = st.nextToken();
-                if (line.startsWith("! Undefined control sequence.")) {
-                    
-                    String part1 = st.nextToken();
-                    // in math mode, the error is not necessarily on the next line
-                    while (!part1.startsWith("l.")) {
-                        if (!st.hasMoreTokens())
-                            continue logLineRead;
-                        part1 = st.nextToken();
-                    }
-                    String part2 = st.nextToken();
-                    int index = part1.indexOf(' ');
-                    int comIndex = part1.indexOf('\\');
-                    if (comIndex == -1)
-                        comIndex = index; // just in case...
-                    
-                    String lineNumberString = part1.substring(2, index);
-                    
-                    Integer lineNumber = null;
-                    try {
-                        int num = Integer.parseInt(lineNumberString);
-                        lineNumber = new Integer(num);
-                    } catch (NumberFormatException e) {
-                        continue;
-                    }
-                    
-                    String error = "Undefined control sequence: "
-                        + part1.substring(comIndex).trim() + " (followed by: " + part2.trim() + ")";
-                    
-                    errorsFound = true;
-                    
-                    String causingSourceFile = determineSourceFile();
-                    //System.out.println("cause: " + causingSourceFile);
-                    IResource extResource = null;
-                    if (causingSourceFile != null) {
-                        extResource = sourceDir.findMember(causingSourceFile);
-                    }
-                    
-                    if (extResource != null) {
-                        createMarker(extResource, lineNumber, error);
-                    } else {
-                        createMarker(resource, lineNumber, error);
-                    }
-                    
-                } else if (line.startsWith("! LaTeX Error:")) {
-                    
-                    String error = line.substring(15);
+        String line;
+        boolean hasProblem = false;
+        String error = null;
+        int severity = IMarker.SEVERITY_WARNING;
+        int linenr = -1;
+        String occurance = null;
+        
+        while (st.hasMoreTokens()) {
+            line = st.nextToken();
+            Matcher m = TEXERROR.matcher(line);
+            if (m.matches()) {
+                if (hasProblem) {
+                    // We have a not reported problem
+                    addProblemMarker(error, occurance, linenr, severity, resource, false);
+                    linenr = -1;
+                }
+                hasProblem = true;
+                errorsFound = true;
+                severity = IMarker.SEVERITY_ERROR;
+                occurance = determineSourceFile();
+                Matcher m2 = LATEXERROR.matcher(line);
+                if (m2.matches()) {
+                    // LaTex error
+                    error = m2.group(1);
+
+        
                     String part2 = st.nextToken().trim();
                     
                     if (Character.isLowerCase(part2.charAt(0))) {
                         error += ' ' + part2;
                     }
-                    
-                    // find additional information related to the error
-                    Integer lineNumber = null;
-                    if (part2.startsWith("See the LaTeX manual")) {
-                        
-                        String help2 = st.nextToken();
-                        if (help2.startsWith("Type ")) {
-                            
-                            String dots = st.nextToken().trim();
-                            if (dots.startsWith("..")) {
-                                
-                                String lineNumStr = st.nextToken().trim();
-                                if (lineNumStr.length() == 0) {
-                                    lineNumStr = st.nextToken().trim();
-                                }
-                                
-                                if (lineNumStr.startsWith("l.")) {
-                                    
-                                    int lineNum = -1;
-                                    try {
-                                        lineNum = Integer.parseInt(lineNumStr.substring(2, lineNumStr.indexOf(' ', 2)));
-                                    } catch (NumberFormatException e) {
-                                    }
-                                    
-                                    if (lineNum != -1) {
-                                        lineNumber = new Integer(lineNum);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    
-                    errorsFound = true;
-                    
-                    String causingSourceFile = determineSourceFile();
-                    IResource extResource = null;
-                    if (causingSourceFile != null) {
-                        extResource = sourceDir.findMember(causingSourceFile);
-                    }
-                    
-                    if (extResource != null) {
-                        createMarker(extResource, lineNumber, error);
-                    } else {
-                        createMarker(resource, lineNumber, error);
-                    }
-                } else if (line.startsWith("LaTeX Warning: ")) {
-                    
-                    if (line.indexOf("Label(s) may have changed.") > 0) {
-                        // prepare to re-run latex
-                        TexlipseProperties.setSessionProperty(resource.getProject(), TexlipseProperties.SESSION_LATEX_RERUN, "true");
-                    } else if (line.indexOf("There were undefined references.") > 0) {
-                        // prepare to run bibtex
-                        TexlipseProperties.setSessionProperty(resource.getProject(), TexlipseProperties.SESSION_BIBTEX_RERUN, "true");
-                    }
-                } else if (line.startsWith("Overfull \\hbox") || line.startsWith("Underfull \\hbox")) {
-                    
-                    int startIndex = line.indexOf("lines ") + 6;
-                    if (startIndex == -1)
-                        continue;
-                    int endIndex = startIndex;
-                    Integer lineNumber = null;
-                    
-                    //System.out.println(line.substring(startIndex));
-                    for (; endIndex < line.length(); endIndex++) {
-                        if (!Character.isDigit(line.charAt(endIndex))) {
-                            try {
-                                //System.out.println(line.substring(startIndex, endIndex));
-                                int num = Integer.parseInt(line.substring(startIndex, endIndex));
-                                lineNumber = new Integer(num);
-                                break;
-                            } catch (NumberFormatException e) {
-                                continue logLineRead;
-                            }
-                        }
-                    }
-                    if (lineNumber != null) {
-                        String causingSourceFile = determineSourceFile();
-                        //System.out.println("cause: " + causingSourceFile);
-                        IResource extResource = null;
-                        if (causingSourceFile != null) {
-                            extResource = sourceDir.findMember(causingSourceFile);
-                        }
-                        
-                        if (extResource != null) {
-                            createMarker(extResource, lineNumber, line, IMarker.SEVERITY_WARNING);
-                        } else {
-                            createMarker(resource, lineNumber, line, IMarker.SEVERITY_WARNING);
-                        }                    
-                    }
-                    
-                } else if (line.indexOf("(") != -1 || line.indexOf(")") != -1) {
-                    // keep track of which source file we are parsing
-                    this.updateParsedFile(line);
+                    updateParsedFile(part2);
+                    continue;
                 }
+                if (line.startsWith("! Undefined control sequence.")){
+                    // Undefined Control Sequence
+                    error = "Undefined control sequence: ";
+                    continue;
+                }
+                m2 = WARNING.matcher(line);
+                if (m2.matches())
+                    severity = IMarker.SEVERITY_WARNING;
+                error = m.group(1);
+                continue;
             }
+            m = WARNING.matcher(line);
+            if (m.matches()){
+                if (hasProblem){
+                    // We have a not reported problem
+                    addProblemMarker(error, occurance, linenr, severity, resource, false);
+                    linenr = -1;
+                    hasProblem = false;
+                }
+                if (line.indexOf("Label(s) may have changed.") > 0) {
+                    // prepare to re-run latex
+                    TexlipseProperties.setSessionProperty(resource.getProject(),
+                            TexlipseProperties.SESSION_LATEX_RERUN, "true");
+                    continue;
+                }
+                else if (line.indexOf("There were undefined references.") > 0) {
+                    // prepare to run bibtex
+                    TexlipseProperties.setSessionProperty(resource.getProject(),
+                            TexlipseProperties.SESSION_BIBTEX_RERUN, "true");
+                    continue;
+
+                }
+
+                // Ignore undefined references or citations because they are
+                // found by the parser
+                if (line.startsWith("LaTeX Warning: Reference `"))
+                    continue;
+                if (line.startsWith("LaTeX Warning: Citation `"))
+                    continue;
+                severity = IMarker.SEVERITY_WARNING;
+                occurance = determineSourceFile();
+                hasProblem = true;
+                if (line.startsWith("LaTeX Warning: ")) {
+                    error = line.substring(15);
+                    Matcher pM = ATLINE2.matcher(line);
+                    if (pM.matches()) {
+                        linenr = Integer.parseInt(pM.group(1));
+                    }
+                    String nextLine = st.nextToken();
+                    pM = ATLINE2.matcher(nextLine);
+                    if (pM.matches()) {
+                        linenr = Integer.parseInt(pM.group(1));
+                    }
+                    updateParsedFile(nextLine);
+                    error += " " + nextLine;
+                    if (linenr != -1) {
+                        addProblemMarker(line, occurance, linenr, severity,
+                                resource, false);
+                        hasProblem = false;
+                        linenr = -1;
+                    }
+                    continue;
+                }
+                error = line;
+                continue;
+            }
+            m = FULLBOX.matcher(line);
+            if (m.matches()) {
+                if (hasProblem) {
+                    // We have a not reported problem
+                    addProblemMarker(error, occurance, linenr, severity,
+                            resource, false);
+                    linenr = -1;
+                    hasProblem = false;
+                }
+                severity = IMarker.SEVERITY_WARNING;
+                occurance = determineSourceFile();
+                error = line;
+                linenr = Integer.parseInt(m.group(1));
+                addProblemMarker(line, occurance, linenr, severity, resource,
+                        true);
+                hasProblem = false;
+                linenr = -1;
+                continue;
+            }
+            m = ATLINE.matcher(line);
+            if (hasProblem && m.matches()) {
+                linenr = Integer.parseInt(m.group(1));
+                String part2 = st.nextToken();
+                int index = line.indexOf(' ');
+                error += " " + line.substring(index).trim() + " (followed by: "
+                        + part2.trim() + ")";
+                addProblemMarker(error, occurance, linenr, severity, resource,
+                        false);
+                linenr = -1;
+                hasProblem = false;
+                continue;
+            }
+            m = ATLINE2.matcher(line);
+            if (hasProblem && m.matches()) {
+                linenr = Integer.parseInt(m.group(1));
+                addProblemMarker(error, occurance, linenr, severity, resource,
+                        false);
+                linenr = -1;
+                hasProblem = false;
+                continue;
+            }
+            updateParsedFile(line);
+        }
         return errorsFound;
+
     }
     
     /**
@@ -252,16 +276,27 @@ public class LatexRunner extends AbstractProgramRunner {
      * @param logLine A line from latex' output containing which file we are in
      */
     private void updateParsedFile(String logLine) {
-        //TODO this still might not properly handle file names with spaces
-        //String partCommands[] = logLine.split("[^\\\\]\\s");
-        String partCommands[] = logLine.split("\\s+");
-        for (int i = 0; i < partCommands.length; i++) {
-            if (partCommands[i].endsWith(")")) {
-                this.removeClosingParentheses(partCommands[i]);
-            } else if (partCommands[i].startsWith("(")) {
-                parsingStack.push(partCommands[i]);
+        if (logLine.indexOf('(') == -1 && logLine.indexOf(')') == -1)
+            return;
+        for (int i = 0; i < logLine.length(); i++) {
+            if (logLine.charAt(i) == '(') {
+                int j;
+                for (j = i + 1; j < logLine.length()
+                        && isAllowedinName(logLine.charAt(j)); j++)
+                    ;
+                parsingStack.push(logLine.substring(i, j).trim());
+                i = j - 1;
+            } else if (logLine.charAt(i) == ')') {
+                parsingStack.pop();
             }
         }
+    }
+
+    private boolean isAllowedinName(char c) {
+        if (c == '(' || c == ')' || c == '[')
+            return false;
+        else
+            return true;
     }
     
     /**

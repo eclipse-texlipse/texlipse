@@ -1056,6 +1056,13 @@ ${cursor}
       <persistent value="true"/>
    </extension>
    <extension
+         id="layoutproblem"
+         name="Texlipse layout warning"
+         point="org.eclipse.core.resources.markers">
+      <super type="org.eclipse.core.resources.problemmarker"/>
+      <persistent value="true"/>
+   </extension>
+   <extension
          point="org.eclipse.help.contexts">
       <contexts file="contexts.xml"/>
    </extension>
@@ -1064,7 +1071,7 @@ ${cursor}
       <markerResolutionGenerator
             class="net.sourceforge.texlipse.spelling.SpellingResolutionGenerator"
             markerType="net.sourceforge.texlipse.spellingproblem"/>
-   </extension>
+   </extension>   
    <extension
          point="org.eclipse.ui.ide.resourceFilters">
       <filter

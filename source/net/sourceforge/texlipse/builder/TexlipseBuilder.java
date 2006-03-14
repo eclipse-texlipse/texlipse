@@ -46,6 +46,9 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
     // marker type for builder problems
     public static final String MARKER_TYPE = TexlipseProperties.PACKAGE_NAME + ".builderproblem";
 
+    // marker type for builder layout warnings
+    public static final String LAYOUT_WARNING_TYPE = TexlipseProperties.PACKAGE_NAME + ".layoutproblem";
+
     // minimum number of characters that a valid latex document can have
     private static final int validDocumentLimit = 10;
 
@@ -100,6 +103,7 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
         IResource[] resource = TexlipseProperties.getAllProjectFiles(project);
         for (int i = 0; i < resource.length; i++) {
             resource[i].deleteMarkers(MARKER_TYPE, false, IResource.DEPTH_INFINITE);
+            resource[i].deleteMarkers(LAYOUT_WARNING_TYPE, false, IResource.DEPTH_INFINITE);
         }
         
         project.refreshLocal(IProject.DEPTH_INFINITE, monitor);
@@ -319,6 +323,7 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
         IResource[] ress = TexlipseProperties.getAllProjectFiles(project);
         for (int i = 0; i < ress.length; i++) {
             ress[i].deleteMarkers(MARKER_TYPE, false, IResource.DEPTH_INFINITE);
+            ress[i].deleteMarkers(LAYOUT_WARNING_TYPE, false, IResource.DEPTH_INFINITE);
         }
         
         // reset builder instance to startable state
@@ -523,6 +528,7 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
         IResource[] ress = TexlipseProperties.getAllProjectFiles(project);
         for (int i = 0; i < ress.length; i++) {
             ress[i].deleteMarkers(MARKER_TYPE, false, IResource.DEPTH_INFINITE);
+            ress[i].deleteMarkers(LAYOUT_WARNING_TYPE, false, IResource.DEPTH_INFINITE);
         }
         monitor.worked(1);
 

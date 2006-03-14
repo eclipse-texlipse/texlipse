@@ -304,6 +304,33 @@ public abstract class AbstractProgramRunner implements ProgramRunner {
     }
     
     /**
+     * Create a layout warning marker to the given resource.
+     *
+     * @param resource the file where the problem occured
+     * @param message error message
+     * @param lineNumber line number
+     */
+    public static void createLayoutMarker(IResource resource, Integer lineNumber, String message) {
+        String markerType = TexlipseBuilder.LAYOUT_WARNING_TYPE;
+        
+        IMarker marker = AbstractProgramRunner.findMarker(resource, message, markerType);
+        if (marker == null) {
+            try {
+                HashMap map = new HashMap();
+                map.put(IMarker.MESSAGE, message);
+                map.put(IMarker.SEVERITY, new Integer(IMarker.SEVERITY_WARNING));
+                
+                if (lineNumber != null)
+                    map.put(IMarker.LINE_NUMBER, lineNumber);
+                
+                MarkerUtilities.createMarker(resource, map, markerType);
+            } catch (CoreException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+    
+    /**
      * Create a marker to the given resource.
      * 
      * @param resource the file where the problem occured

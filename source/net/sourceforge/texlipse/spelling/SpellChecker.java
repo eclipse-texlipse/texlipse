@@ -432,6 +432,7 @@ public class SpellChecker implements IPropertyChangeListener, IDocumentListener 
             // It's not a clean solution.
             // TODO The problem: if ASpell found a error in the word with \"... command
             // a marker will set wrong.
+            // This is ISO-8859-1
             lineToPost = lineToPost.replaceAll("\\\"a", "ä");
             lineToPost = lineToPost.replaceAll("\\\"u", "ü");
             lineToPost = lineToPost.replaceAll("\\\"o", "ö");
@@ -439,7 +440,8 @@ public class SpellChecker implements IPropertyChangeListener, IDocumentListener 
             lineToPost = lineToPost.replaceAll("\\\"U", "Ü");
             lineToPost = lineToPost.replaceAll("\\\"O", "Ö");
             lineToPost = lineToPost.replaceAll("\\ss ", "ß");
-            lineToPost = lineToPost.replaceAll("\\ss\\", "ß\\");
+            lineToPost = lineToPost.replaceAll("\\ss\\\\", "ß\\");
+            //lineToPost = lineToPost.replaceAll("\\ss[^a-zA-Z]", "ß");
         }
         
         /**

@@ -153,6 +153,8 @@ public class MarkerHandler {
      */
     public void clearErrorMarkers(TextEditor editor) {
     	// talk about ugly code...
+        // TODO if this case occurs, then the user has probably not correctly created a project
+        // -> we should somehow inform the user
     	IEditorInput ei = editor.getEditorInput();
     	if (!(ei instanceof FileEditorInput))
     		return;

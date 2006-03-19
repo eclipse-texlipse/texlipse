@@ -146,6 +146,12 @@
             category="TeXlipse"
             name="LaTeX Table View"
             id="Texlipse.view1"/>
+      <view
+            icon="icons/outline_co.gif"
+            class="net.sourceforge.texlipse.treeview.views.TexOutlineTreeView"
+            category="TeXlipse"
+            name="Full Latex Outline"
+            id="Texlipse.view2"/>
    </extension>
    <extension
          point="org.eclipse.ui.perspectiveExtensions">
@@ -183,6 +189,11 @@
             category="TexlipsePreferencePage"
             name="Editor"
             id="TexlipseEditorPreferencePage"/>
+      <page
+            class="net.sourceforge.texlipse.smartkey.SmartKeyPreferencePage"
+            category="TexlipseEditorPreferencePage"
+            name="Smart Key Supports"
+            id="SmartKeyPreferencePage"/>
       <page
             class="net.sourceforge.texlipse.properties.ColoringPreferencePage"
             category="TexlipseEditorPreferencePage"

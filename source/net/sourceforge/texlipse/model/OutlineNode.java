@@ -11,6 +11,7 @@ package net.sourceforge.texlipse.model;
 
 import java.util.ArrayList;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.text.Position;
 
 /**
@@ -32,6 +33,7 @@ public class OutlineNode {
     public static final int TYPE_ENVIRONMENT = 13;
     public static final int TYPE_PREAMBLE = 14;
     //public static final int TYPE_ERROR = 99;
+    public static final int TYPE_INPUT = 45;
     
     private String name;
     private int type;
@@ -39,7 +41,8 @@ public class OutlineNode {
     private OutlineNode parent;
     private ArrayList children;
     private Position position;
-    
+    private IFile file;
+
     /**
      * The constructor.
      * 
@@ -66,6 +69,17 @@ public class OutlineNode {
         this.children.add(child);
     }
 
+    /**
+     * Adds a child to this node at the specified position.
+     * 
+     * @param child the child to be added
+     * @param index the index of the child
+     */
+    public void addChild(OutlineNode child, int index) {
+        if (this.children == null)
+            this.children = new ArrayList();
+        this.children.add(index, child);
+    }
     
     /**
      * @return Returns the children.
@@ -153,7 +167,22 @@ public class OutlineNode {
     public void setPosition(Position position) {
         this.position = position;
     }
- 
+    
+    /**
+     * @return the file reference this node belongs to.
+     */
+    public IFile getIFile() {
+        return file;
+    }
+    
+    /**
+     * 
+     * @param file the file reference this node belongs to.
+     */
+    public void setIFile(IFile file) {
+        this.file = file;
+    }
+    
     /**
      * @return String presentation of the node
      */

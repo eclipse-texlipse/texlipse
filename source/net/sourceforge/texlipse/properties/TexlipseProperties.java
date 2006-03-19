@@ -105,6 +105,11 @@ public class TexlipseProperties {
     public static final String WORDWRAP_TYPE_HARD = "hard";
     public static final String WORDWRAP_DEFAULT = "wrapDefault";
     
+//  B----------------------------------- mmaus
+    public static final String SMART_KEY_ENABLE = "ske";
+    public static final String SMART_KEY_SETTINGS = "smartKeySet";
+//  E----------------------------------- mmaus
+    
     public static final String CODE_FOLDING = "codeFolding";
     public static final String CODE_FOLDING_PREAMBLE = "codeFoldingPreamble";
     public static final String CODE_FOLDING_PART = "codeFoldingPart";

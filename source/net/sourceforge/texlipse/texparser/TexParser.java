@@ -34,16 +34,21 @@ import org.eclipse.jface.text.IDocument;
  */
 public class TexParser {
 
-    private IDocument inputDoc;
-    private LatexParser lparser;
+    protected IDocument inputDoc;
+    protected LatexParser lparser;
 //    private LatexLexer llexer;
     
-    private ArrayList errors;
-    private boolean fatalErrors;
+    protected ArrayList errors;
+    protected boolean fatalErrors;
     
-    private String preamble;
-    
+    protected String preamble;
 
+    /**
+     * Constructor used only by extending classes.
+     */
+    protected TexParser() {
+    }
+    
     /**
      * @param input The string representing the document to parse
      */
@@ -70,7 +75,7 @@ public class TexParser {
      * @param input The document to process
      * @return The document with trailing whitespace removed
      */
-    private String rmTrailingWhitespace(String input) {
+    protected String rmTrailingWhitespace(String input) {
         int lastChar = input.length() - 1;
         while (lastChar >= 0 && Character.isWhitespace(input.charAt(lastChar)))
             lastChar--;
@@ -90,7 +95,7 @@ public class TexParser {
      * 
      * @param input The document
      */
-    private void extractPreamble(String input) {
+    protected void extractPreamble(String input) {
         if (input.indexOf("\\documentclass") == -1) {
             return;
         }

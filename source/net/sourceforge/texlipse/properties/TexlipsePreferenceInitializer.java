@@ -121,7 +121,9 @@ public class TexlipsePreferenceInitializer extends
         pref.setDefault(TexlipseProperties.TEX_ITEM_COMLETION, true);
         pref.setDefault(TexlipseProperties.TEX_BRACKET_COMLETION, true);
         pref.setDefault(TexlipseProperties.TEX_REPLACE_QUOTES, true);
-
+//      B----------------------------------- mmaus
+        pref.setDefault(TexlipseProperties.SMART_KEY_SETTINGS, "ll=list,en=enumerate,iz=itemize");
+//      E----------------------------------- mmaus
         
         pref.setDefault(TexlipseProperties.OUTLINE_PREAMBLE, true);
         pref.setDefault(TexlipseProperties.OUTLINE_PART, true);

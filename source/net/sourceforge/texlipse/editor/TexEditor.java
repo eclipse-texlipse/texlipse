@@ -15,15 +15,20 @@ import net.sourceforge.texlipse.TexlipsePlugin;
 import net.sourceforge.texlipse.model.TexDocumentModel;
 import net.sourceforge.texlipse.outline.TexOutlinePage;
 import net.sourceforge.texlipse.properties.TexlipseProperties;
+import net.sourceforge.texlipse.smartkey.SmartKeyConverter;
+import net.sourceforge.texlipse.treeview.views.TexOutlineTreeView;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextViewerExtension;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.IVerticalRuler;
 import org.eclipse.jface.text.source.projection.ProjectionSupport;
 import org.eclipse.jface.text.source.projection.ProjectionViewer;
+import org.eclipse.jface.util.IPropertyChangeListener;
+import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.editors.text.TextEditor;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
@@ -47,10 +52,13 @@ public class TexEditor extends TextEditor {
     private TexPairMatcher fBracketMatcher = new TexPairMatcher("()[]{}");
     
     private TexOutlinePage outlinePage;
+    private TexOutlineTreeView fullOutline;
     private TexDocumentModel documentModel;
     private TexCodeFolder folder;
     private ProjectionSupport fProjectionSupport;
     private BracketInserter fBracketInserter;
+    
+    private SmartKeyConverter smartKeyConv;
     
     /**
      * Constructs a new editor.
@@ -86,6 +94,41 @@ public class TexEditor extends TextEditor {
         this.documentModel.initializeModel();
         this.documentModel.updateNow();
 
+//      B----------------------------------- mmaus
+        
+        if (fullOutline != null) {
+            this.documentModel.updateFullOutline();
+        }
+
+        // enable smart key conversion directly if enabled.
+        if (TexlipsePlugin.getPreference(TexlipseProperties.SMART_KEY_ENABLE).equals("true")) {
+            this.getViewer().getTextWidget().addVerifyKeyListener(smartKeyConv);
+            this.getDocumentProvider().getDocument(getEditorInput()).addDocumentListener(smartKeyConv);
+        }
+
+        // listen for the smart key enable preference.
+        TexlipsePlugin.getDefault().getPreferenceStore()
+                .addPropertyChangeListener(new IPropertyChangeListener() {
+
+                    public void propertyChange(PropertyChangeEvent event) {
+                        if (event.getProperty().equals(TexlipseProperties.SMART_KEY_ENABLE)) {
+                            if (((Boolean) event.getNewValue()).booleanValue()) {
+                                getViewer().getTextWidget().addVerifyKeyListener(smartKeyConv);
+                                getDocumentProvider().getDocument(
+                                        getEditorInput()).addDocumentListener(
+                                        smartKeyConv);
+                            } else {
+                                getViewer().getTextWidget().removeVerifyKeyListener(smartKeyConv);
+                                getDocumentProvider().getDocument(
+                                        getEditorInput())
+                                        .removeDocumentListener(smartKeyConv);
+                            }
+                        }
+                    }
+                });
+
+//          E----------------------------------- mmaus
+        
         ISourceViewer sourceViewer = getSourceViewer();
         if (sourceViewer instanceof ITextViewerExtension) {
             if (fBracketInserter == null)
@@ -103,6 +146,7 @@ public class TexEditor extends TextEditor {
     protected void initializeEditor() {
         super.initializeEditor();
         this.documentModel = new TexDocumentModel(this);
+        this.smartKeyConv = SmartKeyConverter.getInstance();
         setSourceViewerConfiguration(new TexSourceViewerConfiguration(this));
         // register a document provider to get latex support even in non-latex projects
         if (getDocumentProvider() == null) {
@@ -227,6 +271,11 @@ public class TexEditor extends TextEditor {
      */
     public void updateModelNow() {
     	this.documentModel.updateNow();
+//      B----------------------------------- mmaus
+    	if (fullOutline != null) {
+            documentModel.updateFullOutline();
+        }
+//      E----------------------------------- mmaus
     }
     
     /**
@@ -245,5 +294,42 @@ public class TexEditor extends TextEditor {
     public void dispose() {
         super.dispose();
     }
+    
+//  B----------------------------------- mmaus
+    
+    /**
+     * 
+     * @return the fullOutline view.
+     */
+    public TexOutlineTreeView getFullOutline() {
+        return fullOutline;
+    }
+    
+    /**
+     * register the full outline.
+     * @param view the view.
+     */
+    public void registerFullOutline(TexOutlineTreeView view) {
+        this.fullOutline = view;
+        this.fullOutline.setEditor(this);
+        this.documentModel.updateFullOutline();
+    }
+    
+    /**
+     * unregister the full outline if the view is closed.
+     * @param view the view.
+     */
+    public void unregisterFullOutline(TexOutlineTreeView view) {
+        this.fullOutline = null;
+        
+    }
+    
+    public IDocument getTexDocument(){
+        return this.getDocumentProvider().getDocument(getEditorInput());
+        
+    } 
+    
+//  E----------------------------------- mmaus
+    
 }
 

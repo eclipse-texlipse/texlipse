@@ -29,6 +29,7 @@ import net.sourceforge.texlipse.texparser.node.TCbibstyle;
 import net.sourceforge.texlipse.texparser.node.TCchapter;
 import net.sourceforge.texlipse.texparser.node.TCcite;
 import net.sourceforge.texlipse.texparser.node.TCend;
+import net.sourceforge.texlipse.texparser.node.TCinclude;
 import net.sourceforge.texlipse.texparser.node.TCinput;
 import net.sourceforge.texlipse.texparser.node.TClabel;
 import net.sourceforge.texlipse.texparser.node.TCnew;
@@ -582,8 +583,15 @@ public class LatexParser {
                             }
                             prev.setEndLine(startLine);
                         }
-                    } else if (prevToken instanceof TCinput) {
-                        inputs.add(t.getText());
+                    } else if (prevToken instanceof TCinput
+                            || prevToken instanceof TCinclude) {
+                        //inputs.add(t.getText());
+                        if (!blocks.empty()) {
+                            OutlineNode prev = (OutlineNode) blocks.peek();
+                            inputs.add(new OutlineNode(t.getText(), OutlineNode.TYPE_INPUT, t.getLine(), prev));
+                        } else {
+                            inputs.add(new OutlineNode(t.getText(), OutlineNode.TYPE_INPUT, t.getLine(), null));
+                        }
                     
                     } else if (prevToken instanceof TCnew) {
                         currentCommand = new CommandEntry(t.getText().substring(1));
@@ -670,7 +678,8 @@ public class LatexParser {
             } else {
                 if (t instanceof TClabel || t instanceof TCref || t instanceof TCcite
                         || t instanceof TCbib || t instanceof TCbibstyle 
-                        || t instanceof TCbegin || t instanceof TCend || t instanceof TCinput
+                        || t instanceof TCbegin || t instanceof TCend 
+                        || t instanceof TCinput || t instanceof TCinclude
                         || t instanceof TCpart || t instanceof TCchapter 
                         || t instanceof TCsection || t instanceof TCssection 
                         || t instanceof TCsssection || t instanceof TCparagraph

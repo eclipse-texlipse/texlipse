@@ -134,10 +134,15 @@ public class TexCompletionProcessor implements IContentAssistProcessor {
             System.arraycopy(templateProposals, 0, value, proposals.length, templateProposals.length);
             return value;
         } else {
-            if (proposals != null)
+            if (proposals != null) {
                 return proposals;
-            else
+            } else  if (templateProposals.length != 0) {
                 return templateProposals;
+            } else {
+                // TODO consider this
+                model.setStatusLineErrorMessage(" No completions available.");
+                return new ICompletionProposal[0];
+            }
         }
     }
 

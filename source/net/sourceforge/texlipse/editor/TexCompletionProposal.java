@@ -48,7 +48,7 @@ public class TexCompletionProposal implements ICompletionProposal {
                 for (int j=0; j < fentry.arguments; j++) braces += bracePair;
     			document.replace(fReplacementOffset, fReplacementLength, fentry.key+braces);
     			if (TexlipsePlugin.getDefault().getPreferenceStore()
-    					.getBoolean(TexlipseProperties.TEX_BRACKET_COMLETION)){
+    					.getBoolean(TexlipseProperties.TEX_BRACKET_COMPLETION)){
 					LinkedModeModel model= new LinkedModeModel();
     				for (int j=0; j < fentry.arguments; j++){
     					int newOffset= fReplacementOffset + fentry.key.length() + j*2 + 1;

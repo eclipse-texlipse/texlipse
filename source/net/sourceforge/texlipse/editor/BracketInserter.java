@@ -36,8 +36,8 @@ import org.eclipse.ui.texteditor.link.EditorLinkedModeUI;
  * This class is used for automatic bracket (and dollar sign) closing
  * and for replacement of quotation marks. Most parts are copied from
  * the Eclipse JDT. 
+ * 
  * @author Boris von Loesch
- *
  */
 
 public class BracketInserter implements VerifyKeyListener, ILinkedModeListener {
@@ -51,10 +51,10 @@ public class BracketInserter implements VerifyKeyListener, ILinkedModeListener {
 		final ISourceViewer sourceViewer;
 
 		public ExitPolicy(char exitCharacter, char escapeCharacter, Stack stack, ISourceViewer viewer) {
-			fExitCharacter= exitCharacter;
-			fEscapeCharacter= escapeCharacter;
-			fStack= stack;
-			fSize= fStack.size();
+			fExitCharacter = exitCharacter;
+			fEscapeCharacter = escapeCharacter;
+			fStack = stack;
+			fSize = fStack.size();
 			sourceViewer = viewer;
 		}
 
@@ -65,7 +65,7 @@ public class BracketInserter implements VerifyKeyListener, ILinkedModeListener {
 
 			if (fSize == fStack.size() && !isMasked(offset)) {
 				if (event.character == fExitCharacter) {
-					BracketLevel level= (BracketLevel) fStack.peek();
+					BracketLevel level = (BracketLevel) fStack.peek();
 					if (level.fFirstPosition.offset > offset || level.fSecondPosition.offset < offset)
 						return null;
 					if (level.fSecondPosition.offset == offset && length == 0)
@@ -75,7 +75,7 @@ public class BracketInserter implements VerifyKeyListener, ILinkedModeListener {
 				// when entering an anonymous class between the parenthesis', we don't want
 				// to jump after the closing parenthesis when return is pressed
 				if (event.character == SWT.CR && offset > 0) {
-					IDocument document= sourceViewer.getDocument();
+					IDocument document = sourceViewer.getDocument();
 					try {
 						if (document.getChar(offset - 1) == '{')
 							return new ExitFlags(ILinkedModeListener.EXIT_ALL, true);
@@ -87,7 +87,7 @@ public class BracketInserter implements VerifyKeyListener, ILinkedModeListener {
 		}
 
 		private boolean isMasked(int offset) {
-			IDocument document= sourceViewer.getDocument();
+			IDocument document = sourceViewer.getDocument();
 			try {
 				return fEscapeCharacter == document.getChar(offset - 1);
 			} catch (BadLocationException e) {
@@ -105,10 +105,11 @@ public class BracketInserter implements VerifyKeyListener, ILinkedModeListener {
 	}
 
 	/**
-	 * Position updater that takes any changes at the borders of a position to not belong to the position.
-	 *
-	 * @since 3.0
-	 */
+     * Position updater that takes any changes at the borders of a position to
+     * not belong to the position.
+     * 
+     * @since 3.0
+     */
 	private static class ExclusivePositionUpdater implements IPositionUpdater {
 
 		/** The position category. */
@@ -120,7 +121,7 @@ public class BracketInserter implements VerifyKeyListener, ILinkedModeListener {
 		 * @param category the new category.
 		 */
 		public ExclusivePositionUpdater(String category) {
-			fCategory= category;
+			fCategory = category;
 		}
 
 		/*
@@ -128,24 +129,24 @@ public class BracketInserter implements VerifyKeyListener, ILinkedModeListener {
 		 */
 		public void update(DocumentEvent event) {
 
-			int eventOffset= event.getOffset();
-			int eventOldLength= event.getLength();
-			int eventNewLength= event.getText() == null ? 0 : event.getText().length();
-			int deltaLength= eventNewLength - eventOldLength;
+			int eventOffset = event.getOffset();
+			int eventOldLength = event.getLength();
+			int eventNewLength = event.getText() == null ? 0 : event.getText().length();
+			int deltaLength = eventNewLength - eventOldLength;
 
 			try {
-				Position[] positions= event.getDocument().getPositions(fCategory);
+				Position[] positions = event.getDocument().getPositions(fCategory);
 
-				for (int i= 0; i != positions.length; i++) {
+				for (int i = 0; i != positions.length; i++) {
 
-					Position position= positions[i];
+					Position position = positions[i];
 
 					if (position.isDeleted())
 						continue;
 
-					int offset= position.getOffset();
-					int length= position.getLength();
-					int end= offset + length;
+					int offset = position.getOffset();
+					int length = position.getLength();
+					int end = offset + length;
 
 					if (offset >= eventOffset + eventOldLength)
 						// position comes
@@ -159,7 +160,7 @@ public class BracketInserter implements VerifyKeyListener, ILinkedModeListener {
 						position.setLength(length + deltaLength);
 					} else if (offset < eventOffset) {
 						// event extends over end of position - adjust length
-						int newEnd= eventOffset;
+						int newEnd = eventOffset;
 						position.setLength(newEnd - offset);
 					} else if (end > eventOffset + eventOldLength) {
 						// event extends from before position into it - adjust offset
@@ -189,16 +190,17 @@ public class BracketInserter implements VerifyKeyListener, ILinkedModeListener {
 
 	}
 
-	private final String CATEGORY= toString();
-	private IPositionUpdater fUpdater= new ExclusivePositionUpdater(CATEGORY);
-	private Stack fBracketLevelStack= new Stack();
+    
+	private final String CATEGORY = toString();
+	private IPositionUpdater fUpdater = new ExclusivePositionUpdater(CATEGORY);
+	private Stack fBracketLevelStack = new Stack();
 	private final ISourceViewer sourceViewer;
 	private final TextEditor editor;
     private static HashMap quotes;
 
     
 	public BracketInserter(ISourceViewer viewer, TextEditor editor) {
-		sourceViewer = viewer;
+		this.sourceViewer = viewer;
 		this.editor = editor;
         if (quotes == null) {
             quotes = new HashMap();
@@ -213,9 +215,10 @@ public class BracketInserter implements VerifyKeyListener, ILinkedModeListener {
         }
 	}
 
-	private static boolean isBracket(char c){
+	private static boolean isBracket(char c) {
 		if (c == '$' || c == '{' || c == '(' || c == '[' || c == ')'
-			|| c == '}' || c == ']') return true;
+			|| c == '}' || c == ']')
+            return true;
 		return false;
 	}
 	
@@ -240,17 +243,13 @@ public class BracketInserter implements VerifyKeyListener, ILinkedModeListener {
 		}
 	}
 
-	private String getQuotes (boolean opening){
+	private String getQuotes(boolean opening) {
 		String replacement;
         IProject project = ((FileEditorInput)editor.getEditorInput()).getFile().getProject();
-        String lang = TexlipseProperties.getProjectProperty(project, TexlipseProperties.LANGUAGE_PROPERTY);		
-		if (opening) replacement = (String) quotes.get(lang + "o");
-		else replacement = (String) quotes.get(lang + "c");
-		if (replacement == null){
-			if (opening) replacement = (String) quotes.get("eno");
-			else replacement = (String) quotes.get("enc");			
-		}
-		return replacement;
+        String lang = TexlipseProperties.getProjectProperty(project, TexlipseProperties.LANGUAGE_PROPERTY);
+        String postfix = opening ? "o" : "c";
+        replacement = (String) quotes.get(lang + postfix);
+        return (replacement != null ? replacement : (String) quotes.get("en" + postfix));
 	}
 	
 	/*
@@ -265,6 +264,7 @@ public class BracketInserter implements VerifyKeyListener, ILinkedModeListener {
 			case '[':
 			case '$':
 			case '"':
+            case '.':
 				break;
 			default:
 				return;
@@ -284,75 +284,100 @@ public class BracketInserter implements VerifyKeyListener, ILinkedModeListener {
 				last = document.getChar(offset-1);
 			} catch (BadLocationException e) {
 			}
-			if (last == '\\') return;
-			if (character == '"'){
-				//Replace quotation marks
-				if (!TexlipsePlugin.getDefault().getPreferenceStore()
-		        .getBoolean(TexlipseProperties.TEX_REPLACE_QUOTES)) return;
+			if (last == '\\')
+                return;
+			if (character == '"') {
+				// Replace quotation marks
+				if (!TexlipsePlugin.getDefault().getPreferenceStore().getBoolean(TexlipseProperties.TEX_REPLACE_QUOTES))
+                    return;
 
 				String mark;
-				if (Character.isWhitespace(last)) mark = getQuotes(true);
-				else if (Character.isWhitespace(next)) mark = getQuotes(false);
-				else return;
+				if (Character.isWhitespace(last)) {
+                    mark = getQuotes(true);
+                } else if (Character.isWhitespace(next)) {
+                    mark = getQuotes(false);
+                } else {
+                    return;
+                }
 				document.replace(offset, length, mark);
-				sourceViewer.setSelectedRange(offset+mark.length(), 0);
+				sourceViewer.setSelectedRange(offset + mark.length(), 0);
 				event.doit = false;
 				return;
 			}
-			if (!TexlipsePlugin.getDefault().getPreferenceStore()
-			        .getBoolean(TexlipseProperties.TEX_BRACKET_COMLETION)) return;
+            
+            // -----
+            
+            if (character == '.') {
+                try {
+                    if (last == '.' && document.getChar(offset-2) == '.') {
+                        String replacement = "\\ldots";
+                        document.replace(offset-2, length+2, replacement);
+                        sourceViewer.setSelectedRange(offset + replacement.length() - 2, 0);
+                        event.doit = false;
+                    }
+                } catch (BadLocationException e) {
+                }
+                return;
+            }
+            
+            // -----
+            
+			if (!TexlipsePlugin.getDefault().getPreferenceStore().getBoolean(TexlipseProperties.TEX_BRACKET_COMPLETION))
+                return;
 			
-			if (Character.isWhitespace(next) || isBracket(next)){
-				//For a dollar sign we need a whitespace before and after the letter
-				if (character == '$' && !Character.isWhitespace(last)) return;
-			}
-			else return;
+			if (Character.isWhitespace(next) || isBracket(next)) {
+				// For a dollar sign we need a whitespace before and after the letter
+				if (character == '$' && !Character.isWhitespace(last))
+                    return;
+			} else {
+                return;
+            }
 
-			final char closingCharacter= getPeerCharacter(character);
-			final StringBuffer buffer= new StringBuffer();
+			final char closingCharacter = getPeerCharacter(character);
+			final StringBuffer buffer = new StringBuffer();
 			buffer.append(character);
 			buffer.append(closingCharacter);
 
 			document.replace(offset, length, buffer.toString());
 
-
-			BracketLevel level= new BracketLevel();
+			// The code below does the fancy "templateish" enter-to-exit-braces
+			BracketLevel level = new BracketLevel();
 			fBracketLevelStack.push(level);
 
-			LinkedPositionGroup group= new LinkedPositionGroup();
+			LinkedPositionGroup group = new LinkedPositionGroup();
 			group.addPosition(new LinkedPosition(document, offset + 1, 0, LinkedPositionGroup.NO_STOP));
 
-			LinkedModeModel model= new LinkedModeModel();
+			LinkedModeModel model = new LinkedModeModel();
 			model.addLinkingListener(this);
 			model.addGroup(group);
 			model.forceInstall();
 
-			level.fOffset= offset;
-			level.fLength= 2;
+			level.fOffset = offset;
+			level.fLength = 2;
 
 			// set up position tracking for our magic peers
 			if (fBracketLevelStack.size() == 1) {
 				document.addPositionCategory(CATEGORY);
 				document.addPositionUpdater(fUpdater);
 			}
-			level.fFirstPosition= new Position(offset, 1);
-			level.fSecondPosition= new Position(offset + 1, 1);
+			level.fFirstPosition = new Position(offset, 1);
+			level.fSecondPosition = new Position(offset + 1, 1);
 			document.addPosition(CATEGORY, level.fFirstPosition);
 			document.addPosition(CATEGORY, level.fSecondPosition);
 
 			level.fUI= new EditorLinkedModeUI(model, sourceViewer);
 			level.fUI.setSimpleMode(true);
-			level.fUI.setExitPolicy(new ExitPolicy(closingCharacter, (char)0, 
+			level.fUI.setExitPolicy(new ExitPolicy(closingCharacter, (char) 0, 
 					fBracketLevelStack, sourceViewer));
 			level.fUI.setExitPosition(sourceViewer, offset + 2, 0, Integer.MAX_VALUE);
 			level.fUI.setCyclingMode(LinkedModeUI.CYCLE_NEVER);
 			level.fUI.enter();
 
 
-			IRegion newSelection= level.fUI.getSelectedRegion();
+			IRegion newSelection = level.fUI.getSelectedRegion();
 			sourceViewer.setSelectedRange(newSelection.getOffset(), newSelection.getLength());
 
-			event.doit= false;
+			event.doit = false;
 
 		} catch (BadLocationException e) {
 		} catch (BadPositionCategoryException e) {
@@ -364,22 +389,21 @@ public class BracketInserter implements VerifyKeyListener, ILinkedModeListener {
 	 */
 	public void left(LinkedModeModel environment, int flags) {
 
-		final BracketLevel level= (BracketLevel) fBracketLevelStack.pop();
+		final BracketLevel level = (BracketLevel) fBracketLevelStack.pop();
 
 		if (flags != ILinkedModeListener.EXTERNAL_MODIFICATION)
 			return;
 
 		// remove brackets
-		final IDocument document= sourceViewer.getDocument();
+		final IDocument document = sourceViewer.getDocument();
 		if (document instanceof IDocumentExtension) {
-			IDocumentExtension extension= (IDocumentExtension) document;
+			IDocumentExtension extension = (IDocumentExtension) document;
 			extension.registerPostNotificationReplace(null, new IDocumentExtension.IReplace() {
 
 				public void perform(IDocument d, IDocumentListener owner) {
 					if ((level.fFirstPosition.isDeleted || level.fFirstPosition.length == 0)
 							&& !level.fSecondPosition.isDeleted
-							&& level.fSecondPosition.offset == level.fFirstPosition.offset)
-					{
+							&& level.fSecondPosition.offset == level.fFirstPosition.offset) {
 						try {
 							document.replace(level.fSecondPosition.offset,
 											 level.fSecondPosition.length,

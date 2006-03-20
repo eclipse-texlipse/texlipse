@@ -1062,9 +1062,9 @@ ${cursor}
             category="Texlipse"
             categoryId="Texlipse"
             name="Jump to label"
-            id="actions.Jump2Label"/>
+            id="action.Jump2Label"/>
       <keyBinding
-            command="actions.Jump2Label"
+            command="action.Jump2Label"
             string="Alt+J"
             configuration="org.eclipse.ui.defaultAcceleratorConfiguration"/>            
    </extension>

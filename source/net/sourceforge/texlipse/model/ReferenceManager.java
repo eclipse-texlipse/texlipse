@@ -41,6 +41,47 @@ public class ReferenceManager extends PartialRetriever {
         this.commandContainer = commands;
     }
 
+    // B-----borisvl
+    
+    public ReferenceEntry getBib(String name){
+        ReferenceEntry[] bibEntries = bibContainer.getSortedReferences();
+        int nr = getEntry(name, bibEntries);
+        if (nr != -1) return bibEntries[nr];
+        else return null;
+    }
+    
+    /**
+     * Returns the ReferenceEntry of the label with the key ref. This 
+     * function uses a binary search.
+     * @param ref
+     * @return The adequate entry or null if no entry was found 
+     */
+    public ReferenceEntry getLabel(String ref){
+        ReferenceEntry[] labels = labelContainer.getSortedReferences();
+        int nr = getEntry(ref, labels);
+        if (nr != -1) return labels[nr];
+        else return null;
+    }
+    
+    /**
+     * Returns the CommandEntry of the command with the key name. This
+     * function uses a binary search
+     * @param name
+     * @return The adequate entry or null if no entry was found
+     */
+    public TexCommandEntry getEntry(String name){
+        TexCommandEntry[] commands = commandContainer.getSortedCommands(TexCommandEntry.MATH_CONTEXT);
+        int nr = getEntry(name, commands);
+        if (nr != -1) return commands[nr];
+        //If no math command look at the normal commands
+        commands = commandContainer.getSortedCommands(TexCommandEntry.NORMAL_CONTEXT);
+        nr = getEntry(name, commands);
+        if (nr != -1) return commands[nr];
+        return null;
+    }
+    
+    // E-----borisvl
+    
     /**
      * Gets the completions for \ref (ie. the corresponding labels) that
      * start with the given string.
@@ -122,8 +163,10 @@ public class ReferenceManager extends PartialRetriever {
      * @param start The string with which the completions should start
      * @return An array of completions or null if there were no completions
      */
-    public CommandEntry[] getCompletionsCom(String start) {
-        CommandEntry[] commands = commandContainer.getSortedCommands();
+    //public CommandEntry[] getCompletionsCom(String start) {
+    //    CommandEntry[] commands = commandContainer.getSortedCommands();
+    public TexCommandEntry[] getCompletionsCom(String start, int context) {
+        TexCommandEntry[] commands = commandContainer.getSortedCommands(context);
         if (commands == null)
             return null;
         if (start.equals(""))
@@ -133,7 +176,7 @@ public class ReferenceManager extends PartialRetriever {
         if (bounds[0] == -1)
             return null;
         
-        CommandEntry[] compls = new CommandEntry[bounds[1] - bounds[0]];
+        TexCommandEntry[] compls = new TexCommandEntry[bounds[1] - bounds[0]];
         System.arraycopy(commands, bounds[0], compls, 0, bounds[1] - bounds[0]);
         return compls;
     }

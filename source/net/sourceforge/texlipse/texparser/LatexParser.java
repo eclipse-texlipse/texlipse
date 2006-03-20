@@ -14,12 +14,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import net.sourceforge.texlipse.model.CommandEntry;
 import net.sourceforge.texlipse.model.DocumentReference;
 import net.sourceforge.texlipse.model.OutlineNode;
 import net.sourceforge.texlipse.model.ParseErrorMessage;
 import net.sourceforge.texlipse.model.ReferenceContainer;
 import net.sourceforge.texlipse.model.ReferenceEntry;
+import net.sourceforge.texlipse.model.TexCommandEntry;
 import net.sourceforge.texlipse.texparser.lexer.LexerException;
 import net.sourceforge.texlipse.texparser.node.EOF;
 import net.sourceforge.texlipse.texparser.node.TArgument;
@@ -194,7 +194,10 @@ public class LatexParser {
      * @throws LexerException If the given lexer cannot tokenize the document
      * @throws IOException If the document is unreadable
      */
-    public void parse(LatexLexer lex, ReferenceContainer definedLabels, ReferenceContainer definedBibs) throws LexerException, IOException {
+    public void parse(LatexLexer lex,
+            ReferenceContainer definedLabels,
+            ReferenceContainer definedBibs)
+    throws LexerException, IOException {
         parse(lex, definedLabels, definedBibs, null);
     }
 
@@ -212,7 +215,11 @@ public class LatexParser {
      * @throws IOException If the document is unreadable
      */
 
-    public void parse(LatexLexer lexer, ReferenceContainer definedLabels, ReferenceContainer definedBibs, OutlineNode preamble) throws LexerException, IOException {
+    public void parse(LatexLexer lexer,
+            ReferenceContainer definedLabels,
+            ReferenceContainer definedBibs,
+            OutlineNode preamble)
+    throws LexerException, IOException {
         initializeDatastructs();
         Stack2 blocks = new Stack2();
         
@@ -220,7 +227,7 @@ public class LatexParser {
         boolean expectArg2 = false;
         Token prevToken = null;
         
-        CommandEntry currentCommand = null;
+        TexCommandEntry currentCommand = null;
         int argCount = 0;
         Integer nodeType;
         
@@ -242,7 +249,11 @@ public class LatexParser {
             if (expectArg) {
                 if (t instanceof TArgument) {
                     if (prevToken instanceof TClabel) {
-                        this.labels.add(new ReferenceEntry(t.getText()));
+                        //this.labels.add(new ReferenceEntry(t.getText()));
+                        ReferenceEntry l = new ReferenceEntry(t.getText());
+                        l.setPosition(t.getPos(), t.getText().length());
+                        l.startLine = t.getLine();
+                        this.labels.add(l);
                         
                     } else if (prevToken instanceof TCref) {
                         // if it's not certain that it exists, add it (this could lead to erros if the corresponding
@@ -426,11 +437,10 @@ public class LatexParser {
                                 break;
                                 }
                             }
-                        }
-                        // add directly to tree if no parent was found
-                        if (blocks.empty())
+                        } else {
+                            // add directly to tree if no parent was found
                             outlineTree.add(on);
-                        
+                        }
                         blocks.push(on);
                     } else if (prevToken instanceof TCssection) {
                         int startLine = prevToken.getLine();
@@ -594,7 +604,8 @@ public class LatexParser {
                         }
                     
                     } else if (prevToken instanceof TCnew) {
-                        currentCommand = new CommandEntry(t.getText().substring(1));
+                        //currentCommand = new CommandEntry(t.getText().substring(1));
+                        currentCommand = new TexCommandEntry(t.getText().substring(1), "", 0);
                         lexer.registerCommand(currentCommand.key);
                         expectArg2 = true;
                     }
@@ -606,7 +617,8 @@ public class LatexParser {
                     
                 } else if ((t instanceof TCword) && (prevToken instanceof TCnew)) {
                     // this handles the \newcommand\comx{...} -format
-                    currentCommand = new CommandEntry(t.getText().substring(1));
+                    //currentCommand = new CommandEntry(t.getText().substring(1));
+                    currentCommand = new TexCommandEntry(t.getText().substring(1), "", 0);
                     lexer.registerCommand(currentCommand.key);
                     expectArg2 = true;
                     accumulatedLength = 0;
@@ -687,6 +699,8 @@ public class LatexParser {
                     prevToken = t;
                     expectArg = true;
                 } else if (t instanceof TCword) {
+                    // macros (\newcommand) show up as TCword when used, so we need
+                    // to check (for each word!) whether it happens to be a command
                     if ((nodeType = (Integer) sectioning.get(t.getText())) != null) {
                         switch (nodeType.intValue()) {
                         case OutlineNode.TYPE_PART:

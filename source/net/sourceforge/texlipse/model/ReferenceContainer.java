@@ -47,6 +47,12 @@ public class ReferenceContainer {
      */
     public void addRefSource(String key, ArrayList refs) {
         //ArrayList<ReferenceEntry> refs
+        // Add filename to all references
+        for (Iterator iter = refs.iterator(); iter.hasNext();) {
+            ReferenceEntry r = (ReferenceEntry) iter.next();
+            r.fileName = key;
+        }
+        
         size += refs.size();
         ArrayList al = (ArrayList) referenceHash.put(key, refs);
         if (al != null)

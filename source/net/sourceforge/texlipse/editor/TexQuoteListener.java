@@ -46,6 +46,8 @@ public class TexQuoteListener implements IDocumentListener {
             quotes.put("fic", "''");
             quotes.put("fro", "<<");
             quotes.put("frc", ">>");
+            quotes.put("deo", "``");
+            quotes.put("dec", "''");
         }
     }
     
@@ -75,7 +77,9 @@ public class TexQuoteListener implements IDocumentListener {
                 } else {
                     return;
                 }
+                document.removeDocumentListener(this);
                 document.replace(textSelection.getOffset(), 1, replacement);
+                document.addDocumentListener(this);
                 //editor.resetHighlightRange();
                 //editor.setHighlightRange(textSelection.getOffset() + 1, 1, true);
                 //editor.getSelectionProvider().setSelection(new TextSelection(textSelection.getOffset() + 3, 5));

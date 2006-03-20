@@ -32,6 +32,11 @@ public final class ReferenceEntry extends AbstractEntry {
     public Position position;
 
     /**
+     * The filename where the reference lives in
+     */
+    public String fileName;
+    
+    /**
      * Constructs a new entry with the given key (reference key/name)
      * 
      * @param key Reference key

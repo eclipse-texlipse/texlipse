@@ -13,9 +13,9 @@ import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import net.sourceforge.texlipse.model.CommandEntry;
 import net.sourceforge.texlipse.model.ReferenceEntry;
 import net.sourceforge.texlipse.model.ReferenceManager;
+import net.sourceforge.texlipse.model.TexCommandEntry;
 import net.sourceforge.texlipse.model.TexDocumentModel;
 import net.sourceforge.texlipse.spelling.SpellChecker;
 import net.sourceforge.texlipse.templates.TexTemplateCompletion;
@@ -26,6 +26,7 @@ import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.contentassist.IContentAssistProcessor;
 import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.jface.text.contentassist.IContextInformationValidator;
+import org.eclipse.jface.text.source.ISourceViewer;
 
 
 /**
@@ -43,9 +44,10 @@ public class TexCompletionProcessor implements IContentAssistProcessor {
 
     private TexDocumentModel model;
     private ReferenceManager refManager;
+    private ISourceViewer fviewer;
     
-    private static final String bracePair = "{}";
-    private static final int assistLineLength = 60;
+    //private static final String bracePair = "{}";
+    public static final int assistLineLength = 60;
     
     /**
      * A regexp pattern for resolving the command used for referencing (in the 1st group)
@@ -58,8 +60,10 @@ public class TexCompletionProcessor implements IContentAssistProcessor {
      *  
      * @param tdm The document model for this editor
      */
-    public TexCompletionProcessor(TexDocumentModel tdm) {
+    //public TexCompletionProcessor(TexDocumentModel tdm) {
+    public TexCompletionProcessor(TexDocumentModel tdm, ISourceViewer viewer) {
         this.model = tdm;
+        this.fviewer = viewer;
     }
 
     /* (non-Javadoc)
@@ -105,7 +109,9 @@ public class TexCompletionProcessor implements IContentAssistProcessor {
             
             if (refCommand.indexOf("cite") > -1) {
                 proposals = computeBibCompletions(offset, replacement.length(), replacement);
-            } else if (refCommand.startsWith("ref") || refCommand.startsWith("pageref")) {
+            //} else if (refCommand.startsWith("ref") || refCommand.startsWith("pageref")) {
+            } else if (refCommand.startsWith("ref") || refCommand.startsWith("pageref") || 
+                    refCommand.startsWith("vref")) {
                 proposals = computeRefCompletions(offset, replacement.length(), replacement);
             }
         } 
@@ -302,35 +308,40 @@ public class TexCompletionProcessor implements IContentAssistProcessor {
      * @return An array of completion proposals to use directly or null
      */
     private ICompletionProposal[] computeCommandCompletions(int offset, int replacementLength, String prefix) {
-        CommandEntry[] comEntries = refManager.getCompletionsCom(prefix);
+        //CommandEntry[] comEntries = refManager.getCompletionsCom(prefix);
+        TexCommandEntry[] comEntries = refManager.getCompletionsCom(prefix, TexCommandEntry.NORMAL_CONTEXT);
         if (comEntries == null)
             return null;
 
         ICompletionProposal[] result = new ICompletionProposal[comEntries.length];
 
-        String braces;
+//        String braces;
         for (int i=0; i < comEntries.length; i++) {
-        	String infoText = comEntries[i].info.length() > assistLineLength ?
-        			wrapString(comEntries[i].info, assistLineLength)
-					: comEntries[i].info;
-
-            if (comEntries[i].arguments == 0) {
-                result[i] = new CompletionProposal(comEntries[i].key,
-                        offset - replacementLength, replacementLength,
-                        comEntries[i].key.length(), null, comEntries[i].key, null,
-                        infoText);
-            } else {
-                braces = bracePair;
-                if (comEntries[i].arguments > 1) {
-                    // this is slightly inefficient, but it's not a big deal here
-                    for (int j=1; j < comEntries[i].arguments; j++)
-                        braces += bracePair;
-                }
-                result[i] = new CompletionProposal(comEntries[i].key + braces,
-                        offset - replacementLength, replacementLength,
-                        comEntries[i].key.length() + 1, null, comEntries[i].key, null,
-                        infoText);
-            }
+//        	String infoText = comEntries[i].info.length() > assistLineLength ?
+//        			wrapString(comEntries[i].info, assistLineLength)
+//					: comEntries[i].info;
+//
+//            if (comEntries[i].arguments == 0) {
+//                result[i] = new CompletionProposal(comEntries[i].key,
+//                        offset - replacementLength, replacementLength,
+//                        comEntries[i].key.length(), null, comEntries[i].key, null,
+//                        infoText);
+//            } else {
+//                braces = bracePair;
+//                if (comEntries[i].arguments > 1) {
+//                    // this is slightly inefficient, but it's not a big deal here
+//                    for (int j=1; j < comEntries[i].arguments; j++)
+//                        braces += bracePair;
+//                }
+//                result[i] = new CompletionProposal(comEntries[i].key + braces,
+//                        offset - replacementLength, replacementLength,
+//                        comEntries[i].key.length() + 1, null, comEntries[i].key, null,
+//                        infoText);
+//            }
+            result[i] = new TexCompletionProposal(comEntries[i],
+                    offset - replacementLength, 
+                    replacementLength,
+                    fviewer);
         }
         return result;
     }
@@ -355,7 +366,7 @@ public class TexCompletionProcessor implements IContentAssistProcessor {
     }
     
     
-    private String wrapString(String input, int width) {
+    public static String wrapString(String input, int width) {
         StringBuffer sbout = new StringBuffer();
 
         // \n should suffice since we prettify in parsing...

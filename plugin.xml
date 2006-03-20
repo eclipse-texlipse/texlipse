@@ -70,7 +70,7 @@
             class="net.sourceforge.texlipse.editor.TexEditor"
             icon="icons/texfile.gif"
             default="true"
-            contributorClass="org.eclipse.ui.editors.text.TextEditorActionContributor"
+            contributorClass="net.sourceforge.texlipse.editor.TexEditorActionContributor"
             name="Latex Editor"
             id="net.sourceforge.texlipse.TexEditor"
             extensions="tex,ltx,sty"/>
@@ -710,7 +710,7 @@ ${cursor}
    <extension
          point="org.eclipse.ui.popupMenus">
       <viewerContribution
-            targetID="net.sourceforge.texlipse.TexEditor.EditorContext"
+            targetID="#TextEditorContext"
             id="net.sourceforge.texlipse.editor.viewerContribution">
          <menu
                label="Source"
@@ -787,6 +787,13 @@ ${cursor}
                style="push"
                menubarPath="SourceMenu/texlipseGroup"
                id="actions.TexUncollapse"/>
+         <action
+               label="&amp;Jump to Label"
+               definitionId="action.Jump2Label"
+               class="net.sourceforge.texlipse.actions.TexJump2Label"
+               style="push"
+               menubarPath="SourceMenu/texlipseGroup"
+               id="action.Jump2Label"/>
       </viewerContribution>
    </extension>
    <extension
@@ -1051,6 +1058,15 @@ ${cursor}
             command="actions.TexUncollapse"
             string="Alt+X"
             configuration="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+      <command
+            category="Texlipse"
+            categoryId="Texlipse"
+            name="Jump to label"
+            id="actions.Jump2Label"/>
+      <keyBinding
+            command="actions.Jump2Label"
+            string="Alt+J"
+            configuration="org.eclipse.ui.defaultAcceleratorConfiguration"/>            
    </extension>
    <extension
          id="builderproblem"

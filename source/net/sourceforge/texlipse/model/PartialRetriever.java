@@ -18,6 +18,7 @@ package net.sourceforge.texlipse.model;
  * algorithms with) as well as a binary search algorithm.
  * 
  * @author Oskar Ojala
+ * @author Boris von Loesch
  */
 public abstract class PartialRetriever {
 
@@ -48,6 +49,23 @@ public abstract class PartialRetriever {
         return new int[] {startIdx, endIdx};
     }
 
+//  B-----borisvl
+    
+    protected int getEntry(String entryname, AbstractEntry[] entries){
+        if (entries == null) return -1;
+        int start = 0;
+        int end = entries.length;
+        while (end-start>1 && !entries[(start+end)/2].key.equals(entryname)){
+            int c = entries[(start+end)/2].key.compareTo(entryname);
+            if (c < 0) start = (start+end)/2;
+            else end = (start+end)/2;
+        }
+        if (entries[(start+end)/2].key.equals(entryname)) return (start+end)/2;
+        else return -1;
+    }
+    
+//  E-----borisvl
+    
     /**
      * Search the given (sorted) array of entries for all entries,
      * for which the start of the key matches the given search string.

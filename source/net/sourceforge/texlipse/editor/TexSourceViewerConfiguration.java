@@ -9,6 +9,7 @@
  */
 package net.sourceforge.texlipse.editor;
 import net.sourceforge.texlipse.TexlipsePlugin;
+import net.sourceforge.texlipse.editor.hover.TexHover;
 import net.sourceforge.texlipse.editor.scanner.TexCommentScanner;
 import net.sourceforge.texlipse.editor.scanner.TexMathScanner;
 import net.sourceforge.texlipse.editor.scanner.TexScanner;
@@ -16,6 +17,7 @@ import net.sourceforge.texlipse.properties.TexlipseProperties;
 
 import org.eclipse.jface.text.IAutoIndentStrategy;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.ITextHover;
 import org.eclipse.jface.text.TextAttribute;
 import org.eclipse.jface.text.contentassist.ContentAssistant;
 import org.eclipse.jface.text.contentassist.IContentAssistant;
@@ -46,6 +48,7 @@ public class TexSourceViewerConfiguration extends SourceViewerConfiguration {
     private ColorManager colorManager;
     private TexAnnotationHover annotationHover;
     private ContentAssistant assistant;
+    private TexHover textHover;
 
     /**
      * Creates a new source viewer configuration.
@@ -134,12 +137,15 @@ public class TexSourceViewerConfiguration extends SourceViewerConfiguration {
         assistant.setDocumentPartitioning(getConfiguredDocumentPartitioning(sourceViewer));
         
         // note that partitioning affects completions
-        TexCompletionProcessor tcp = new TexCompletionProcessor(this.editor.getDocumentModel());
+        //TexCompletionProcessor tcp = new TexCompletionProcessor(this.editor.getDocumentModel());
+        TexCompletionProcessor tcp = new TexCompletionProcessor(this.editor.getDocumentModel(), sourceViewer);
+        TexMathCompletionProcessor tmcp = new TexMathCompletionProcessor(this.editor.getDocumentModel(), sourceViewer);
 //        assistant.setContentAssistProcessor(new TexCompletionProcessor(this.editor.getDocumentModel()),
 //                IDocument.DEFAULT_CONTENT_TYPE);
 
         assistant.setContentAssistProcessor(tcp, IDocument.DEFAULT_CONTENT_TYPE);
-        assistant.setContentAssistProcessor(tcp, TexPartitionScanner.TEX_MATH);
+        //assistant.setContentAssistProcessor(tcp, TexPartitionScanner.TEX_MATH);
+        assistant.setContentAssistProcessor(tmcp, TexPartitionScanner.TEX_MATH);
         assistant.setContentAssistProcessor(tcp, TexPartitionScanner.TEX_CURLY_BRACKETS);
         assistant.setContentAssistProcessor(tcp, TexPartitionScanner.TEX_SQUARE_BRACKETS);
 
@@ -228,5 +234,12 @@ public class TexSourceViewerConfiguration extends SourceViewerConfiguration {
                                     colorManager.getStyle(ColorManager.COMMENT_STYLE))));
         }
         return commentScanner;
+    }
+    
+    public ITextHover getTextHover(ISourceViewer sourceViewer, String contentType) {
+        if (textHover == null) {
+            textHover = new TexHover(editor);
+        }
+        return textHover;
     }
 }

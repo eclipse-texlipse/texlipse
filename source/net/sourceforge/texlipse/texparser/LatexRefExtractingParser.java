@@ -16,6 +16,7 @@ import java.util.ArrayList;
 
 import net.sourceforge.texlipse.model.CommandEntry;
 import net.sourceforge.texlipse.model.ReferenceEntry;
+import net.sourceforge.texlipse.model.TexCommandEntry;
 import net.sourceforge.texlipse.texparser.lexer.LexerException;
 import net.sourceforge.texlipse.texparser.node.EOF;
 import net.sourceforge.texlipse.texparser.node.TArgument;
@@ -92,7 +93,7 @@ public class LatexRefExtractingParser {
     
     /**
      * Parses the given string and extracts the labels and BibTeX info.
-     * 
+     * TexCommandEntry currentCommand = null;
      * @param input A string containing the LaTeX document
      * @throws IOException If the input is not readable
      */
@@ -103,7 +104,8 @@ public class LatexRefExtractingParser {
         boolean expectArg2 = false;
         Token prevToken = null;
         
-        CommandEntry currentCommand = null;
+        //CommandEntry currentCommand = null;
+        TexCommandEntry currentCommand = null;
         int argCount = 0;
         
         try {
@@ -111,13 +113,18 @@ public class LatexRefExtractingParser {
                 if (expectArg) {
                     if (t instanceof TArgument) {
                         if (prevToken instanceof TClabel) {
-                            this.labels.add(new ReferenceEntry(t.getText()));
+                            //this.labels.add(new ReferenceEntry(t.getText()));
+                            ReferenceEntry l = new ReferenceEntry(t.getText());
+                            l.setPosition(t.getPos(), t.getText().length());
+                            l.startLine = t.getLine();
+                            this.labels.add(l);
                         } else if (prevToken instanceof TCbib) {
                             bibs = t.getText().split(",");
                         } else if (prevToken instanceof TCbibstyle) {
                             this.bibstyle = t.getText();
                         } else if (prevToken instanceof TCnew) {
-                            currentCommand = new CommandEntry(t.getText().substring(1)); 
+                            //currentCommand = new CommandEntry(t.getText().substring(1));
+                            currentCommand = new TexCommandEntry(t.getText().substring(1), "", 0);
                             expectArg2 = true;
                         }
                         prevToken = null;

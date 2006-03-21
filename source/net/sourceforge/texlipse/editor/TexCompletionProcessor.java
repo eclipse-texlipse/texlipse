@@ -20,13 +20,18 @@ import net.sourceforge.texlipse.model.TexDocumentModel;
 import net.sourceforge.texlipse.spelling.SpellChecker;
 import net.sourceforge.texlipse.templates.TexTemplateCompletion;
 
+import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.contentassist.CompletionProposal;
+import org.eclipse.jface.text.contentassist.ContextInformation;
+import org.eclipse.jface.text.contentassist.ContextInformationValidator;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.contentassist.IContentAssistProcessor;
 import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.jface.text.contentassist.IContextInformationValidator;
 import org.eclipse.jface.text.source.ISourceViewer;
+import org.eclipse.swt.graphics.Point;
 
 
 /**
@@ -77,6 +82,21 @@ public class TexCompletionProcessor implements IContentAssistProcessor {
             this.refManager = this.model.getRefMana();
         
         String completeDoc = viewer.getDocument().get();
+
+	IDocument doc = viewer.getDocument();
+	Point selectedRange = viewer.getSelectedRange();
+	if (selectedRange.y > 0) {
+	    try {
+	        // Retrieve selected text
+	        String text = doc.get(selectedRange.x, selectedRange.y);
+
+                // Compute completion proposals
+                return computeStyleProposals(text, selectedRange);
+           } catch (BadLocationException e) {
+           }
+	}
+
+
         if (offset >= 2) {
         	// don't offer completions if the last thing typed was \\
             if (completeDoc.substring(offset-2, offset).endsWith("\\\\"))
@@ -168,7 +188,23 @@ public class TexCompletionProcessor implements IContentAssistProcessor {
             "CompletionProcessor.ContextInfo.value.pattern");
         return result;
         */
-        return null;
+
+	    // FIXME -- for testing
+        // Retrieve selected range
+        Point selectedRange = viewer.getSelectedRange();
+        if (selectedRange.y > 0) {
+            
+            // Text is selected. Create a context information array.
+            ContextInformation[] contextInfos = new ContextInformation[STYLELABELS.length];
+            
+            // Create one context information item for each style
+            for (int i = 0; i < STYLELABELS.length; i++)
+                contextInfos[i] = new ContextInformation(null, STYLELABELS[i]+" Style");
+            return contextInfos;
+        }
+        return new ContextInformation[0];
+        
+        //return null;
     }
 
     /* (non-Javadoc)
@@ -198,7 +234,8 @@ public class TexCompletionProcessor implements IContentAssistProcessor {
      * @see org.eclipse.jface.text.contentassist.IContentAssistProcessor#getContextInformationValidator()
      */
     public IContextInformationValidator getContextInformationValidator() {
-        return null;
+        return new ContextInformationValidator(this);
+	    //return null;
     }
 
     /**
@@ -397,4 +434,43 @@ public class TexCompletionProcessor implements IContentAssistProcessor {
         }
         return sbout.toString();
     }
+
+
+    // Some very quick style completions follow...
+    // TODO improve this
+
+    private final static String[] STYLETAGS = new String[] { 
+        "\\bf", "\\it", "\\rm", "\\sf", "\\sc", "\\em", "\\huge", "\\Huge"
+    };
+    private final static String[] STYLELABELS = new String[] { 
+        "bold", "italic", "roman", "sans serif", "small caps", "emphasize", "huge", "Huge"
+    };
+
+    private ICompletionProposal[] computeStyleProposals(String selectedText, Point selectedRange) {
+        
+        ICompletionProposal[] result = new ICompletionProposal[STYLETAGS.length];
+        
+        // Loop through all styles
+        for (int i = 0; i < STYLETAGS.length; i++) {
+            String tag = STYLETAGS[i];
+            
+            // Compute replacement text
+            String replacement = "{" + tag + " " + selectedText + "}";
+            
+            // Derive cursor position
+            int cursor = tag.length() + 2;
+            
+            // Compute a suitable context information
+            IContextInformation contextInfo = 
+                new ContextInformation(null, STYLELABELS[i]+" Style");
+            
+            // Construct proposal
+            result[i] = new CompletionProposal(replacement, 
+                    selectedRange.x, selectedRange.y,
+                    cursor, null, STYLELABELS[i], 
+                    contextInfo, replacement);
+        }
+        return result;
+    }
+
 }

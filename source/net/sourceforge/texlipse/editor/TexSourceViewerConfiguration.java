@@ -250,55 +250,85 @@ public class TexSourceViewerConfiguration extends SourceViewerConfiguration {
         }
         return textHover;
     }
-
-
-	// ------------------------
-	// style assist testing
-
-	// TODO improve
-
+    
+    /**
+     * Displays all commands in bold and all groups in italic
+     */
     private static final DefaultInformationControl.IInformationPresenter
     presenter = new DefaultInformationControl.IInformationPresenter() {
         public String updatePresentation(Display display, String infoText,
                 TextPresentation presentation, int maxWidth, int maxHeight) {
-            int start = -1;
+            int cstart = -1;
+            int gstart = -1;
             
             // Loop over all characters of information text
             for (int i = 0; i < infoText.length(); i++) {
                 switch (infoText.charAt(i)) {
                 case '{':
-                case '}':
                     // Remember start of group
-                    start = i;
+                    gstart = i;
+                    if (cstart >= 0) {
+                        boldRange(cstart, i - cstart + 1, presentation, false);
+                        cstart = -1;
+                    }
                     break;
+                case '}':
+                    if (cstart >= 0) {
+                        boldRange(cstart, i - cstart + 1, presentation, true);
+                        cstart = -1;
+                        if (gstart >= 0) {
+                            italicizeRange(gstart, cstart - gstart, presentation);
+                        }
+                    } else if (gstart >= 0) {
+                        italicizeRange(gstart, i - gstart + 1, presentation);
+                    }
+                    gstart = -1;
+                    break;
+                case '\\':
+                    if (cstart < 0) {
+                        cstart = i;
+                    }
+                    break;
+                case '\n':
+                case '\r':
+                case '\t':
                 case ' ':
-                    if (start >= 0) {
-                        // We have found a tag and create a new style range
-                        StyleRange range = 
-                            new StyleRange(start, i - start + 1, null, null, SWT.BOLD);
-                        
-                        // Add this style range to the presentation
-                        presentation.addStyleRange(range);
-                        
-                        // Reset tag start indicator
-                        start = -1;
+                    if (cstart >= 0) {
+                        if (gstart >= 0) {
+                            italicizeRange(gstart, cstart - gstart, presentation);
+                            boldRange(cstart, i - cstart + 1, presentation, true);
+                            gstart = i;
+                        } else {
+                            boldRange(cstart, i - cstart + 1, presentation, false);
+                        }
+                        cstart = -1;
                     }
                     break;
                 }
             }
             // check if we want to bold to the end of string
-            if (start >= 0) {
-                // We have found a tag and create a new style range
-                StyleRange range = 
-                    new StyleRange(start, infoText.length() - start, null, null, SWT.BOLD);
-                
-                // Add this style range to the presentation
-                presentation.addStyleRange(range);
+            if (gstart >= 0) {
+                italicizeRange(gstart, infoText.length() - gstart, presentation);
             }
-            
+            if (cstart >= 0) {
+                boldRange(cstart, infoText.length() - cstart, presentation, false);
+            }
             // Return the information text
             return infoText;
         }
+        private void boldRange(int start, int end, TextPresentation presentation, boolean doItalic) {
+            // We have found a tag and create a new style range
+            int fontStyle = doItalic ? (SWT.BOLD | SWT.ITALIC) : SWT.BOLD;
+            StyleRange range = new StyleRange(start, end, null, null, fontStyle);
+            
+            // Add this style range to the presentation
+            presentation.addStyleRange(range);
+        }
+        private void italicizeRange(int start, int end, TextPresentation presentation) {
+            StyleRange range = new StyleRange(start, end, null, null, SWT.ITALIC);
+            presentation.addStyleRange(range);
+        }
+        
     };
     
     public IInformationControlCreator getInformationControlCreator
@@ -309,5 +339,5 @@ public class TexSourceViewerConfiguration extends SourceViewerConfiguration {
             }
         };
     }
-
+    
 }

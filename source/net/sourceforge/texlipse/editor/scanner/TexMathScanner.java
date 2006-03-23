@@ -19,7 +19,6 @@ import org.eclipse.jface.text.TextAttribute;
 import org.eclipse.jface.text.rules.EndOfLineRule;
 import org.eclipse.jface.text.rules.IRule;
 import org.eclipse.jface.text.rules.IToken;
-import org.eclipse.jface.text.rules.MultiLineRule;
 import org.eclipse.jface.text.rules.RuleBasedScanner;
 import org.eclipse.jface.text.rules.Token;
 import org.eclipse.jface.text.rules.WhitespaceRule;
@@ -52,7 +51,7 @@ public class TexMathScanner extends RuleBasedScanner {
         
         rules.add(new WhitespaceRule(new WhitespaceDetector()));
         rules.add(new EndOfLineRule("%",commentToken));
-        rules.add(new MultiLineRule("\\begin{comment}","\\end{comment}", commentToken));
+        rules.add(new TexEnvironmentRule("comment", commentToken));
         
         IRule[] result = new IRule[rules.size()];
         rules.toArray(result);

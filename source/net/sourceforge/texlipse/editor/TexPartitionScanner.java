@@ -12,6 +12,8 @@ package net.sourceforge.texlipse.editor;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.sourceforge.texlipse.editor.scanner.TexEnvironmentRule;
+
 import org.eclipse.jface.text.rules.EndOfLineRule;
 import org.eclipse.jface.text.rules.IPredicateRule;
 import org.eclipse.jface.text.rules.IToken;
@@ -21,7 +23,6 @@ import org.eclipse.jface.text.rules.SingleLineRule;
 import org.eclipse.jface.text.rules.Token;
 
 /**
- * 
  * 
  * @author Antti Pirinen
  * @author Boris von Loesch
@@ -48,26 +49,27 @@ public class TexPartitionScanner extends RuleBasedPartitionScanner {
 		
 		List rules = new ArrayList();
 				
+		//TODO: mark \\ Token.Undefined
 		rules.add(new SingleLineRule("\\%"," ", Token.UNDEFINED)); //no comment when using "\%" in LaTeX 
 		rules.add(new EndOfLineRule("%", texComment));
-		rules.add(new MultiLineRule("\\begin{comment}","\\end{comment}",texComment));
+        rules.add(new TexEnvironmentRule("comment", texComment));
 		rules.add(new SingleLineRule("\\\\[","]", Token.UNDEFINED));  //no math when using "\\[]" line breaks
 		rules.add(new MultiLineRule("\\[","\\]", math)); 
 		
 		rules.add(new SingleLineRule("\\$", " ", Token.UNDEFINED)); // not a math equation \$
 
-        rules.add(new MultiLineRule("\\begin{equation}", "\\end{equation}", math));
-        rules.add(new MultiLineRule("\\begin{equation*}", "\\end{equation*}", math));
+        rules.add(new TexEnvironmentRule("equation", math));
+        rules.add(new TexEnvironmentRule("equation*", math));
         rules.add(new MultiLineRule("$$", "$$", math));
         rules.add(new MultiLineRule("$", "$", math));
-        rules.add(new MultiLineRule("\\begin{eqnarray}", "\\end{eqnarray}", math));
-        rules.add(new MultiLineRule("\\begin{eqnarray*}", "\\end{eqnarray*}", math));
-        rules.add(new MultiLineRule("\\begin{align}", "\\end{align}", math));
-        rules.add(new MultiLineRule("\\begin{align*}", "\\end{align*}", math));
-        rules.add(new MultiLineRule("\\begin{alignat}", "\\end{alignat}", math));
-        rules.add(new MultiLineRule("\\begin{alignat*}", "\\end{alignat*}", math));
-        rules.add(new MultiLineRule("\\begin{math}", "\\end{math}", math));
-        rules.add(new MultiLineRule("\\begin{displaymath}", "\\end{displaymath}", math));
+        rules.add(new TexEnvironmentRule("eqnarray", math));
+        rules.add(new TexEnvironmentRule("eqnarray*", math));
+        rules.add(new TexEnvironmentRule("align", math));
+        rules.add(new TexEnvironmentRule("align*", math));
+        rules.add(new TexEnvironmentRule("alignat", math));
+        rules.add(new TexEnvironmentRule("alignat*", math));
+        rules.add(new TexEnvironmentRule("math", math));
+        rules.add(new TexEnvironmentRule("displaymath", math));
 
 		IPredicateRule[] result = new IPredicateRule[rules.size()];
 		rules.toArray(result);

@@ -28,42 +28,6 @@
       <import plugin="org.eclipse.debug.ui"/>
       <import plugin="org.eclipse.ui.console"/>
    </requires>
-
-   <extension
-         point="org.eclipse.ui.editorActions">
-      <editorContribution
-            id="net.sourceforge.texlipse.editorContribution"
-            targetID="net.sourceforge.texlipse.TexEditor">
-                     <menu
-               label="&amp;Latex"
-               id="LatexMenu">
-            <separator
-                  name="latexGroup">
-            </separator>
-            <separator name="sourceGroup"/>
-         </menu>
-         <action
-               toolbarPath="latexGroup"
-               label="&amp;Word Count"
-               definitionId="actions.WordCountAction"
-               tooltip="Word Count"
-               icon="icons/wordcount.gif"
-               class="net.sourceforge.texlipse.actions.WordCountAction"
-               style="push"
-               menubarPath="LatexMenu/sourceGroup"
-               id="actions.WordCountAction"/>
-         <action
-               toolbarPath="latexGroup"
-               label="Pre&amp;view Document"
-               definitionId="actions.PreviewAction"
-               icon="icons/preview.gif"
-               class="net.sourceforge.texlipse.actions.PreviewAction"
-               tooltip="Launch the previewer"
-               style="push"
-               menubarPath="LatexMenu/sourceGroup"
-               id="actions.PreviewAction"/>
-            </editorContribution>
-   </extension>
    <extension
          point="org.eclipse.ui.editors">
       <editor
@@ -741,86 +705,94 @@ ${cursor}
             id="net.sourceforge.texlipse.editor.viewerContribution">
          <menu
                label="Source"
-               id="SourceMenu">
-            <groupMarker name="texlipseGroup"/>
+               id="net.sourceforge.texlipse.menus.source">
+            <groupMarker name="latexGroup"/>
          </menu>
          <action
-               label="Set As &amp;Main File"
-               definitionId="actions.MainFileAction"
                class="net.sourceforge.texlipse.actions.SetMainFileAction"
-               style="push"
-               menubarPath="SourceMenu/texlipseGroup"
-               id="actions.MainFileAction"/>
+               definitionId="net.sourceforge.texlipse.commands.setAsMainFile"
+               id="net.sourceforge.texlipse.actions.setAsMainFile"
+               label="Set As &amp;Main File"
+               menubarPath="net.sourceforge.texlipse.menus.source/latexGroup"
+               style="push"/>
          <action
-               label="Save As &amp;Template"
-               definitionId="actions.SaveAsTemplateAction"
                class="net.sourceforge.texlipse.actions.SaveAsTemplateAction"
+               definitionId="net.sourceforge.texlipse.commands.saveAsTemplate"
+               icon="icons/savetemplate.gif"
+               id="net.sourceforge.texlipse.actions.saveAsTemplate"
+               label="Save As &amp;Template"
+               menubarPath="net.sourceforge.texlipse.menus.source/latexGroup"
                style="push"
-               menubarPath="SourceMenu/texlipseGroup"
-               id="actions.SaveAsTemplateAction"/>
+               tooltip="Save this file as a project template"/>
          <action
-               label="&amp;Uncomment"
-               definitionId="actions.TexUncomment"
                class="net.sourceforge.texlipse.actions.TexUncomment"
+               definitionId="net.sourceforge.texlipse.commands.texUncomment"
+               icon="icons/uncomment.gif"
+               id="net.sourceforge.texlipse.actions.texUncomment"
+               label="&amp;Uncomment"
+               menubarPath="net.sourceforge.texlipse.menus.source/latexGroup"
                style="push"
-               menubarPath="SourceMenu/texlipseGroup"
-               id="actions.TexUncomment"/>
+               tooltip="Uncomment selection"/>
          <action
-               label="&amp;Comment"
-               definitionId="actions.TexComment"
                class="net.sourceforge.texlipse.actions.TexComment"
+               definitionId="net.sourceforge.texlipse.commands.texComment"
+               icon="icons/comment.gif"
+               id="net.sourceforge.texlipse.actions.texComment"
+               label="&amp;Comment"
+               menubarPath="net.sourceforge.texlipse.menus.source/latexGroup"               
                style="push"
-               menubarPath="SourceMenu/texlipseGroup"
-               id="actions.TexComment"/>
+               tooltip="Comment selection"/>
+          <action
+                class="net.sourceforge.texlipse.actions.TexBold"
+                definitionId="net.sourceforge.texlipse.commands.texBold"
+                id="net.sourceforge.texlipse.actions.texBold"
+                label="(un-)&amp;Bold"
+                menubarPath="net.sourceforge.texlipse.menus.source/latexGroup"
+                style="push"
+                tooltip="Bolds (textbf) selection"/>
+          <action
+                class="net.sourceforge.texlipse.actions.TexSlant"
+                definitionId="net.sourceforge.texlipse.commands.texSlant"
+                id="net.sourceforge.texlipse.actions.texSlant"
+                label="(un-)&amp;Italicize"
+                menubarPath="net.sourceforge.texlipse.menus.source/latexGroup"
+                style="push"
+                tooltip="Italicizes (textsl) selection"/>
          <action
-               label="(un-)&amp;Bold"
-               definitionId="actions.TexBold"
-               class="net.sourceforge.texlipse.actions.TexBold"
-               style="push"
-               menubarPath="SourceMenu/texlipseGroup"
-               id="actions.TexBold"/>
-         <action
-               label="(un-)&amp;Italicize"
-               definitionId="actions.TexSlant"
-               class="net.sourceforge.texlipse.actions.TexSlant"
-               style="push"
-               menubarPath="SourceMenu/texlipseGroup"
-               id="actions.TexSlant"/>
-         <action
-               label="Correct &amp;Indentation"
-               definitionId="actions.TexCorrectIndentation"
                class="net.sourceforge.texlipse.actions.TexCorrectIndentationAction"
-               style="push"
-               menubarPath="SourceMenu/texlipseGroup"
-               id="actions.TexCorrectIndentation"/>
+               definitionId="net.sourceforge.texlipse.commands.texCorrectIndentation"
+               id="net.sourceforge.texlipse.actions.texCorrectIndentation"
+               label="Correct &amp;Indentation"
+               menubarPath="net.sourceforge.texlipse.menus.source/latexGroup"
+               style="push"/>
          <action
-               label="Correct &amp;Line Wrap"
-               definitionId="actions.TexHardLineWrap"
                class="net.sourceforge.texlipse.actions.TexHardLineWrapAction"
-               style="push"
-               menubarPath="SourceMenu/texlipseGroup"
-               id="actions.TexHardLineWrap"/>
+               definitionId="net.sourceforge.texlipse.commands.texHardLineWrap"
+               id="net.sourceforge.texlipse.actions.texHardLineWrap"
+               label="Correct &amp;Line Wrap"
+               menubarPath="net.sourceforge.texlipse.menus.source/latexGroup"
+               style="push"/>
          <action
-               label="Coll&amp;apse"
-               definitionId="actions.TexCollapse"
                class="net.sourceforge.texlipse.actions.TexCollapseAction"
-               style="push"
-               menubarPath="SourceMenu/texlipseGroup"
-               id="actions.TexCollapse"/>
+               definitionId="net.sourceforge.texlipse.commands.texCollapse"
+               id="net.sourceforge.texlipse.actions.texCollapse"
+               label="Coll&amp;apse"
+               menubarPath="net.sourceforge.texlipse.menus.source/latexGroup"
+               style="push"/>
          <action
-               label="Uncolla&amp;pse"
-               definitionId="actions.TexUncollapse"
                class="net.sourceforge.texlipse.actions.TexUncollapseAction"
-               style="push"
-               menubarPath="SourceMenu/texlipseGroup"
-               id="actions.TexUncollapse"/>
+               definitionId="net.sourceforge.texlipse.commands.texUncollapse"
+               id="net.sourceforge.texlipse.actions.texUncollapse"
+               label="Uncolla&amp;pse"
+               menubarPath="net.sourceforge.texlipse.menus.source/latexGroup"
+               style="push"/>
          <action
-               label="&amp;Jump to Label"
-               definitionId="action.Jump2Label"
-               class="net.sourceforge.texlipse.actions.TexJump2Label"
-               style="push"
-               menubarPath="SourceMenu/texlipseGroup"
-               id="action.Jump2Label"/>
+         	   class="net.sourceforge.texlipse.actions.TexJump2Label"
+               definitionId="net.sourceforge.texlipse.commands.jumpToLabel"
+               id="action.Jump2Label"
+               label="&amp;Jump to Label"               
+               menubarPath="net.sourceforge.texlipse.menus.source/latexGroup"
+               style="push"/>
       </viewerContribution>
    </extension>
    <extension
@@ -830,271 +802,291 @@ ${cursor}
             id="net.sourceforge.texlipse.editor.editorContribution">
          <menu
                label="&amp;Latex"
-               id="LatexMenu">
+               id="net.sourceforge.texlipse.menus.latex">
+            <separator name="sourceGroup"/>
             <separator name="commentGroup"/>
             <separator name="latexGroup"/>
          </menu>
+          <action
+                class="net.sourceforge.texlipse.actions.WordCountAction"
+                definitionId="net.sourceforge.texlipse.commands.wordCount"
+                icon="icons/wordcount.gif"
+                id="net.sourceforge.texlipse.actions.wordCount"
+                label="&amp;Word Count"
+                menubarPath="net.sourceforge.texlipse.menus.latex/sourceGroup"
+                style="push"
+                toolbarPath="latexGroup"
+                tooltip="Word Count"/>
          <action
-               label="Set As &amp;Main File"
+               class="net.sourceforge.texlipse.actions.PreviewAction"
+               definitionId="net.sourceforge.texlipse.commands.preview"
+               icon="icons/preview.gif"
+               id="net.sourceforge.texlipse.actions.preview"
+               label="Pre&amp;view Document"
+               menubarPath="net.sourceforge.texlipse.menus.latex/sourceGroup"
+               style="push"
+               toolbarPath="latexGroup"
+               tooltip="Launch the previewer"/>
+         <action
                class="net.sourceforge.texlipse.actions.SetMainFileAction"
-               definitionId="actions.MainFileAction"
-               style="push"
-               menubarPath="LatexMenu/commentGroup"
-               id="actions.MainFileAction"/>
+               definitionId="net.sourceforge.texlipse.commands.setAsMainFile"
+               id="net.sourceforge.texlipse.actions.setAsMainFile"
+               label="Set As &amp;Main File"
+               menubarPath="net.sourceforge.texlipse.menus.latex/commentGroup"
+               style="push"/>
          <action
-               toolbarPath="latexGroup"
-               label="Save As &amp;Template"
-               tooltip="Save this file as a project template"
-               icon="icons/savetemplate.gif"
-               definitionId="actions.SaveAsTemplateAction"
                class="net.sourceforge.texlipse.actions.SaveAsTemplateAction"
+               definitionId="net.sourceforge.texlipse.commands.saveAsTemplate"
+               icon="icons/savetemplate.gif"
+               id="net.sourceforge.texlipse.actions.saveAsTemplate"
+               label="Save As &amp;Template"
+               menubarPath="net.sourceforge.texlipse.menus.latex/commentGroup"               
                style="push"
-               menubarPath="LatexMenu/commentGroup"
-               id="actions.SaveAsTemplateAction"/>
-         <action
                toolbarPath="latexGroup"
-               label="Build &amp;Partially"
+               tooltip="Save this file as a project template"/>
+         <action
                class="net.sourceforge.texlipse.actions.PartialBuildAction"
+               definitionId="net.sourceforge.texlipse.commands.partialBuild"
                icon="icons/buildpartially.gif"
-               tooltip="Toggle partial building on current project"
-               definitionId="actions.PartialBuildAction"
+               id="net.sourceforge.texlipse.actions.partialBuild"
+               label="Build &amp;Partially"
+               menubarPath="net.sourceforge.texlipse.menus.latex/commentGroup"
                style="toggle"
-               menubarPath="LatexMenu/commentGroup"
-               id="actions.PartialBuildAction"/>
-         <action
                toolbarPath="latexGroup"
-               label="W&amp;rap text"
-               tooltip="Use word wrap"
-               icon="icons/wrap.gif"
-               definitionId="actions.MainFileAction"
+               tooltip="Toggle partial building on current project"/>
+         <action
                class="net.sourceforge.texlipse.actions.TexWordWrapAction"
+               definitionId="net.sourceforge.texlipse.commands.texWordWrap"
+               icon="icons/wrap.gif"
+               id="net.sourceforge.texlipse.actions.texWordWrap"
+               label="W&amp;rap text"
+               menubarPath="net.sourceforge.texlipse.menus.latex/commentGroup"
                style="toggle"
-               menubarPath="LatexMenu/commentGroup"
-               id="actions.TexWordWrap"/>
-         <action
                toolbarPath="latexGroup"
-               label="&amp;Uncomment"
-               definitionId="actions.TexUncomment"
+               tooltip="Use word wrap"/>
+         <action
                class="net.sourceforge.texlipse.actions.TexUncomment"
+               definitionId="net.sourceforge.texlipse.commands.texUncomment"
                icon="icons/uncomment.gif"
-               tooltip="Uncomment selection"
+               id="net.sourceforge.texlipse.actions.texUncomment"
+               label="&amp;Uncomment"
+               menubarPath="net.sourceforge.texlipse.menus.latex/commentGroup"
                style="push"
-               menubarPath="LatexMenu/commentGroup"
-               id="actions.TexUncomment"/>
-         <action
                toolbarPath="latexGroup"
-               label="&amp;Comment"
-               definitionId="actions.TexComment"
-               class="net.sourceforge.texlipse.actions.TexComment"
-               icon="icons/comment.gif"
-               tooltip="Comment selection"
-               style="push"
-               menubarPath="LatexMenu/commentGroup"
-               id="actions.TexComment"/>
-          <action
-               label="(un-)&amp;Bold"
-               definitionId="actions.TexBold"
-               class="net.sourceforge.texlipse.actions.TexBold"
-               tooltip="Bolds (textbf) selection"
-               style="push"
-               menubarPath="LatexMenu/commentGroup"
-               id="actions.TexBold"/>
-          <action
-               label="(un-)&amp;Italicize"
-               definitionId="actions.TexSlant"
-               class="net.sourceforge.texlipse.actions.TexSlant"
-               tooltip="Italicizes (textsl) selection"
-               style="push"
-               menubarPath="LatexMenu/commentGroup"
-               id="actions.TexSlant"/>
+               tooltip="Uncomment selection"/>
          <action
-               label="Correct &amp;Indentation"
-               definitionId="actions.TexCorrectIndentation"
-               class="net.sourceforge.texlipse.actions.TexCorrectIndentationAction"
+               class="net.sourceforge.texlipse.actions.TexComment"
+               definitionId="net.sourceforge.texlipse.commands.texComment"
+               icon="icons/comment.gif"
+               id="net.sourceforge.texlipse.actions.texComment"
+               label="&amp;Comment"
+               menubarPath="net.sourceforge.texlipse.menus.latex/commentGroup"
                style="push"
-               menubarPath="LatexMenu/commentGroup"
-               id="actions.TexCorrectIndentation"/>
+               toolbarPath="latexGroup"
+               tooltip="Comment selection"/>
+          <action
+                class="net.sourceforge.texlipse.actions.TexBold"
+                definitionId="net.sourceforge.texlipse.commands.texBold"
+                id="net.sourceforge.texlipse.actions.texBold"
+                label="(un-)&amp;Bold"
+                menubarPath="net.sourceforge.texlipse.menus.latex/commentGroup"
+                style="push"
+                tooltip="Bolds (textbf) selection"/>
+          <action
+                class="net.sourceforge.texlipse.actions.TexSlant"
+                definitionId="net.sourceforge.texlipse.commands.texSlant"
+                id="net.sourceforge.texlipse.actions.texSlant"
+                label="(un-)&amp;Italicize"
+                menubarPath="net.sourceforge.texlipse.menus.latex/commentGroup"
+                style="push"
+                tooltip="Italicizes (textsl) selection"/>
+         <action
+               class="net.sourceforge.texlipse.actions.TexCorrectIndentationAction"
+               definitionId="net.sourceforge.texlipse.commands.texCorrectIndentation"
+               id="net.sourceforge.texlipse.actions.texCorrectIndentation"
+               label="Correct &amp;Indentation"
+               menubarPath="net.sourceforge.texlipse.menus.latex/commentGroup"
+               style="push"/>
          <action
                label="Correct &amp;Line Wrap"
-               definitionId="actions.TexHardLineWrap"
                class="net.sourceforge.texlipse.actions.TexHardLineWrapAction"
                style="push"
-               menubarPath="LatexMenu/commentGroup"
-               id="actions.TexHardLineWrap"/>
+               menubarPath="net.sourceforge.texlipse.menus.latex/commentGroup"
+               id="net.sourceforge.texlipse.actions.texHardLineWrap"/>
          <action
-               label="Check Spelling"
-               definitionId="actions.SpellCheckAction"
                class="net.sourceforge.texlipse.spelling.SpellCheckAction"
-               style="push"
-               menubarPath="LatexMenu/commentGroup"
-               id="actions.SpellCheckAction"/>
+               definitionId="net.sourceforge.texlipse.commands.spellCheck"
+               id="net.sourceforge.texlipse.actions.spellCheck"
+               label="Check Spelling"
+               menubarPath="net.sourceforge.texlipse.menus.latex/commentGroup"
+               style="push"/>
          <action
-               label="Clear Spelling Errors"
-               definitionId="actions.SpellUncheckAction"
                class="net.sourceforge.texlipse.spelling.SpellUncheckAction"
-               style="push"
-               menubarPath="LatexMenu/commentGroup"
-               id="actions.SpellUncheckAction"/>
+               definitionId="net.sourceforge.texlipse.commands.spellUncheck"
+               id="net.sourceforge.texlipse.actions.spellUncheck"
+               label="Clear Spelling Errors"
+               menubarPath="net.sourceforge.texlipse.menus.latex/commentGroup"
+               style="push"/>
          <action
-               label="Coll&amp;apse"
-               definitionId="actions.TexCollapse"
                class="net.sourceforge.texlipse.actions.TexCollapseAction"
-               style="push"
-               menubarPath="LatexMenu/commentGroup"
-               id="actions.TexCollapse"/>
+               definitionId="net.sourceforge.texlipse.commands.texCollapse"
+               id="net.sourceforge.texlipse.actions.texCollapse"
+               label="Coll&amp;apse"
+               menubarPath="net.sourceforge.texlipse.menus.latex/commentGroup"
+               style="push"/>
          <action
-               label="Uncolla&amp;pse"
-               definitionId="actions.TexUncollapse"
                class="net.sourceforge.texlipse.actions.TexUncollapseAction"
-               style="push"
-               menubarPath="LatexMenu/commentGroup"
-               id="actions.TexUncollapse"/>
+               definitionId="net.sourceforge.texlipse.commands.texUncollapse"
+               id="net.sourceforge.texlipse.actions.texUncollapse"
+               label="Uncolla&amp;pse"
+               menubarPath="net.sourceforge.texlipse.menus.latex/commentGroup"
+               style="push"/>
       </editorContribution>
    </extension>
    <extension
          point="org.eclipse.ui.commands">
       <category
-            description="Latex editing"
+            description="Latex Editing"
             name="Texlipse"
-            id="Texlipse"/>
+            id="net.sourceforge.texlipse.latexEditingCategory"/>
       <command
-            category="Texlipse"
-            categoryId="Texlipse"
+            categoryId="net.sourceforge.texlipse.latexEditingCategory"
             name="Set As Main File"
-            id="actions.MainFileAction"/>
+            id="net.sourceforge.texlipse.commands.setAsMainFile"/>
       <command
-            category="Texlipse"
-            categoryId="Texlipse"
+            categoryId="net.sourceforge.texlipse.latexEditingCategory"
             name="Save As Template"
-            id="actions.SaveAsTemplateAction"/>
+            id="net.sourceforge.texlipse.commands.saveAsTemplate"/>
       <command
-            category="Texlipse"
-            categoryId="Texlipse"
+            categoryId="net.sourceforge.texlipse.latexEditingCategory"
             name="Partial Build"
-            id="actions.PartialBuildAction"/>
+            id="net.sourceforge.texlipse.commands.partialBuild"/>
       <command
-            category="Texlipse"
-            categoryId="Texlipse"
+            categoryId="net.sourceforge.texlipse.latexEditingCategory"
             name="Wrap text"
-            id="actions.TexWordWrap"/>
+            id="net.sourceforge.texlipse.commands.texWordWrap"/>
       <command
-            category="Texlipse"
-            categoryId="Texlipse"
+            categoryId="net.sourceforge.texlipse.latexEditingCategory"
             name="Comment"
-            id="actions.TexComment"/>
-      <keyBinding
-            command="actions.TexComment"
-            string="Ctrl+5"
-            configuration="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+            id="net.sourceforge.texlipse.commands.texComment"/>
       <command
-            category="Texlipse"
-            categoryId="Texlipse"
+            categoryId="net.sourceforge.texlipse.latexEditingCategory"
             name="Uncomment"
-            id="actions.TexUncomment"/>
-      <keyBinding
-            command="actions.TexUncomment"
-            string="Esc Ctrl+5"
-            configuration="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+            id="net.sourceforge.texlipse.commands.texUncomment"/>
       <command
-            category="Texlipse"
-            categoryId="Texlipse"
+            categoryId="net.sourceforge.texlipse.latexEditingCategory"
             name="Correct Line Wrap"
-            id="actions.TexHardLineWrap"/>
-      <keyBinding
-            command="actions.TexHardLineWrap"
-            string="Esc q"
-            configuration="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+            id="net.sourceforge.texlipse.commands.texHardLineWrap"/>
       <command
-            category="Texlipse"
-            categoryId="Texlipse"
+            categoryId="net.sourceforge.texlipse.latexEditingCategory"
             name="(un-)Bold"
-            id="actions.TexBold"/>
-      <keyBinding
-            command="actions.TexBold"
-            string="Alt+Ctrl+B"
-            configuration="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+            id="net.sourceforge.texlipse.commands.texBold"/>
       <command
-            category="Texlipse"
-            categoryId="Texlipse"
+            categoryId="net.sourceforge.texlipse.latexEditingCategory"
             name="(un-)Italicize"
-            id="actions.TexSlant"/>
-      <keyBinding
-            command="actions.TexSlant"
-            string="Alt+Ctrl+I"
-            configuration="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+            id="net.sourceforge.texlipse.commands.texSlant"/>
       <command
-            category="Texlipse"
-            categoryId="Texlipse"
+            categoryId="net.sourceforge.texlipse.latexEditingCategory"
             name="Correct Indentation"
-            id="actions.TexCorrectIndentation"/>
-      <keyBinding
-            command="actions.TexCorrectIndentation"
-            string="Ctrl+I"
-            configuration="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+            id="net.sourceforge.texlipse.commands.texCorrectIndentation"/>
       <command
-            category="Texlipse"
-            categoryId="Texlipse"
+            categoryId="net.sourceforge.texlipse.latexEditingCategory"
             name="Word Count"
-            id="actions.WordCountAction"/>
-      <keyBinding
-            command="actions.WordCountAction"
-            string="Ctrl+3"
-            configuration="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+            id="net.sourceforge.texlipse.commands.wordCount"/>
       <command
-            category="Texlipse"
-            categoryId="Texlipse"
+            categoryId="net.sourceforge.texlipse.latexEditingCategory"
             name="Preview document"
-            id="actions.PreviewAction"/>
-      <keyBinding
-            command="actions.PreviewAction"
-            string="Ctrl+4"
-            configuration="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+            id="net.sourceforge.texlipse.commands.preview"/>
       <command
-            category="Texlipse"
-            categoryId="Texlipse"
+            categoryId="net.sourceforge.texlipse.latexEditingCategory"
             name="Check Spelling"
-            id="actions.SpellCheckAction"/>
-      <keyBinding
-            command="actions.SpellCheckAction"
-            string="Shift+Ctrl+6"
-            configuration="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+            id="net.sourceforge.texlipse.commands.spellCheck"/>
       <command
-            category="Texlipse"
-            categoryId="Texlipse"
+            categoryId="net.sourceforge.texlipse.latexEditingCategory"
             name="Clear Spelling Errors"
-            id="actions.SpellUncheckAction"/>
-      <keyBinding
-            command="actions.SpellUncheckAction"
-            string="Shift+Ctrl+7"
-            configuration="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+            id="net.sourceforge.texlipse.commands.spellUncheck"/>
       <command
-            category="Texlipse"
-            categoryId="Texlipse"
+            categoryId="net.sourceforge.texlipse.latexEditingCategory"
             name="Collapse foldings"
-            id="actions.TexCollapse"/>
-      <keyBinding
-            command="actions.TexCollapse"
-            string="Alt+C"
-            configuration="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+            id="net.sourceforge.texlipse.commands.texCollapse"/>
       <command
-            category="Texlipse"
-            categoryId="Texlipse"
+            categoryId="net.sourceforge.texlipse.latexEditingCategory"
             name="Uncollapse foldings"
-            id="actions.TexUncollapse"/>
-      <keyBinding
-            command="actions.TexUncollapse"
-            string="Alt+X"
-            configuration="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+            id="net.sourceforge.texlipse.commands.texUncollapse"/>
       <command
-            category="Texlipse"
-            categoryId="Texlipse"
+            categoryId="net.sourceforge.texlipse.latexEditingCategory"
             name="Jump to label"
-            id="action.Jump2Label"/>
-      <keyBinding
-            command="action.Jump2Label"
-            string="Alt+J"
-            configuration="org.eclipse.ui.defaultAcceleratorConfiguration"/>            
+            id="net.sourceforge.texlipse.commands.jumpToLabel"/>
    </extension>
+   <!-- Keys: M1=Ctrl M2=Shift M3=Alt-->
+   <extension
+         point="org.eclipse.ui.bindings">
+      <key
+            commandId="net.sourceforge.texlipse.commands.texComment"
+            contextId="org.eclipse.ui.contexts.window"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+5"/>
+      <key
+            commandId="net.sourceforge.texlipse.commands.texUncomment"
+            contextId="org.eclipse.ui.contexts.window"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="Esc M1+5"/>
+      <key
+            commandId="net.sourceforge.texlipse.commands.texHardLineWrap"
+            contextId="org.eclipse.ui.contexts.window"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="Esc Q"/>
+      <key
+            commandId="net.sourceforge.texlipse.commands.texBold"
+            contextId="org.eclipse.ui.contexts.window"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+M3+B"/>
+      <key
+            commandId="net.sourceforge.texlipse.commands.texSlant"
+            contextId="org.eclipse.ui.contexts.window"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+M3+I"/>
+      <key
+            commandId="net.sourceforge.texlipse.commands.texCorrectIndentation"
+            contextId="org.eclipse.ui.contexts.window"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+I"/>
+      <key
+            commandId="net.sourceforge.texlipse.commands.wordCount"
+            contextId="org.eclipse.ui.contexts.window"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+3"/>
+      <key
+            commandId="net.sourceforge.texlipse.commands.preview"
+            contextId="org.eclipse.ui.contexts.window"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+4"/>
+      <key
+            commandId="net.sourceforge.texlipse.commands.spellCheck"
+            contextId="org.eclipse.ui.contexts.window"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+M2+6"/>
+      <key
+            commandId="net.sourceforge.texlipse.commands.spellUncheck"
+            contextId="org.eclipse.ui.contexts.window"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+M2+7"/>
+      <key
+            commandId="net.sourceforge.texlipse.commands.texCollapse"
+            contextId="org.eclipse.ui.contexts.window"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M3+C"/>            
+      <key
+            commandId="net.sourceforge.texlipse.commands.texUncollapse"
+            contextId="org.eclipse.ui.contexts.window"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M3+X"/>            
+      <key
+            commandId="net.sourceforge.texlipse.commands.jumpToLabel"
+            contextId="org.eclipse.ui.contexts.window"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M3+J"/>            
+    </extension>
    <extension
          id="builderproblem"
          name="Texlipse Build Error"

@@ -16,12 +16,14 @@ import org.eclipse.jface.text.templates.TemplateContextType;
 
 
 /**
- * @author Esa Seuranen
- * 
  * Simple class for representing TeX content type.
+ * 
+ * @author Esa Seuranen
+ * @author Oskar Ojala
  */
 public class TexContextType extends TemplateContextType {
     public static final String TEX_CONTEXT_TYPE = TexlipseProperties.PACKAGE_NAME + ".templates.tex";
+    public static final String MATH_CONTEXT_TYPE = TexlipseProperties.PACKAGE_NAME + ".templates.math";
     
     /**
      * Constructor

@@ -18,6 +18,7 @@ import net.sourceforge.texlipse.model.ReferenceManager;
 import net.sourceforge.texlipse.model.TexCommandEntry;
 import net.sourceforge.texlipse.model.TexDocumentModel;
 import net.sourceforge.texlipse.spelling.SpellChecker;
+import net.sourceforge.texlipse.templates.TexContextType;
 import net.sourceforge.texlipse.templates.TexTemplateCompletion;
 
 import org.eclipse.jface.text.BadLocationException;
@@ -45,7 +46,7 @@ import org.eclipse.swt.graphics.Point;
  */
 public class TexCompletionProcessor implements IContentAssistProcessor {
 
-    private TexTemplateCompletion templatesCompletion = new TexTemplateCompletion();
+    private TexTemplateCompletion templatesCompletion = new TexTemplateCompletion(TexContextType.TEX_CONTEXT_TYPE);
 
     private TexDocumentModel model;
     private ReferenceManager refManager;
@@ -393,7 +394,7 @@ public class TexCompletionProcessor implements IContentAssistProcessor {
      * @return An array of completion proposals to use directly or null
      */
     private ICompletionProposal[] computeTemplateCompletions(int offset, int replacementLength, String prefix, ITextViewer viewer) {
-        ArrayList returnProposals = this.templatesCompletion.addTemplateProposals(viewer, offset, prefix);
+        ArrayList returnProposals = templatesCompletion.addTemplateProposals(viewer, offset, prefix);
         ICompletionProposal[] proposals = new ICompletionProposal[returnProposals.size()];
         
         // and fill with list elements

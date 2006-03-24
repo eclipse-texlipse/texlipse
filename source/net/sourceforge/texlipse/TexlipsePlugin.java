@@ -354,6 +354,7 @@ public class TexlipsePlugin extends AbstractUIPlugin {
             // create an configure the contexts available in the template editor
             texTypeRegistry = new ContributionContextTypeRegistry();
             texTypeRegistry.addContextType(TexContextType.TEX_CONTEXT_TYPE);
+            texTypeRegistry.addContextType(TexContextType.MATH_CONTEXT_TYPE);
         }
         return texTypeRegistry;
     }

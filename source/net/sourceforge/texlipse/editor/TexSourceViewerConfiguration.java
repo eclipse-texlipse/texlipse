@@ -265,24 +265,28 @@ public class TexSourceViewerConfiguration extends SourceViewerConfiguration {
             for (int i = 0; i < infoText.length(); i++) {
                 switch (infoText.charAt(i)) {
                 case '{':
-                    // Remember start of group
-                    gstart = i;
-                    if (cstart >= 0) {
+                    // if we get \foo\{ or \{, then a group doesn't start
+                    if (cstart >= 0 && infoText.charAt(i-1) != '\\') {
                         boldRange(cstart, i - cstart + 1, presentation, false);
                         cstart = -1;
+                        gstart = i;
+                    } else if (cstart < 0) {
+                        gstart = i;
                     }
                     break;
                 case '}':
-                    if (cstart >= 0) {
+                    // if we get \} then it doesn't mean that a group ends
+                    if (cstart >= 0 && infoText.charAt(i-1) != '\\') {
                         boldRange(cstart, i - cstart + 1, presentation, true);
                         cstart = -1;
                         if (gstart >= 0) {
                             italicizeRange(gstart, cstart - gstart, presentation);
+                            gstart = -1;
                         }
                     } else if (gstart >= 0) {
                         italicizeRange(gstart, i - gstart + 1, presentation);
+                        gstart = -1;
                     }
-                    gstart = -1;
                     break;
                 case '\\':
                     if (cstart < 0) {

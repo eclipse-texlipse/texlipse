@@ -32,6 +32,17 @@ import org.eclipse.swt.graphics.Image;
  */
 public class TexTemplateCompletion extends TemplateCompletionProcessor {
 
+    TemplateContextType context;
+    
+    /**
+     * 
+     */
+    public TexTemplateCompletion(String contextName) {
+        super();
+        this.context = TexlipsePlugin.getDefault().getTexContextTypeRegistry()
+        .getContextType(contextName);
+    }
+
     /**
      * Returns the templates valid for the context type specified by <code>contextTypeId</code>.
      * This implementation always returns the shared TexTemplateStore.
@@ -54,8 +65,11 @@ public class TexTemplateCompletion extends TemplateCompletionProcessor {
      */
     protected TemplateContextType getContextType(ITextViewer viewer,
             IRegion region) {
-        return TexlipsePlugin.getDefault().getTexContextTypeRegistry()
-                .getContextType(TexContextType.TEX_CONTEXT_TYPE);
+//        return TexlipsePlugin.getDefault().getTexContextTypeRegistry()
+//                .getContextType(TexContextType.TEX_CONTEXT_TYPE);
+//        return TexlipsePlugin.getDefault().getTexContextTypeRegistry()
+//               .getContextType(TexContextType.MATH_CONTEXT_TYPE);
+        return context;
     }
 
     /**
@@ -91,9 +105,7 @@ public class TexTemplateCompletion extends TemplateCompletionProcessor {
                 propList.add(templateProposals[j]);
             }
         }
-        
-        Collections.sort(propList,new CompletitionProposalComparator());
-        
+        Collections.sort(propList, new CompletionProposalComparator());
         return propList;
     }
 

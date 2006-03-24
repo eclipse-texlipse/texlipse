@@ -383,6 +383,33 @@ ${cursor}
 \end{figure}
 		</pattern>
 		</template>
+		
+      <contextType
+            class="net.sourceforge.texlipse.templates.TexContextType"
+            id="net.sourceforge.texlipse.templates.math"/>
+		<template
+        contextTypeId="net.sourceforge.texlipse.templates.math"
+        icon="icons/template.gif"
+        description="Big square bracket"
+        name="sqbr"
+        id="net.sourceforge.texlipse.templates.tex.sqbr">
+		<pattern>
+\left[ ${formula} \right] ${cursor}
+		</pattern>
+		</template>
+		<template
+        contextTypeId="net.sourceforge.texlipse.templates.math"
+        icon="icons/template.gif"
+        description="Big braces"
+        name="braces"
+        id="net.sourceforge.texlipse.templates.tex.braces">
+		<pattern>
+\left\{ ${formula} \right\} ${cursor}
+		</pattern>
+		</template>
+		
+		
+		
   <contextType
         class="net.sourceforge.texlipse.templates.BibTexContextType"
         id="net.sourceforge.texlipse.templates.bibtex"/>

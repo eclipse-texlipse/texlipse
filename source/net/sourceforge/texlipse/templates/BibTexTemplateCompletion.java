@@ -78,7 +78,7 @@ public class BibTexTemplateCompletion extends TemplateCompletionProcessor {
             propList.add(templateProposals[j]);
         }
         
-        Collections.sort(propList,new CompletitionProposalComparator());
+        Collections.sort(propList,new CompletionProposalComparator());
     }
 
     /**

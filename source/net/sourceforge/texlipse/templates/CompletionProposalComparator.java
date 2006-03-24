@@ -11,7 +11,7 @@ import org.eclipse.jface.text.contentassist.ICompletionProposal;
  *
  * Comparator for sorting completition proposals (ICompletitionProposal)
  */
-public class CompletitionProposalComparator implements Comparator {
+public class CompletionProposalComparator implements Comparator {
 
 	/**
 	 * Compares two CompletionProposals accrding to their display strings

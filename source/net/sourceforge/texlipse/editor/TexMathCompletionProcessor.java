@@ -49,6 +49,7 @@ public class TexMathCompletionProcessor implements IContentAssistProcessor {
             line = viewer.getDocument().get(viewer.getDocument().getLineOffset(currLine), 
                     offset - viewer.getDocument().getLineOffset(currLine));
         } catch (BadLocationException e) {
+            // FIXME
             e.printStackTrace();
             return null;
         }

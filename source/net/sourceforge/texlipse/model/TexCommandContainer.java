@@ -36,7 +36,7 @@ public class TexCommandContainer {
             new TexCommandEntry("bf", "{\\bf text}\n\nOutputs the text in bold font.", 0),
             //new TexCommandEntry("bffamily", "{\\bffamily text}\n\nOutputs the text in bold font.", 0),
             new TexCommandEntry("bibitem", "\\bibitem{cite key}{item}\n\n\\bibitem requires two arguments for parsing. LaTeX syntax allows writing this as if it were two arguments, even though it is only one. This command is used within a \\thebibliography environment.", 2),
-            new TexCommandEntry("bibliography", "\\bibliography{filenam}\n\nIncludes the bibliography at this point. The argument should be the name of the BibTeX file to use without the .bib -extension. Multiple files can be used by separating them with commas.", 1),
+            new TexCommandEntry("bibliography", "\\bibliography{filename}\n\nIncludes the bibliography at this point. The argument should be the name of the BibTeX file to use without the .bib -extension. Multiple files can be used by separating them with commas.", 1),
             new TexCommandEntry("bibliographystyle", "\\bibliographystyle{}\n\nDefines the style file to use for the bibliography generation with BibTeX", 1),
             new TexCommandEntry("bigskip", "\\bigskip\n\nEquivalent to \\vspace{\\bigskipamount} where \\bigskipamount is determined by the document style.", 0),
             new TexCommandEntry("caption", "\\caption{}\n\nUsed within a \\figure or \\table environment to specify a caption. May be followed by a \\label command.", 1),

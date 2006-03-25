@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import net.sourceforge.texlipse.TexlipsePlugin;
 import net.sourceforge.texlipse.model.ReferenceEntry;
 import net.sourceforge.texlipse.model.ReferenceManager;
 import net.sourceforge.texlipse.model.TexCommandEntry;
@@ -52,7 +53,6 @@ public class TexCompletionProcessor implements IContentAssistProcessor {
     private ReferenceManager refManager;
     private ISourceViewer fviewer;
     
-    //private static final String bracePair = "{}";
     public static final int assistLineLength = 60;
     
     /**
@@ -66,7 +66,6 @@ public class TexCompletionProcessor implements IContentAssistProcessor {
      *  
      * @param tdm The document model for this editor
      */
-    //public TexCompletionProcessor(TexDocumentModel tdm) {
     public TexCompletionProcessor(TexDocumentModel tdm, ISourceViewer viewer) {
         this.model = tdm;
         this.fviewer = viewer;
@@ -76,100 +75,65 @@ public class TexCompletionProcessor implements IContentAssistProcessor {
      * @see org.eclipse.jface.text.contentassist.IContentAssistProcessor#computeCompletionProposals(org.eclipse.jface.text.ITextViewer, int)
      */
     public ICompletionProposal[] computeCompletionProposals(ITextViewer viewer, int offset) {
-    	ICompletionProposal[] proposals = null;
-    	ICompletionProposal[] templateProposals = null;
-
         if (refManager == null)
             this.refManager = this.model.getRefMana();
         
-        String completeDoc = viewer.getDocument().get();
-
-	IDocument doc = viewer.getDocument();
-	Point selectedRange = viewer.getSelectedRange();
-	if (selectedRange.y > 0) {
-	    try {
-	        // Retrieve selected text
-	        String text = doc.get(selectedRange.x, selectedRange.y);
-
-                // Compute completion proposals
+        IDocument doc = viewer.getDocument();
+        
+        // try to see if a text area is selected
+        Point selectedRange = viewer.getSelectedRange();
+        if (selectedRange.y > 0) {
+            try {
+                String text = doc.get(selectedRange.x, selectedRange.y);
                 return computeStyleProposals(text, selectedRange);
-           } catch (BadLocationException e) {
-           }
-	}
-
-
-        if (offset >= 2) {
-        	// don't offer completions if the last thing typed was \\
-            if (completeDoc.substring(offset-2, offset).endsWith("\\\\"))
-                return null;
+            } catch (BadLocationException e) {
+            }
         }
 
-        int seqStartIdx = resolveCompletionStart(completeDoc, offset - 1);
-        String seqStart;
-        if (seqStartIdx == -1 && offset != 0)
-            return null;
-        else if (offset == 0)
-        	seqStart = " ";
-        else
-        	seqStart = completeDoc.substring(seqStartIdx, offset);
-
-        // Now resolve if we want to complete commands, references or templates
-        if (seqStart.startsWith("\\")) {
-            String replacement = seqStart.substring(1);
-            proposals = computeCommandCompletions(offset, replacement.length(), replacement);
-        } else if (seqStart.startsWith("{")) {
-            String refCommand = resolveRefCommand(completeDoc, seqStartIdx);
-            if (refCommand == null)
-                return null;
-
-            String replacement = "";
-            if (seqStart.length() > 1 && !seqStart.endsWith(",")) {
-                String[] completions = seqStart.substring(1).split(",");
-                replacement = completions[completions.length - 1];
-            }
+        // if not, proceed to templates and "regular" completions
+        try {        
+            int lineStartOffset = doc.getLineOffset(doc.getLineOfOffset(offset));
+            String lineStart = doc.get(lineStartOffset, offset - lineStartOffset);
+           
+            ICompletionProposal[] proposals = null;
+            ICompletionProposal[] templateProposals = computeTemplateCompletions(offset, lineStart, viewer);
             
-            if (refCommand.indexOf("cite") > -1) {
-                proposals = computeBibCompletions(offset, replacement.length(), replacement);
-            //} else if (refCommand.startsWith("ref") || refCommand.startsWith("pageref")) {
-            } else if (refCommand.startsWith("ref") || refCommand.startsWith("pageref") || 
-                    refCommand.startsWith("vref")) {
-                proposals = computeRefCompletions(offset, replacement.length(), replacement);
-            }
-        } 
+            if (!(lineStart.length() >= 2 && lineStart.endsWith("\\\\"))
+                    && (lineStart.length() > 0)) {
                 
-        if (Character.isWhitespace(seqStart.charAt(0))) {
-            //---------------------spell-checking-code-starts----------------------
-            // spell checking can't help with words not starting with a letter...
-            ICompletionProposal[] prop = SpellChecker.getSpellingProposal(offset);
-            if (prop != null && prop.length > 0) {
-                return prop;
+                int seqStartIdx = resolveCompletionStart(lineStart, lineStart.length() - 1);
+                String seqStart = lineStart.substring(seqStartIdx);
+                
+                if (seqStart.startsWith("\\")) {
+                    String replacement = seqStart.substring(1);
+                    proposals = computeCommandCompletions(offset, replacement.length(), replacement);
+                } else if (seqStart.startsWith("{")) {
+                    proposals = resolveReferenceCompletions(lineStart, offset, seqStart);
+                } else if (seqStart.length() > 0) {
+                    //---------------------spell-checking-code-starts----------------------
+                    // spell checking can't help with words not starting with a letter...
+                    proposals = SpellChecker.getSpellingProposal(offset);
+                    if (proposals != null && proposals.length > 0) {
+                        return proposals;
+                    }
+                }
             }
-            //---------------------spell-checking-code-ends------------------------
             
-            String replacement = seqStart.substring(1);
-            templateProposals = computeTemplateCompletions(offset, replacement.length(), replacement, viewer);
-        } else {
-            templateProposals = computeTemplateCompletions(offset, seqStart.length(), seqStart, viewer);
-        }
-
-        // Concatenate the lists if necessary
-        if ((proposals != null) && (templateProposals != null)) {
-            ICompletionProposal[] value = new ICompletionProposal[proposals.length
-                    + templateProposals.length];
-            
-            System.arraycopy(proposals, 0, value, 0, proposals.length);
-            System.arraycopy(templateProposals, 0, value, proposals.length, templateProposals.length);
-            return value;
-        } else {
+            // Concatenate the lists if necessary
             if (proposals != null) {
-                return proposals;
-            } else  if (templateProposals.length != 0) {
-                return templateProposals;
+                ICompletionProposal[] value = new ICompletionProposal[proposals.length + templateProposals.length];
+                System.arraycopy(proposals, 0, value, 0, proposals.length);
+                System.arraycopy(templateProposals, 0, value, proposals.length, templateProposals.length);
+                return value;
             } else {
-                // TODO consider this
-                model.setStatusLineErrorMessage(" No completions available.");
-                return new ICompletionProposal[0];
+                if (templateProposals.length == 0) {
+                    model.setStatusLineErrorMessage(" No completions available.");
+                }
+                return templateProposals;
             }
+        } catch (BadLocationException e) {
+            TexlipsePlugin.log("TexCompletionProcessor: ", e);
+            return new ICompletionProposal[0];
         }
     }
 
@@ -181,14 +145,6 @@ public class TexCompletionProcessor implements IContentAssistProcessor {
      */
     public IContextInformation[] computeContextInformation(ITextViewer viewer,
             int offset) {
-        /*
-        IContextInformation[] result= new IContextInformation[5];
-        for (int i= 0; i < result.length; i++)
-            result[i]= new ContextInformation(
-                    "CompletionProcessor.ContextInfo.display.pattern",
-            "CompletionProcessor.ContextInfo.value.pattern");
-        return result;
-        */
 
 	    // FIXME -- for testing
         // Retrieve selected range
@@ -204,15 +160,12 @@ public class TexCompletionProcessor implements IContentAssistProcessor {
             return contextInfos;
         }
         return new ContextInformation[0];
-        
-        //return null;
     }
 
     /* (non-Javadoc)
      * @see org.eclipse.jface.text.contentassist.IContentAssistProcessor#getCompletionProposalAutoActivationCharacters()
      */
     public char[] getCompletionProposalAutoActivationCharacters() {
-        //return new char[] {'{', ',', '\\'};
         return new char[] {'{', '\\'};
     }
 
@@ -236,7 +189,6 @@ public class TexCompletionProcessor implements IContentAssistProcessor {
      */
     public IContextInformationValidator getContextInformationValidator() {
         return new ContextInformationValidator(this);
-	    //return null;
     }
 
     /**
@@ -248,7 +200,7 @@ public class TexCompletionProcessor implements IContentAssistProcessor {
      * @return The offset where the activation char is found or -1 if it was not found
      */
     private int resolveCompletionStart(String doc, int offset) {
-        while (offset >= 0) {
+        while (offset > 0) {
             if (Character.isWhitespace(doc.charAt(offset))
                     || doc.charAt(offset) == '{' || doc.charAt(offset) == '\\')
                 break;
@@ -257,34 +209,39 @@ public class TexCompletionProcessor implements IContentAssistProcessor {
         return offset;
     }
 
-//    private int resolveCompletionEnd(String doc, int offset) {
-//        while (offset < doc.length()) {
-//            if (!Character.isLetter(doc.charAt(offset)))
-//                break;
-//            offset++;
-//        }
-//        return offset;
-//    }
-
-    
     /**
-     * Resolves the command used for referencing (ie. from '\foo{bar' it resolves bar)
+     * Resolves the command used for referencing (i.e. from '\foo{bar'
+     * it resolves bar), figures out what kind of reference we want,
+     * fetches the list of matching completions and returns it.
      * 
-     * @param doc The document
-     * @param offset The offset from where to search backwards
-     * @return The string containing the LaTeX command for this reference or
-     * null if there isn't any
+     * @param line The line containing the referencing command
+     * @param offset The offset of the cursor position in the document
+     * @param lineEnd The last part of the line, containing the partial match
+     * @return The completion proposals
      */
-    private String resolveRefCommand(String doc, int offset) {
-        int lastIndex = doc.lastIndexOf('\\', offset);
-        if (lastIndex == -1)
+    private ICompletionProposal[] resolveReferenceCompletions(String line, int offset, String lineEnd) {
+        int lastIndex = line.lastIndexOf('\\');
+        if (lastIndex == -1) {
             return null;
-        String command = doc.substring(lastIndex + 1, offset);
-        Matcher m = comCapt.matcher(command);
-        if (m.matches()) {
-            return m.group(1);
         }
-        return null;
+        String fullCommand = line.substring(lastIndex + 1, line.length() - lineEnd.length());
+        Matcher m = comCapt.matcher(fullCommand);
+        if (!m.matches()) {
+            return null; 
+        }
+        String command = m.group(1);
+        
+        String replacement = lineEnd.lastIndexOf(',') != -1
+                ? lineEnd.substring(lineEnd.lastIndexOf(',') + 1)
+                : lineEnd.substring(1);
+        
+        ICompletionProposal[] proposals = null;
+        if (command.indexOf("cite") > -1) {
+            proposals = computeBibCompletions(offset, replacement.length(), replacement);
+        } else if (command.indexOf("ref") > -1) {
+            proposals = computeRefCompletions(offset, replacement.length(), replacement);
+        }
+        return proposals;
     }
     
     /**
@@ -346,36 +303,13 @@ public class TexCompletionProcessor implements IContentAssistProcessor {
      * @return An array of completion proposals to use directly or null
      */
     private ICompletionProposal[] computeCommandCompletions(int offset, int replacementLength, String prefix) {
-        //CommandEntry[] comEntries = refManager.getCompletionsCom(prefix);
         TexCommandEntry[] comEntries = refManager.getCompletionsCom(prefix, TexCommandEntry.NORMAL_CONTEXT);
         if (comEntries == null)
             return null;
 
         ICompletionProposal[] result = new ICompletionProposal[comEntries.length];
 
-//        String braces;
         for (int i=0; i < comEntries.length; i++) {
-//        	String infoText = comEntries[i].info.length() > assistLineLength ?
-//        			wrapString(comEntries[i].info, assistLineLength)
-//					: comEntries[i].info;
-//
-//            if (comEntries[i].arguments == 0) {
-//                result[i] = new CompletionProposal(comEntries[i].key,
-//                        offset - replacementLength, replacementLength,
-//                        comEntries[i].key.length(), null, comEntries[i].key, null,
-//                        infoText);
-//            } else {
-//                braces = bracePair;
-//                if (comEntries[i].arguments > 1) {
-//                    // this is slightly inefficient, but it's not a big deal here
-//                    for (int j=1; j < comEntries[i].arguments; j++)
-//                        braces += bracePair;
-//                }
-//                result[i] = new CompletionProposal(comEntries[i].key + braces,
-//                        offset - replacementLength, replacementLength,
-//                        comEntries[i].key.length() + 1, null, comEntries[i].key, null,
-//                        infoText);
-//            }
             result[i] = new TexCompletionProposal(comEntries[i],
                     offset - replacementLength, 
                     replacementLength,
@@ -388,22 +322,29 @@ public class TexCompletionProcessor implements IContentAssistProcessor {
      * Calculates and returns the template completions proposals.
      * 
      * @param offset Current cursor offset
-     * @param replacementLength The length of the string to be replaced
-     * @param prefix The already typed prefix of the entry to assist with
+     * @param lineStart The already typed prefix of the entry to assist with
      * @param viewer The text viewer of this document
-     * @return An array of completion proposals to use directly or null
+     * @return An array of completion proposals to use directly
      */
-    private ICompletionProposal[] computeTemplateCompletions(int offset, int replacementLength, String prefix, ITextViewer viewer) {
-        ArrayList returnProposals = templatesCompletion.addTemplateProposals(viewer, offset, prefix);
+    private ICompletionProposal[] computeTemplateCompletions(int offset, String lineStart, ITextViewer viewer) {
+        String replacement = lineStart.indexOf(' ') == -1 ? lineStart : lineStart.substring(lineStart.lastIndexOf(' ') + 1);
+        
+        ArrayList returnProposals = templatesCompletion.addTemplateProposals(viewer, offset, replacement);
         ICompletionProposal[] proposals = new ICompletionProposal[returnProposals.size()];
         
-        // and fill with list elements
         returnProposals.toArray(proposals);
-        
         return proposals;        
     }
     
-    
+    /**
+     * Wraps the given string to the given column width.
+     * 
+     * TODO this method will probably be mvoed to another class
+     * 
+     * @param input The string to wrap
+     * @param width The wrapping width
+     * @return The wrapped string
+     */
     public static String wrapString(String input, int width) {
         StringBuffer sbout = new StringBuffer();
 

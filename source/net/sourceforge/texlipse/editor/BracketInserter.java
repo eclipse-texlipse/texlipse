@@ -201,8 +201,6 @@ public class BracketInserter implements VerifyKeyListener, ILinkedModeListener {
     private final TextEditor editor;
     private static HashMap quotes;
     
-    private int lastSlashPosition = -1;
-    
     public BracketInserter(ISourceViewer viewer, TextEditor editor) {
         this.sourceViewer = viewer;
         this.editor = editor;
@@ -285,8 +283,12 @@ public class BracketInserter implements VerifyKeyListener, ILinkedModeListener {
         try {
             char next = ' ';
             char last = ' ';
-            next = document.getChar(offset);
-            last = document.getChar(offset-1);
+            try {
+                next = document.getChar(offset);
+                last = document.getChar(offset-1);
+            } catch (BadLocationException e) {
+                // Could happen if this is the beginning or end of a document
+            }
             if (last == '\\')
                 return;
             if (character == '"') {

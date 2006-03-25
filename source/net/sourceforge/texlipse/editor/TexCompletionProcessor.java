@@ -18,6 +18,7 @@ import net.sourceforge.texlipse.model.ReferenceEntry;
 import net.sourceforge.texlipse.model.ReferenceManager;
 import net.sourceforge.texlipse.model.TexCommandEntry;
 import net.sourceforge.texlipse.model.TexDocumentModel;
+import net.sourceforge.texlipse.model.TexStyleCompletionManager;
 import net.sourceforge.texlipse.spelling.SpellChecker;
 import net.sourceforge.texlipse.templates.TexContextType;
 import net.sourceforge.texlipse.templates.TexTemplateCompletion;
@@ -52,6 +53,7 @@ public class TexCompletionProcessor implements IContentAssistProcessor {
     private TexDocumentModel model;
     private ReferenceManager refManager;
     private ISourceViewer fviewer;
+    private TexStyleCompletionManager styleManager;
     
     public static final int assistLineLength = 60;
     
@@ -389,7 +391,11 @@ public class TexCompletionProcessor implements IContentAssistProcessor {
     };
 
     private ICompletionProposal[] computeStyleProposals(String selectedText, Point selectedRange) {
-        
+        if (styleManager == null) {
+            styleManager = TexStyleCompletionManager.getInstance();
+        }
+        return styleManager.getStyleCompletions(selectedText, selectedRange);
+        /*
         ICompletionProposal[] result = new ICompletionProposal[STYLETAGS.length];
         
         // Loop through all styles
@@ -413,6 +419,7 @@ public class TexCompletionProcessor implements IContentAssistProcessor {
                     contextInfo, replacement);
         }
         return result;
+        */
     }
 
 }

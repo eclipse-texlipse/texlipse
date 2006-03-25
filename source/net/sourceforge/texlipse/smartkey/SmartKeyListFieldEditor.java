@@ -66,31 +66,31 @@ import org.eclipse.swt.widgets.Text;
  * @author Ehsan Baghi
  */
 public class SmartKeyListFieldEditor extends FieldEditor implements IInputValidator {
-
+    
     // separator character for strings
     public static final String SEPARATOR = ",";
-
+    
     private static final String SK_TABLE_KEY = "key";
     private static final String SK_TABLE_VALUE = "value";
     
     // component holding smart key variables table and label
     private Composite table;
-
+    
     // smart key variable table component
     private TableViewer smartKeyTable;
-
+    
     // for adding new variables
     private Button skAddButton;
-
+    
     // for removing variables
     private Button skRemoveButton;
-
+    
     // for editing existing variables
     private Button skEditButton;
-
+    
     // the smartKeys variables
     private Map smartKeys;
-
+    
     /**
      * Smart key variable for the smart key table.
      */
@@ -111,7 +111,7 @@ public class SmartKeyListFieldEditor extends FieldEditor implements IInputValida
             this.name = name;
             this.value = value;
         }
-
+        
         /**
          * Returns this variable's name, which serves as the key in the key/value
          * pair this variable represents
@@ -228,12 +228,12 @@ public class SmartKeyListFieldEditor extends FieldEditor implements IInputValida
             if (element != null) {
                 SmartKeyVariable var = (SmartKeyVariable) element;
                 switch (columnIndex) {
-                    case 0: // variable
-                        result = var.getName();
-                        break;
-                    case 1: // value
-                        result = var.getValue();
-                        break;
+                case 0: // variable
+                    result = var.getName();
+                    break;
+                case 1: // value
+                    result = var.getValue();
+                    break;
                 }
             }
             return result;
@@ -247,13 +247,13 @@ public class SmartKeyListFieldEditor extends FieldEditor implements IInputValida
      * Dialog to input variable name and value.
      */
     class KeyValueInputDialog extends MessageDialog {
-
+        
         private IInputValidator validator;
         private Text keyTextField;
         protected String key;
         private Text valueTextField;
         protected String value;
-
+        
         /**
          * Default constructor from super class. Do not use.
          * 
@@ -273,7 +273,7 @@ public class SmartKeyListFieldEditor extends FieldEditor implements IInputValida
             
             
         }
-
+        
         /**
          * Constructor with default values for many fields.
          * This is the preferred constructor.
@@ -288,35 +288,35 @@ public class SmartKeyListFieldEditor extends FieldEditor implements IInputValida
             validator = vali;
             
         }
-
+        
         /**
          * @return key
          */
         public String getKey() {
             return key;
         }
-
+        
         /**
          * @param name key
          */
         public void setKey(String name) {
             key = name;
         }
-
+        
         /**
          * @return value
          */
         public String getValue() {
             return value;
         }
-
+        
         /**
          * @param val value
          */
         public void setValue(String val) {
             value = val;
         }
-
+        
         /**
          * Creates and returns the contents of an area of the dialog which appears
          * below the message and above the button bar.
@@ -377,11 +377,11 @@ public class SmartKeyListFieldEditor extends FieldEditor implements IInputValida
      * Dialog to input variables from the current smartKeys.
      */
     class SmartKeyVariableInputDialog extends MessageDialog {
-
+        
         private List skVarList;
         protected int[] selections;
         protected String[] items;
-
+        
         /**
          * Default constructor from super class. Do not use.
          * 
@@ -400,7 +400,7 @@ public class SmartKeyListFieldEditor extends FieldEditor implements IInputValida
             items = new String[0];
             setShellStyle(getShellStyle() | SWT.RESIZE);
         }
-
+        
         /**
          * Constructor with default values for many fields.
          * This is the preferred way to construct this class.
@@ -414,7 +414,7 @@ public class SmartKeyListFieldEditor extends FieldEditor implements IInputValida
             this(shell, title, null, message, QUESTION, new String[] { IDialogConstants.OK_LABEL, IDialogConstants.CANCEL_LABEL }, 0);
             this.items = items;
         }
-
+        
         /**
          * Prevents the dialog from appearing too wide and narrow.
          */
@@ -456,7 +456,7 @@ public class SmartKeyListFieldEditor extends FieldEditor implements IInputValida
          * @return the custom area control, or <code>null</code>
          */
         protected Control createCustomArea(Composite parent) {
-
+            
             Composite composite = new Composite(parent, SWT.NULL);
             composite.setLayoutData(new GridData(GridData.FILL_BOTH));
             composite.setLayout(new GridLayout());
@@ -484,20 +484,20 @@ public class SmartKeyListFieldEditor extends FieldEditor implements IInputValida
         super(name, labelText, parent);
         smartKeys = new HashMap();
     }
-
+    
     /**
      * Validates the input of the dialog.
      * @param newText the contents of the dialog's text field
      * @return error message, or null if text is valid
      */
-
+    
     /**
      * @return 2
      */
     public int getNumberOfControls() {
         return 2;
     }
-
+    
     /**
      * 
      * @param numColumns number of columns in the page layout
@@ -505,7 +505,7 @@ public class SmartKeyListFieldEditor extends FieldEditor implements IInputValida
     protected void adjustForNumColumns(int numColumns) {
         ((GridData)table.getLayoutData()).horizontalSpan = numColumns - 1;
     }
-
+    
     /**
      * 
      * @param parent parent component
@@ -621,7 +621,7 @@ public class SmartKeyListFieldEditor extends FieldEditor implements IInputValida
         
         return buttonComposite;
     }
-
+    
     /**
      * Handle add-button presses.
      */
@@ -676,7 +676,7 @@ public class SmartKeyListFieldEditor extends FieldEditor implements IInputValida
             new KeyValueInputDialog(getLabelControl().getShell(),
                     TexlipsePlugin.getResourceString("preferenceKeyValueEditDialogTitle"),
                     TexlipsePlugin.getResourceString("preferenceKeyValueEditDialogLabel"), this);
-
+        
         dialog.setKey(var.getName());
         dialog.setValue(var.getValue());
         
@@ -706,14 +706,14 @@ public class SmartKeyListFieldEditor extends FieldEditor implements IInputValida
         skEditButton.setEnabled(size == 1);
         skRemoveButton.setEnabled(size > 0);
     }
-
+    
     /**
      * Loads the smartKeys variables from preference store.
      */
     protected void doLoad() {
         doLoadFrom(getPreferenceStore().getString(getPreferenceName()));
     }
-
+    
     /**
      * Loads the smartKeys variables from the given string.
      * @param str
@@ -738,19 +738,19 @@ public class SmartKeyListFieldEditor extends FieldEditor implements IInputValida
             }
             
             smartKeys.put(binds[i].substring(0, index),
-                            binds[i].substring(index+1));
+                    binds[i].substring(index+1));
         }
         
         smartKeyTable.setInput(smartKeys);
     }
-
+    
     /**
      * Loads the default smartKeys variables from preference store.
      */
     protected void doLoadDefault() {
         doLoadFrom(getPreferenceStore().getDefaultString(getPreferenceName()));
     }
-
+    
     /**
      * Stores the smartKeys variables to single string.
      */
@@ -759,7 +759,7 @@ public class SmartKeyListFieldEditor extends FieldEditor implements IInputValida
         
         String[] keys = (String[]) smartKeys.keySet().toArray(new String[0]);
         for (int i = 0; i < keys.length; i++) {
-
+            
             sb.append(keys[i]);
             sb.append('=');
             sb.append(smartKeys.get(keys[i]));
@@ -770,8 +770,8 @@ public class SmartKeyListFieldEditor extends FieldEditor implements IInputValida
         
         getPreferenceStore().setValue(getPreferenceName(), sb.toString());
     }
-
-	public String isValid(String newText) {
-		return null;
-	}
+    
+    public String isValid(String newText) {
+        return null;
+    }
 }

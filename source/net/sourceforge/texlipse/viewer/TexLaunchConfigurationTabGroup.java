@@ -23,7 +23,7 @@ public class TexLaunchConfigurationTabGroup extends AbstractLaunchConfigurationT
     /**
      * Creates the tabs contained in this tab group for the specified
      * launch mode. The tabs control's are not created. This is the
-     * fist method called in the lifecycle of a tab group.
+     * first method called in the lifecycle of a tab group.
      * 
      * @param dialog the launch configuration dialog this tab group
      *  is contained in

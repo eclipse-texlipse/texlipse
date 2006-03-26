@@ -12,7 +12,6 @@ package net.sourceforge.texlipse.properties;
 import net.sourceforge.texlipse.TexlipsePlugin;
 import net.sourceforge.texlipse.viewer.util.FileLocationServer;
 
-import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.IntegerFieldEditor;
 import org.eclipse.ui.IWorkbench;
@@ -51,9 +50,11 @@ public class ViewerSettingsPreferencePage extends FieldEditorPreferencePage
         addField(vfe);
         WorkbenchHelp.setHelp(vfe.getListControl(getFieldEditorParent()), TexlipseHelpIds.VIEWER_LIST);
 
-        TexlipsePreferencePage.addSpacer(2, getFieldEditorParent());
-        TexlipsePreferencePage.addSeparator(2, getFieldEditorParent());
-        addField(new BooleanFieldEditor(TexlipseProperties.BUILD_BEFORE_VIEW, TexlipsePlugin.getResourceString("preferenceViewerBuildLabel"), getFieldEditorParent()));
+        // Depricated. Eclipse has it's own mechanism for auto rebuild.
+        //TexlipsePreferencePage.addSpacer(2, getFieldEditorParent());
+        //TexlipsePreferencePage.addSeparator(2, getFieldEditorParent());
+        //addField(new BooleanFieldEditor(TexlipseProperties.BUILD_BEFORE_VIEW, TexlipsePlugin.getResourceString("preferenceViewerBuildLabel"), getFieldEditorParent()));
+        
         TexlipsePreferencePage.addSpacer(2, getFieldEditorParent());
         
         TexlipsePreferencePage.addLabelField(2, TexlipsePlugin.getResourceString("preferenceViewerPortLabel"), getFieldEditorParent());

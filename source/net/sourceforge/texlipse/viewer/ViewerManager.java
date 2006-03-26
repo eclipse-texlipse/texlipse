@@ -16,11 +16,13 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.Properties;
 
+import net.sourceforge.texlipse.DDEClient;
 import net.sourceforge.texlipse.PathUtils;
 import net.sourceforge.texlipse.SelectedResourceManager;
 import net.sourceforge.texlipse.TexlipsePlugin;
 import net.sourceforge.texlipse.builder.BuilderRegistry;
 import net.sourceforge.texlipse.builder.TexlipseBuilder;
+import net.sourceforge.texlipse.builder.TexlipseNature;
 import net.sourceforge.texlipse.properties.TexlipseProperties;
 import net.sourceforge.texlipse.viewer.util.FileLocationListener;
 import net.sourceforge.texlipse.viewer.util.FileLocationServer;
@@ -31,7 +33,13 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.OperationCanceledException;
+import org.eclipse.core.runtime.Platform;
+import org.eclipse.debug.core.DebugPlugin;
+import org.eclipse.debug.core.ILaunch;
+import org.eclipse.debug.core.ILaunchConfiguration;
+import org.eclipse.debug.core.ILaunchManager;
 import org.eclipse.jface.preference.IPreferenceStore;
 
 
@@ -57,6 +65,7 @@ class FileLocationOpener implements FileLocationListener {
  * 
  * @author Anton Klimovsky
  * @author Kimmo Karlsson
+ * @author Tor Arne Vestbø
  */
 public class ViewerManager {
 
@@ -80,19 +89,10 @@ public class ViewerManager {
 
     // the current project
     private IProject project;
-
-    // project output file to display 
-    private IResource outputRes;
-
     
-    /**
-     * Run the viewer configured in the preferences.
-     * @throws CoreException if launching the viewer fails
-     */
-    public static void preview() throws CoreException {
-        preview(new ViewerAttributeRegistry(), null);
-    }
-    
+    // progress monitor for current view operation
+    private IProgressMonitor monitor;
+       
     /**
      * Run the viewer configured in the given viewer attributes.
      * First check if there is a viewer already running,
@@ -100,31 +100,87 @@ public class ViewerManager {
      * 
      * @param reg the viewer attributes
      * @param addEnv additional environment variables, or null
+     * @param monitor monitor for process
      * @return the viewer process
      * @throws CoreException if launching the viewer fails
      */
-    public static Process preview(ViewerAttributeRegistry reg, Map addEnv) throws CoreException {
-        
-        ViewerManager mgr = new ViewerManager(reg, addEnv);
+    public static Process preview(ViewerAttributeRegistry reg, Map addEnv, IProgressMonitor monitor) throws CoreException {
+           	
+    	ViewerManager mgr = new ViewerManager(reg, addEnv, monitor);
         if (!mgr.initialize()) {
             return null;
         }
         
         Process process = mgr.getExisting();
-        if (process != null) {
-            return process;
+        if (process != null) {        	
+        	// Can send DDE right away
+        	mgr.sendDDEViewCommand();
+			
+        	return process;
+        }
+                
+        // Process must be started first
+    	process = mgr.execute();
+    	
+        // Send DDE if on Win32
+    	if (Platform.getOS().equals(Platform.OS_WIN32)) {
+        	// Since the process can take a while to start we must wait 
+        	// to "make sure" the DDE command gets there. 
+        	// This is probably a HACK: should be fixed/changed.
+       	   		
+        	try {
+        		Thread.sleep(1000); // 1000 enough? Who knows!?
+        		// The timeout should probably be a config setting?
+			} catch (InterruptedException e) {
+			}
+			
+        	mgr.sendDDEViewCommand();
         }
         
-        return mgr.execute();
+        return process;
     }
+    
+    public static void closeOutputDocument() throws CoreException {
+		
+        ViewerAttributeRegistry registry = new ViewerAttributeRegistry();
+		
+    	// Check to see if we have a running launch configuration which should
+        // override the DDE close command
+	 	ILaunchManager manager = DebugPlugin.getDefault().getLaunchManager();
+	    ILaunch[] launches = manager.getLaunches();
+	    
+	    for (int i = 0; i < launches.length; i++) {
+	    	ILaunch l = launches[i];
+	    	ILaunchConfiguration configuration = l.getLaunchConfiguration();
+	    	if (configuration.getType().getIdentifier().equals(
+	    			TexLaunchConfigurationDelegate.CONFIGURATION_ID)) {
+	    		Map regMap = configuration.getAttributes();
+		        registry.setValues(regMap);
+		        break;
+	    	}
+		}
+	    
+    	ViewerManager mgr = new ViewerManager(registry, null, null);    	
+		
+		 if (!mgr.initialize()) {
+	         return;
+	     }
+		
+		// Can only close documents opened by DDE commands themselves
+		Process process = mgr.getExisting();        
+		if (process != null) {       
+			mgr.sendDDECloseCommand();
+		}
+	}
 
-    /**
+	/**
      * Construct a new viewer launcher.
      * @param reg viewer attributes
      * @param addEnv environment variables to add to the current environment
      */
-    protected ViewerManager(ViewerAttributeRegistry reg, Map addEnv) {
-        this.registry = reg;
+    protected ViewerManager(ViewerAttributeRegistry reg, Map addEnv, IProgressMonitor monitor) {
+        this.monitor = monitor;
+    	this.registry = reg;
         this.envSettings = addEnv;
     }
     
@@ -139,7 +195,46 @@ public class ViewerManager {
             BuilderRegistry.printToConsole(TexlipsePlugin.getResourceString("viewerNoCurrentProject"));
             return false;
         }
+        
+        try { // Make sure it's a LaTeX project
+			if (project.getNature(TexlipseNature.NATURE_ID) == null)
+			{
+				return false;
+			}
+		} catch (CoreException e) {			
+		}
+        
         return true;
+    }
+    
+    /**
+     * Rebuilds the project if there has been any changes since the last build
+     * 
+     * @deprecated Eclipse has it's own rebuild-if-changed mechanism which works
+     * much better. See Preferences->Run->Launching. Besides, the check to see
+     * if a resource had changed is broken, so this method does always build, and
+     * the build is done in the GUI thread, so output is not flushed in realtime.
+     * 				 
+     */
+    protected boolean rebuildIfNeeded() {
+
+    	// rebuild, if needed
+        IPreferenceStore prefs = TexlipsePlugin.getDefault().getPreferenceStore();
+        if (prefs.getBoolean(TexlipseProperties.BUILD_BEFORE_VIEW)) {
+            if (TexlipseBuilder.needsRebuild()) {
+            	try {
+            		project.build(TexlipseBuilder.FULL_BUILD, monitor);
+                } catch (OperationCanceledException e) {
+                    // build failed, so no output file
+                    return false;
+				} catch (CoreException e) {
+					// build failed, so no output file
+                    return false;
+				}
+            }
+        }
+    	
+        return true; // output file is up to date, continue with viewing
     }
     
     /**
@@ -148,22 +243,20 @@ public class ViewerManager {
      * @return the running viewer process, or null if viewer has already terminated
      */
     protected Process getExisting() {
-        
         Object o = TexlipseProperties.getSessionProperty(project,
                 TexlipseProperties.SESSION_ATTRIBUTE_VIEWER);
         
         if (o != null) {
-            
             if (o instanceof Process) {
-                Process p = (Process) o;
-                
+                Process p = (Process) o;     
+
                 int code = -1;
                 try {
                     code = p.exitValue();
                 } catch (IllegalThreadStateException e) {
                 }
-
-                // there is a viewer running and forward search is not supported
+                
+                // there is a viewer running and forward search is not supported    
                 if (code == -1 && !registry.getForward()) {
                     // ... so don't launch another viewer window
                     return p;
@@ -193,58 +286,25 @@ public class ViewerManager {
             TexlipseProperties.loadProjectProperties(project);
         }
         
-        // rebuild, if needed
-        IPreferenceStore prefs = TexlipsePlugin.getDefault().getPreferenceStore();
-        if (prefs.getBoolean(TexlipseProperties.BUILD_BEFORE_VIEW)) {
-
-            if (TexlipseBuilder.needsRebuild()) {
-                try {
-                    project.build(TexlipseBuilder.FULL_BUILD, new NullProgressMonitor());
-                } catch (CoreException e) {
-                    // build failed, so no output file
-                    return null;
-                }
-            }
-        }
+        IResource outputRes = getOuputResource();
         
-        String outFileName = TexlipseProperties.getProjectProperty(project,
-                TexlipseProperties.OUTPUTFILE_PROPERTY);
-        if (outFileName == null || outFileName.length() == 0) {
-            throw new CoreException(TexlipsePlugin.stat("Empty output file name."));
-        }
-        
-        // find out the directory where the file should be
-        IContainer outputDir = null;
-        String fmtProp = TexlipseProperties.getProjectProperty(project,
-                TexlipseProperties.OUTPUT_FORMAT);
-        if (registry.getFormat().equals(fmtProp)) {
-            outputDir = TexlipseProperties.getProjectOutputDir(project);
-        } else {
-            String base = outFileName.substring(0, outFileName.lastIndexOf('.') + 1);
-            outFileName = base + registry.getFormat();
-            outputDir = TexlipseProperties.getProjectTempDir(project);
-        }
-        if (outputDir == null) {
-            outputDir = project;
-        }
-        
-        outputRes = outputDir.findMember(outFileName);
         if (outputRes == null || !outputRes.exists()) {
             String msg = TexlipsePlugin.getResourceString("viewerNothingWithExtension");
             BuilderRegistry.printToConsole(msg.replaceAll("%s", registry.getFormat()));
             return null;
         }
 
-        // resolve the directory to run the viewer in
+        // resolve the directory to run the viewer in  
         IContainer sourceDir = TexlipseProperties.getProjectSourceDir(project);
         if (sourceDir == null) {
             sourceDir = project;
         }
         File dir = sourceDir.getLocation().toFile();
         
-        // resolve relative path to the output file
+        /*// resolve relative path to the output file
         outFileName = resolveRelativePath(sourceDir.getFullPath(),
-                outputDir.getFullPath()) + outFileName;
+                outputDir.getFullPath()) + outFileName;*/
+        String outFileName = outputRes.getName();
         
         try {
             return execute(dir, outFileName);
@@ -253,6 +313,35 @@ public class ViewerManager {
         }
     }
 
+    protected void sendDDEViewCommand() throws CoreException {
+
+    	if (Platform.getOS().equals(Platform.OS_WIN32)) {
+        	String command =  translatePatterns(registry.getDDEViewCommand());
+        	String server = registry.getDDEViewServer();
+        	String topic = registry.getDDEViewTopic();
+
+        	int error = DDEClient.execute(server, topic, command);
+            if (error != 0) {
+            	BuilderRegistry.printToConsole("DDE command " + command + " failed! (server: " + server + ", topic: " + topic + ")");
+            }
+    	}
+    }
+    
+    protected void sendDDECloseCommand() throws CoreException {
+
+    	if (Platform.getOS().equals(Platform.OS_WIN32)) {
+	    	String command =  translatePatterns(registry.getDDECloseCommand());
+	    	String server = registry.getDDECloseServer();
+	    	String topic = registry.getDDECloseTopic();
+	
+	    	int error = DDEClient.execute(server, topic, command);
+	  		if (error != 0) {
+            	BuilderRegistry.printToConsole("DDE command " + command + " failed! (server: " + server + ", topic: " + topic + ")");
+            }
+    	}
+    }
+    
+    
     /**
      * Resolves a relative path from one directory to another.
      * The path is returned as an OS-specific string with
@@ -285,6 +374,33 @@ public class ViewerManager {
         }
         return sb.toString();
     }
+    
+    private IResource getOuputResource() throws CoreException { 
+    	
+    	String outFileName = TexlipseProperties.getProjectProperty(project,
+                TexlipseProperties.OUTPUTFILE_PROPERTY);
+        if (outFileName == null || outFileName.length() == 0) {
+            throw new CoreException(TexlipsePlugin.stat("Empty output file name."));
+        }
+        
+        // find out the directory where the file should be
+        IContainer outputDir = null;
+        String fmtProp = TexlipseProperties.getProjectProperty(project,
+                TexlipseProperties.OUTPUT_FORMAT);
+        if (registry.getFormat().equals(fmtProp)) {
+            outputDir = TexlipseProperties.getProjectOutputDir(project);
+        } else {
+            String base = outFileName.substring(0, outFileName.lastIndexOf('.') + 1);
+            outFileName = base + registry.getFormat();
+            outputDir = TexlipseProperties.getProjectTempDir(project);
+        }
+        if (outputDir == null) {
+            outputDir = project;
+        }
+        
+        return outputDir.findMember(outFileName);
+    }
+    
 
     /**
      * Returns the current line number of the current page, if possible.
@@ -330,7 +446,7 @@ public class ViewerManager {
      * @return viewer process
      * @throws IOException if launching the viewer fails
      */
-    private Process execute(File dir, String file) throws IOException {
+    private Process execute(File dir, String file) throws IOException, CoreException {
 
         // argument list
         ArrayList list = new ArrayList();
@@ -341,9 +457,9 @@ public class ViewerManager {
             command = "\"" + command + "\"";
         }
         list.add(command);
-
+        
         // add arguments
-        String args = createArgumentString(file);
+        String args = translatePatterns(registry.getArguments());
         PathUtils.tokenizeEscapedString(args, list);
         
         // create environment
@@ -374,49 +490,42 @@ public class ViewerManager {
         return process;
     }
 
-    /**
-     * Format argument string.
-     * @param file input file for the viewer
-     * @return the argument string
-     */
-    private String createArgumentString(String file) {
-        
-        String args = null;
-        String argumentsTemplate = registry.getArguments();
+    private String translatePatterns(String input) throws CoreException {
+    	
+    	if (input == null) return null;
 
-        if (argumentsTemplate.indexOf(FILENAME_PATTERN) >= 0) {
-            args = argumentsTemplate.replaceAll(FILENAME_PATTERN, escapeBackslashes(file));
-        } else {
-            args = argumentsTemplate + " " + file;
-        }
-
-        if (args.indexOf(LINE_NUMBER_PATTERN) >= 0) {
-            args = args.replaceAll(LINE_NUMBER_PATTERN, ""+getCurrentLineNumber());
+    	if (input.indexOf(FILENAME_PATTERN) >= 0) {
+    		input = input.replaceAll(FILENAME_PATTERN, escapeBackslashes(getOuputResource().getName()));
+    	}
+    	
+        if (input.indexOf(FILENAME_FULLPATH_PATTERN) >= 0) {
+        	input = input.replaceAll(FILENAME_FULLPATH_PATTERN, escapeBackslashes(getOuputResource().getLocation().toOSString()));
         }
         
-        IContainer srcDir = TexlipseProperties.getProjectSourceDir(project);
-        if (srcDir == null) {
-            srcDir = project;
+        if (input.indexOf(LINE_NUMBER_PATTERN) >= 0) {
+        	input = input.replaceAll(LINE_NUMBER_PATTERN, "" + getCurrentLineNumber());
         }
         
-        IResource selectedRes = SelectedResourceManager.getDefault().getSelectedResource();
-        if (selectedRes.getType() != IResource.FOLDER) {
-            selectedRes = SelectedResourceManager.getDefault().getSelectedTexResource();
+        if (input.indexOf(TEX_FILENAME_PATTERN) >= 0) {
+        	
+        	IContainer srcDir = TexlipseProperties.getProjectSourceDir(project);        	
+            if (srcDir == null) {
+                srcDir = project;
+            }
+            
+        	IResource selectedRes = SelectedResourceManager.getDefault().getSelectedResource();
+        	if (selectedRes.getType() != IResource.FOLDER) {
+                selectedRes = SelectedResourceManager.getDefault().getSelectedTexResource();
+            }
+        	
+        	String relPath = resolveRelativePath(srcDir.getFullPath(), selectedRes.getFullPath().removeLastSegments(1));
+            String texFile = relPath + selectedRes.getName();
+        	input = input.replaceAll(TEX_FILENAME_PATTERN, texFile);
         }
-        String relPath = resolveRelativePath(srcDir.getFullPath(), selectedRes.getFullPath().removeLastSegments(1));
-        String texFile = relPath + selectedRes.getName();
         
-        if (args.indexOf(TEX_FILENAME_PATTERN) >= 0) {
-            args = args.replaceAll(TEX_FILENAME_PATTERN, texFile);
-        }
-        
-        if (args.indexOf(FILENAME_FULLPATH_PATTERN) >= 0) {
-            args = args.replaceAll(FILENAME_FULLPATH_PATTERN, outputRes.getLocation().toFile().getAbsolutePath());
-        }
-        
-        return args;
+        return input;
     }
-
+    
     /**
      * Escapes backslashes, so that the string can be given to String.replaceAll()
      * as argument without the backslashes disappearing. 
@@ -455,3 +564,4 @@ public class ViewerManager {
         }
     }
 }
+

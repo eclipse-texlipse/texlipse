@@ -27,10 +27,13 @@ import org.eclipse.debug.core.model.LaunchConfigurationDelegate;
  * Launch a document viewer program using the given launch configuration.
  * 
  * @author Kimmo Karlsson
+ * @author Tor Arne Vestbø
  */
 public class TexLaunchConfigurationDelegate extends LaunchConfigurationDelegate {
 
-    /**
+	 public static final String CONFIGURATION_ID = "net.sourceforge.texlipse.viewer.launchConfigurationType";
+	
+   /**
      * Constructor, does nothing.
      */
     public TexLaunchConfigurationDelegate() {
@@ -59,9 +62,12 @@ public class TexLaunchConfigurationDelegate extends LaunchConfigurationDelegate 
         
         Map addEnv = configuration.getAttribute(ILaunchManager.ATTR_ENVIRONMENT_VARIABLES, new HashMap());
         
-        Process process = ViewerManager.preview(registry, addEnv);
-
+        monitor.beginTask("Viewing document", 100);     
+        Process process = ViewerManager.preview(registry, addEnv, monitor);
+       
         // if this process is added to launcer, the output will not be parsed correctly
-        //launch.addProcess(DebugPlugin.newProcess(launch, process, mode));
+                //launch.addProcess(DebugPlugin.newProcess(launch, process, mode));
+        
     }
+    
 }

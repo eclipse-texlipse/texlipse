@@ -9,11 +9,13 @@
  */
 package net.sourceforge.texlipse.viewer;
 
+
 import java.io.File;
 import java.util.ArrayList;
 
 import net.sourceforge.texlipse.TexlipsePlugin;
 
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.resource.JFaceResources;
@@ -40,6 +42,7 @@ import org.eclipse.swt.widgets.Text;
  * This dialog can be used for editing old configs or creating new ones.
  * 
  * @author Kimmo Karlsson
+ * @author Tor Arne Vestbø
  */
 public class ViewerConfigDialog extends Dialog {
 
@@ -48,7 +51,9 @@ public class ViewerConfigDialog extends Dialog {
     protected File lastPath;
     private Text fileField;
     private Text nameField;
-    private Text argsField;
+    private Text argsField; 
+	private DDEGroup ddeViewGroup;
+	private DDEGroup ddeCloseGroup;
     private Combo formatChooser;
     private Combo inverseChooser;
     private Label statusField;
@@ -145,7 +150,13 @@ public class ViewerConfigDialog extends Dialog {
         
         registry.setActiveViewer(name);
         registry.setCommand(fileField.getText());
-        registry.setArguments(argsField.getText());
+        registry.setArguments(argsField.getText());        
+        registry.setDDEViewCommand(ddeViewGroup.command.getText());
+        registry.setDDEViewServer(ddeViewGroup.server.getText());
+        registry.setDDEViewTopic(ddeViewGroup.topic.getText());
+        registry.setDDECloseCommand(ddeCloseGroup.command.getText());
+        registry.setDDECloseServer(ddeCloseGroup.server.getText());
+        registry.setDDECloseTopic(ddeCloseGroup.topic.getText());
         registry.setFormat(formatChooser.getItem(formatChooser.getSelectionIndex()));
         registry.setInverse(inverseSearchValues[inverseChooser.getSelectionIndex()]);
         registry.setForward(forwardChoice.getSelection());
@@ -153,7 +164,7 @@ public class ViewerConfigDialog extends Dialog {
         setReturnCode(OK);
         close();
     }
-    
+       
     /**
      * Create the contents of the dialog.
      * @param parent parent component
@@ -173,6 +184,7 @@ public class ViewerConfigDialog extends Dialog {
         addConfigNameField(composite);
         addFileBrowser(composite);
         addArgumentsField(composite);
+        addDDEGroups(composite);
         addFormatChooser(composite);
         addInverseChooser(composite);
         addForwardChooser(composite);
@@ -308,6 +320,35 @@ public class ViewerConfigDialog extends Dialog {
         argsField.setToolTipText(TexlipsePlugin.getResourceString("preferenceViewerArgumentTooltip"));
         argsField.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
     }
+    
+    /**
+	 * Creates the two groups for DDE view and close
+	 * 
+	 * @param composite
+	 *            parent component
+	 */
+	private void addDDEGroups(Composite composite) {
+		
+		ddeViewGroup = new DDEGroup(composite,
+				TexlipsePlugin.getResourceString("preferenceViewerDDEViewLabel"),
+				TexlipsePlugin.getResourceString("preferenceViewerDDEViewTooltip"));
+		ddeViewGroup.command.setText(registry.getDDEViewCommand());
+		ddeViewGroup.server.setText(registry.getDDEViewServer());
+		ddeViewGroup.topic.setText(registry.getDDEViewTopic());
+		
+		ddeCloseGroup = new DDEGroup(composite,
+				TexlipsePlugin.getResourceString("preferenceViewerDDECloseLabel"),
+				TexlipsePlugin.getResourceString("preferenceViewerDDECloseTooltip"));
+		ddeCloseGroup.command.setText(registry.getDDECloseCommand());
+		ddeCloseGroup.server.setText(registry.getDDECloseServer());
+		ddeCloseGroup.topic.setText(registry.getDDECloseTopic());
+		
+		// Only show DDE configuration if on Win32
+        if (Platform.getOS().equals(Platform.OS_WIN32)) {
+        	ddeViewGroup.setVisible(true);
+        	ddeCloseGroup.setVisible(true);
+        }
+	}
 
     /**
      * Creates the file format chooser to the page.
@@ -371,4 +412,57 @@ public class ViewerConfigDialog extends Dialog {
         forwardChoice.setLayoutData(gd);
         forwardChoice.setSelection(registry.getForward());
     }
+    
+
+	private class DDEGroup extends Composite {
+
+		// Public members since the class is private to the dialog
+		public Text command;
+		public Text server;
+		public Text topic;
+
+		public DDEGroup(Composite parent, String name, String toolTip) {
+			super(parent, SWT.NONE);
+			
+			setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		    ((GridData)getLayoutData()).horizontalSpan = 2;
+		    setLayout( new GridLayout());
+		    	    
+   		    Group group = new Group(this, SWT.SHADOW_IN);
+	        group.setText(name);
+	        group.setToolTipText(toolTip);
+   		    group.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+	        group.setLayout(new GridLayout(4, false));
+
+			Label ddeCommandLabel = new Label(group, SWT.LEFT);
+			ddeCommandLabel.setText(TexlipsePlugin.getResourceString("preferenceViewerDDECommandLabel"));
+			ddeCommandLabel.setToolTipText(TexlipsePlugin.getResourceString("preferenceViewerDDECommandTooltip"));
+			ddeCommandLabel.setLayoutData(new GridData());
+
+			command = new Text(group, SWT.SINGLE | SWT.BORDER);
+			command.setToolTipText(TexlipsePlugin.getResourceString("preferenceViewerDDECommandTooltip"));
+			command.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+			((GridData) command.getLayoutData()).horizontalSpan = 3;
+
+			Label ddeServerLabel = new Label(group, SWT.LEFT);
+			ddeServerLabel.setText(TexlipsePlugin.getResourceString("preferenceViewerDDEServerLabel"));
+			ddeServerLabel.setToolTipText(TexlipsePlugin.getResourceString("preferenceViewerDDEServerTooltip"));
+			ddeServerLabel.setLayoutData(new GridData());
+
+			server = new Text(group, SWT.SINGLE | SWT.BORDER);
+			server.setToolTipText(TexlipsePlugin.getResourceString("preferenceViewerDDEServerTooltip"));
+			server.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+			Label ddeTopicLabel = new Label(group, SWT.LEFT);
+			ddeTopicLabel.setText(TexlipsePlugin.getResourceString("preferenceViewerDDETopicLabel"));
+			ddeTopicLabel.setToolTipText(TexlipsePlugin.getResourceString("preferenceViewerDDETopicTooltip"));
+			ddeTopicLabel.setLayoutData(new GridData());
+
+			topic = new Text(group, SWT.SINGLE | SWT.BORDER);
+			topic.setToolTipText(TexlipsePlugin.getResourceString("preferenceViewerDDETopicTooltip"));
+			topic.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+			
+			setVisible(false);
+		}
+	}
 }

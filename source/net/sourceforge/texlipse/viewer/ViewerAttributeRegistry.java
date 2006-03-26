@@ -26,12 +26,19 @@ import org.eclipse.jface.preference.IPreferenceStore;
  * Instances of this class hold a local copy of the viewer configurations.
  * 
  * @author Kimmo Karlsson
+ * @author Tor Arne Vestbø
  */
 public class ViewerAttributeRegistry implements Cloneable {
 
     // attribute suffixes
     public static final String ATTRIBUTE_COMMAND = ".command";
     public static final String ATTRIBUTE_ARGUMENTS = ".arguments";
+    public static final String ATTRIBUTE_DDE_VIEW_COMMAND = ".ddeViewCommand";
+    public static final String ATTRIBUTE_DDE_VIEW_SERVER = ".ddeViewServer";
+    public static final String ATTRIBUTE_DDE_VIEW_TOPIC = ".ddeViewTopic";
+    public static final String ATTRIBUTE_DDE_CLOSE_COMMAND = ".ddeCloseCommand";
+    public static final String ATTRIBUTE_DDE_CLOSE_SERVER = ".ddeCloseServer";
+    public static final String ATTRIBUTE_DDE_CLOSE_TOPIC = ".ddeCloseTopic";
     public static final String ATTRIBUTE_FORMAT = ".format";
     public static final String ATTRIBUTE_INVERSE_SEARCH = ".inverse";
     public static final String ATTRIBUTE_FORWARD_SEARCH = ".forward";
@@ -75,7 +82,8 @@ public class ViewerAttributeRegistry implements Cloneable {
     private String activeViewer;
 
     /**
-     * Construct a new copy of the viewer attributes defined in the preference pages.
+     * Construct a new copy of the viewer attributes, based on the
+     * default viewer defined in the preference pages (first on the list).
      */
     public ViewerAttributeRegistry() {
         
@@ -170,6 +178,12 @@ public class ViewerAttributeRegistry implements Cloneable {
 
         prefs.setDefault(VIEWER_ACROBAT + ATTRIBUTE_COMMAND, findFromEnvPath("acroread", "acroread.exe", ""));
         prefs.setDefault(VIEWER_ACROBAT + ATTRIBUTE_ARGUMENTS, DEFAULT_ARGUMENTS_ACROBAT);
+        prefs.setDefault(VIEWER_ACROBAT + ATTRIBUTE_DDE_VIEW_COMMAND, "[DocOpen(\"%fullfile\")][FileOpen(\"%fullfile\")]"); 
+        prefs.setDefault(VIEWER_ACROBAT + ATTRIBUTE_DDE_VIEW_SERVER, "acroview");
+        prefs.setDefault(VIEWER_ACROBAT + ATTRIBUTE_DDE_VIEW_TOPIC, "control");
+        prefs.setDefault(VIEWER_ACROBAT + ATTRIBUTE_DDE_CLOSE_COMMAND, "[DocClose(\"%fullfile\")]");
+        prefs.setDefault(VIEWER_ACROBAT + ATTRIBUTE_DDE_CLOSE_SERVER, "acroview");
+        prefs.setDefault(VIEWER_ACROBAT + ATTRIBUTE_DDE_CLOSE_TOPIC, "control");
         prefs.setDefault(VIEWER_ACROBAT + ATTRIBUTE_FORMAT, TexlipseProperties.OUTPUT_FORMAT_PDF);
         prefs.setDefault(VIEWER_ACROBAT + ATTRIBUTE_INVERSE_SEARCH, INVERSE_SEARCH_NO);
         prefs.setDefault(VIEWER_ACROBAT + ATTRIBUTE_FORWARD_SEARCH, "false");
@@ -187,6 +201,14 @@ public class ViewerAttributeRegistry implements Cloneable {
     public void setDefaults() {
         registry.put(activeViewer + ATTRIBUTE_COMMAND, TexlipsePlugin.getPreference(activeViewer + ATTRIBUTE_COMMAND));
         registry.put(activeViewer + ATTRIBUTE_ARGUMENTS, TexlipsePlugin.getPreference(activeViewer + ATTRIBUTE_ARGUMENTS));
+        
+        registry.put(activeViewer + ATTRIBUTE_DDE_VIEW_COMMAND, TexlipsePlugin.getPreference(activeViewer + ATTRIBUTE_DDE_VIEW_COMMAND));
+        registry.put(activeViewer + ATTRIBUTE_DDE_VIEW_SERVER, TexlipsePlugin.getPreference(activeViewer + ATTRIBUTE_DDE_VIEW_SERVER));
+        registry.put(activeViewer + ATTRIBUTE_DDE_VIEW_TOPIC, TexlipsePlugin.getPreference(activeViewer + ATTRIBUTE_DDE_VIEW_TOPIC));
+        registry.put(activeViewer + ATTRIBUTE_DDE_CLOSE_COMMAND, TexlipsePlugin.getPreference(activeViewer + ATTRIBUTE_DDE_CLOSE_COMMAND));
+        registry.put(activeViewer + ATTRIBUTE_DDE_CLOSE_SERVER, TexlipsePlugin.getPreference(activeViewer + ATTRIBUTE_DDE_CLOSE_SERVER));
+        registry.put(activeViewer + ATTRIBUTE_DDE_CLOSE_TOPIC, TexlipsePlugin.getPreference(activeViewer + ATTRIBUTE_DDE_CLOSE_TOPIC));
+    
         registry.put(activeViewer + ATTRIBUTE_FORMAT, TexlipsePlugin.getPreference(activeViewer + ATTRIBUTE_FORMAT));
         registry.put(activeViewer + ATTRIBUTE_INVERSE_SEARCH, TexlipsePlugin.getPreference(activeViewer + ATTRIBUTE_INVERSE_SEARCH));
         registry.put(activeViewer + ATTRIBUTE_FORWARD_SEARCH, TexlipsePlugin.getPreference(activeViewer + ATTRIBUTE_FORWARD_SEARCH));
@@ -205,6 +227,12 @@ public class ViewerAttributeRegistry implements Cloneable {
             for (int i = 0; i < names.length; i++) {
                 registry.put(names[i] + ATTRIBUTE_COMMAND, pref.getString(names[i] + ATTRIBUTE_COMMAND));
                 registry.put(names[i] + ATTRIBUTE_ARGUMENTS, pref.getString(names[i] + ATTRIBUTE_ARGUMENTS));
+                registry.put(names[i] + ATTRIBUTE_DDE_VIEW_COMMAND, pref.getString(names[i] + ATTRIBUTE_DDE_VIEW_COMMAND));                
+                registry.put(names[i] + ATTRIBUTE_DDE_VIEW_SERVER, pref.getString(names[i] + ATTRIBUTE_DDE_VIEW_SERVER));
+                registry.put(names[i] + ATTRIBUTE_DDE_VIEW_TOPIC, pref.getString(names[i] + ATTRIBUTE_DDE_VIEW_TOPIC));
+                registry.put(names[i] + ATTRIBUTE_DDE_CLOSE_COMMAND, pref.getString(names[i] + ATTRIBUTE_DDE_CLOSE_COMMAND));                
+                registry.put(names[i] + ATTRIBUTE_DDE_CLOSE_SERVER, pref.getString(names[i] + ATTRIBUTE_DDE_CLOSE_SERVER));
+                registry.put(names[i] + ATTRIBUTE_DDE_CLOSE_TOPIC, pref.getString(names[i] + ATTRIBUTE_DDE_CLOSE_TOPIC));                
                 registry.put(names[i] + ATTRIBUTE_FORMAT, pref.getString(names[i] + ATTRIBUTE_FORMAT));
                 registry.put(names[i] + ATTRIBUTE_INVERSE_SEARCH, pref.getString(names[i] + ATTRIBUTE_INVERSE_SEARCH));
                 registry.put(names[i] + ATTRIBUTE_FORWARD_SEARCH, pref.getString(names[i] + ATTRIBUTE_FORWARD_SEARCH));
@@ -216,6 +244,12 @@ public class ViewerAttributeRegistry implements Cloneable {
             activeViewer = list;
             setCommand(pref.getString(list + ATTRIBUTE_COMMAND));
             setArguments(pref.getString(list + ATTRIBUTE_ARGUMENTS));
+            setDDEViewCommand(pref.getString(list + ATTRIBUTE_DDE_VIEW_COMMAND));
+            setDDEViewServer(pref.getString(list + ATTRIBUTE_DDE_VIEW_SERVER));
+            setDDEViewTopic(pref.getString(list + ATTRIBUTE_DDE_VIEW_TOPIC));
+            setDDEViewCommand(pref.getString(list + ATTRIBUTE_DDE_CLOSE_COMMAND));
+            setDDEViewServer(pref.getString(list + ATTRIBUTE_DDE_CLOSE_SERVER));
+            setDDEViewTopic(pref.getString(list + ATTRIBUTE_DDE_CLOSE_TOPIC));
             setFormat(pref.getString(list + ATTRIBUTE_FORMAT));
             setInverse(pref.getString(list + ATTRIBUTE_INVERSE_SEARCH));
             setForward(pref.getString(list + ATTRIBUTE_FORWARD_SEARCH));
@@ -237,12 +271,24 @@ public class ViewerAttributeRegistry implements Cloneable {
             String name = (String) viewers[i];
             String cmdKey = name + ATTRIBUTE_COMMAND;
             String argKey = name + ATTRIBUTE_ARGUMENTS;
+            String ddeViewCommandKey = name + ATTRIBUTE_DDE_VIEW_COMMAND;            
+            String ddeViewServerKey = name + ATTRIBUTE_DDE_VIEW_SERVER;
+            String ddeViewTopicKey = name + ATTRIBUTE_DDE_VIEW_TOPIC;
+            String ddeCloseCommandKey = name + ATTRIBUTE_DDE_CLOSE_COMMAND;            
+            String ddeCloseServerKey = name + ATTRIBUTE_DDE_CLOSE_SERVER;
+            String ddeCloseTopicKey = name + ATTRIBUTE_DDE_CLOSE_TOPIC;
             String formatKey = name + ATTRIBUTE_FORMAT;
             String invKey = name + ATTRIBUTE_INVERSE_SEARCH;
             String frwKey = name + ATTRIBUTE_FORWARD_SEARCH;
             
             pref.setValue(cmdKey, (String) registry.get(cmdKey));
             pref.setValue(argKey, (String) registry.get(argKey));
+            pref.setValue(ddeViewCommandKey, (String) registry.get(ddeViewCommandKey));
+            pref.setValue(ddeViewServerKey, (String) registry.get(ddeViewServerKey));
+            pref.setValue(ddeViewTopicKey, (String) registry.get(ddeViewTopicKey));
+            pref.setValue(ddeCloseCommandKey, (String) registry.get(ddeCloseCommandKey));
+            pref.setValue(ddeCloseServerKey, (String) registry.get(ddeCloseServerKey));
+            pref.setValue(ddeCloseTopicKey, (String) registry.get(ddeCloseTopicKey));
             pref.setValue(formatKey, (String) registry.get(formatKey));
             pref.setValue(invKey, (String) registry.get(invKey));
             pref.setValue(frwKey, (String) registry.get(frwKey));
@@ -255,6 +301,16 @@ public class ViewerAttributeRegistry implements Cloneable {
         // remove last comma
         sb.delete(sb.length()-1,sb.length());
         pref.setValue(VIEWER_NAMES, sb.toString());
+    }
+    
+    /**
+     * Merges this registry with another registry
+     * 
+     * @param reg The registry to merge with
+     */
+    public void mergeWith(ViewerAttributeRegistry reg)
+	    {
+	    	registry.putAll(reg.asMap());
     }
     
     /**
@@ -339,6 +395,122 @@ public class ViewerAttributeRegistry implements Cloneable {
     public void setArguments(String args) {
         registry.put(activeViewer + ATTRIBUTE_ARGUMENTS, args);
     }
+    
+    /**
+     * @return the current viewer's dde view command
+     */
+    public String getDDEViewCommand() {
+        String value = (String) registry.get(activeViewer + ATTRIBUTE_DDE_VIEW_COMMAND);
+        if (value == null) {
+        	value = "";
+        }
+        return value;
+    }
+    
+    /**
+     * Set the current viewer's dde view command
+     * @param command command line arguments
+     */
+    public void setDDEViewCommand(String command) {
+        registry.put(activeViewer + ATTRIBUTE_DDE_VIEW_COMMAND, command);
+    }
+    
+    /**
+     * @return the current viewer's dde view server
+     */
+    public String getDDEViewServer() {
+        String value = (String) registry.get(activeViewer + ATTRIBUTE_DDE_VIEW_SERVER);
+        if (value == null) {
+        	value = "";
+        }
+        return value;
+    }
+    
+    /**
+     * Set the current viewer's dde view server
+     * @param command command line arguments
+     */
+    public void setDDEViewServer(String server) {
+        registry.put(activeViewer + ATTRIBUTE_DDE_VIEW_SERVER, server);
+    }
+    
+    /**
+     * @return the current viewer's dde view topic
+     */
+    public String getDDEViewTopic() {
+        String value = (String) registry.get(activeViewer + ATTRIBUTE_DDE_VIEW_TOPIC);
+        if (value == null) {
+        	value = "";
+        }
+        return value;
+    }
+    
+    /**
+     * Set the current viewer's dde view topic
+     * @param command command line arguments
+     */
+    public void setDDEViewTopic(String topic) {
+        registry.put(activeViewer + ATTRIBUTE_DDE_VIEW_TOPIC, topic);
+    }
+    
+    
+    /**
+     * @return the current viewer's dde Close command
+     */
+    public String getDDECloseCommand() {
+        String value = (String) registry.get(activeViewer + ATTRIBUTE_DDE_CLOSE_COMMAND);
+        if (value == null) {
+        	value = "";
+        }
+        return value;
+    }
+    
+    /**
+     * Set the current viewer's dde close command
+     * @param command command line arguments
+     */
+    public void setDDECloseCommand(String command) {
+        registry.put(activeViewer + ATTRIBUTE_DDE_CLOSE_COMMAND, command);
+    }
+    
+    /**
+     * @return the current viewer's dde close server
+     */
+    public String getDDECloseServer() {
+        String value = (String) registry.get(activeViewer + ATTRIBUTE_DDE_CLOSE_SERVER);
+        if (value == null) {
+        	value = "";
+        }
+        return value;
+    }
+    
+    /**
+     * Set the current viewer's dde close server
+     * @param command command line arguments
+     */
+    public void setDDECloseServer(String server) {
+        registry.put(activeViewer + ATTRIBUTE_DDE_CLOSE_SERVER, server);
+    }
+    
+    /**
+     * @return the current viewer's dde close topic
+     */
+    public String getDDECloseTopic() {
+        String value = (String) registry.get(activeViewer + ATTRIBUTE_DDE_CLOSE_TOPIC);
+        if (value == null) {
+        	value = "";
+        }
+        return value;
+    }
+    
+    /**
+     * Set the current viewer's dde view topic
+     * @param command command line arguments
+     */
+    public void setDDECloseTopic(String topic) {
+        registry.put(activeViewer + ATTRIBUTE_DDE_CLOSE_TOPIC, topic);
+    }
+    
 
     /**
      * @return the current viewer's input file format
@@ -442,6 +614,12 @@ public class ViewerAttributeRegistry implements Cloneable {
     public void remove(String item) {
         registry.remove(item + ATTRIBUTE_COMMAND);
         registry.remove(item + ATTRIBUTE_ARGUMENTS);
+        registry.remove(item + ATTRIBUTE_DDE_VIEW_COMMAND);
+        registry.remove(item + ATTRIBUTE_DDE_VIEW_SERVER);
+        registry.remove(item + ATTRIBUTE_DDE_VIEW_TOPIC);
+        registry.remove(item + ATTRIBUTE_DDE_CLOSE_COMMAND);
+        registry.remove(item + ATTRIBUTE_DDE_CLOSE_SERVER);
+        registry.remove(item + ATTRIBUTE_DDE_CLOSE_TOPIC);
         registry.remove(item + ATTRIBUTE_FORMAT);
         registry.remove(item + ATTRIBUTE_INVERSE_SEARCH);
         registry.remove(item + ATTRIBUTE_FORWARD_SEARCH);

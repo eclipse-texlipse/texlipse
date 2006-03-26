@@ -10,17 +10,20 @@
 package net.sourceforge.texlipse.builder;
 
 import net.sourceforge.texlipse.properties.TexlipseProperties;
+import net.sourceforge.texlipse.viewer.ViewerManager;
 
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.Platform;
 
 
 /**
  * Build tex-file(s) using latex or pslatex or pdflatex.
  * 
  * @author Kimmo Karlsson
+ * @author Tor Arne Vestbø
  */
 public class TexBuilder extends AbstractBuilder {
 
@@ -86,8 +89,16 @@ public class TexBuilder extends AbstractBuilder {
      * @throws CoreException if the build fails at any point
      */
     public void buildResource(IResource resource) throws CoreException {
-        
-        monitor.subTask("Building document");
+
+		// Make sure we close the output document first 
+    	// (using DDE on Win32)
+    	if (Platform.getOS().equals(Platform.OS_WIN32)) {
+    		monitor.subTask("Closing output document");    	
+    		ViewerManager.closeOutputDocument();
+    		monitor.worked(5);    		
+    	}
+    	  		
+    	monitor.subTask("Building document");
         latex.run(resource);
         monitor.worked(10);
 

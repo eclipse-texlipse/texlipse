@@ -48,6 +48,7 @@ import org.osgi.framework.BundleContext;
  * @author Esa Seuranen
  * @author Taavi Hupponen
  * @author Oskar Ojala
+ * @author Tor Arne Vestbø
  */
 public class TexlipsePlugin extends AbstractUIPlugin {
     
@@ -86,6 +87,11 @@ public class TexlipsePlugin extends AbstractUIPlugin {
     public TexlipsePlugin() {
         super();
         plugin = this;
+        
+        // Force construction, so that editors from the last
+        // eclipse session are caught by the change listener
+        SelectedResourceManager.getDefault();
+        
         try {
             resourceBundle = ResourceBundle.getBundle(getClass().getPackage().getName() + ".TexlipsePluginResources");
         } catch (MissingResourceException x) {

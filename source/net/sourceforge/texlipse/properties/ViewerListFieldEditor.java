@@ -35,6 +35,7 @@ import org.eclipse.swt.widgets.List;
  * putting a separator character between the items while concatenating.
  * 
  * @author Kimmo Karlsson
+ * @author Tor Arne Vestbø
  */
 public class ViewerListFieldEditor extends ListEditor {
 
@@ -177,14 +178,8 @@ public class ViewerListFieldEditor extends ListEditor {
         
         int code = dialog.open();
         if (code == Window.OK) {
-            ViewerAttributeRegistry reg = dialog.getRegistry();
-            registry.setActiveViewer(reg.getActiveViewer());
-            registry.setCommand(reg.getCommand());
-            registry.setArguments(reg.getArguments());
-            registry.setFormat(reg.getFormat());
-            registry.setInverse(reg.getInverse());
-            registry.setForward(reg.getForward());
-            list.setItem(index, reg.getActiveViewer() + " (" + reg.getCommand() + ")");
+            registry.mergeWith(dialog.getRegistry());
+            list.setItem(index, registry.getActiveViewer() + " (" + registry.getCommand() + ")");
         }
     }
 
@@ -255,12 +250,7 @@ public class ViewerListFieldEditor extends ListEditor {
             String name = reg.getActiveViewer();
             nameList.add(name);
             
-            registry.setActiveViewer(name);
-            registry.setCommand(reg.getCommand());
-            registry.setArguments(reg.getArguments());
-            registry.setFormat(reg.getFormat());
-            registry.setInverse(reg.getInverse());
-            registry.setForward(reg.getForward());
+            registry.mergeWith(reg);
             
             return name + " (" + reg.getCommand() + ")";
             

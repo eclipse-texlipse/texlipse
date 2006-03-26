@@ -154,10 +154,10 @@
             name="Editor"
             id="TexlipseEditorPreferencePage"/>
       <page
-            class="net.sourceforge.texlipse.smartkey.SmartKeyPreferencePage"
+            class="net.sourceforge.texlipse.properties.StyleCompletionPreferencePage"
             category="TexlipseEditorPreferencePage"
-            name="Smart Key Supports"
-            id="SmartKeyPreferencePage"/>
+            name="Style completions"
+            id="StyleCompletionPreferencePage"/>
       <page
             class="net.sourceforge.texlipse.properties.ColoringPreferencePage"
             category="TexlipseEditorPreferencePage"

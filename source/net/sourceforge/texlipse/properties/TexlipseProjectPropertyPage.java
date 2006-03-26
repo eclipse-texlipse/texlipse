@@ -413,10 +413,12 @@ public class TexlipseProjectPropertyPage extends PropertyPage {
         derivedCheckbox.setSelection("true".equals(deriv));
         
         // language code
-        languageField.setText(TexlipseProperties.getProjectProperty(project, TexlipseProperties.LANGUAGE_PROPERTY));
+        String lang = TexlipseProperties.getProjectProperty(project, TexlipseProperties.LANGUAGE_PROPERTY);
+        languageField.setText((lang != null) ? lang : "");
         
         // makeindex style file
-        indexStyleField.setText(TexlipseProperties.getProjectProperty(project, TexlipseProperties.MAKEINDEX_STYLEFILE_PROPERTY));
+        String sty = TexlipseProperties.getProjectProperty(project, TexlipseProperties.MAKEINDEX_STYLEFILE_PROPERTY);
+        indexStyleField.setText((sty != null) ? sty : "");
         
         // read source file name
         String srcDir = TexlipseProperties.getProjectProperty(project,

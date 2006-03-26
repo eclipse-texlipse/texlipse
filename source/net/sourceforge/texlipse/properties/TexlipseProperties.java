@@ -107,7 +107,7 @@ public class TexlipseProperties {
     
 //  B----------------------------------- mmaus
     public static final String SMART_KEY_ENABLE = "ske";
-    public static final String SMART_KEY_SETTINGS = "smartKeySet";
+    public static final String STYLE_COMPLETION_SETTINGS = "styleCompletionSet";
 //  E----------------------------------- mmaus
     
     public static final String CODE_FOLDING = "codeFolding";

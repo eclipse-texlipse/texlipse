@@ -1,8 +1,6 @@
 package net.sourceforge.texlipse.model;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.Arrays;
 
 import net.sourceforge.texlipse.TexlipsePlugin;
 import net.sourceforge.texlipse.properties.TexlipseProperties;
@@ -17,18 +15,18 @@ import org.eclipse.swt.graphics.Point;
 
 public class TexStyleCompletionManager implements IPropertyChangeListener{
 
-    private Map keyValue;
+//    private Map keyValue;
     private static TexStyleCompletionManager theInstance;
 
-    private final static String[] STYLETAGS = new String[] { 
-        "\\bf", "\\it", "\\rm", "\\sf", "\\sc", "\\em", "\\huge", "\\Huge"
+    private String[] STYLETAGS = new String[] { 
+        "\\textbf{", "\\textit{", "\\textrm{", "\\textsf{", "\\textsc", "\\textsl{", "\\texttt{","\\emph{", "{\\huge", "{\\Huge"
     };
-    private final static String[] STYLELABELS = new String[] { 
-        "bold", "italic", "roman", "sans serif", "small caps", "emphasize", "huge", "Huge"
+    private String[] STYLELABELS = new String[] { 
+        "bold", "italic", "roman", "sans serif", "small caps", "slanted", "teletype", "emphasize", "huge", "Huge"
     };
     
     private TexStyleCompletionManager() {
-        this.keyValue = new HashMap();
+//        this.keyValue = new HashMap();
         readSettings();
     }
 
@@ -44,7 +42,7 @@ public class TexStyleCompletionManager implements IPropertyChangeListener{
      * @see org.eclipse.jface.util.IPropertyChangeListener#propertyChange(org.eclipse.jface.util.PropertyChangeEvent)
      */
     public void propertyChange(PropertyChangeEvent event) {
-        if (event.getProperty().equals(TexlipseProperties.SMART_KEY_SETTINGS)) {
+        if (event.getProperty().equals(TexlipseProperties.STYLE_COMPLETION_SETTINGS)) {
             readSettings();
         }
     }
@@ -53,21 +51,30 @@ public class TexStyleCompletionManager implements IPropertyChangeListener{
      * Reads the smart keys defined at the preference page.
      */
     private void readSettings() {
-        String[] keys = TexlipsePlugin.getPreferenceArray(TexlipseProperties.SMART_KEY_SETTINGS);
+        String[] props = TexlipsePlugin.getPreferenceArray(TexlipseProperties.STYLE_COMPLETION_SETTINGS);
+
+        Arrays.sort(props);
         
-        for (int i = 0; i < keys.length; i++) {
-            int index = keys[i].indexOf('=');
-            if (index <= 0) {
-                continue;
-            }
-            
-            keyValue.put(keys[i].substring(0, index), keys[i].substring(index+1));
+        STYLELABELS = new String[props.length];
+        STYLETAGS = new String[props.length];
+        
+        for (int i = 0; i < props.length; i++) {
+            String[] pair = props[i].split("=");
+
+//            int index = keys[i].indexOf('=');
+//            if (index <= 0) {
+//                continue;
+//            }            
+//            keyValue.put(keys[i].substring(0, index), keys[i].substring(index+1));
+            STYLELABELS[i] = pair[0];
+            STYLETAGS[i] = pair[1];
         }
     }
 
     public ICompletionProposal[] getStyleCompletions(String selectedText, Point selectedRange) {
-        ICompletionProposal[] result = new ICompletionProposal[keyValue.size()];
 
+        /*
+        ICompletionProposal[] result = new ICompletionProposal[keyValue.size()];
         int i=0;
         for (Iterator iter = keyValue.keySet().iterator(); iter.hasNext();) {
             String key = (String) iter.next();
@@ -83,17 +90,18 @@ public class TexStyleCompletionManager implements IPropertyChangeListener{
                     contextInfo, replacement);
             i++;
         }
+        */
         
-        /*
+        ICompletionProposal[] result = new ICompletionProposal[STYLELABELS.length];
         // Loop through all styles
         for (int i = 0; i < STYLETAGS.length; i++) {
             String tag = STYLETAGS[i];
             
             // Compute replacement text
-            String replacement = "{" + tag + " " + selectedText + "}";
+            String replacement = tag + selectedText + "}";
             
             // Derive cursor position
-            int cursor = tag.length() + 2;
+            int cursor = tag.length() + 1;
             
             // Compute a suitable context information
             IContextInformation contextInfo = 
@@ -104,8 +112,18 @@ public class TexStyleCompletionManager implements IPropertyChangeListener{
                     selectedRange.x, selectedRange.y,
                     cursor, null, STYLELABELS[i], 
                     contextInfo, replacement);
-        }*/
+        }
         return result;
     }
     
+    public IContextInformation[] getStyleContext() {
+        ContextInformation[] contextInfos = new ContextInformation[STYLELABELS.length];
+        
+        // Create one context information item for each style
+        for (int i = 0; i < STYLELABELS.length; i++) {
+            contextInfos[i] = new ContextInformation(null, STYLELABELS[i]+" Style");
+        }
+        return contextInfos;
+    }
+
 }

@@ -32,7 +32,7 @@ public class SmartKeyPreferencePage extends FieldEditorPreferencePage implements
                 TexlipsePlugin.getResourceString("preferenceSmartKeyEnable"),
                 getFieldEditorParent()));
         addField(new SmartKeyListFieldEditor(
-                TexlipseProperties.SMART_KEY_SETTINGS,
+                TexlipseProperties.STYLE_COMPLETION_SETTINGS,
                 TexlipsePlugin.getResourceString("preferenceSmartKeyLabel"),
                 getFieldEditorParent()));
     }

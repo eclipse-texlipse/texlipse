@@ -188,6 +188,18 @@ public class BibtexRunner extends AbstractProgramRunner {
                 
                 String bibName = line.substring(line.indexOf(':')+2);
                 bibResource = sourceDir.findMember(bibName);
+
+            } else if (line.startsWith("I couldn't open database file ")) {
+                
+                String bibName = line.substring(line.indexOf("file")+5);
+                // TODO Add marker to main file, but we should really find the offending
+                // \bibliography command in the main file and add it to the right line.
+                String srcFile = TexlipseProperties.getProjectProperty(project,
+                        TexlipseProperties.MAINFILE_PROPERTY);
+                IResource mainFileResource = sourceDir.findMember(srcFile);
+                createMarker(mainFileResource, new Integer(0), "Could not open bibtex database file " + bibName);
+                
+                return true; // errors found, and no use in parsing the rest of the file
             }
         }
         

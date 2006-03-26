@@ -122,7 +122,8 @@ public class TexlipsePreferenceInitializer extends
         pref.setDefault(TexlipseProperties.TEX_BRACKET_COMPLETION, true);
         pref.setDefault(TexlipseProperties.TEX_REPLACE_QUOTES, true);
 //      B----------------------------------- mmaus
-        pref.setDefault(TexlipseProperties.SMART_KEY_SETTINGS, "ll=list,en=enumerate,iz=itemize");
+        //pref.setDefault(TexlipseProperties.SMART_KEY_SETTINGS, "ll=list,en=enumerate,iz=itemize");
+        pref.setDefault(TexlipseProperties.STYLE_COMPLETION_SETTINGS, "bold=\\textbf{,italic=\\textit{,roman=\\textrm{,sans serif=\\textsf{,small caps=\\textsc{,slanted=\\textsl{,teletype=\\texttt{,emphasize=\\emph{");
 //      E----------------------------------- mmaus
         
         pref.setDefault(TexlipseProperties.OUTLINE_PREAMBLE, true);

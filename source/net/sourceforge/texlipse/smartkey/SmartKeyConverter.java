@@ -62,7 +62,7 @@ IDocumentListener, VerifyKeyListener {
     }
     
     public void propertyChange(PropertyChangeEvent event) {
-        if (event.getProperty().equals(TexlipseProperties.SMART_KEY_SETTINGS)) {
+        if (event.getProperty().equals(TexlipseProperties.STYLE_COMPLETION_SETTINGS)) {
             readSettings();
         }
     }
@@ -72,7 +72,7 @@ IDocumentListener, VerifyKeyListener {
      *
      */
     private void readSettings() {
-        String[] keys = TexlipsePlugin.getPreferenceArray(TexlipseProperties.SMART_KEY_SETTINGS);
+        String[] keys = TexlipsePlugin.getPreferenceArray(TexlipseProperties.STYLE_COMPLETION_SETTINGS);
         
         keyValue = new HashMap();
         for (int i = 0; i < keys.length; i++) {

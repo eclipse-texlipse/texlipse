@@ -153,13 +153,10 @@ public class TexCompletionProcessor implements IContentAssistProcessor {
         Point selectedRange = viewer.getSelectedRange();
         if (selectedRange.y > 0) {
             
-            // Text is selected. Create a context information array.
-            ContextInformation[] contextInfos = new ContextInformation[STYLELABELS.length];
-            
-            // Create one context information item for each style
-            for (int i = 0; i < STYLELABELS.length; i++)
-                contextInfos[i] = new ContextInformation(null, STYLELABELS[i]+" Style");
-            return contextInfos;
+            if (styleManager == null) {
+                styleManager = TexStyleCompletionManager.getInstance();
+            }
+            return styleManager.getStyleContext();
         }
         return new ContextInformation[0];
     }
@@ -383,12 +380,12 @@ public class TexCompletionProcessor implements IContentAssistProcessor {
     // Some very quick style completions follow...
     // TODO improve this
 
-    private final static String[] STYLETAGS = new String[] { 
-        "\\bf", "\\it", "\\rm", "\\sf", "\\sc", "\\em", "\\huge", "\\Huge"
-    };
-    private final static String[] STYLELABELS = new String[] { 
-        "bold", "italic", "roman", "sans serif", "small caps", "emphasize", "huge", "Huge"
-    };
+//    private final static String[] STYLETAGS = new String[] { 
+//        "\\bf", "\\it", "\\rm", "\\sf", "\\sc", "\\em", "\\huge", "\\Huge"
+//    };
+//    private final static String[] STYLELABELS = new String[] { 
+//        "bold", "italic", "roman", "sans serif", "small caps", "emphasize", "huge", "Huge"
+//    };
 
     private ICompletionProposal[] computeStyleProposals(String selectedText, Point selectedRange) {
         if (styleManager == null) {

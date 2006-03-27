@@ -2,6 +2,7 @@ package net.sourceforge.texlipse.editor;
 
 import java.util.ArrayList;
 
+import net.sourceforge.texlipse.TexlipsePlugin;
 import net.sourceforge.texlipse.model.ReferenceManager;
 import net.sourceforge.texlipse.model.TexCommandEntry;
 import net.sourceforge.texlipse.model.TexDocumentModel;
@@ -9,6 +10,7 @@ import net.sourceforge.texlipse.templates.TexContextType;
 import net.sourceforge.texlipse.templates.TexTemplateCompletion;
 
 import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.contentassist.IContentAssistProcessor;
@@ -26,7 +28,7 @@ public class TexMathCompletionProcessor implements IContentAssistProcessor {
     
     private TexTemplateCompletion templatesCompletion = new TexTemplateCompletion(TexContextType.MATH_CONTEXT_TYPE);
     private TexDocumentModel model;
-    private ReferenceManager refMana;
+    private ReferenceManager refManager;
     private ISourceViewer fviewer;
     
     /**
@@ -41,39 +43,43 @@ public class TexMathCompletionProcessor implements IContentAssistProcessor {
         fviewer = viewer;
     }
     
-    public ICompletionProposal[] computeCompletionProposals(ITextViewer viewer,
-            int offset) {
-        String line = "";
+    /* (non-Javadoc)
+     * @see org.eclipse.jface.text.contentassist.IContentAssistProcessor#computeCompletionProposals(org.eclipse.jface.text.ITextViewer, int)
+     */
+    public ICompletionProposal[] computeCompletionProposals(ITextViewer viewer, int offset) {
+        String lineStart = "";
+        IDocument doc = viewer.getDocument();
         try {
-            int currLine = viewer.getDocument().getLineOfOffset(offset);
-            line = viewer.getDocument().get(viewer.getDocument().getLineOffset(currLine), 
-                    offset - viewer.getDocument().getLineOffset(currLine));
+            int lineStartOffset = doc.getLineOffset(doc.getLineOfOffset(offset));
+            lineStart = doc.get(lineStartOffset, offset - lineStartOffset);
+            
         } catch (BadLocationException e) {
-            // FIXME
-            e.printStackTrace();
-            return null;
+            TexlipsePlugin.log("TexCompletionProcessor: ", e);
+            return new ICompletionProposal[0];
         }
-        //Check for new line
-        if (line.endsWith("\\\\")) return null;
+        if (lineStart.endsWith("\\\\"))
+            return null;
+                
+        int backpos = lineStart.lastIndexOf('\\');
+        int templatepos = lineStart.lastIndexOf(' ') + 1;
+
+        String replacement = templatepos < 0 ? lineStart : lineStart.substring(templatepos);
+
+        ICompletionProposal[] templateProposals = computeTemplateCompletions(offset, replacement.length(), replacement, viewer);
         
-//      TexCommandEntry[] comEntries = null;
-        ICompletionProposal[] templateProposals = null;
         ICompletionProposal[] proposals = null;
-        
-        int backpos = line.lastIndexOf('\\');
-        int templatepos = line.lastIndexOf(' ') < backpos ? backpos : line.lastIndexOf(' ') + 1;
-        String replacement = templatepos < 0 ? line : line.substring(templatepos);
-        
-        //if (backpos == -1) return null;
-        if (backpos > 0) {
-            String command = line.substring(backpos);
-            if (!(command.indexOf(' ') >= 0 || command.indexOf('{') >= 0 || command.indexOf('(') >= 0)) { 
+        if (backpos >= 0) {
+            String command = lineStart.substring(backpos + 1);
+            if (!(command.indexOf(' ') >= 0
+                    || command.indexOf('{') >= 0
+                    || command.indexOf('(') >= 0)) { 
                 
-                if (refMana == null) this.refMana = model.getRefMana();
+                if (refManager == null)
+                    this.refManager = model.getRefMana();
                 
-                TexCommandEntry[] comEntries = refMana.getCompletionsCom(command.substring(1), TexCommandEntry.MATH_CONTEXT);
+                TexCommandEntry[] comEntries = refManager.getCompletionsCom(command, TexCommandEntry.MATH_CONTEXT);
                 
-                int len = command.length() - 1;
+                int len = command.length();
                 proposals = new ICompletionProposal[comEntries.length];
                 for (int i=0; i < comEntries.length; i++) {
                     proposals[i] = new TexCompletionProposal(comEntries[i], offset - len, 
@@ -81,53 +87,53 @@ public class TexMathCompletionProcessor implements IContentAssistProcessor {
                 }
             }
         }
-        templateProposals = computeTemplateCompletions(offset, replacement.length(), replacement, viewer);
-        
-        //if (comEntries == null) return null;
-        
-        
         
         // Concatenate the lists if necessary
         if ((proposals != null) && (templateProposals != null)) {
             ICompletionProposal[] value = new ICompletionProposal[proposals.length
                                                                   + templateProposals.length];
-            
             System.arraycopy(proposals, 0, value, 0, proposals.length);
             System.arraycopy(templateProposals, 0, value, proposals.length, templateProposals.length);
             return value;
         } else {
-            if (proposals != null) {
-                return proposals;
-            } else  if (templateProposals.length != 0) {
-                return templateProposals;
-            } else {
-                // TODO consider this
-                model.setStatusLineErrorMessage("Math: No completions available.");
-                return new ICompletionProposal[0];
+            if (templateProposals.length == 0) {
+                model.setStatusLineErrorMessage(" No completions available.");
             }
+            return templateProposals;
         }
-        
-        
-        //return result;
     }
     
-    public IContextInformation[] computeContextInformation(ITextViewer viewer,
-            int offset) {
+    /* (non-Javadoc)
+     * @see org.eclipse.jface.text.contentassist.IContentAssistProcessor#computeContextInformation(org.eclipse.jface.text.ITextViewer, int)
+     */
+    public IContextInformation[] computeContextInformation(ITextViewer viewer, int offset) {
         return null;
     }
     
+    /* (non-Javadoc)
+     * @see org.eclipse.jface.text.contentassist.IContentAssistProcessor#getCompletionProposalAutoActivationCharacters()
+     */
     public char[] getCompletionProposalAutoActivationCharacters() {
         return new char[] {'\\'};
     }
     
+    /* (non-Javadoc)
+     * @see org.eclipse.jface.text.contentassist.IContentAssistProcessor#getContextInformationAutoActivationCharacters()
+     */
     public char[] getContextInformationAutoActivationCharacters() {
         return null;
     }
     
+    /* (non-Javadoc)
+     * @see org.eclipse.jface.text.contentassist.IContentAssistProcessor#getErrorMessage()
+     */
     public String getErrorMessage() {
         return null;
     }
     
+    /* (non-Javadoc)
+     * @see org.eclipse.jface.text.contentassist.IContentAssistProcessor#getContextInformationValidator()
+     */
     public IContextInformationValidator getContextInformationValidator() {
         return null;
     }

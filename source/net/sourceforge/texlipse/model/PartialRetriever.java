@@ -49,22 +49,25 @@ public abstract class PartialRetriever {
         return new int[] {startIdx, endIdx};
     }
 
-//  B-----borisvl
-    
+    /**
+     * Returns (if exist) the position of the entry with the given name in 
+     * the array 
+     * @param entryname Name of the wanted entry
+     * @param entries	Sorted array of AbstractEntry
+     * @return The position inside the array or -1 if the entry was not found
+     */
     protected int getEntry(String entryname, AbstractEntry[] entries){
-        if (entries == null) return -1;
-        int start = 0;
-        int end = entries.length;
-        while (end-start>1 && !entries[(start+end)/2].key.equals(entryname)){
-            int c = entries[(start+end)/2].key.compareTo(entryname);
-            if (c < 0) start = (start+end)/2;
-            else end = (start+end)/2;
-        }
-        if (entries[(start+end)/2].key.equals(entryname)) return (start+end)/2;
-        else return -1;
+    	if (entries == null) return -1;
+    	int start = 0;
+    	int end = entries.length;
+    	while (end-start>1 && !entries[(start+end)/2].key.equals(entryname)){
+    		int c = entries[(start+end)/2].key.compareTo(entryname);
+    		if (c < 0) start = (start+end)/2;
+    		else end = (start+end)/2;
+    	}
+    	if (entries[(start+end)/2].key.equals(entryname)) return (start+end)/2;
+    	else return -1;
     }
-    
-//  E-----borisvl
     
     /**
      * Search the given (sorted) array of entries for all entries,

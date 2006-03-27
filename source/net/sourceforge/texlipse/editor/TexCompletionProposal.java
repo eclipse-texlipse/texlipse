@@ -113,8 +113,7 @@ public class TexCompletionProposal implements ICompletionProposal {
      * @see org.eclipse.jface.text.contentassist.ICompletionProposal#getImage()
      */
     public Image getImage() {
-        if (fentry.image != null) return fentry.image.createImage();
-        return null;
+        return fentry.getImage();
     }
     
     /* (non-Javadoc)

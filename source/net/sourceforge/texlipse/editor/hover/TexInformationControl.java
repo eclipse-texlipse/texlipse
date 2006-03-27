@@ -28,10 +28,10 @@ import org.eclipse.swt.widgets.Shell;
 
 
 /**
+ * This class creates a informative hover for commands and
+ * BibTex entries.
+ * 
  * @author Boris von Loesch
- *
- * TODO To change the template for this generated type comment go to
- * Window - Preferences - Java - Code Style - Code Templates
  */
 public class TexInformationControl implements IInformationControl,IInformationControlExtension{
 
@@ -166,9 +166,9 @@ public class TexInformationControl implements IInformationControl,IInformationCo
 				TexCommandEntry comEntries = refMana.getEntry(getCommand(command));
 				if (comEntries != null){
 					entry = comEntries;
-					if (comEntries.image != null){
+					if (comEntries.imageDesc != null){
 						hasImage = true;
-						image = comEntries.image.createImage();
+						image = comEntries.getImage();
 						createImageComp();
 					}
 					initTextBox();
@@ -241,8 +241,6 @@ public class TexInformationControl implements IInformationControl,IInformationCo
 	 * @see org.eclipse.jface.text.IInformationControl#dispose()
 	 */
 	public void dispose() {
-		if (image!=null && !image.isDisposed()) image.dispose();
-		//hoverText.dispose();
 		shell.dispose();
 	}
 

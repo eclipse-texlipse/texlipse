@@ -217,6 +217,12 @@ public class BracketInserter implements VerifyKeyListener, ILinkedModeListener {
         }
     }
     
+    /**
+     * Tests if the given character is a bracket or paren
+     * 
+     * @param c Chracter to test
+     * @return True if <code>c</code> is a bracket or paren, false otherwise
+     */
     private static boolean isBracket(char c) {
         if (c == '$' || c == '{' || c == '(' || c == '[' || c == ')'
             || c == '}' || c == ']')
@@ -224,6 +230,12 @@ public class BracketInserter implements VerifyKeyListener, ILinkedModeListener {
         return false;
     }
     
+    /**
+     * Returns the opposing paren, e.g. returns ')' for '(' 
+     * 
+     * @param character A bracket or paren
+     * @return The opposing bracket or paren
+     */
     private static char getPeerCharacter(char character) {
         switch (character) {
         case '(':
@@ -245,6 +257,14 @@ public class BracketInserter implements VerifyKeyListener, ILinkedModeListener {
         }
     }
     
+    /**
+     * Gets the quote wanted for the current language
+     * 
+     * @param opening
+     *            True if the opening quote is wanted, false if the closing
+     *            quote is wanted
+     * @return String containing the quotes as TeX code
+     */
     private String getQuotes(boolean opening) {
         String replacement;
         IProject project = ((FileEditorInput)editor.getEditorInput()).getFile().getProject();

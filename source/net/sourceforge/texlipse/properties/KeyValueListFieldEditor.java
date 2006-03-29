@@ -521,15 +521,14 @@ public class KeyValueListFieldEditor extends FieldEditor implements IInputValida
     }
 
     /**
-     * 
+     * @see org.eclipse.jface.preference.FieldEditor#doFillIntoGrid(org.eclipse.swt.widgets.Composite, int)
      * @param parent parent component
      * @param numColumns number of columns in the page layout
      */
     protected void doFillIntoGrid(Composite parent, int numColumns) {
-        
         table = createTable(parent);
         ((GridData)table.getLayoutData()).horizontalSpan = numColumns - 1;
-        Composite buttonBar = createButtons(parent);
+        createButtons(parent);
     }
     
     /**

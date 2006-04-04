@@ -12,6 +12,8 @@ package net.sourceforge.texlipse.builder;
 import net.sourceforge.texlipse.properties.TexlipseProperties;
 
 import org.eclipse.core.resources.IResource;
+import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.ui.PlatformUI;
 
 
 /**
@@ -53,7 +55,16 @@ public class Ps2pdfRunner extends AbstractProgramRunner {
      * @return true, if error messages were found in the output, false otherwise
      */
     protected boolean parseErrors(IResource resource, String output) {
-        //TODO: ps2pdf error parsing
+        if (output.indexOf("**** Could not open the file ") >= 0) {
+            PlatformUI.getWorkbench().getDisplay().asyncExec(new Runnable() {
+                public void run() {
+                    MessageDialog.openError(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), 
+                            "Error", "Unable to create the pdf file. Please close all pdf viewers!");
+                }
+            });
+            return true;
+        }
+        //TODO: more ps2pdf error parsing
         return false;
     }
 }

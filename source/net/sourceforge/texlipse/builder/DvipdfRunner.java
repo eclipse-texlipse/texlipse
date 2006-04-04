@@ -12,12 +12,15 @@ package net.sourceforge.texlipse.builder;
 import net.sourceforge.texlipse.properties.TexlipseProperties;
 
 import org.eclipse.core.resources.IResource;
+import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.ui.PlatformUI;
 
 
 /**
  * Run the external dvipdf program.
  * 
  * @author Kimmo Karlsson
+ * @author Boris von Loesch
  */
 public class DvipdfRunner extends AbstractProgramRunner {
 
@@ -53,7 +56,16 @@ public class DvipdfRunner extends AbstractProgramRunner {
      * @return true, if error messages were found in the output, false otherwise
      */
     protected boolean parseErrors(IResource resource, String output) {
-        //TODO: dvipdf error parsing
+        if (output.indexOf("Unable to open ") >= 0) {
+            PlatformUI.getWorkbench().getDisplay().asyncExec(new Runnable() {
+                public void run() {
+                    MessageDialog.openError(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), 
+                            "Error", "Unable to create the pdf file. Please close all pdf viewers!");
+                }
+            });
+            return true;
+        }
+        //TODO: more dvipdf error parsing
         return false;
     }
 }

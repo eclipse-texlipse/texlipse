@@ -166,8 +166,8 @@ public class MarkerHandler {
         try {
             // regular problems == parsing errors
             resource.deleteMarkers(IMarker.PROBLEM, false, IResource.DEPTH_INFINITE);
-            // builder markers == build problems
-            resource.deleteMarkers(TexlipseBuilder.MARKER_TYPE, false, IResource.DEPTH_INFINITE);
+            // builder markers == build problems (don't clean them)
+            //resource.deleteMarkers(TexlipseBuilder.MARKER_TYPE, false, IResource.DEPTH_INFINITE);
             // don't clear spelling errors
         } catch (CoreException e) {
             TexlipsePlugin.log("Deleting error markers", e);

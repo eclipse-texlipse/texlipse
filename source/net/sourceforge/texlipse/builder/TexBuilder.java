@@ -24,6 +24,7 @@ import org.eclipse.core.runtime.Platform;
  * 
  * @author Kimmo Karlsson
  * @author Tor Arne Vestbø
+ * @author Boris von Loesch
  */
 public class TexBuilder extends AbstractBuilder {
 
@@ -32,6 +33,7 @@ public class TexBuilder extends AbstractBuilder {
     private ProgramRunner makeIndex;
     private ProgramRunner makeIndexNomencl;
     private String output;
+    private boolean stopped;
     
     public TexBuilder(int i, String outputFormat) {
         super(i);
@@ -82,6 +84,9 @@ public class TexBuilder extends AbstractBuilder {
     public void stopRunners() {
         latex.stop();
         bibtex.stop();
+        makeIndex.stop();
+        makeIndexNomencl.stop();
+        stopped = true;
     }
     
     /**
@@ -90,7 +95,8 @@ public class TexBuilder extends AbstractBuilder {
      */
     public void buildResource(IResource resource) throws CoreException {
 
-		// Make sure we close the output document first 
+		stopped = false;
+        // Make sure we close the output document first 
     	// (using DDE on Win32)
     	if (Platform.getOS().equals(Platform.OS_WIN32)) {
     		monitor.subTask("Closing output document");    	
@@ -101,6 +107,8 @@ public class TexBuilder extends AbstractBuilder {
     	monitor.subTask("Building document");
         latex.run(resource);
         monitor.worked(10);
+        if (stopped)
+            return;
 
         IProject project = resource.getProject();
         String runBib = (String) TexlipseProperties.getSessionProperty(project, TexlipseProperties.SESSION_BIBTEX_RERUN);
@@ -117,6 +125,8 @@ public class TexBuilder extends AbstractBuilder {
         if (bibs != null && bibs.length > 0 && (runBib != null || bibChange != null)) {
             
             bibtex.run(resource);
+            if (stopped)
+                return;
             monitor.worked(10);
             
             TexlipseProperties.setSessionProperty(project, TexlipseProperties.SESSION_BIBTEX_RERUN, null);
@@ -124,6 +134,8 @@ public class TexBuilder extends AbstractBuilder {
             
             if (runIdx != null) {
                 makeIndex.run(resource);
+                if (stopped)
+                    return;
                 monitor.worked(10);
             }
             
@@ -132,18 +144,26 @@ public class TexBuilder extends AbstractBuilder {
                 // Running makeindex to build nomenclature index
                 // when %input.nlo file is detected
                 makeIndexNomencl.run(resource);
+                if (stopped)
+                    return;
                 monitor.worked(10);
             }
               
             latex.run(resource);
+            if (stopped)
+                return;
             monitor.worked(10);
             latex.run(resource);
+            if (stopped)
+                return;
             monitor.worked(10);
             
         } else if (rerun != null || runIdx != null || runNomencl != null) {
             
             if (runIdx != null) {
                 makeIndex.run(resource);
+                if (stopped)
+                    return;
                 monitor.worked(10);
             }
             
@@ -152,10 +172,14 @@ public class TexBuilder extends AbstractBuilder {
                 // Running makeindex to build nomenclature index
                 // when %input.nlo file is detected
                 makeIndexNomencl.run(resource);
+                if (stopped)
+                    return;
                 monitor.worked(10);
             }
             
             latex.run(resource);
+            if (stopped)
+                return;
             monitor.worked(10);
             
             TexlipseProperties.setSessionProperty(resource.getProject(), TexlipseProperties.SESSION_LATEX_RERUN, null);

@@ -26,6 +26,7 @@ public class DviBuilder extends AbstractBuilder {
     private Builder dvi;
     private ProgramRunner ps;
     private String output;
+    private boolean stopped;
 
     public DviBuilder(int i, String outputFormat) {
         super(i);
@@ -71,12 +72,16 @@ public class DviBuilder extends AbstractBuilder {
         // stopRunners instead of stopBuild, because we didn't start a separate thread for DviBuilder
         dvi.stopRunners();
         ps.stop();
+        stopped = true;
     }
 
     public void buildResource(IResource resource) throws CoreException {
         // call buildResource directly, because we don't want a separate thread for DviBuilder
+        stopped = false;
         dvi.buildResource(resource);
-
+        if (stopped) 
+            return;
+        
         monitor.subTask("Converting dvi to " + output);
         ps.run(resource);
         monitor.worked(15);

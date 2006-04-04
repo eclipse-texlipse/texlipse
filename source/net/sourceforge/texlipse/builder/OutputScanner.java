@@ -98,17 +98,19 @@ public class OutputScanner {
                 if (nextByte == -1) break;
                 sb.append((char)nextByte);
                 
-                for (int i = 0; i < triggerString.length; i++) {
-                    int foundIndex = sb.indexOf(triggerString[i], okIndex);
-                    if (foundIndex >= 0) {
-                        currentTriggerStringLength = triggerString[i].length();
-                        
-                        boolean retry = askUserInput();
-                        if (!retry) {
-                            return false;
-                        } else {
-                            okIndex = foundIndex+1;
-                            break;
+                if (triggerString != null){
+                    for (int i = 0; i < triggerString.length; i++) {
+                        int foundIndex = sb.indexOf(triggerString[i], okIndex);
+                        if (foundIndex >= 0) {
+                            currentTriggerStringLength = triggerString[i].length();
+                            
+                            boolean retry = askUserInput();
+                            if (!retry) {
+                                return false;
+                            } else {
+                                okIndex = foundIndex+1;
+                                break;
+                            }
                         }
                     }
                 }

@@ -36,6 +36,7 @@ import org.eclipse.core.runtime.Path;
  * Builder class interfacing with Eclipse API.
  * 
  * @author Kimmo Karlsson
+ * @author Boris von Loesch
  */
 public class TexlipseBuilder extends IncrementalProjectBuilder {
 
@@ -100,12 +101,7 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
         
         monitor.subTask(TexlipsePlugin.getResourceString("builderSubTaskCleanMarkers"));
         
-        IResource[] resource = TexlipseProperties.getAllProjectFiles(project);
-        for (int i = 0; i < resource.length; i++) {
-            resource[i].deleteMarkers(MARKER_TYPE, false, IResource.DEPTH_INFINITE);
-            resource[i].deleteMarkers(LAYOUT_WARNING_TYPE, false, IResource.DEPTH_INFINITE);
-        }
-        
+        this.deleteMarkers(project);
         project.refreshLocal(IProject.DEPTH_INFINITE, monitor);
 		monitor.done();
 	}
@@ -320,12 +316,7 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
         // number 100 is just some kind of educated guess of how much work there is
         monitor.beginTask(TexlipsePlugin.getResourceString("builderSubTaskPartialBuild"), 100);
 
-        IResource[] ress = TexlipseProperties.getAllProjectFiles(project);
-        for (int i = 0; i < ress.length; i++) {
-            ress[i].deleteMarkers(MARKER_TYPE, false, IResource.DEPTH_INFINITE);
-            ress[i].deleteMarkers(LAYOUT_WARNING_TYPE, false, IResource.DEPTH_INFINITE);
-        }
-        
+        this.deleteMarkers(project);
         // reset builder instance to startable state
         builder.reset(monitor);
         
@@ -524,12 +515,7 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
         // number 100 is just some kind of guess of how much work there is
         monitor.beginTask(TexlipsePlugin.getResourceString("builderSubTaskBuild"), 100);
 
-        // delete old problem markers from source (null=all types)
-        IResource[] ress = TexlipseProperties.getAllProjectFiles(project);
-        for (int i = 0; i < ress.length; i++) {
-            ress[i].deleteMarkers(MARKER_TYPE, false, IResource.DEPTH_INFINITE);
-            ress[i].deleteMarkers(LAYOUT_WARNING_TYPE, false, IResource.DEPTH_INFINITE);
-        }
+        this.deleteMarkers(project);
         monitor.worked(1);
 
         // reset builder instance to startable state
@@ -809,5 +795,19 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
             return false;
         }
         return resource.getModificationStamp() > getOutputFileDate(project);
+    }
+    
+    /**
+     * Delete old build errors and layout markers from project
+     * @param project
+     * @throws CoreException
+     */
+    protected void deleteMarkers (IProject project) throws CoreException{
+        //IResource[] ress = TexlipseProperties.getAllProjectFiles(project);
+        IResource[] ress = project.members();
+        for (int i = 0; i < ress.length; i++) {
+            ress[i].deleteMarkers(MARKER_TYPE, false, IResource.DEPTH_INFINITE);
+            ress[i].deleteMarkers(LAYOUT_WARNING_TYPE, false, IResource.DEPTH_INFINITE);
+        }
     }
 }

@@ -18,6 +18,7 @@ import java.io.StringWriter;
 import java.util.Properties;
 
 import net.sourceforge.texlipse.PathUtils;
+import net.sourceforge.texlipse.TexlipsePlugin;
 import net.sourceforge.texlipse.properties.TexlipseProperties;
 
 
@@ -25,6 +26,7 @@ import net.sourceforge.texlipse.properties.TexlipseProperties;
  * Helper methods to run an external program.
  * 
  * @author Kimmo Karlsson
+ * @author Boris von Loesch
  */
 public class ExternalProgram {
     
@@ -133,9 +135,9 @@ public class ExternalProgram {
      * @param wait if true, this method will block until
      *             the process has finished execution
      * @return the text produced to standard output by the process
-     * @throws Exception
+     * @throws IOException 
      */
-    protected String run(boolean wait, String[] queryMessage) throws Exception {
+    protected String run(boolean wait, String[] queryMessage) throws IOException {
         
         String output = null;
         String errorOutput = null;
@@ -168,41 +170,67 @@ public class ExternalProgram {
             throw new IllegalStateException();
         }
 
-        if (queryMessage != null) {
-            
-            // scan the standard output stream
-            OutputScanner scanner = null;
-            
-            // scan also the standard error stream
-            OutputScanner errorScanner = null;
-            
-            scanner = new OutputScanner(process.getInputStream(), process.getOutputStream(),
-                    queryMessage, consoleOutput);
-            errorScanner = new OutputScanner(process.getErrorStream(), process.getOutputStream(),
-                    queryMessage, consoleOutput);
-            
-            if (scanner.scanOutput()) {
-                output = scanner.getText();
-            }
-            if (errorScanner.scanOutput()) {
-                errorOutput = errorScanner.getText();
-            }
-            
-        } else {
-            //TODO: Better solve the weird problem with dvips, maybe processing both streams together
-            errorOutput = readOutput(process.getErrorStream());
-            output = readOutput(process.getInputStream());  
-        }
+        final StringBuffer thErrorOutput = new StringBuffer();
+        final StringBuffer thOutput = new StringBuffer();
         
-        if (output == null) {
-            output = "";
-            process.destroy();
+        // scan the standard output stream
+        final OutputScanner scanner = new OutputScanner(process.getInputStream(), 
+                process.getOutputStream(), queryMessage, consoleOutput);
+        
+        // scan also the standard error stream
+        final OutputScanner errorScanner = new OutputScanner(process.getErrorStream(), 
+                process.getOutputStream(), queryMessage, consoleOutput);
+        
+        final Thread errorThread = new Thread() {
+            public void run() {
+                if (errorScanner.scanOutput()) {
+                    thErrorOutput.append(errorScanner.getText());
+                }
+            };
+        };
+        final Thread outputThread = new Thread() {
+            public void run() {
+                if (scanner.scanOutput()) {
+                    thOutput.append(scanner.getText());
+                } else {
+                    // Abort by user: Abort build, clear all output
+                    process.destroy();
+                    try {
+                        errorThread.join();
+                    } catch (InterruptedException e) {
+                        // Should not happen
+                        TexlipsePlugin.log("Output scanner interrupted", e);
+                    }
+                    thOutput.setLength(0);
+                    thErrorOutput.setLength(0);
+                }
+            };
+        };
+
+        outputThread.start();
+        errorThread.start();
+        try {
+            // Wait until stream read has finished
+            errorThread.join();
+            outputThread.join();
+        } catch (InterruptedException e) {
+            TexlipsePlugin.log("Output scanner interrupted", e);
+            // Should not happen
         }
+
+        output = thOutput.toString();
+        errorOutput = thErrorOutput.toString();
+        
         
         if (wait) {
             // the process status code is not useful here
             //int code = 
-            process.waitFor();
+            try {
+                process.waitFor();
+            } catch (InterruptedException e) {
+                //Should not happen
+                TexlipsePlugin.log("Process interrupted", e);                
+            }
         }
         
         process = null;

@@ -27,6 +27,7 @@ public class PsBuilder extends AbstractBuilder {
     private Builder dvi;
     private ProgramRunner pdf;
     private Class builderClass;
+    private boolean stopped;
 
     public PsBuilder(int i, Class clazz) {
         super(i);
@@ -72,12 +73,16 @@ public class PsBuilder extends AbstractBuilder {
         // stopRunners instead of stopBuild, because we didn't start a separate thread for DviBuilder
         dvi.stopRunners();
         pdf.stop();
+        stopped = true;
     }
 
     public void buildResource(IResource resource) throws CoreException {
         // call buildResource directly, because we don't want a separate thread for DviBuilder
+        stopped = false;
         dvi.buildResource(resource);
-
+        if (stopped) 
+            return;
+        
         monitor.subTask("Converting dvi to pdf");
         pdf.run(resource);
         monitor.worked(15);

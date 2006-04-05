@@ -90,11 +90,11 @@ public class TexCommandContainer {
             new TexCommandEntry("marginparwidth", "\\marginparwidth{}\n\nSpecifies the margin width to be used.", 1),
             new TexCommandEntry("mdseries", "\\mdseries{}\n\nStarts using a medium-weight font.", 1),
             new TexCommandEntry("multicolumn", "\\multicolumn{}{}{}\n\nUsed in \\tabular environment to denote a multicolumn cell.", 3),
-            new TexCommandEntry("newcommand", "\newcommand\n\nDefines a new command. An optional argument between the two mandatory ones defines the number of arguments of the command. Arguments can be referred in the definition as #1, #2 etc.", 2),
-            new TexCommandEntry("newpage", "\newpage\n\nInserts a page break.", 0),
-            new TexCommandEntry("nocite", "\nocite{reference}\n\nUses this reference in the bibliography, but not in the text.", 1),
-            new TexCommandEntry("noindent", "\noindent\n\nSets the paragraph indentation to zero.", 0),
-            new TexCommandEntry("normalsize", "\normalsize{}\n\nSets the font size back to normal.", 1),
+            new TexCommandEntry("newcommand", "\\newcommand\n\nDefines a new command. An optional argument between the two mandatory ones defines the number of arguments of the command. Arguments can be referred in the definition as #1, #2 etc.", 2),
+            new TexCommandEntry("newpage", "\\newpage\n\nInserts a page break.", 0),
+            new TexCommandEntry("nocite", "\\nocite{reference}\n\nUses this reference in the bibliography, but not in the text.", 1),
+            new TexCommandEntry("noindent", "\\noindent\n\nSets the paragraph indentation to zero.", 0),
+            new TexCommandEntry("normalsize", "\\normalsize{}\n\nSets the font size back to normal.", 1),
             new TexCommandEntry("onecolumn", "\\onecolumn\n\nSets the number of columns to one.", 0),
             new TexCommandEntry("overbrace", "\\overbrace{equation}\n\nGenerates a brace over equation. To \"label\" the overbrace, use a superscript.\nMath mode only.", 1),
             new TexCommandEntry("pagenumbering", "\\pagenumbering{argument}\n\nalph is [a,b,?], Alph is [A,B,?], arabic is [1,2,?], roman is [i,ii,?], Roman is [I,II,?]", 1),
@@ -224,9 +224,30 @@ public class TexCommandContainer {
         new TexCommandEntry("partial", "\\partial\n\nSymbol for partial derivation", "mathSym/misc/partial"),
         new TexCommandEntry("infty", "\\infty\n\nInfinity", "mathSym/misc/infty"),
         new TexCommandEntry("angle", "\\angle\n\nAngle symbol", "mathSym/misc/angle"),
-        new TexCommandEntry("emptyset", "\\emptyset\n\nEmpty set", "mathSym/misc/emptyset")        
+        new TexCommandEntry("emptyset", "\\emptyset\n\nEmpty set", "mathSym/misc/emptyset"),        
+        new TexCommandEntry("int", "\\int\n\nIntegral symbol", "mathSym/misc/int"),
+        new TexCommandEntry("oint", "\\oint\n\nIntegral symbol with circle", "mathSym/misc/oint"),
+        new TexCommandEntry("sum", "\\sum\n\nSummation symbol", "mathSym/misc/sum"),
+        new TexCommandEntry("prod", "\\prod\n\nProduct symbol", "mathSym/misc/prod"),
+        new TexCommandEntry("coprod", "\\coprod\n\nReverse product symbol", "mathSym/misc/coprod"),
+        new TexCommandEntry("Re", "\\Re\n\n", "mathSym/misc/re"),
+        new TexCommandEntry("Im", "\\Im\n\n", "mathSym/misc/im"),
+        new TexCommandEntry("imath", "\\imath\n\n", "mathSym/misc/imath"),
+        new TexCommandEntry("jmath", "\\jmath\n\n", "mathSym/misc/jmath"),
+        new TexCommandEntry("wp", "\\wp\n\nWeierstrass p", "mathSym/misc/wp")
     };
-
+    public static final TexCommandEntry[] stdBraces = {
+        new TexCommandEntry("langle", "\\langle\n\n", "mathSym/braces/langle"),
+        new TexCommandEntry("rangle", "\\rangle\n\n", "mathSym/braces/rangle"),
+        new TexCommandEntry("lfloor", "\\lfloor\n\n", "mathSym/braces/lfloor"),
+        new TexCommandEntry("rfloor", "\\rfloor\n\n", "mathSym/braces/rfloor"),
+        new TexCommandEntry("lceil", "\\lceil\n\n", "mathSym/braces/lceil"),
+        new TexCommandEntry("rceil", "\\rceil\n\n", "mathSym/braces/rceil"),
+        new TexCommandEntry("{", "\\{\n\n", "mathSym/braces/lbrace"),
+        new TexCommandEntry("}", "\\}\n\n", "mathSym/braces/rbrace"),
+        new TexCommandEntry("|", "\\|\n\n", "mathSym/braces/norm")
+    };
+    
     public static final TexCommandEntry[] stdArrows = {
         new TexCommandEntry("leftarrow", "\\leftarrow\n\nSimple arrow which points to the left", "mathSym/arrows/leftarrow"),
         new TexCommandEntry("gets", "\\gets\n\nSimple arrow which points to the left", "mathSym/arrows/leftarrow"),
@@ -461,6 +482,7 @@ public class TexCommandContainer {
         for (int i=0; i<stdCompare.length; i++) sortedCommands.add(stdCompare[i]);
         for (int i=0; i<functionNames.length; i++) sortedCommands.add(functionNames[i]);
         for (int i=0; i<stdBinOpSymbols.length; i++) sortedCommands.add(stdBinOpSymbols[i]);
+        for (int i=0; i<stdBraces.length; i++) sortedCommands.add(stdBraces[i]);
         Collections.sort(sortedCommands);
         createContexts();
     }

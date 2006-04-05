@@ -23,6 +23,7 @@ import org.eclipse.jface.text.Position;
  */
 public class OutlineNode {
     
+    // These should be allocated between 0-100
     public static final int TYPE_PART = 0;
     public static final int TYPE_CHAPTER = 1;
     public static final int TYPE_SECTION = 2;
@@ -38,6 +39,8 @@ public class OutlineNode {
     private String name;
     private int type;
     private int beginLine, endLine;
+    private int offsetOnLine;
+    private int declarationLength;
     private OutlineNode parent;
     private ArrayList children;
     private Position position;
@@ -58,6 +61,24 @@ public class OutlineNode {
         this.parent = parent;
     }
 
+    /**
+     * The constructor.
+     * 
+     * @param name name of the node
+     * @param type type of the node
+     * @param beginLine beginLine of the text of the node
+     * @param offset The offset on the starting line
+     * @param length The length of the command starting this node
+     */
+    public OutlineNode(String name, int type, int beginLine, int offset, int length) {
+        this.name = name;
+        this.type = type;
+        this.beginLine = beginLine;
+        this.offsetOnLine = offset;
+        this.declarationLength = length;
+    }
+
+    
     /**
      * Adds a child to this node.
      * 
@@ -182,7 +203,21 @@ public class OutlineNode {
     public void setIFile(IFile file) {
         this.file = file;
     }
-    
+
+    /**
+     * @return Returns the declarationLength.
+     */
+    public int getDeclarationLength() {
+        return declarationLength;
+    }
+
+    /**
+     * @return Returns the offsetOnLine.
+     */
+    public int getOffsetOnLine() {
+        return offsetOnLine;
+    }
+
     /**
      * @return String presentation of the node
      */
@@ -191,7 +226,6 @@ public class OutlineNode {
         		this.getPosition().getOffset() + " " + this.getPosition().getLength() +
 				super.toString();
     }
-
 
     /*
     public boolean likelySame(OutlineNode on) {

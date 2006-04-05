@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import net.sourceforge.texlipse.model.DocumentReference;
 import net.sourceforge.texlipse.model.OutlineNode;
@@ -59,6 +60,17 @@ import org.eclipse.core.resources.IMarker;
  */
 public class LatexParser {
 
+//  These should be allocated between 1000-2000
+    public static final int TYPE_LABEL = 1000;
+    
+    private static final Pattern partRe = Pattern.compile("\\\\part(?:[^a-zA-Z]|$)");
+    private static final Pattern chapterRe = Pattern.compile("\\\\chapter(?:[^a-zA-Z]|$)");
+    private static final Pattern sectionRe = Pattern.compile("\\\\section(?:[^a-zA-Z]|$)");
+    private static final Pattern ssectionRe = Pattern.compile("\\\\subsection(?:[^a-zA-Z]|$)");
+    private static final Pattern sssectionRe = Pattern.compile("\\\\subsubsection(?:[^a-zA-Z]|$)");
+    private static final Pattern paragraphRe = Pattern.compile("\\\\paragraph(?:[^a-zA-Z]|$)");
+    private static final Pattern labelRe = Pattern.compile("\\\\label(?:[^a-zA-Z]|$)");
+    
     /**
      * Defines a new stack implementation, which is unsynchronized and
      * tuned for the needs of the parser, making it much faster than 
@@ -66,7 +78,7 @@ public class LatexParser {
      * 
      * @author Oskar Ojala
      */
-    private final class Stack2 {
+    private final class StackUnsynch {
         
         private static final int initialSize = 10;
         private static final int growthFactor = 2;
@@ -77,7 +89,7 @@ public class LatexParser {
         /**
          * Creates a new stack.
          */
-        public Stack2() {
+        public StackUnsynch() {
             stack = new Object[initialSize];
             size = 0;
             capacity = initialSize;
@@ -140,7 +152,7 @@ public class LatexParser {
     private ArrayList labels; //type: ReferenceEntry
     private ArrayList cites; //type: DocumentReference
     private ArrayList refs; //type: DocumentReference
-    private ArrayList commands; //type: CommandEntry
+    private ArrayList commands; //type: TexCommandEntry
     private List tasks; //type: ParseErrorMessage
     
     private String[] bibs;
@@ -221,7 +233,7 @@ public class LatexParser {
             OutlineNode preamble)
     throws LexerException, IOException {
         initializeDatastructs();
-        Stack2 blocks = new Stack2();
+        StackUnsynch blocks = new StackUnsynch();
         
         boolean expectArg = false;
         boolean expectArg2 = false;
@@ -281,7 +293,8 @@ public class LatexParser {
                     } else if (prevToken instanceof TCbegin) { // \begin{...}
                         OutlineNode on = new OutlineNode(t.getText(),
                                 OutlineNode.TYPE_ENVIRONMENT,
-                                t.getLine(), null);
+                                t.getLine(), prevToken.getPos(),
+                                prevToken.getText().length() + accumulatedLength + t.getText().length());
                         
                         if (preamble != null && "document".equals(t.getText())) {
                             preamble.setEndLine(t.getLine());
@@ -347,11 +360,15 @@ public class LatexParser {
                                         IMarker.SEVERITY_ERROR));
                             } else if (!prev.getName().equals(t.getText())) {
                                 fatalErrors = true;
+                                errors.add(new ParseErrorMessage(prev.getBeginLine(),
+                                        prev.getOffsetOnLine(), prev.getDeclarationLength(),
+                                        "\\end{" + prev.getName() + "} expected, but \\end{" + t.getText() + "} found; unbalanced begin-end",
+                                        IMarker.SEVERITY_ERROR));
                                 errors.add(new ParseErrorMessage(prevToken.getLine(),
                                         prevToken.getPos(),
                                         prevToken.getText().length() + accumulatedLength + t.getText().length(),
                                         "\\end{" + prev.getName() + "} expected, but \\end{" + t.getText() + "} found; unbalanced begin-end",
-                                        IMarker.SEVERITY_ERROR));                            
+                                        IMarker.SEVERITY_ERROR));
                             }
                         }
                     } else if (prevToken instanceof TCpart) {
@@ -437,8 +454,9 @@ public class LatexParser {
                                 break;
                                 }
                             }
-                        } else {
+                        }
                             // add directly to tree if no parent was found
+                        if (blocks.empty()) {
                             outlineTree.add(on);
                         }
                         blocks.push(on);
@@ -649,18 +667,26 @@ public class LatexParser {
                 if (t instanceof TArgument) {
                     currentCommand.info = t.getText();
                     commands.add(currentCommand);
-                    if (currentCommand.info.indexOf("\\part") != -1)
+                    if (partRe.matcher(currentCommand.info).find())
                         sectioning.put("\\" + currentCommand.key, new Integer(OutlineNode.TYPE_PART));
-                    else if (currentCommand.info.indexOf("\\chapter") != -1)
+                    //else if (currentCommand.info.indexOf("\\chapter") != -1)
+                    else if (chapterRe.matcher(currentCommand.info).find())
                         sectioning.put("\\" + currentCommand.key, new Integer(OutlineNode.TYPE_CHAPTER));
-                    else if (currentCommand.info.indexOf("\\section") != -1)
+                    //else if (currentCommand.info.indexOf("\\section") != -1)
+                    else if (sectionRe.matcher(currentCommand.info).find())
                         sectioning.put("\\" + currentCommand.key, new Integer(OutlineNode.TYPE_SECTION));
-                    else if (currentCommand.info.indexOf("\\subsection") != -1)
+                    //else if (currentCommand.info.indexOf("\\subsection") != -1)
+                    else if (ssectionRe.matcher(currentCommand.info).find())
                         sectioning.put("\\" + currentCommand.key, new Integer(OutlineNode.TYPE_SUBSECTION));
-                    else if (currentCommand.info.indexOf("\\subsubsection") != -1)
+                    //else if (currentCommand.info.indexOf("\\subsubsection") != -1)
+                    else if (sssectionRe.matcher(currentCommand.info).find())
                         sectioning.put("\\" + currentCommand.key, new Integer(OutlineNode.TYPE_SUBSUBSECTION));
-                    else if (currentCommand.info.indexOf("\\paragraph") != -1)
+                    //else if (currentCommand.info.indexOf("\\paragraph") != -1)
+                    else if (paragraphRe.matcher(currentCommand.info).find())
                         sectioning.put("\\" + currentCommand.key, new Integer(OutlineNode.TYPE_PARAGRAPH));
+                    //else if (currentCommand.info.indexOf("\\label") != -1)
+                    else if (labelRe.matcher(currentCommand.info).find())  
+                        sectioning.put("\\" + currentCommand.key, new Integer(LatexParser.TYPE_LABEL));
 
                     argCount = 0;
                     expectArg2 = false;
@@ -720,6 +746,9 @@ public class LatexParser {
                             break;
                         case OutlineNode.TYPE_PARAGRAPH:
                             prevToken = new TCparagraph(t.getLine(), t.getPos());
+                            break;
+                        case LatexParser.TYPE_LABEL:
+                            prevToken = new TClabel(t.getLine(), t.getPos());
                             break;
                         default:
                             break;

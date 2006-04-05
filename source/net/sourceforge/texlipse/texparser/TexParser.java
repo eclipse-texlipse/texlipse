@@ -167,7 +167,7 @@ public class TexParser {
     }
 
     /**
-     * @return The labels
+     * @return The labels <code>ArrayList<ReferenceEntry></code>
      */
     public ArrayList getLabels() {
         return lparser.getLabels();
@@ -223,7 +223,7 @@ public class TexParser {
     }
     
     /**
-     * @return Get the \ref -references
+     * @return Get the \ref -references that were invalid
      */
     public ArrayList getRefs() {
         return lparser.getRefs();

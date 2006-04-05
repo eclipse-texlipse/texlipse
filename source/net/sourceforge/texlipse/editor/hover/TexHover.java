@@ -57,10 +57,10 @@ public class TexHover implements ITextHover, ITextHoverExtension {
             String line = textViewer.getDocument().get(lOffset, textViewer.getDocument().getLineLength(lineNr));
             int start = offset - lOffset;
 
-            
             int cStart = line.lastIndexOf('\\', start);
+            int oBrace = line.lastIndexOf('{', start);
             int cEnd = line.indexOf('}', start);
-            if (cStart >= 0 && cEnd >= 0) {
+            if (cStart >= 0 && cEnd >= 0 && cStart < oBrace) {
                 String fullCommand = line.substring(cStart, cEnd + 1);
                 Matcher m = recognizeCommand.matcher(fullCommand);
                 if (m.matches()) {
@@ -78,6 +78,15 @@ public class TexHover implements ITextHover, ITextHoverExtension {
                         return new Region(lOffset + cStart, (cEnd - cStart) + 1);
                     }
                 }
+            } else if (cStart >= 0) {
+                // The command might not have an argument
+                for (int i = start; i < line.length(); i++) {
+                    if (!Character.isLetter(line.charAt(i))) {
+                        cEnd = i;
+                        break;
+                    }
+                }
+                return new Region(lOffset + cStart, (cEnd - cStart));
             }
             
             

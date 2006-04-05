@@ -60,7 +60,7 @@ public class TexCompletionProposal implements ICompletionProposal {
                     displayKey.append("{}");
                 document.replace(fReplacementOffset, fReplacementLength, displayKey.toString());
                 if (TexlipsePlugin.getDefault().getPreferenceStore()
-                        .getBoolean(TexlipseProperties.TEX_BRACKET_COMPLETION)){
+                        .getBoolean(TexlipseProperties.SMART_PARENS)){
                     LinkedModeModel model= new LinkedModeModel();
                     for (int j=0; j < fentry.arguments; j++){
                         int newOffset = fReplacementOffset + fentry.key.length() + j*2 + 1;

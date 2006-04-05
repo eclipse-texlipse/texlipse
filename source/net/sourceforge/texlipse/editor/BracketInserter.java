@@ -280,7 +280,8 @@ public class BracketInserter implements VerifyKeyListener, ILinkedModeListener {
     public void verifyKey(VerifyEvent event) {
         // TODO separate math mode from normal typing?
         // early pruning to slow down normal typing as little as possible
-        if (!event.doit) return;
+        if (!event.doit)
+            return;
         switch (event.character) {
         case '(':
         case '{':
@@ -313,7 +314,7 @@ public class BracketInserter implements VerifyKeyListener, ILinkedModeListener {
                 return;
             if (character == '"') {
                 // Replace quotation marks
-                if (!TexlipsePlugin.getDefault().getPreferenceStore().getBoolean(TexlipseProperties.TEX_REPLACE_QUOTES))
+                if (!TexlipsePlugin.getDefault().getPreferenceStore().getBoolean(TexlipseProperties.SMART_QUOTES))
                     return;
                 
                 String mark;
@@ -330,9 +331,12 @@ public class BracketInserter implements VerifyKeyListener, ILinkedModeListener {
                 return;
             }
             
-            // -----
+            // Smart backspace
             
             if (character == '\b') {
+                if (!TexlipsePlugin.getDefault().getPreferenceStore().getBoolean(TexlipseProperties.SMART_BACKSPACE)) {
+                    return;
+                }
                 if (last == '}' && offset > 4) { // \={o} or \'{\i}
                     int distance;
                     if (document.getChar(offset-5) == '\\') {
@@ -354,15 +358,22 @@ public class BracketInserter implements VerifyKeyListener, ILinkedModeListener {
                     // FIXME can't handle unicode
                     // \'a
                     if (offset > 2 && document.getChar(offset-3) == '\\') {
-                        // "\\\\.\\w"
-                        document.replace(offset - 3, 3, "");
-                        event.doit = false;
+                        // "\\\\\\W\\w"
+                        if (!Character.isLetter(document.getChar(offset-2))) {
+                            document.replace(offset - 3, 3, "");
+                            event.doit = false;
+                        }
                     }
                 }
                 return;
             }
             
+            // Smart \ldots
+            
             if (character == '.') {
+                if (!TexlipsePlugin.getDefault().getPreferenceStore().getBoolean(TexlipseProperties.SMART_LDOTS)) {
+                    return;
+                }
                 if (last == '.' && document.getChar(offset-2) == '.') {
                     String replacement = "\\ldots";
                     document.replace(offset-2, length+2, replacement);
@@ -372,9 +383,9 @@ public class BracketInserter implements VerifyKeyListener, ILinkedModeListener {
                 return;
             }
             
-            // -----
+            // Smart parens
             
-            if (!TexlipsePlugin.getDefault().getPreferenceStore().getBoolean(TexlipseProperties.TEX_BRACKET_COMPLETION))
+            if (!TexlipsePlugin.getDefault().getPreferenceStore().getBoolean(TexlipseProperties.SMART_PARENS))
                 return;
             
             if (Character.isWhitespace(next) || isBracket(next)) {

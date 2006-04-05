@@ -36,7 +36,7 @@ public class TexlipsePreferenceInitializer extends
         AbstractPreferenceInitializer {
 
     /**
-     * 
+     * Creates a new preference initializer
      */
     public TexlipsePreferenceInitializer() {
         super();
@@ -119,8 +119,11 @@ public class TexlipsePreferenceInitializer extends
         pref.setDefault(TexlipseProperties.WORDWRAP_TYPE, TexlipseProperties.WORDWRAP_TYPE_HARD);
         pref.setDefault(TexlipseProperties.WORDWRAP_DEFAULT, true);
         pref.setDefault(TexlipseProperties.TEX_ITEM_COMLETION, true);
-        pref.setDefault(TexlipseProperties.TEX_BRACKET_COMPLETION, true);
-        pref.setDefault(TexlipseProperties.TEX_REPLACE_QUOTES, true);
+        
+        pref.setDefault(TexlipseProperties.SMART_BACKSPACE, true);
+        pref.setDefault(TexlipseProperties.SMART_PARENS, true);
+        pref.setDefault(TexlipseProperties.SMART_QUOTES, true);
+        pref.setDefault(TexlipseProperties.SMART_LDOTS, true);
 //      B----------------------------------- mmaus
         //pref.setDefault(TexlipseProperties.SMART_KEY_SETTINGS, "ll=list,en=enumerate,iz=itemize");
         pref.setDefault(TexlipseProperties.STYLE_COMPLETION_SETTINGS, "bold=\\textbf{,italic=\\textit{,roman=\\textrm{,sans serif=\\textsf{,small caps=\\textsc{,slanted=\\textsl{,teletype=\\texttt{,emphasize=\\emph{");

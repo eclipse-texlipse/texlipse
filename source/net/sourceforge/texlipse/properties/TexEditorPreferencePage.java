@@ -79,19 +79,7 @@ public class TexEditorPreferencePage
         Label itemLabel = new Label(getFieldEditorParent(),SWT.LEFT | SWT.WRAP);
         itemLabel.setText(TexlipsePlugin.getResourceString("preferenceTexItemCompletionText"));        
         //TexlipsePreferencePage.addSpacer(getFieldEditorParent());
-        
-        // auto Bracket completion
-        addField(new BooleanFieldEditor(TexlipseProperties.TEX_BRACKET_COMPLETION, TexlipsePlugin.getResourceString("preferenceTexBracketCompletion"), getFieldEditorParent()));
-        Label bracketLabel = new Label(getFieldEditorParent(),SWT.LEFT | SWT.WRAP);
-        bracketLabel.setText(TexlipsePlugin.getResourceString("preferenceTexBracketCompletionText"));
-        //TexlipsePreferencePage.addSpacer(getFieldEditorParent());
-        
-        // replace quotation marks
-        addField(new BooleanFieldEditor(TexlipseProperties.TEX_REPLACE_QUOTES, TexlipsePlugin.getResourceString("preferenceTexReplaceQuotes"), getFieldEditorParent()));
-        Label quotesLabel = new Label(getFieldEditorParent(),SWT.LEFT | SWT.WRAP);
-        quotesLabel.setText(TexlipsePlugin.getResourceString("preferenceTexReplaceQuotes"));
-        //TexlipsePreferencePage.addSpacer(getFieldEditorParent());
-        
+                
         // auto parsing
         addField(new BooleanFieldEditor(TexlipseProperties.AUTO_PARSING, TexlipsePlugin.getResourceString("preferenceAutoParsing"), getFieldEditorParent()));
         String autoParsingMessage = TexlipsePlugin.getResourceString("preferenceAutoParsingDelay").replaceFirst("%1", "" + MIN_AUTO_DELAY).replaceFirst("%2", "" + MAX_AUTO_DELAY);

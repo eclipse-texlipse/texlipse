@@ -159,6 +159,11 @@
             name="Style completions"
             id="StyleCompletionPreferencePage"/>
       <page
+            class="net.sourceforge.texlipse.properties.SmartKeyPreferencePage"
+            category="TexlipseEditorPreferencePage"
+            name="Smart keys"
+            id="SmartKeyPreferencePage"/>
+      <page
             class="net.sourceforge.texlipse.properties.ColoringPreferencePage"
             category="TexlipseEditorPreferencePage"
             name="Syntax Highlighting"

@@ -78,13 +78,7 @@ public class TexlipseProperties {
 
     public static final String TEX_ITEM_COMLETION = "texItemCompletion"; 
     public static final String TEX_ITEM_COMLETION_VALUE = "true";
-    
-    public static final String TEX_BRACKET_COMPLETION = "texBracketCompletion";
-    public static final String TEX_BRACKET_COMLETION_VALUE = "true";
-    
-    public static final String TEX_REPLACE_QUOTES = "texReplaceQuotes";
-    public static final String TEX_REPLACE_QUOTES_VALUE = "true";
-    
+        
     public static final String AUTO_PARSING = "autoParsing";
     public static final String AUTO_PARSING_DELAY = "autoParsingDelay";
     
@@ -109,6 +103,18 @@ public class TexlipseProperties {
     public static final String SMART_KEY_ENABLE = "ske";
     public static final String STYLE_COMPLETION_SETTINGS = "styleCompletionSet";
 //  E----------------------------------- mmaus
+    
+    public static final String SMART_BACKSPACE = "smartBackspace";
+    //public static final String SMART_QUOTES = "smartQuotes";
+    //public static final String SMART_PARENS = "smartParens";
+    public static final String SMART_LDOTS = "smartLdots";
+    
+    public static final String SMART_PARENS = "texBracketCompletion";
+    public static final String TEX_BRACKET_COMLETION_VALUE = "true";
+    
+    public static final String SMART_QUOTES = "texReplaceQuotes";
+    public static final String TEX_REPLACE_QUOTES_VALUE = "true";
+
     
     public static final String CODE_FOLDING = "codeFolding";
     public static final String CODE_FOLDING_PREAMBLE = "codeFoldingPreamble";

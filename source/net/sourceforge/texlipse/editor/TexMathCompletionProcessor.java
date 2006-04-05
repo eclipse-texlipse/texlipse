@@ -78,12 +78,12 @@ public class TexMathCompletionProcessor implements IContentAssistProcessor {
                     this.refManager = model.getRefMana();
                 
                 TexCommandEntry[] comEntries = refManager.getCompletionsCom(command, TexCommandEntry.MATH_CONTEXT);
-                
-                int len = command.length();
-                proposals = new ICompletionProposal[comEntries.length];
-                for (int i=0; i < comEntries.length; i++) {
-                    proposals[i] = new TexCompletionProposal(comEntries[i], offset - len, 
-                            len, fviewer);
+                if (comEntries != null){
+                    int len = command.length();
+                    proposals = new ICompletionProposal[comEntries.length];
+                    for (int i=0; i < comEntries.length; i++) {
+                        proposals[i] = new TexCompletionProposal(comEntries[i], offset - len, len, fviewer);
+                    }
                 }
             }
         }

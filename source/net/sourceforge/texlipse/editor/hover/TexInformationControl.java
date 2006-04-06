@@ -7,6 +7,8 @@ import net.sourceforge.texlipse.model.ReferenceEntry;
 import net.sourceforge.texlipse.model.ReferenceManager;
 import net.sourceforge.texlipse.model.TexCommandEntry;
 
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IInformationControl;
@@ -28,6 +30,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.part.FileEditorInput;
 
 /**
  * This class creates a informative hover for commands and BibTex entries.
@@ -180,6 +183,11 @@ public class TexInformationControl implements IInformationControl,
      * @param labelName The name of the label that's referred to
      */
     private void setRefHover(String labelName) {
+        //IProject project = ((FileEditorInput)editor.getEditorInput()).getFile().getProject();
+        //IResource res = project.findMember(path + name);
+        //if (res != null) {
+        //res.getLocation().toOSString()
+        
         ReferenceEntry label = refMana.getLabel(labelName);
         if (label != null) {
             entry = label;
@@ -208,7 +216,7 @@ public class TexInformationControl implements IInformationControl,
         // Only processing of commands
         if (information.startsWith("\\")) {
             String command = information.substring(1);
-            if (command.indexOf("ref") > -1) {
+            if (command.indexOf("ref") > -1 && command.indexOf("{") > -1) {
                 setRefHover(getArgument(command));
             } else {
                 TexCommandEntry comEntries = refMana.getEntry(getCommand(command));

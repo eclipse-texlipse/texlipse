@@ -181,8 +181,9 @@ public class TexInformationControl implements IInformationControl,
      * Sets the hover for a reference to a label
      * 
      * @param labelName The name of the label that's referred to
+     * @return true, if label exist
      */
-    private void setRefHover(String labelName) {
+    private boolean setRefHover(String labelName) {
         //IProject project = ((FileEditorInput)editor.getEditorInput()).getFile().getProject();
         //IResource res = project.findMember(path + name);
         //if (res != null) {
@@ -200,11 +201,15 @@ public class TexInformationControl implements IInformationControl,
                 int start = document.getLineOffset(firstLine);
                 int end = document.getLineOffset(lastLine) + document.getLineLength(lastLine);
                 String extract = document.get(start, end - start);
+                if (extract.endsWith("\n")) 
+                    extract = extract.substring(0, extract.length() - 1);
                 hoverText.setText(extract);
+                return true;
             } catch (BadLocationException e) {
                 TexlipsePlugin.log("TexInformationControl: ", e);
             }
         }
+        return false;
     }
     
     /* (non-Javadoc)
@@ -217,7 +222,8 @@ public class TexInformationControl implements IInformationControl,
         if (information.startsWith("\\")) {
             String command = information.substring(1);
             if (command.indexOf("ref") > -1 && command.indexOf("{") > -1) {
-                setRefHover(getArgument(command));
+                if (!setRefHover(getArgument(command)))
+                    return; 
             } else {
                 TexCommandEntry comEntries = refMana.getEntry(getCommand(command));
                 if (comEntries != null) {

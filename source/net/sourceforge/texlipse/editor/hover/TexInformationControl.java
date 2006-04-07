@@ -1,5 +1,10 @@
 package net.sourceforge.texlipse.editor.hover;
 
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+
 import net.sourceforge.texlipse.TexlipsePlugin;
 import net.sourceforge.texlipse.editor.TexEditor;
 import net.sourceforge.texlipse.model.AbstractEntry;
@@ -41,9 +46,14 @@ import org.eclipse.ui.part.FileEditorInput;
 public class TexInformationControl implements IInformationControl,
         IInformationControlExtension {
 
+    // TODO make these configurable
+    private static int labelPrecedingLines = 2;
+    private static int labelFollowingLines = 1;
+    
     private AbstractEntry entry = null;
     private ReferenceManager refMana;
     private IDocument document;
+    private TexEditor editor;
     private Image image;
     private Composite imageComposite;
     private Composite textComposite;
@@ -56,6 +66,7 @@ public class TexInformationControl implements IInformationControl,
     private StyledText hoverText;
 
     public TexInformationControl(TexEditor editor, Shell container) {
+        this.editor = editor;
         document = editor.getTexDocument();
         refMana = editor.getDocumentModel().getRefMana();
         shell = new Shell(container, SWT.NO_FOCUS | SWT.ON_TOP | SWT.MODELESS);
@@ -176,6 +187,34 @@ public class TexInformationControl implements IInformationControl,
             hoverText.setText(bibentry.info);
         }
     }
+
+    
+    private String getDocumentExtract(String filename, int lineno) {
+        StringBuffer extract = new StringBuffer();
+        try {
+            BufferedReader in = new BufferedReader(new FileReader(filename));
+            int currentLine = 0;
+            int startLine = (lineno - labelPrecedingLines) >= 0 ?
+                    lineno - labelPrecedingLines : 0;
+            int endLine = lineno + labelFollowingLines;
+            String str;
+            while ((str = in.readLine()) != null) {
+                if (currentLine > endLine) {
+                    break;
+                } else if (currentLine >= startLine) {
+                    extract.append(str);
+                    extract.append(System.getProperty("line.separator"));
+                }
+                currentLine++;
+            }
+            in.close();
+        } catch (FileNotFoundException e) {
+        } catch (IOException e) {
+        }
+        return extract.toString();
+    }
+    
+    
     
     /**
      * Sets the hover for a reference to a label
@@ -184,30 +223,43 @@ public class TexInformationControl implements IInformationControl,
      * @return true, if label exist
      */
     private boolean setRefHover(String labelName) {
-        //IProject project = ((FileEditorInput)editor.getEditorInput()).getFile().getProject();
-        //IResource res = project.findMember(path + name);
-        //if (res != null) {
-        //res.getLocation().toOSString()
         
         ReferenceEntry label = refMana.getLabel(labelName);
         if (label != null) {
             entry = label;
             initTextBox();
-            try {
-                // Fetch some surroundings to the label declaration
-                int firstLine = label.startLine >= 2 ? label.startLine - 2 : 0;
-                int lastLine = (label.startLine + 1) < document.getNumberOfLines() ?
-                        label.startLine + 1 : document.getNumberOfLines() - 1;
-                int start = document.getLineOffset(firstLine);
-                int end = document.getLineOffset(lastLine) + document.getLineLength(lastLine);
-                String extract = document.get(start, end - start);
-                if (extract.endsWith("\n")) 
-                    extract = extract.substring(0, extract.length() - 1);
-                hoverText.setText(extract);
-                return true;
-            } catch (BadLocationException e) {
-                TexlipsePlugin.log("TexInformationControl: ", e);
+            
+            String extract = "";
+            
+            String currentName = editor.getEditorInput().getName();
+            if (!currentName.equals(label.fileName)) {
+                // if the label is in a different file
+                IProject project = ((FileEditorInput)editor.getEditorInput()).getFile().getProject();
+                IResource res = project.findMember(label.fileName);
+                if (res != null) {
+                    String path = res.getLocation().toOSString();
+                    extract = getDocumentExtract(path, label.startLine);
+                }
+            } else {
+                // if the label is in the same file
+                try {
+                    // Fetch some surroundings to the label declaration
+                    int firstLine = label.startLine >= labelPrecedingLines ?
+                            label.startLine - labelPrecedingLines : 0;
+                    int lastLine = (label.startLine + labelFollowingLines) < document.getNumberOfLines() ?
+                            label.startLine + labelFollowingLines : document.getNumberOfLines() - 1;
+                    int start = document.getLineOffset(firstLine);
+                    int end = document.getLineOffset(lastLine) + document.getLineLength(lastLine);
+                    
+                    extract = document.get(start, end - start);
+                } catch (BadLocationException e) {
+                    TexlipsePlugin.log("TexInformationControl: ", e);
+                }
             }
+            if (extract.endsWith("\n")) // TODO make sure this works on windows and mac
+                extract = extract.substring(0, extract.length() - 1);
+            hoverText.setText(extract);
+            return true;
         }
         return false;
     }

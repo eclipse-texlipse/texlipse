@@ -149,45 +149,45 @@
             name="Templates"
             id="net.sourceforge.texlipse.templates.BibTexTemplatePreferencesPage"/>
       <page
-            class="net.sourceforge.texlipse.properties.TexEditorPreferencePage"
+            class="net.sourceforge.texlipse.properties.editor.TexEditorPreferencePage"
             category="TexlipsePreferencePage"
             name="Editor"
             id="TexlipseEditorPreferencePage"/>
       <page
-            class="net.sourceforge.texlipse.properties.StyleCompletionPreferencePage"
+            class="net.sourceforge.texlipse.properties.editor.StyleCompletionPreferencePage"
             category="TexlipseEditorPreferencePage"
             name="Style completions"
             id="StyleCompletionPreferencePage"/>
       <page
-            class="net.sourceforge.texlipse.properties.SmartKeyPreferencePage"
+            class="net.sourceforge.texlipse.properties.editor.SmartKeyPreferencePage"
             category="TexlipseEditorPreferencePage"
             name="Smart keys"
             id="SmartKeyPreferencePage"/>
       <page
-            class="net.sourceforge.texlipse.properties.ColoringPreferencePage"
+            class="net.sourceforge.texlipse.properties.editor.ColoringPreferencePage"
             category="TexlipseEditorPreferencePage"
             name="Syntax Highlighting"
-            id="net.sourceforge.texlipse.properties.ColoringPreferencePage"/>
+            id="net.sourceforge.texlipse.properties.editor.ColoringPreferencePage"/>
       <page
-            class="net.sourceforge.texlipse.properties.OutlinePreferencePage"
+            class="net.sourceforge.texlipse.properties.editor.OutlinePreferencePage"
             category="TexlipseEditorPreferencePage"
             name="Outline"
-            id="net.sourceforge.texlipse.properties.OutlinePreferencePage"/>
+            id="net.sourceforge.texlipse.properties.editor.OutlinePreferencePage"/>
       <page
-            class="net.sourceforge.texlipse.properties.CodeFoldingPreferencePage"
+            class="net.sourceforge.texlipse.properties.editor.CodeFoldingPreferencePage"
             category="TexlipseEditorPreferencePage"
             name="Code Folding"
-            id="net.sourceforge.texlipse.properties.CodeFoldingPreferencePage"/>
+            id="net.sourceforge.texlipse.properties.editor.CodeFoldingPreferencePage"/>
       <page
             class="net.sourceforge.texlipse.templates.TexTemplatePreferencesPage"
             category="TexlipseEditorPreferencePage"
             name="Templates"
             id="net.sourceforge.texlipse.properties.TeXPreferencePage"/>
       <page
-            class="net.sourceforge.texlipse.properties.IndentationPreferencePage"
+            class="net.sourceforge.texlipse.properties.editor.IndentationPreferencePage"
             category="TexlipseEditorPreferencePage"
             name="Indentation"
-            id="net.sourceforge.texlipse.properties.IndentationPreferencePage"/>
+            id="net.sourceforge.texlipse.properties.editor.IndentationPreferencePage"/>
       <page
             class="net.sourceforge.texlipse.properties.ProjectTemplatesPreferencePage"
             category="TexlipsePreferencePage"

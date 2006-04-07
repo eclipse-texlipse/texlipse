@@ -1,6 +1,7 @@
-package net.sourceforge.texlipse.properties;
+package net.sourceforge.texlipse.properties.editor;
 
 import net.sourceforge.texlipse.TexlipsePlugin;
+import net.sourceforge.texlipse.properties.TexlipseProperties;
 
 import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
@@ -33,32 +34,26 @@ public class SmartKeyPreferencePage extends FieldEditorPreferencePage implements
     protected void createFieldEditors() {
 
         // Smart backspace
-        addField(new BooleanFieldEditor(TexlipseProperties.SMART_BACKSPACE, TexlipsePlugin.getResourceString("preferenceSmartBackspace"), getFieldEditorParent()));
+        addField(new BooleanFieldEditor(TexlipseProperties.SMART_BACKSPACE,
+                TexlipsePlugin.getResourceString("preferenceSmartBackspace"), getFieldEditorParent()));
         Label backspaceLabel = new Label(getFieldEditorParent(),SWT.LEFT | SWT.WRAP);
-        backspaceLabel.setText(TexlipsePlugin.getResourceString("preferenceSmartBackspace"));
+        backspaceLabel.setText(TexlipsePlugin.getResourceString("preferenceSmartBackspaceText"));
         
         // Smart quotes
-        addField(new BooleanFieldEditor(TexlipseProperties.SMART_QUOTES, TexlipsePlugin.getResourceString("preferenceTexReplaceQuotes"), getFieldEditorParent()));
+        addField(new BooleanFieldEditor(TexlipseProperties.SMART_QUOTES,
+                TexlipsePlugin.getResourceString("preferenceSmartReplaceQuotes"), getFieldEditorParent()));
         Label quotesLabel = new Label(getFieldEditorParent(),SWT.LEFT | SWT.WRAP);
-        quotesLabel.setText(TexlipsePlugin.getResourceString("preferenceTexReplaceQuotesText"));
+        quotesLabel.setText(TexlipsePlugin.getResourceString("preferenceSmartReplaceQuotesText"));
 
         // Smart parens
-        addField(new BooleanFieldEditor(TexlipseProperties.SMART_PARENS, TexlipsePlugin.getResourceString("preferenceTexBracketCompletion"), getFieldEditorParent()));
+        addField(new BooleanFieldEditor(TexlipseProperties.SMART_PARENS,
+                TexlipsePlugin.getResourceString("preferenceSmartBracketCompletion"), getFieldEditorParent()));
         Label bracketLabel = new Label(getFieldEditorParent(),SWT.LEFT | SWT.WRAP);
-        bracketLabel.setText(TexlipsePlugin.getResourceString("preferenceTexBracketCompletionText"));
+        bracketLabel.setText(TexlipsePlugin.getResourceString("preferenceSmartBracketCompletionText"));
 
-        
         // Smart \ldots
-        addField(new BooleanFieldEditor(TexlipseProperties.SMART_LDOTS, TexlipsePlugin.getResourceString("preferenceSmartLdots"), getFieldEditorParent()));
-        
-        
-//        addField(new BooleanFieldEditor(TexlipseProperties.SMART_KEY_ENABLE,
-//                TexlipsePlugin.getResourceString("preferenceSmartKeyEnable"),
-//                getFieldEditorParent()));
-//        addField(new SmartKeyListFieldEditor(
-//                TexlipseProperties.STYLE_COMPLETION_SETTINGS,
-//                TexlipsePlugin.getResourceString("preferenceSmartKeyLabel"),
-//                getFieldEditorParent()));
+        addField(new BooleanFieldEditor(TexlipseProperties.SMART_LDOTS,
+                TexlipsePlugin.getResourceString("preferenceSmartLdots"), getFieldEditorParent()));
     }
 
     /* (non-Javadoc)

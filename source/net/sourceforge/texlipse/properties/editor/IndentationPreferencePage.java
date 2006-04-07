@@ -7,9 +7,12 @@
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  */
-package net.sourceforge.texlipse.properties;
+package net.sourceforge.texlipse.properties.editor;
 
 import net.sourceforge.texlipse.TexlipsePlugin;
+import net.sourceforge.texlipse.properties.StringListFieldEditor;
+import net.sourceforge.texlipse.properties.TexlipsePreferencePage;
+import net.sourceforge.texlipse.properties.TexlipseProperties;
 
 import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;

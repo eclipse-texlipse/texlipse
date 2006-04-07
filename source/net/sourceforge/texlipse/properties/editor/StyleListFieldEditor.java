@@ -7,7 +7,7 @@
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  */
-package net.sourceforge.texlipse.smartkey;
+package net.sourceforge.texlipse.properties.editor;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -65,7 +65,7 @@ import org.eclipse.swt.widgets.Text;
  * @author Reza Esmaeili Soumeeh
  * @author Ehsan Baghi
  */
-public class SmartKeyListFieldEditor extends FieldEditor implements IInputValidator {
+public class StyleListFieldEditor extends FieldEditor implements IInputValidator {
     
     // separator character for strings
     public static final String SEPARATOR = ",";
@@ -480,7 +480,7 @@ public class SmartKeyListFieldEditor extends FieldEditor implements IInputValida
      * @param labelText text for description label
      * @param parent parent component
      */
-    public SmartKeyListFieldEditor(String name, String labelText, Composite parent) {
+    public StyleListFieldEditor(String name, String labelText, Composite parent) {
         super(name, labelText, parent);
         smartKeys = new HashMap();
     }

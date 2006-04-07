@@ -1,7 +1,7 @@
-package net.sourceforge.texlipse.properties;
+package net.sourceforge.texlipse.properties.editor;
 
 import net.sourceforge.texlipse.TexlipsePlugin;
-import net.sourceforge.texlipse.smartkey.SmartKeyListFieldEditor;
+import net.sourceforge.texlipse.properties.TexlipseProperties;
 
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.ui.IWorkbench;
@@ -21,19 +21,19 @@ public class StyleCompletionPreferencePage extends FieldEditorPreferencePage
     public StyleCompletionPreferencePage() {
         super(GRID);
         setPreferenceStore(TexlipsePlugin.getDefault().getPreferenceStore());
-        setDescription(TexlipsePlugin.getResourceString("preferenceSmartKeyDescription"));
+        setDescription(TexlipsePlugin.getResourceString("preferenceStyleDescription"));
     }
 
     /**
      * Creates the property editing UI components of this page.
      */
     protected void createFieldEditors() {
-        // TODO SmartKeyListFieldEditor has an edit button, the
+        // TODO StyleListFieldEditor has an edit button, the
         // lower one has an import dialog which is irrelevant for this
         // but could be useful in general
-        addField(new SmartKeyListFieldEditor(
+        addField(new StyleListFieldEditor(
                 TexlipseProperties.STYLE_COMPLETION_SETTINGS,
-                TexlipsePlugin.getResourceString("preferenceSmartKeyLabel"),
+                TexlipsePlugin.getResourceString("preferenceStyleLabel"),
                 getFieldEditorParent()));
 
 //        addField(new KeyValueListFieldEditor(

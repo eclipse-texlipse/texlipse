@@ -74,6 +74,16 @@ public class LatexRunner extends AbstractProgramRunner {
         return new String[] { "\nPlease type another input file name:" , "\nEnter file name:" };
     }
     
+    /**
+     * Adds a problem marker
+     * 
+     * @param error The error or warning string
+     * @param causingSourceFile name of the sourcefile
+     * @param linenr where the error occurs
+     * @param severity
+     * @param resource
+     * @param layout true, if this is a layout warning
+     */
     private void addProblemMarker(String error, String causingSourceFile,
             int linenr, int severity, IResource resource, boolean layout) {
         
@@ -200,6 +210,7 @@ public class LatexRunner extends AbstractProgramRunner {
                 hasProblem = true;
                 if (line.startsWith("LaTeX Warning: ")) {
                     error = line.substring(15);
+                    //Try to get the line number
                     Matcher pM = ATLINE2.matcher(line);
                     if (pM.matches()) {
                         linenr = Integer.parseInt(pM.group(1));
@@ -218,9 +229,15 @@ public class LatexRunner extends AbstractProgramRunner {
                         linenr = -1;
                     }
                     continue;
+                } else {
+                    error = line;
+                    //Try to get the line number
+                    Matcher pM = ATLINE2.matcher(line);
+                    if (pM.matches()) {
+                        linenr = Integer.parseInt(pM.group(1));
+                    }
+                    continue;
                 }
-                error = line;
-                continue;
             }
             m = FULLBOX.matcher(line);
             if (m.matches()) {
@@ -265,8 +282,11 @@ public class LatexRunner extends AbstractProgramRunner {
             }
             updateParsedFile(line);
         }
+        if (hasProblem) {
+            // We have a not reported problem
+            addProblemMarker(error, occurance, linenr, severity, resource, false);
+        }
         return errorsFound;
-
     }
     
     /**
@@ -292,37 +312,18 @@ public class LatexRunner extends AbstractProgramRunner {
         }
     }
 
+    /**
+     * Check if the character is allowed in a filename
+     * @param c the character
+     * @return true if the character is legal
+     */
     private boolean isAllowedinName(char c) {
         if (c == '(' || c == ')' || c == '[')
             return false;
         else
             return true;
     }
-    
-    /**
-     * Calculates how many closing parentheses the command has and
-     * pops the equivalent number of entries from the stack.
-     * 
-     * @param command A command containing closing parentheses
-     */
-    private void removeClosingParentheses(String command) {
-        int amount = command.startsWith("(") ? -1 : 0;
-        for (int j = command.length() - 1; j >= 0; j--) {
-            if (command.charAt(j) == ')') {
-                amount++;
-            } else {
-                break;
-            }
-        }
-        for (;amount > 0; amount--) {
-            if (!parsingStack.empty()) {
-                parsingStack.pop();
-            } else {
-                break;
-            }
-        }		
-    }
-    
+        
     /**
      * Determines the source file we are currently parsing.
      * 

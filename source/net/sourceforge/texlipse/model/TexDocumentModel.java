@@ -1019,7 +1019,6 @@ public class TexDocumentModel implements IDocumentListener {
                         }
                         //Only update Preamble, Bibstyle if main Document
                         if (files[i].equals(mainFile)) {
-                            System.out.println(mainFile);
                             String[] bibs = lrep.getBibs();
                             if (bibs != null)
                                 this.updateBibs(bibs, files[i]);

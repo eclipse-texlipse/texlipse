@@ -238,7 +238,7 @@ public class TexInformationControl implements IInformationControl,
                 IResource res = project.findMember(label.fileName);
                 if (res != null) {
                     String path = res.getLocation().toOSString();
-                    extract = getDocumentExtract(path, label.startLine);
+                    extract = getDocumentExtract(path, label.startLine).trim();
                 }
             } else {
                 // if the label is in the same file
@@ -251,13 +251,11 @@ public class TexInformationControl implements IInformationControl,
                     int start = document.getLineOffset(firstLine);
                     int end = document.getLineOffset(lastLine) + document.getLineLength(lastLine);
                     
-                    extract = document.get(start, end - start);
+                    extract = document.get(start, end - start).trim();
                 } catch (BadLocationException e) {
                     TexlipsePlugin.log("TexInformationControl: ", e);
                 }
             }
-            if (extract.endsWith("\n")) // TODO make sure this works on windows and mac
-                extract = extract.substring(0, extract.length() - 1);
             hoverText.setText(extract);
             return true;
         }

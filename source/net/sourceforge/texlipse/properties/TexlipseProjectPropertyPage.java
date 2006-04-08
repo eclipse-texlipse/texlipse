@@ -12,8 +12,10 @@ package net.sourceforge.texlipse.properties;
 import net.sourceforge.texlipse.TexlipsePlugin;
 import net.sourceforge.texlipse.builder.BuilderChooser;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -468,6 +470,7 @@ public class TexlipseProjectPropertyPage extends PropertyPage {
         validateSourceFileField();
         validateOutputFileField();
         validateTempFileField();
+
     }
     
     /**
@@ -560,7 +563,14 @@ public class TexlipseProjectPropertyPage extends PropertyPage {
         
         //save settings to file
         if (project.getType() == IResource.PROJECT) {
-            TexlipseProperties.saveProjectProperties((IProject) project);
+            // Check whether setting file is writable
+            IFile settingsFile = ((IProject) project).getFile(TexlipseProperties.LATEX_PROJECT_SETTINGS_FILE);
+            if (!settingsFile.isReadOnly())
+                TexlipseProperties.saveProjectProperties((IProject) project);
+            else{
+                MessageDialog.openWarning(this.getShell(), "Warning", 
+                        TexlipsePlugin.getResourceString("projectSettingsReadOnly"));
+            }
         }
         
         return true;

@@ -43,7 +43,7 @@ public class TexlipseProperties {
 	
     // properties
     public static final String PACKAGE_NAME = TexlipsePlugin.class.getPackage().getName();
-    private static final String LATEX_PROJECT_SETTINGS_FILE = ".texlipse";
+    public static final String LATEX_PROJECT_SETTINGS_FILE = ".texlipse";
 
     public static final String MAINFILE_PROPERTY = "mainTexFile";
     public static final String OUTPUTFILE_PROPERTY = "outputFile";

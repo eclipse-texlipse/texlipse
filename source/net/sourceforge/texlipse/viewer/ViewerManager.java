@@ -29,6 +29,7 @@ import net.sourceforge.texlipse.viewer.util.FileLocationServer;
 import net.sourceforge.texlipse.viewer.util.ViewerErrorScanner;
 
 import org.eclipse.core.resources.IContainer;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
@@ -41,6 +42,11 @@ import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchManager;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PlatformUI;
 
 
 /**
@@ -66,6 +72,7 @@ class FileLocationOpener implements FileLocationListener {
  * @author Anton Klimovsky
  * @author Kimmo Karlsson
  * @author Tor Arne Vestbø
+ * @author Boris von Loesch
  */
 public class ViewerManager {
 
@@ -170,8 +177,71 @@ public class ViewerManager {
 		Process process = mgr.getExisting();        
 		if (process != null) {       
 			mgr.sendDDECloseCommand();
+            
+			try {
+                Thread.sleep(500); // A small delay required
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+            returnFocusToEclipse(false);
 		}
 	}
+    
+    /**
+     * Returns the application focus to Eclipse after launching an
+     * external previewer. This is done by first activating the
+     * eclipse window, and then setting focus in the editor in a
+     * worker thread. Note the delay needed before setting focus. 
+     */
+    public static void returnFocusToEclipse(final boolean useMinimizeTrick) {
+
+        // Return focus/activation to Eclipse/Texlipse
+        Display display = PlatformUI.getWorkbench().getDisplay();
+        if (null != display) {
+            display.asyncExec(new Runnable() {
+                public void run() {
+                    IWorkbenchWindow[] workbenchWindows = PlatformUI.getWorkbench().getWorkbenchWindows();
+                    for (int i = 0; i < workbenchWindows.length; i++) {
+                        Shell shell = workbenchWindows[i].getShell();
+
+                        if (useMinimizeTrick) {
+                            shell.setMinimized(true);
+                            shell.setMinimized(false);
+                        }
+
+                        shell.setActive();
+                        shell.forceActive();
+                        break;
+                    }
+                }
+            });
+        }
+        
+        // Spawn thread to set focus in the editor after the launch has completed
+        // The reason we cannot do this in the current thread is because the progress
+        // window is in the way and will not allow us to set focus on the editor.
+        new Thread(new Runnable() {
+            public void run() {
+                  try { Thread.sleep(500); } catch (Exception e) { }
+                  Display display = PlatformUI.getWorkbench().getDisplay();
+                  if (null != display) {
+                      display.asyncExec(new Runnable() {
+                          public void run() {
+                              IWorkbenchWindow[] workbenchWindows = PlatformUI.getWorkbench().getWorkbenchWindows();
+                              for (int i = 0; i < workbenchWindows.length; i++) {
+                                  IWorkbenchPage activePage = workbenchWindows[i].getActivePage();
+                                  activePage.activate(activePage.getActiveEditor());
+                                  // Although setFocus should not be called by clients it is
+                                  // required for the focus to work. Activate alone is not enough.
+                                  activePage.getActiveEditor().setFocus(); 
+                              }
+                          }
+                      });
+                  }
+            }
+         }).start();
+    }
 
 	/**
      * Construct a new viewer launcher.
@@ -296,18 +366,10 @@ public class ViewerManager {
 
         // resolve the directory to run the viewer in  
         IContainer sourceDir = TexlipseProperties.getProjectSourceDir(project);
-        if (sourceDir == null) {
-            sourceDir = project;
-        }
         File dir = sourceDir.getLocation().toFile();
-        
-        /*// resolve relative path to the output file
-        outFileName = resolveRelativePath(sourceDir.getFullPath(),
-                outputDir.getFullPath()) + outFileName;*/
-        String outFileName = outputRes.getName();
-        
+                
         try {
-            return execute(dir, outFileName);
+            return execute(dir);
         } catch (IOException e) {
             throw new CoreException(TexlipsePlugin.stat("Could not start previewer.", e));
         }
@@ -341,7 +403,6 @@ public class ViewerManager {
     	}
     }
     
-    
     /**
      * Resolves a relative path from one directory to another.
      * The path is returned as an OS-specific string with
@@ -351,7 +412,7 @@ public class ViewerManager {
      * @param outputPath a directory to end up to
      * @return a relative path from sourcePath to outputPath
      */
-    private String resolveRelativePath(IPath sourcePath, IPath outputPath) {
+    public static String resolveRelativePath(IPath sourcePath, IPath outputPath) {
 
         int same = sourcePath.matchingFirstSegments(outputPath);
         if (same == sourcePath.segmentCount()
@@ -375,10 +436,27 @@ public class ViewerManager {
         return sb.toString();
     }
     
+    /**
+     * Determines the Resource which should be shown. Respects partial builds.
+     * @return
+     * @throws CoreException
+     */
     private IResource getOuputResource() throws CoreException { 
     	
     	String outFileName = TexlipseProperties.getProjectProperty(project,
                 TexlipseProperties.OUTPUTFILE_PROPERTY);
+        //Check for partial build
+        Object s = TexlipseProperties.getProjectProperty(project, TexlipseProperties.PARTIAL_BUILD_PROPERTY);
+        if (s != null) {
+            IFile tmpFile = (IFile)TexlipseProperties.getSessionProperty(project, TexlipseProperties.PARTIAL_BUILD_FILE);
+            if (tmpFile != null){
+                String fmtProp = TexlipseProperties.getProjectProperty(project,
+                        TexlipseProperties.OUTPUT_FORMAT);
+                String name = tmpFile.getName();
+                name = name.substring(0, name.lastIndexOf('.')) + "." + fmtProp;
+                outFileName = name;
+            }
+        }
         if (outFileName == null || outFileName.length() == 0) {
             throw new CoreException(TexlipsePlugin.stat("Empty output file name."));
         }
@@ -442,11 +520,10 @@ public class ViewerManager {
      * Also start viewer output listener to enable inverse search.
      * 
      * @param dir the directory to run the viewer in
-     * @param file the file name command line argument
      * @return viewer process
      * @throws IOException if launching the viewer fails
      */
-    private Process execute(File dir, String file) throws IOException, CoreException {
+    private Process execute(File dir) throws IOException, CoreException {
 
         // argument list
         ArrayList list = new ArrayList();
@@ -490,13 +567,27 @@ public class ViewerManager {
         return process;
     }
 
+    /**
+     * Fills the %arg of the input pattern with the real values
+     * @param input The input pattern
+     * @return the filled string
+     * @throws CoreException
+     */
     private String translatePatterns(String input) throws CoreException {
     	
     	if (input == null) return null;
+        
+        IContainer sourceDir = TexlipseProperties.getProjectSourceDir(project);
 
-    	if (input.indexOf(FILENAME_PATTERN) >= 0) {
-    		input = input.replaceAll(FILENAME_PATTERN, escapeBackslashes(getOuputResource().getName()));
-    	}
+        if (input.indexOf(FILENAME_PATTERN) >= 0) {
+            // resolve relative path to the output file
+            IResource outputRes = getOuputResource();
+            String outFileName = outputRes.getName();
+            outFileName = resolveRelativePath(sourceDir.getFullPath(), outputRes.getFullPath());
+            outFileName = outFileName.substring(0, outFileName.length() - 1);
+
+            input = input.replaceAll(FILENAME_PATTERN, escapeBackslashes(outFileName));
+        }
     	
         if (input.indexOf(FILENAME_FULLPATH_PATTERN) >= 0) {
         	input = input.replaceAll(FILENAME_FULLPATH_PATTERN, escapeBackslashes(getOuputResource().getLocation().toOSString()));
@@ -508,19 +599,15 @@ public class ViewerManager {
         
         if (input.indexOf(TEX_FILENAME_PATTERN) >= 0) {
         	
-        	IContainer srcDir = TexlipseProperties.getProjectSourceDir(project);        	
-            if (srcDir == null) {
-                srcDir = project;
-            }
-            
         	IResource selectedRes = SelectedResourceManager.getDefault().getSelectedResource();
         	if (selectedRes.getType() != IResource.FOLDER) {
                 selectedRes = SelectedResourceManager.getDefault().getSelectedTexResource();
             }
         	
-        	String relPath = resolveRelativePath(srcDir.getFullPath(), selectedRes.getFullPath().removeLastSegments(1));
+        	String relPath = resolveRelativePath(sourceDir.getFullPath(), 
+                    selectedRes.getFullPath().removeLastSegments(1));
             String texFile = relPath + selectedRes.getName();
-        	input = input.replaceAll(TEX_FILENAME_PATTERN, texFile);
+        	input = input.replaceAll(TEX_FILENAME_PATTERN, escapeBackslashes(texFile));
         }
         
         return input;

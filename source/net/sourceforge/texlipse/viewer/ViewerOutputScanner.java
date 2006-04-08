@@ -17,6 +17,7 @@ import java.io.InputStreamReader;
 import net.sourceforge.texlipse.TexlipsePlugin;
 import net.sourceforge.texlipse.properties.TexlipseProperties;
 
+import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
@@ -24,7 +25,9 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.texteditor.MarkerUtilities;
 
@@ -111,7 +114,7 @@ public class ViewerOutputScanner implements Runnable {
      * @param lineNumber line number
      */
     protected void openFileFromLineNumber(String file, int lineNumber) {
-        
+
         if (project == null) {
             return;
         }
@@ -148,12 +151,8 @@ public class ViewerOutputScanner implements Runnable {
                 }
             }
             
-            IFolder srcDir = TexlipseProperties.getProjectSourceDir(project);
-            if (srcDir == null) {
-                resource = project.findMember(file);
-            } else {
-                resource = srcDir.findMember(file);
-            }
+            IContainer srcDir = TexlipseProperties.getProjectSourceDir(project);
+            resource = srcDir.findMember(file);
         }
         
         if (resource == null) {
@@ -176,6 +175,12 @@ public class ViewerOutputScanner implements Runnable {
                 mark.delete();
             } catch (CoreException e) {
             }
+            
+            new Thread(new Runnable() {
+                public void run() {
+                      ViewerManager.returnFocusToEclipse(true);
+                }
+             }).start();
         }
     }
 

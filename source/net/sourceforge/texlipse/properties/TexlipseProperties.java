@@ -232,9 +232,6 @@ public class TexlipseProperties {
     public static IResource[] getAllProjectFiles(IProject project) {
         
         IContainer sourceDir = getProjectSourceDir(project);
-        if (sourceDir == null) {
-            sourceDir = project;
-        }
         return (IResource[]) getAllMemberFiles(sourceDir, new String[] { "tex", "ltx", "bib", "idx" }).toArray(new IResource[0]);
     }
     
@@ -281,11 +278,12 @@ public class TexlipseProperties {
      * @return a handle to the project's main source file, or null if main file not set
      */
     public static IFile getProjectSourceFile(IProject project) {
-    	IFolder folder = getProjectSourceDir(project);
-    	if (folder == null) {
-    		return project.getFile(getProjectProperty(project, MAINFILE_PROPERTY));
-    	}
-        return folder.getFile(getProjectProperty(project, MAINFILE_PROPERTY));
+    	//IContainer folder = getProjectSourceDir(project);
+        String dir = TexlipseProperties.getProjectProperty(project, TexlipseProperties.SOURCE_DIR_PROPERTY);
+        if (dir != null && dir.length() > 0) {
+            return project.getFolder(dir).getFile(getProjectProperty(project, MAINFILE_PROPERTY));
+        }
+        return project.getFile(getProjectProperty(project, MAINFILE_PROPERTY));
     }
     
     /**
@@ -294,13 +292,12 @@ public class TexlipseProperties {
      * @return a handle to the project's source directory or null if source directory is
      *         the same as project directory
      */
-    public static IFolder getProjectSourceDir(IProject project) {
-        
+    public static IContainer getProjectSourceDir(IProject project) {
         String dir = TexlipseProperties.getProjectProperty(project, TexlipseProperties.SOURCE_DIR_PROPERTY);
         if (dir != null && dir.length() > 0) {
             return project.getFolder(dir);
         }
-        return null;
+        else return project;
     }
     
     /**

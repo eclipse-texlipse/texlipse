@@ -89,8 +89,6 @@ public class LatexRunner extends AbstractProgramRunner {
         
         IProject project = resource.getProject();
         IContainer sourceDir = TexlipseProperties.getProjectSourceDir(project);
-        if (sourceDir == null)
-            sourceDir = project;
 
         IResource extResource = null;
         if (causingSourceFile != null)
@@ -123,6 +121,7 @@ public class LatexRunner extends AbstractProgramRunner {
         
         parsingStack.clear();
         boolean errorsFound = false;
+        boolean citeNotfound = false;
         StringTokenizer st = new StringTokenizer(output, "\r\n");
 
         final Pattern LATEXERROR = Pattern.compile("^! LaTeX Error: (.*)$");
@@ -192,19 +191,22 @@ public class LatexRunner extends AbstractProgramRunner {
                     continue;
                 }
                 else if (line.indexOf("There were undefined references.") > 0) {
-                    // prepare to run bibtex
-                    TexlipseProperties.setSessionProperty(resource.getProject(),
-                            TexlipseProperties.SESSION_BIBTEX_RERUN, "true");
-                    continue;
-
+                    if (citeNotfound) {
+                        // prepare to run bibtex
+                        TexlipseProperties.setSessionProperty(resource.getProject(),
+                                TexlipseProperties.SESSION_BIBTEX_RERUN, "true");
+                        continue;
+                    }
                 }
 
                 // Ignore undefined references or citations because they are
                 // found by the parser
                 if (line.startsWith("LaTeX Warning: Reference `"))
                     continue;
-                if (line.startsWith("LaTeX Warning: Citation `"))
+                if (line.startsWith("LaTeX Warning: Citation `")) {
+                    citeNotfound = true;
                     continue;
+                }
                 severity = IMarker.SEVERITY_WARNING;
                 occurance = determineSourceFile();
                 hasProblem = true;

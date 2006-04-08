@@ -18,6 +18,7 @@ import net.sourceforge.texlipse.TexlipsePlugin;
 import net.sourceforge.texlipse.properties.TexlipseProperties;
 
 import org.eclipse.core.resources.IContainer;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -231,7 +232,12 @@ public abstract class AbstractProgramRunner implements ProgramRunner {
             extrun.stop();
         }
 
-        renameOutputFile(resource);
+        //Only rename if no partial build
+        //Check for partial build
+        IFile tmpFile = (IFile)TexlipseProperties.getSessionProperty(resource.getProject(), 
+                TexlipseProperties.PARTIAL_BUILD_FILE);
+        if (tmpFile == null)
+            renameOutputFile(resource);
         
         if (parseErrors(resource, output)) {
             throw new BuilderCoreException(TexlipsePlugin.stat("Errors during build. See the problems dialog."));

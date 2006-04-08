@@ -838,26 +838,30 @@ public class TexDocumentModel implements IDocumentListener {
         pollCancel(monitor);
         
         IProject project = getCurrentProject();
-        String preamble = parser.getPreamble();
-        if (preamble != null) {
-            TexlipseProperties.setSessionProperty(project,
-                    TexlipseProperties.PREAMBLE_PROPERTY,
-                    preamble);
-        }
-        String bibstyle = parser.getBibstyle();
-        if (bibstyle != null) {
-            String oldStyle = (String) TexlipseProperties.getSessionProperty(project,
-                    TexlipseProperties.BIBSTYLE_PROPERTY);
-            
-            if (oldStyle == null || !bibstyle.equals(oldStyle)) {            
-                TexlipseProperties.setSessionProperty(project,
-                        TexlipseProperties.BIBSTYLE_PROPERTY,
-                        bibstyle);
-                
-                // schedule running bibtex on the next build
-                TexlipseProperties.setSessionProperty(project,
-                        TexlipseProperties.BIBFILES_CHANGED,
-                        new Boolean(true));
+        IFile cFile = ((FileEditorInput) editor.getEditorInput()).getFile();
+        //Only update Preamble, Bibstyle if main Document
+        if (cFile.equals(TexlipseProperties.getProjectSourceFile(project))) {
+            String preamble = parser.getPreamble();
+            if (preamble != null) {
+                TexlipseProperties.setSessionProperty(project, 
+                        TexlipseProperties.PREAMBLE_PROPERTY, 
+                        preamble);
+            }
+            String bibstyle = parser.getBibstyle();
+            if (bibstyle != null) {
+                String oldStyle = (String) TexlipseProperties.getSessionProperty(project,
+                        TexlipseProperties.BIBSTYLE_PROPERTY);
+
+                if (oldStyle == null || !bibstyle.equals(oldStyle)) {
+                    TexlipseProperties.setSessionProperty(project, 
+                            TexlipseProperties.BIBSTYLE_PROPERTY, 
+                            bibstyle);
+
+                    // schedule running bibtex on the next build
+                    TexlipseProperties.setSessionProperty(project, 
+                            TexlipseProperties.BIBFILES_CHANGED, 
+                            new Boolean(true));
+                }
             }
         }
     }
@@ -989,6 +993,8 @@ public class TexDocumentModel implements IDocumentListener {
         IResource[] files = TexlipseProperties.getAllProjectFiles(project);        
         
         if (files != null) {
+            IFile mainFile = TexlipseProperties.getProjectSourceFile(project);
+
             for (int i = 0; i < files.length; i++) {
                 IPath path = files[i].getFullPath();
                 String ext = files[i].getFileExtension();
@@ -1011,22 +1017,26 @@ public class TexDocumentModel implements IDocumentListener {
                         if (commands.size() > 0) {
                             commandContainer.addRefSource(files[i].getProjectRelativePath().toString(), commands);
                         }
-                        String[] bibs = lrep.getBibs();
-                        if (bibs != null)
-                            this.updateBibs(bibs, files[i]);
-                        
-                        String preamble = lrep.getPreamble();
-                        if (preamble != null) {
-                            TexlipseProperties.setSessionProperty(project,
-                                    TexlipseProperties.PREAMBLE_PROPERTY,
-                                    preamble);
+                        //Only update Preamble, Bibstyle if main Document
+                        if (files[i].equals(mainFile)) {
+                            System.out.println(mainFile);
+                            String[] bibs = lrep.getBibs();
+                            if (bibs != null)
+                                this.updateBibs(bibs, files[i]);
+
+                            String preamble = lrep.getPreamble();
+                            if (preamble != null) {
+                                TexlipseProperties.setSessionProperty(project, 
+                                        TexlipseProperties.PREAMBLE_PROPERTY,
+                                        preamble);
+                            }
+
+                            String bibstyle = lrep.getBibstyle();
+                            if (bibstyle != null)
+                                TexlipseProperties.setSessionProperty(project, 
+                                        TexlipseProperties.BIBSTYLE_PROPERTY,
+                                        bibstyle);
                         }
-                        
-                        String bibstyle = lrep.getBibstyle();
-                        if (bibstyle != null)
-                            TexlipseProperties.setSessionProperty(project,
-                                    TexlipseProperties.BIBSTYLE_PROPERTY,
-                                    bibstyle);
                     } catch (IOException ioe) {
                         TexlipsePlugin.log("Unable to open file " + files[i].getFullPath() + " for parsing", ioe);
                     }

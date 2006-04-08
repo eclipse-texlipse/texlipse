@@ -11,6 +11,7 @@ package net.sourceforge.texlipse.builder;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -19,6 +20,7 @@ import java.util.Map;
 import net.sourceforge.texlipse.SelectedResourceManager;
 import net.sourceforge.texlipse.TexlipsePlugin;
 import net.sourceforge.texlipse.properties.TexlipseProperties;
+import net.sourceforge.texlipse.viewer.ViewerManager;
 
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
@@ -215,21 +217,15 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
 
             // main file can't be built partially
             // also, bib file changes need full build
+            TexlipseProperties.setSessionProperty(project, TexlipseProperties.PARTIAL_BUILD_FILE, null);
         	fullBuild(monitor);
         	return;
         }
         IFile file = project.getFile(res.getProjectRelativePath());
         String tempFileContents = getTempFileContents(file, project, monitor);
 
-        // find out the folder where the temp file should be
-        // This is not necessarily the project source folder
-        IContainer folder = null;
-        IPath path = file.getProjectRelativePath().removeLastSegments(1).makeRelative();
-        if (!path.isEmpty()) {
-            folder = project.getFolder(path.toString());
-        } else {
-            folder = project;
-        }
+        //The temp file should be in the main folder
+        IContainer folder = TexlipseProperties.getProjectSourceDir(project);
         
         // create a temp file if not yet created. This file is not created in
         // to a temporary directory because the bibliograpy files are relative.
@@ -256,7 +252,8 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
     }
     
     /**
-     * Generate temp file contents.
+     * Generate temp file contents. Therefore it includes 
+     * the full preamble + \include{file} + bibtex settings
      * 
      * @param file
      * @param project
@@ -272,7 +269,21 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
         String[] bibli = (String[]) TexlipseProperties.getSessionProperty(project, TexlipseProperties.BIBFILE_PROPERTY);
 
         // generate the file contents
-        StringBuffer sb = readFile(file.getContents(), monitor);
+        //StringBuffer sb = readFile(file.getContents(), monitor);
+        StringBuffer sb = new StringBuffer ("\\include{");
+        String name = ViewerManager.resolveRelativePath(TexlipseProperties.getProjectSourceDir(project).getProjectRelativePath(), 
+                file.getProjectRelativePath());
+        name = name.substring(0, name.lastIndexOf('.') + 1);
+        //In windows convert the bs to slashes
+        for (int i=0; i<name.length() - 1; i++){
+            char c = name.charAt(i);
+            if (c == File.separatorChar)
+                sb.append('/');
+            else
+                sb.append(c);
+        }
+        //sb.append(name.substring(0, name.length() - file.getFileExtension().length() - 1));
+        sb.append("}\n");
         if (bibsty != null) {
             sb.append("\\bibliographystyle{");
             sb.append(bibsty);
@@ -281,11 +292,19 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
         if (bibli != null && bibli.length > 0) {
             sb.append("\\bibliography{");
             for (int i = 0; i < bibli.length-1; i++) {
-                sb.append(bibli[i]);
+                int ext = bibli[i].lastIndexOf('.');
+                if (ext >= 0) 
+                    sb.append(bibli[i].substring(0, ext));
+                else
+                    sb.append(bibli[i]);
                 sb.append(',');
             }
             if (bibli.length > 1 || !bibli[0].equals(".bib")) { // parser bugfix
-            	sb.append(bibli[bibli.length-1]);
+                int ext = bibli[bibli.length-1].lastIndexOf('.');
+                if (ext >= 0) 
+                    sb.append(bibli[bibli.length-1].substring(0, ext));
+                else
+                    sb.append(bibli[bibli.length-1]);
             }
             sb.append("}\n");
         }
@@ -319,6 +338,9 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
         this.deleteMarkers(project);
         // reset builder instance to startable state
         builder.reset(monitor);
+
+        // use temp files from previous build
+        moveBackTempFiles(project, monitor);
         
         // start the build
         try {
@@ -335,6 +357,7 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
         
         // move the output file to correct place
         moveOutput(project, sourceDir, monitor);
+        moveTempFiles(project, monitor);
         
         monitor.done();
     }
@@ -356,10 +379,10 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
             
             while (n < lim) {
                 IFile f = dir.getFile(new Path(base + sb + n + ext));
-                if (!f.exists()) {
+//                if (!f.exists()) {
                     return f;
-                }
-                n++;
+//                }
+//                n++;
             }
             
             lim *= 10;
@@ -532,9 +555,6 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
 
         // build finished successfully, so refresh the directory
         IContainer sourceDir = TexlipseProperties.getProjectSourceDir(project);
-        if (sourceDir == null) {
-            sourceDir = project;
-        }
         sourceDir.refreshLocal(IProject.DEPTH_ONE, monitor);
         
         // mark temp files as derived
@@ -627,7 +647,20 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
             return;
         }
         
-        String outputFileName = TexlipseProperties.getProjectProperty(project, TexlipseProperties.OUTPUTFILE_PROPERTY);
+        String outputFileName = TexlipseProperties.getProjectProperty(project, 
+                TexlipseProperties.OUTPUTFILE_PROPERTY);
+        //Check for partial build
+        Object s = TexlipseProperties.getProjectProperty(project, TexlipseProperties.PARTIAL_BUILD_PROPERTY);
+        if (s != null) {
+            IFile tmpFile = (IFile)TexlipseProperties.getSessionProperty(project, TexlipseProperties.PARTIAL_BUILD_FILE);
+            if (tmpFile != null){
+                String fmtProp = TexlipseProperties.getProjectProperty(project,
+                        TexlipseProperties.OUTPUT_FORMAT);
+                String name = tmpFile.getName();
+                name = name.substring(0, name.lastIndexOf('.')) + "." + fmtProp;
+                outputFileName = name;
+            }
+        }
         IResource outputFile = sourceDir.findMember(outputFileName);
         if (outputFile != null && outputFile.exists()) {
             
@@ -642,6 +675,10 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
                 dest.delete(true, monitor);
             }
             
+            //Check if the output dir exists, if not create it
+            if (outputDir != null && !outputDir.exists()) {
+                outputDir.create(true, true, null);
+            }
             // move the file
             outputFile.move(dest.getFullPath(), true, monitor);
             monitor.worked(1);
@@ -668,12 +705,10 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
     private void moveTempFiles(IProject project, IProgressMonitor monitor) throws CoreException {
         
         IFolder tempDir = TexlipseProperties.getProjectTempDir(project);
-        if (tempDir != null && tempDir.exists()) {
+        if (tempDir != null) {
             
             IContainer sourceDir = TexlipseProperties.getProjectSourceDir(project);
-            if (sourceDir == null) {
-                sourceDir = project;
-            } else if (!sourceDir.exists()) {
+            if (!sourceDir.exists()) {
                 return;
             }
             
@@ -694,6 +729,9 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
                 
                 String name = res[i].getName();
                 if (isLatexTempFile(name, ext, format) && res[i].exists()) {
+                    if (!tempDir.exists()) {
+                        tempDir.create(true, true, null);
+                    }
                     
                     IResource dest = tempDir.getFile(name);
                     if (dest != null && dest.exists()) {
@@ -726,9 +764,7 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
         if (tempDir != null && tempDir.exists()) {
             
             IContainer sourceDir = TexlipseProperties.getProjectSourceDir(project);
-            if (sourceDir == null) {
-                sourceDir = project;
-            } else if (!sourceDir.exists()) {
+            if (!sourceDir.exists()) {
                 return;
             }
             

@@ -109,7 +109,7 @@ public abstract class PartialRetriever {
 
         // get upper bound (inclusive)
         while (left < middle) {
-            if (entries[middle].key.compareTo(start) > 0) {
+            if (entries[middle].key.compareTo(start) >= 0) {
                 right = middle;
                 middle = (left + middle)/2;
             } else {

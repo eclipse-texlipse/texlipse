@@ -162,8 +162,6 @@ public class ReferenceManager extends PartialRetriever {
      * @param start The string with which the completions should start
      * @return An array of completions or null if there were no completions
      */
-    //public CommandEntry[] getCompletionsCom(String start) {
-    //    CommandEntry[] commands = commandContainer.getSortedCommands();
     public TexCommandEntry[] getCompletionsCom(String start, int context) {
         TexCommandEntry[] commands = commandContainer.getSortedCommands(context);
         if (commands == null)
@@ -172,16 +170,10 @@ public class ReferenceManager extends PartialRetriever {
             return commands;
 
         int[] bounds = getCompletionsBin(start, commands);
-        if (bounds[0] == -1) {
-            // getCompletionsBin does not return anything if start is
-            // an exact entry, therefore we try getEntry
-            bounds[0] = getEntry(start, commands);
-            if (bounds[0] == -1)
-                return null;
-            bounds[1] = bounds[0] + 1;
-        }
-
+        if (bounds[1] == -1)
+            return null;
         TexCommandEntry[] compls = new TexCommandEntry[bounds[1] - bounds[0]];
+
         System.arraycopy(commands, bounds[0], compls, 0, bounds[1] - bounds[0]);
         return compls;
     }

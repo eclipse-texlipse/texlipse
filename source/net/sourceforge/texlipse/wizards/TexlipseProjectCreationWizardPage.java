@@ -168,24 +168,29 @@ public class TexlipseProjectCreationWizardPage extends TexlipseWizardPage {
         group.setLayoutData(lgd);
         
         // add radioButtons
-        Button createLocalProjectButton = new Button(group, SWT.RADIO | SWT.LEFT);
+        final Button createLocalProjectButton = new Button(group, SWT.RADIO | SWT.LEFT);
         createLocalProjectButton.setLayoutData(new GridData());
         createLocalProjectButton.setText(TexlipsePlugin.getResourceString("projectWizardLocationLocal"));
         createLocalProjectButton.setSelection(true);
         createLocalProjectButton.addSelectionListener(new SelectionAdapter() {
             public void widgetSelected(SelectionEvent event) {
+                //Only execute if this field becomes selected
+                if (!createLocalProjectButton.getSelection()) return;
                 projectLocationField.setText(workspacePath + projectNameField.getText());
                 Control[] c = projectLocationField.getParent().getChildren();
                 for (int i = 0; i < c.length; i++) {
                     c[i].setEnabled(false);
                 }
                 attributes.setProjectLocation(null);
+                updateStatus(createStatus(IStatus.OK, ""), projectLocationField);
             }});
-        Button createExternalProjectButton = new Button(group, SWT.RADIO | SWT.LEFT);
+        final Button createExternalProjectButton = new Button(group, SWT.RADIO | SWT.LEFT);
         createExternalProjectButton.setLayoutData(new GridData());
         createExternalProjectButton.setText(TexlipsePlugin.getResourceString("projectWizardLocationExternal"));
         createExternalProjectButton.addSelectionListener(new SelectionAdapter() {
             public void widgetSelected(SelectionEvent event) {
+                //Only execute if this field becomes selected
+                if (!createExternalProjectButton.getSelection()) return;
                 Control[] c = projectLocationField.getParent().getChildren();
                 for (int i = 0; i < c.length; i++) {
                     c[i].setEnabled(true);

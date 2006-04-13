@@ -71,7 +71,7 @@ class FileLocationOpener implements FileLocationListener {
  * 
  * @author Anton Klimovsky
  * @author Kimmo Karlsson
- * @author Tor Arne VestbÃ¸
+ * @author Tor Arne Vestbø
  * @author Boris von Loesch
  */
 public class ViewerManager {
@@ -193,6 +193,9 @@ public class ViewerManager {
      * external previewer. This is done by first activating the
      * eclipse window, and then setting focus in the editor in a
      * worker thread. Note the delay needed before setting focus. 
+     * 
+     * @param useMinimizeTrick if true uses a trick to force focus by
+     *                         minimizing and restoring the eclipse window 
      */
     public static void returnFocusToEclipse(final boolean useMinimizeTrick) {
 

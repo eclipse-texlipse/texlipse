@@ -10,10 +10,13 @@
 package net.sourceforge.texlipse.actions;
 
 import net.sourceforge.texlipse.TexlipsePlugin;
+import net.sourceforge.texlipse.builder.BuilderRegistry;
+import net.sourceforge.texlipse.properties.TexlipseProperties;
 import net.sourceforge.texlipse.viewer.TexLaunchConfigurationDelegate;
 import net.sourceforge.texlipse.viewer.TexLaunchConfigurationTab;
 import net.sourceforge.texlipse.viewer.ViewerAttributeRegistry;
 
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunchConfiguration;
@@ -37,7 +40,7 @@ import org.eclipse.ui.IWorkbenchWindowActionDelegate;
  * on the current project.
  * 
  * @author Kimmo Karlsson
- * @author Tor Arne VestbÃ¸
+ * @author Tor Arne Vestbø
  */
 public class PreviewAction implements IWorkbenchWindowActionDelegate, IEditorActionDelegate {
     
@@ -49,49 +52,64 @@ public class PreviewAction implements IWorkbenchWindowActionDelegate, IEditorAct
         try {      	
         	ILaunchConfiguration config = null;
         	
-        	// Internal, but will probably not change very much *cross fingers* :P
-        	LaunchConfigurationManager configManager = DebugUIPlugin.getDefault().getLaunchConfigurationManager();
-        	if (configManager != null) {
-        		LaunchHistory history = configManager.getLaunchHistory("org.eclipse.debug.ui.launchGroup.run");
-        		if (history != null) {
-        			ILaunchConfiguration[] configs = history.getHistory();
-        			if (configs != null) {
-        				// Try to find a recent viewer launch first
-        				ViewerAttributeRegistry registry = new ViewerAttributeRegistry();
-        				String[] viewers = registry.getViewerList();
-        				String activeViewer = viewers[registry.getActiveViewerIndex(viewers)]; 
-        	        	for (int i = 0; i < configs.length ; i++) {
-        	        		ILaunchConfiguration c = configs[i];
-        	        		if (c.getType().getIdentifier().equals(TexLaunchConfigurationDelegate.CONFIGURATION_ID)) {
-        	        			if (c.getAttribute("viewerCurrent", "").equals(activeViewer)) {
-        	        				config = c;
-        	        				break;
-        	        			}
-        					}
-        				}
-        			}
-        		}
-        	}
-        	
-        	// If there was no available viewer
-        	if (config == null)
-        	{
-        		// Create a new one
-        		ILaunchManager manager = DebugPlugin.getDefault().getLaunchManager();
-        		ILaunchConfigurationType type = manager.getLaunchConfigurationType(
-        				TexLaunchConfigurationDelegate.CONFIGURATION_ID);        		
-        		ILaunchConfigurationWorkingCopy workingCopy = type.newInstance(null,
-        				manager.generateUniqueLaunchConfigurationNameFrom("Preview Document"));
-        		
-        		// For some reason the Eclipse API wants us to init default values
-        		// for new configurations using the ConfigurationTab dialog.
-        		TexLaunchConfigurationTab tab = new TexLaunchConfigurationTab();        		
-        		tab.setDefaults(workingCopy);        		
-        		
-        		config = workingCopy.doSave();
-        	}
-        	
-        	DebugUITools.launch(config, ILaunchManager.RUN_MODE);      
+            
+            // Get the output format
+            IProject project = TexlipsePlugin.getCurrentProject();
+            String outputFormat = TexlipseProperties.getProjectProperty(project,
+                TexlipseProperties.OUTPUT_FORMAT);
+            
+            // Get the preferred viewer for the current output format
+            ViewerAttributeRegistry var = new ViewerAttributeRegistry();
+            String preferredViewer = var.getPreferredViewer(outputFormat);
+
+            if (null == preferredViewer) {
+                BuilderRegistry.printToConsole(TexlipsePlugin.getResourceString("builderErrorOutputFormatNotSet").replaceAll("%s", project.getName()));
+                throw new CoreException(TexlipsePlugin.stat("No previewer found for the current output format."));
+            }
+            
+//          Internal, but will probably not change very much *cross fingers* :P
+            LaunchConfigurationManager configManager = DebugUIPlugin.getDefault().getLaunchConfigurationManager();
+            if (configManager != null) {
+                LaunchHistory history = configManager.getLaunchHistory("org.eclipse.debug.ui.launchGroup.run");
+                if (history != null) {
+                    ILaunchConfiguration[] configs = history.getHistory();
+                    if (configs != null) {
+                        // Try to find a recent viewer launch first
+                        for (int i = 0; i < configs.length ; i++) {
+                            ILaunchConfiguration c = configs[i];
+                            if (c.getType().getIdentifier().equals(TexLaunchConfigurationDelegate.CONFIGURATION_ID)) {
+                                if (c.getAttribute("viewerCurrent", "").equals(preferredViewer)) {
+                                    config = c;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            
+            // If there was no available viewer
+            if (config == null)
+            {
+                // Create a new one
+                ILaunchManager manager = DebugPlugin.getDefault().getLaunchManager();
+                ILaunchConfigurationType type = manager.getLaunchConfigurationType(
+                        TexLaunchConfigurationDelegate.CONFIGURATION_ID);               
+                ILaunchConfigurationWorkingCopy workingCopy = type.newInstance(null,
+                        manager.generateUniqueLaunchConfigurationNameFrom("Preview Document in " + preferredViewer));
+                
+                // Request another viewer than the topmost in the preferences
+                workingCopy.setAttribute("viewerCurrent", preferredViewer);
+                
+                // For some reason the Eclipse API wants us to init default values
+                // for new configurations using the ConfigurationTab dialog.
+                TexLaunchConfigurationTab tab = new TexLaunchConfigurationTab();                
+                tab.setDefaults(workingCopy);     
+                
+                config = workingCopy.doSave();
+            }
+            
+            DebugUITools.launch(config, ILaunchManager.RUN_MODE);        
         	
         	
         } catch (CoreException e) {

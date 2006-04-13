@@ -42,7 +42,7 @@ import org.eclipse.swt.widgets.Text;
  * The tab containing Latex previewer configuration.
  * 
  * @author Kimmo Karlsson
- * @author Tor Arne VestbÃ¸
+ * @author Tor Arne Vestbø
  */
 public class TexLaunchConfigurationTab extends AbstractLaunchConfigurationTab {
 
@@ -227,20 +227,29 @@ public class TexLaunchConfigurationTab extends AbstractLaunchConfigurationTab {
      * meaningful values. This method may be called before this
      * tab's control is created.
      * 
+     * If the configuration parameter contains an attribute named
+     * 'viewerCurrent', the tab is initialized with the default values
+     * for the given viewer. The given viewer is expected to exist.
+     * 
      * @param configuration launch configuration
      */
     public void setDefaults(ILaunchConfigurationWorkingCopy configuration) {
-
-        String viewer = registry.getActiveViewer();
-        configuration.setAttribute(ViewerAttributeRegistry.VIEWER_CURRENT, viewer);
-        configuration.setAttribute(viewer + ViewerAttributeRegistry.ATTRIBUTE_COMMAND, registry.getCommand());
-        configuration.setAttribute(viewer + ViewerAttributeRegistry.ATTRIBUTE_ARGUMENTS, registry.getArguments());
-        configuration.setAttribute(viewer + ViewerAttributeRegistry.ATTRIBUTE_DDE_VIEW_COMMAND, registry.getDDEViewCommand());
-        configuration.setAttribute(viewer + ViewerAttributeRegistry.ATTRIBUTE_DDE_VIEW_SERVER, registry.getDDEViewServer());
-        configuration.setAttribute(viewer + ViewerAttributeRegistry.ATTRIBUTE_DDE_VIEW_TOPIC, registry.getDDEViewTopic());
-        configuration.setAttribute(viewer + ViewerAttributeRegistry.ATTRIBUTE_DDE_CLOSE_COMMAND, registry.getDDECloseCommand());
-        configuration.setAttribute(viewer + ViewerAttributeRegistry.ATTRIBUTE_DDE_CLOSE_SERVER, registry.getDDECloseServer());
-        configuration.setAttribute(viewer + ViewerAttributeRegistry.ATTRIBUTE_DDE_CLOSE_TOPIC, registry.getDDECloseTopic());        
+        try {
+            String viewer = configuration.getAttribute("viewerCurrent", registry.getActiveViewer());
+            registry.setActiveViewer(viewer);
+            
+            configuration.setAttribute(ViewerAttributeRegistry.VIEWER_CURRENT, viewer);
+            configuration.setAttribute(viewer + ViewerAttributeRegistry.ATTRIBUTE_COMMAND, registry.getCommand());
+            configuration.setAttribute(viewer + ViewerAttributeRegistry.ATTRIBUTE_ARGUMENTS, registry.getArguments());
+            configuration.setAttribute(viewer + ViewerAttributeRegistry.ATTRIBUTE_DDE_VIEW_COMMAND, registry.getDDEViewCommand());
+            configuration.setAttribute(viewer + ViewerAttributeRegistry.ATTRIBUTE_DDE_VIEW_SERVER, registry.getDDEViewServer());
+            configuration.setAttribute(viewer + ViewerAttributeRegistry.ATTRIBUTE_DDE_VIEW_TOPIC, registry.getDDEViewTopic());
+            configuration.setAttribute(viewer + ViewerAttributeRegistry.ATTRIBUTE_DDE_CLOSE_COMMAND, registry.getDDECloseCommand());
+            configuration.setAttribute(viewer + ViewerAttributeRegistry.ATTRIBUTE_DDE_CLOSE_SERVER, registry.getDDECloseServer());
+            configuration.setAttribute(viewer + ViewerAttributeRegistry.ATTRIBUTE_DDE_CLOSE_TOPIC, registry.getDDECloseTopic());  
+        } catch (CoreException e) {
+            TexlipsePlugin.log("Initializing launch configuration", e);
+        }
     }
 
     /**

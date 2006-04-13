@@ -26,7 +26,7 @@ import org.eclipse.jface.preference.IPreferenceStore;
  * Instances of this class hold a local copy of the viewer configurations.
  * 
  * @author Kimmo Karlsson
- * @author Tor Arne VestbÃ¸
+ * @author Tor Arne Vestbø
  */
 public class ViewerAttributeRegistry implements Cloneable {
 
@@ -81,6 +81,9 @@ public class ViewerAttributeRegistry implements Cloneable {
     // active viewer. This variable is not in the registry, because it is needed all the time.
     private String activeViewer;
 
+    // All available viewers in the preferences, sorted by "priority"
+    private String[] allViewers;
+    
     /**
      * Construct a new copy of the viewer attributes, based on the
      * default viewer defined in the preference pages (first on the list).
@@ -223,6 +226,7 @@ public class ViewerAttributeRegistry implements Cloneable {
         String list = pref.getString(VIEWER_NAMES);
         if (list != null && list.indexOf(',') > 0) {
             String[] names = list.split(",");
+            allViewers = names;
             // String.split can't return null
             for (int i = 0; i < names.length; i++) {
                 registry.put(names[i] + ATTRIBUTE_COMMAND, pref.getString(names[i] + ATTRIBUTE_COMMAND));
@@ -342,6 +346,24 @@ public class ViewerAttributeRegistry implements Cloneable {
             }
         }
         return -1;
+    }
+    
+    /**
+     * Gets the preferred previewer for a given output format
+     * 
+     * @param format The target output format
+     * @return The first matching previewer that supports the given format
+     */
+    public String getPreferredViewer(String format) {
+        // Find first match
+        for (int i = 0; i < allViewers.length; i++) {
+            String viewerOutputFormat = (String) registry.get(allViewers[i] + ATTRIBUTE_FORMAT);           
+            if (viewerOutputFormat.equals(format)) {
+                return allViewers[i];
+            }
+        } 
+        
+        return null;
     }
     
     /**

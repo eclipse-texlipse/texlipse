@@ -374,7 +374,9 @@ public class ViewerManager {
         try {
             return execute(dir);
         } catch (IOException e) {
-            throw new CoreException(TexlipsePlugin.stat("Could not start previewer.", e));
+            throw new CoreException(TexlipsePlugin.stat("Could not start previewer '"
+                + registry.getActiveViewer() + "'. Please make sure you have entered "
+                + "the correct path and filename in the viewer preferences.", e));
         }
     }
 
@@ -387,7 +389,9 @@ public class ViewerManager {
 
         	int error = DDEClient.execute(server, topic, command);
             if (error != 0) {
-            	BuilderRegistry.printToConsole("DDE command " + command + " failed! (server: " + server + ", topic: " + topic + ")");
+                String errorMessage = "DDE command " + command + " failed! " +
+                "(server: " + server + ", topic: " + topic + ")";
+                TexlipsePlugin.log(errorMessage, new Throwable(errorMessage));
             }
     	}
     }
@@ -401,7 +405,9 @@ public class ViewerManager {
 	
 	    	int error = DDEClient.execute(server, topic, command);
 	  		if (error != 0) {
-            	BuilderRegistry.printToConsole("DDE command " + command + " failed! (server: " + server + ", topic: " + topic + ")");
+              String errorMessage = "DDE command " + command + " failed! " +
+              "(server: " + server + ", topic: " + topic + ")";
+              TexlipsePlugin.log(errorMessage, new Throwable(errorMessage));
             }
     	}
     }

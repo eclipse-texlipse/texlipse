@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import net.sourceforge.texlipse.TexlipsePlugin;
+import net.sourceforge.texlipse.properties.TexlipseProperties;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
@@ -21,13 +22,14 @@ import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchManager;
 import org.eclipse.debug.core.model.LaunchConfigurationDelegate;
+import org.eclipse.jface.preference.IPreferenceStore;
 
 
 /**
  * Launch a document viewer program using the given launch configuration.
  * 
  * @author Kimmo Karlsson
- * @author Tor Arne VestbÃ¸
+ * @author Tor Arne Vestbø
  */
 public class TexLaunchConfigurationDelegate extends LaunchConfigurationDelegate {
 
@@ -67,6 +69,19 @@ public class TexLaunchConfigurationDelegate extends LaunchConfigurationDelegate 
        
         // if this process is added to launcer, the output will not be parsed correctly
                 //launch.addProcess(DebugPlugin.newProcess(launch, process, mode));
+        
+        // Return focus to Eclipse after previewing (optional)
+        IPreferenceStore prefs = TexlipsePlugin.getDefault().getPreferenceStore();
+        if (prefs.getBoolean(TexlipseProperties.BUILDER_RETURN_FOCUS)) {
+            
+            try {
+                Thread.sleep(500); // A small delay required
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            
+            ViewerManager.returnFocusToEclipse(false);
+        }
         
     }
     

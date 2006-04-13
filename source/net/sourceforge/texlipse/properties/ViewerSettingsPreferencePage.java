@@ -12,6 +12,7 @@ package net.sourceforge.texlipse.properties;
 import net.sourceforge.texlipse.TexlipsePlugin;
 import net.sourceforge.texlipse.viewer.util.FileLocationServer;
 
+import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.IntegerFieldEditor;
 import org.eclipse.ui.IWorkbench;
@@ -56,14 +57,19 @@ public class ViewerSettingsPreferencePage extends FieldEditorPreferencePage
         //addField(new BooleanFieldEditor(TexlipseProperties.BUILD_BEFORE_VIEW, TexlipsePlugin.getResourceString("preferenceViewerBuildLabel"), getFieldEditorParent()));
         
         TexlipsePreferencePage.addSpacer(2, getFieldEditorParent());
+        TexlipsePreferencePage.addSeparator(2, getFieldEditorParent());
         
+        TexlipsePreferencePage.addSpacer(2, getFieldEditorParent());
         TexlipsePreferencePage.addLabelField(2, TexlipsePlugin.getResourceString("preferenceViewerPortLabel"), getFieldEditorParent());
-        
         String message = TexlipsePlugin.getResourceString("preferenceViewerConfigsPort").replaceFirst("%1", "" + MIN_PORT).replaceFirst("%2", "" + MAX_PORT);
         IntegerFieldEditor port = new IntegerFieldEditor(TexlipseProperties.FILE_LOCATION_PORT, message, getFieldEditorParent());
         port.setValidateStrategy(IntegerFieldEditor.VALIDATE_ON_KEY_STROKE);
         port.setValidRange(MIN_PORT, MAX_PORT);
         addField(port);
+        
+        TexlipsePreferencePage.addSpacer(2, getFieldEditorParent());
+        addField(new BooleanFieldEditor(TexlipseProperties.BUILDER_RETURN_FOCUS, TexlipsePlugin.getResourceString("preferenceViewerReturnFocusLabel"), getFieldEditorParent()));
+        
         WorkbenchHelp.setHelp(port.getTextControl(getFieldEditorParent()), TexlipseHelpIds.VIEWER_PORT);
     }
 

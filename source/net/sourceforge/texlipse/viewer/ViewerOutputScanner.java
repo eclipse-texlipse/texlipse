@@ -10,6 +10,7 @@
 package net.sourceforge.texlipse.viewer;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -128,7 +129,21 @@ public class ViewerOutputScanner implements Runnable {
             
             // remove the project path (external or inside workspace)
             file = file.substring(projDir.length());
+            // yap also adds the output dir
+            IFolder outdir = TexlipseProperties.getProjectOutputDir(project);
+            index = file.indexOf(outdir.getProjectRelativePath().toString());
+            if (index == 0) {
+                // remove output path
+                file = file.substring(outdir.getProjectRelativePath().toString().length());
+                while (file.startsWith(File.separator))
+                    file = file.substring(1);
+            }
             resource = project.findMember(file);
+            if (resource == null) {
+                //maybe in src folder
+                IContainer srcDir = TexlipseProperties.getProjectSourceDir(project);
+                resource = srcDir.findMember(file);                
+            }
             
         } else {
             

@@ -169,11 +169,11 @@ public class BibDocumentModel {
             // needs sort because the etries are not returned here in the correct
             // order, fucking STUPID coding
 
-            Collections.sort(entryList, new Comparator<ReferenceEntry>() {
-                public int compare(ReferenceEntry A, ReferenceEntry B) {
-                    return A.startLine - B.startLine;
-                }
-            });
+//            Collections.sort(entryList, new Comparator<ReferenceEntry>() {
+//                public int compare(ReferenceEntry A, ReferenceEntry B) {
+//                    return A.startLine - B.startLine;
+//                }
+//            });
             
             int beginOffset = -1, endOffset = -1;
             ReferenceEntry prev = null, next = null;

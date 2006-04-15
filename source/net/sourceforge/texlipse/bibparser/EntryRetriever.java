@@ -49,7 +49,8 @@ import org.eclipse.core.resources.IMarker;
  */
 public final class EntryRetriever extends DepthFirstAdapter {
     
-    private ArrayList<ParseErrorMessage> warnings = new ArrayList<ParseErrorMessage>();
+    //private ArrayList<ParseErrorMessage> warnings = new ArrayList<ParseErrorMessage>();
+    private ArrayList warnings = new ArrayList();
     
     private List entries = new ArrayList(); //type: ReferenceEntry
     
@@ -72,7 +73,8 @@ public final class EntryRetriever extends DepthFirstAdapter {
     /**
      * A list of required fields for the different BibTeX entries
      */
-    private static Map<String, List<String>> requiredFieldsPerType;
+    //private static Map<String, List<String>> requiredFieldsPerType;
+    private static Map requiredFieldsPerType;
     
     public void initializeStatics() {
         String[] article = {"author", "title", "journal", "year"};                     
@@ -89,20 +91,35 @@ public final class EntryRetriever extends DepthFirstAdapter {
         String[] proceedings = {"title", "year"};
         String[] unpublished = {"author", "title", "note"};
 
-        requiredFieldsPerType = new HashMap<String, List<String>>();
-        requiredFieldsPerType.put("article", new ArrayList<String>(Arrays.asList(article)));
-        requiredFieldsPerType.put("book", new ArrayList<String>(Arrays.asList(book)));
-        requiredFieldsPerType.put("booklet", new ArrayList<String>(Arrays.asList(booklet)));
-        requiredFieldsPerType.put("conference", new ArrayList<String>(Arrays.asList(conference)));
-        requiredFieldsPerType.put("inbook", new ArrayList<String>(Arrays.asList(inbook)));
-        requiredFieldsPerType.put("incollection", new ArrayList<String>(Arrays.asList(incollection)));
-        requiredFieldsPerType.put("inproceedings", new ArrayList<String>(Arrays.asList(inproceedings)));
-        requiredFieldsPerType.put("manual", new ArrayList<String>(Arrays.asList(manual)));
-        requiredFieldsPerType.put("mastersthesis", new ArrayList<String>(Arrays.asList(mastersthesis)));        
-        requiredFieldsPerType.put("phdthesis", new ArrayList<String>(Arrays.asList(phdthesis)));
-        requiredFieldsPerType.put("techreport", new ArrayList<String>(Arrays.asList(techreport)));
-        requiredFieldsPerType.put("proceedings", new ArrayList<String>(Arrays.asList(proceedings)));
-        requiredFieldsPerType.put("unpublished", new ArrayList<String>(Arrays.asList(unpublished)));
+//        requiredFieldsPerType = new HashMap<String, List<String>>();
+//        requiredFieldsPerType.put("article", new ArrayList<String>(Arrays.asList(article)));
+//        requiredFieldsPerType.put("book", new ArrayList<String>(Arrays.asList(book)));
+//        requiredFieldsPerType.put("booklet", new ArrayList<String>(Arrays.asList(booklet)));
+//        requiredFieldsPerType.put("conference", new ArrayList<String>(Arrays.asList(conference)));
+//        requiredFieldsPerType.put("inbook", new ArrayList<String>(Arrays.asList(inbook)));
+//        requiredFieldsPerType.put("incollection", new ArrayList<String>(Arrays.asList(incollection)));
+//        requiredFieldsPerType.put("inproceedings", new ArrayList<String>(Arrays.asList(inproceedings)));
+//        requiredFieldsPerType.put("manual", new ArrayList<String>(Arrays.asList(manual)));
+//        requiredFieldsPerType.put("mastersthesis", new ArrayList<String>(Arrays.asList(mastersthesis)));        
+//        requiredFieldsPerType.put("phdthesis", new ArrayList<String>(Arrays.asList(phdthesis)));
+//        requiredFieldsPerType.put("techreport", new ArrayList<String>(Arrays.asList(techreport)));
+//        requiredFieldsPerType.put("proceedings", new ArrayList<String>(Arrays.asList(proceedings)));
+//        requiredFieldsPerType.put("unpublished", new ArrayList<String>(Arrays.asList(unpublished)));
+
+        requiredFieldsPerType = new HashMap();
+        requiredFieldsPerType.put("article", new ArrayList(Arrays.asList(article)));
+        requiredFieldsPerType.put("book", new ArrayList(Arrays.asList(book)));
+        requiredFieldsPerType.put("booklet", new ArrayList(Arrays.asList(booklet)));
+        requiredFieldsPerType.put("conference", new ArrayList(Arrays.asList(conference)));
+        requiredFieldsPerType.put("inbook", new ArrayList(Arrays.asList(inbook)));
+        requiredFieldsPerType.put("incollection", new ArrayList(Arrays.asList(incollection)));
+        requiredFieldsPerType.put("inproceedings", new ArrayList(Arrays.asList(inproceedings)));
+        requiredFieldsPerType.put("manual", new ArrayList(Arrays.asList(manual)));
+        requiredFieldsPerType.put("mastersthesis", new ArrayList(Arrays.asList(mastersthesis)));        
+        requiredFieldsPerType.put("phdthesis", new ArrayList(Arrays.asList(phdthesis)));
+        requiredFieldsPerType.put("techreport", new ArrayList(Arrays.asList(techreport)));
+        requiredFieldsPerType.put("proceedings", new ArrayList(Arrays.asList(proceedings)));
+        requiredFieldsPerType.put("unpublished", new ArrayList(Arrays.asList(unpublished)));
     }
     
     public EntryRetriever() {
@@ -209,7 +226,7 @@ public final class EntryRetriever extends DepthFirstAdapter {
         // useless -- uses the wrong token
         //currEntry.endLine = node.getIdentifier().getLine();
 
-        List reqFieldList = requiredFieldsPerType.get(currEntryType);
+        List reqFieldList = (List) requiredFieldsPerType.get(currEntryType);
         if (reqFieldList != null) {
             if (!currDefinedFields.containsAll(reqFieldList)) {
                 for (Iterator iter = reqFieldList.iterator(); iter.hasNext();) {

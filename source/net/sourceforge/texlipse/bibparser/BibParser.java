@@ -77,7 +77,8 @@ public class BibParser {
      * 
      * @return BibTeX entries (<code>ReferenceEntry</code>)
      */
-    public List<ReferenceEntry> getEntries() throws IOException, FileNotFoundException {
+//    public List<ReferenceEntry> getEntries() throws IOException, FileNotFoundException {
+    public List getEntries() throws IOException, FileNotFoundException {
         try {
             BibLexer l;
             if (filename != null) {

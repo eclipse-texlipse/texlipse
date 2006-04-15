@@ -58,11 +58,17 @@ public class BibOutlineContainer {
     public BibOutlineContainer buildYearSort() {
         // make a shallow copy
         BibOutlineContainer newboc = childCopy(SORTYEAR);
-        Collections.sort(newboc.childEntries, new Comparator<ReferenceEntry>() {
-            public int compare(ReferenceEntry A, ReferenceEntry B) {
-                return A.year.compareTo(B.year);
+//        Collections.sort(newboc.childEntries, new Comparator<ReferenceEntry>() {
+//            public int compare(ReferenceEntry A, ReferenceEntry B) {
+//                return A.year.compareTo(B.year);
+//            }
+//        });
+        Collections.sort(newboc.childEntries, new Comparator() {
+            public int compare(Object A, Object B) {
+                return ((ReferenceEntry) A).year.compareTo(((ReferenceEntry) B).year);
             }
         });
+
         //newboc.partition();
         return newboc;
     }
@@ -84,10 +90,20 @@ public class BibOutlineContainer {
                 // TODO we make some simple copies of this entry and
                 // because they will only be in the outline, we won't
                 // copy every value
+                
+                // FIXME we need something like this for the author formats...
+//                if (authors[0].indexOf(',') == -1) {
+//                    int pos = authors[0].lastIndexOf(' ');
+//                    if (pos != -1) {
+//                        re.author = authors[0].substring(pos+1) + ", " + authors[0].substring(0, pos); 
+//                    }
+//                }
+                
                 for (int i = 1; i < authors.length; i++) {
                     ReferenceEntry copyRe = new ReferenceEntry(re.key);
                     copyRe.position = re.position;
                     copyRe.refFile = re.refFile;
+                    
                     copyRe.author = authors[i];
                     copyChildren.add(copyRe);
                 }
@@ -96,9 +112,14 @@ public class BibOutlineContainer {
         // merge the lists
         childEntries.addAll(copyChildren);
         // sort
-        Collections.sort(this.childEntries, new Comparator<ReferenceEntry>() {
-            public int compare(ReferenceEntry A, ReferenceEntry B) {
-                return A.author.compareTo(B.author);
+//        Collections.sort(this.childEntries, new Comparator<ReferenceEntry>() {
+//            public int compare(ReferenceEntry A, ReferenceEntry B) {
+//                return A.author.compareTo(B.author);
+//            }
+//        });
+        Collections.sort(this.childEntries, new Comparator() {
+            public int compare(Object A, Object B) {
+                return ((ReferenceEntry) A).author.compareTo(((ReferenceEntry) B).author);
             }
         });
         //partition();
@@ -107,9 +128,14 @@ public class BibOutlineContainer {
     public BibOutlineContainer buildJournalSort() {
         // make a shallow copy
         BibOutlineContainer newboc = childCopy(SORTJOURNAL);
-        Collections.sort(newboc.childEntries, new Comparator<ReferenceEntry>() {
-            public int compare(ReferenceEntry A, ReferenceEntry B) {
-                return A.journal.compareTo(B.journal);
+//        Collections.sort(newboc.childEntries, new Comparator<ReferenceEntry>() {
+//            public int compare(ReferenceEntry A, ReferenceEntry B) {
+//                return A.journal.compareTo(B.journal);
+//            }
+//        });
+        Collections.sort(newboc.childEntries, new Comparator() {
+            public int compare(Object A, Object B) {
+                return ((ReferenceEntry) A).journal.compareTo(((ReferenceEntry) B).journal);
             }
         });
         //newboc.partition();
@@ -119,9 +145,14 @@ public class BibOutlineContainer {
     public BibOutlineContainer buildIndexSort() {
         // make a shallow copy
         BibOutlineContainer newboc = childCopy(SORTINDEX);
-        Collections.sort(newboc.childEntries, new Comparator<ReferenceEntry>() {
-            public int compare(ReferenceEntry A, ReferenceEntry B) {
-                return A.key.compareTo(B.key);
+//        Collections.sort(newboc.childEntries, new Comparator<ReferenceEntry>() {
+//            public int compare(ReferenceEntry A, ReferenceEntry B) {
+//                return A.key.compareTo(B.key);
+//            }
+//        });
+        Collections.sort(newboc.childEntries, new Comparator() {
+            public int compare(Object A, Object B) {
+                return ((ReferenceEntry) A).key.compareTo(((ReferenceEntry) B).key);
             }
         });
         //newboc.partition();

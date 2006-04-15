@@ -14,6 +14,7 @@ import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import net.sourceforge.texlipse.TexlipsePlugin;
 import net.sourceforge.texlipse.properties.TexlipseProperties;
 
 import org.eclipse.core.resources.IContainer;
@@ -195,8 +196,8 @@ public class LatexRunner extends AbstractProgramRunner {
                         // prepare to run bibtex
                         TexlipseProperties.setSessionProperty(resource.getProject(),
                                 TexlipseProperties.SESSION_BIBTEX_RERUN, "true");
-                        continue;
                     }
+                    continue;
                 }
 
                 // Ignore undefined references or citations because they are
@@ -308,8 +309,12 @@ public class LatexRunner extends AbstractProgramRunner {
                     ;
                 parsingStack.push(logLine.substring(i, j).trim());
                 i = j - 1;
-            } else if (logLine.charAt(i) == ')') {
+            } else if (logLine.charAt(i) == ')' && !parsingStack.isEmpty()) {
                 parsingStack.pop();
+            } else if (logLine.charAt(i) == ')') {
+                // There was a parsing error, this is very rare
+                TexlipsePlugin.log("Error while parsing the LaTeX output. " +
+                        "Please consult the console output", null);
             }
         }
     }

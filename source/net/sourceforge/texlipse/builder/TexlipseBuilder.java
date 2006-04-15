@@ -17,9 +17,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Map;
 
-import net.sourceforge.texlipse.SelectedResourceManager;
 import net.sourceforge.texlipse.TexlipsePlugin;
 import net.sourceforge.texlipse.properties.TexlipseProperties;
+import net.sourceforge.texlipse.texparser.LatexParserUtils;
 import net.sourceforge.texlipse.viewer.ViewerManager;
 
 import org.eclipse.core.resources.IContainer;
@@ -32,6 +32,9 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.jface.text.IDocument;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.texteditor.ITextEditor;
 
 
 /**
@@ -194,25 +197,30 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
     private void partialBuild(final IProgressMonitor monitor) throws CoreException {
         
         IProject project = getProject();
-        
+        if (isUpToDate(project))
+            return;
+        IEditorPart part = TexlipsePlugin.getCurrentWorkbenchPage().getActiveEditor();
+        ITextEditor editor = null;
+        if (part instanceof ITextEditor)
+            editor = (ITextEditor) part;
+        // find out the file that should be built partially
+        IResource res = (IResource) part.getEditorInput().getAdapter(IResource.class);
+        if (res == null || res.getType() != IResource.FILE || !res.getProject().equals(project)) {
+            // No file is selected, so user must be browsing 
+            // with the navigator. Don't build anything yet.
+            return;            
+        }
+        String resourceName = res.getName();
+        int extIndex = resourceName.lastIndexOf('.');
+        String ext = resourceName.substring(extIndex+1);
+        IDocument doc = editor.getDocumentProvider().getDocument(part.getEditorInput());
         //load settings, if changed on disk
         if (TexlipseProperties.isProjectPropertiesFileChanged(project)) {
             TexlipseProperties.loadProjectProperties(project);
         }
 
-        // find out the file that should be built partially
-        IResource res = SelectedResourceManager.getDefault().getSelectedResource();
-        String resourceName = res.getName();
-        int extIndex = resourceName.lastIndexOf('.');
-        String ext = resourceName.substring(extIndex+1);
-        
-        // check if full build is needed
-        if (res == null || res.getType() != IResource.FILE) {
-            // No file is selected, so user must be browsing 
-            // with the navigator. Don't build anything yet.
-            return;
-            
-        } else if (resourceName.equals(TexlipseProperties.getProjectProperty(project, TexlipseProperties.MAINFILE_PROPERTY))
+        IFile file = project.getFile(res.getProjectRelativePath());
+        if (resourceName.equals(TexlipseProperties.getProjectProperty(project, TexlipseProperties.MAINFILE_PROPERTY))
                 || (!ext.equals("tex") && !ext.equals("ltx"))) {
 
             // main file can't be built partially
@@ -220,21 +228,20 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
             TexlipseProperties.setSessionProperty(project, TexlipseProperties.PARTIAL_BUILD_FILE, null);
         	fullBuild(monitor);
         	return;
+        } else if (LatexParserUtils.findCommand(doc, "\\documentclass", 0) != -1
+                || LatexParserUtils.findCommand(doc, "\\documentstyle", 0) != -1) {
+            // A complete tex file (just build it)
+            TexlipseProperties.setSessionProperty(project, TexlipseProperties.PARTIAL_BUILD_FILE, file);
+            buildPartialFile(file, monitor);
+            return;
         }
-        IFile file = project.getFile(res.getProjectRelativePath());
         String tempFileContents = getTempFileContents(file, project, monitor);
 
         //The temp file should be in the main folder
         IContainer folder = TexlipseProperties.getProjectSourceDir(project);
         
-        // create a temp file if not yet created. This file is not created in
-        // to a temporary directory because the bibliograpy files are relative.
-        // Also, this file could \include{} other files.
-        IFile tmpFile = (IFile) TexlipseProperties.getSessionProperty(project, TexlipseProperties.PARTIAL_BUILD_FILE);
-        if (tmpFile == null) {
-            tmpFile = createTempFileName(folder);
-            TexlipseProperties.setSessionProperty(project, TexlipseProperties.PARTIAL_BUILD_FILE, tmpFile);
-        }
+        IFile tmpFile = createTempFileName(folder);
+        TexlipseProperties.setSessionProperty(project, TexlipseProperties.PARTIAL_BUILD_FILE, tmpFile);
         if (tmpFile == null) {
             throw new CoreException(TexlipsePlugin.stat("Can't create temp file"));
         }
@@ -579,7 +586,8 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
         
         IResource[] files = TexlipseProperties.getAllProjectFiles(project);
         for (int i = 0; i < files.length; i++) {
-            if (files[i].getModificationStamp() > lastBuildStamp) {
+            long stamp = files[i].getLocalTimeStamp(); 
+            if (stamp > lastBuildStamp) {
                 return false;
             }
         }
@@ -800,7 +808,7 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
     }
 
     /**
-     * Find the output file and get the time stamp.
+     * Find the output file and get the local time stamp.
      * 
      * @param resource project's main file
      * @param output output format of this project
@@ -808,9 +816,14 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
      */
     private static long getOutputFileDate(IProject project) {
 
-        IResource of = TexlipseProperties.getProjectOutputFile(project);
+        IResource of = null;
+        try {
+            of = ViewerManager.getOuputResource(project);
+        } catch (CoreException e) {
+        }
+        //Check for partial build
         if (of != null && of.exists()) {
-            return of.getModificationStamp();
+            return of.getLocalTimeStamp();
         }
         return -1;
     }
@@ -830,7 +843,7 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
         if (resource == null) {
             return false;
         }
-        return resource.getModificationStamp() > getOutputFileDate(project);
+        return resource.getLocalTimeStamp() > getOutputFileDate(project);
     }
     
     /**

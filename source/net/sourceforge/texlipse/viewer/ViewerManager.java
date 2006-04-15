@@ -359,7 +359,7 @@ public class ViewerManager {
             TexlipseProperties.loadProjectProperties(project);
         }
         
-        IResource outputRes = getOuputResource();
+        IResource outputRes = getOuputResource(project);
         
         if (outputRes == null || !outputRes.exists()) {
             String msg = TexlipsePlugin.getResourceString("viewerNothingWithExtension");
@@ -450,7 +450,7 @@ public class ViewerManager {
      * @return
      * @throws CoreException
      */
-    private IResource getOuputResource() throws CoreException { 
+    public static IResource getOuputResource(IProject project) throws CoreException { 
     	
     	String outFileName = TexlipseProperties.getProjectProperty(project,
                 TexlipseProperties.OUTPUTFILE_PROPERTY);
@@ -472,15 +472,15 @@ public class ViewerManager {
         
         // find out the directory where the file should be
         IContainer outputDir = null;
-        String fmtProp = TexlipseProperties.getProjectProperty(project,
-                TexlipseProperties.OUTPUT_FORMAT);
-        if (registry.getFormat().equals(fmtProp)) {
+//        String fmtProp = TexlipseProperties.getProjectProperty(project,
+//                TexlipseProperties.OUTPUT_FORMAT);
+//        if (registry.getFormat().equals(fmtProp)) {
             outputDir = TexlipseProperties.getProjectOutputDir(project);
-        } else {
+/*        } else {
             String base = outFileName.substring(0, outFileName.lastIndexOf('.') + 1);
             outFileName = base + registry.getFormat();
             outputDir = TexlipseProperties.getProjectTempDir(project);
-        }
+        }*/
         if (outputDir == null) {
             outputDir = project;
         }
@@ -590,7 +590,7 @@ public class ViewerManager {
 
         if (input.indexOf(FILENAME_PATTERN) >= 0) {
             // resolve relative path to the output file
-            IResource outputRes = getOuputResource();
+            IResource outputRes = getOuputResource(project);
             String outFileName = outputRes.getName();
             outFileName = resolveRelativePath(sourceDir.getFullPath(), outputRes.getFullPath());
             outFileName = outFileName.substring(0, outFileName.length() - 1);
@@ -599,7 +599,7 @@ public class ViewerManager {
         }
     	
         if (input.indexOf(FILENAME_FULLPATH_PATTERN) >= 0) {
-        	input = input.replaceAll(FILENAME_FULLPATH_PATTERN, escapeBackslashes(getOuputResource().getLocation().toOSString()));
+        	input = input.replaceAll(FILENAME_FULLPATH_PATTERN, escapeBackslashes(getOuputResource(project).getLocation().toOSString()));
         }
         
         if (input.indexOf(LINE_NUMBER_PATTERN) >= 0) {

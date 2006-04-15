@@ -10,6 +10,7 @@
 package net.sourceforge.texlipse.editor;
 
 import net.sourceforge.texlipse.TexlipsePlugin;
+import net.sourceforge.texlipse.texparser.LatexParserUtils;
 
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
@@ -21,18 +22,14 @@ import org.eclipse.jface.text.BadLocationException;
 
 /**
  * @author Esa Seuranen
+ * @author Boris von Loesch
  *
  * A pair finder class for implementing the pair matching.
  */
 public class TexPairMatcher implements ICharacterPairMatcher {
     
-    // Indicate the anchor value "right"
-    int RIGHT = 0;
-    // Indicate the anchor value "left"
-    int LEFT = 1;
-    
     //current anchor position
-    private int fAnchor = LEFT;
+    private int fAnchor = LatexParserUtils.LEFT;
     //string of pairs, so that two consecutive characters form a pair and the first
     //character is the "left" and the latter is the "right"
     private String pairs;
@@ -88,73 +85,40 @@ public class TexPairMatcher implements ICharacterPairMatcher {
      * @see org.eclipse.jface.text.source.ICharacterPairMatcher#match(org.eclipse.jface.text.IDocument, int)
      */
     public IRegion match(IDocument document, int offset) {
-    	offset--; //we want to match pairs after we have entered the pair character
-    	if(offset<0) return null;
+        offset--; // we want to match pairs after we have entered the pair
+                    // character
+        if (offset < 0)
+            return null;
         try {
             int index = pairs.indexOf(document.getChar(offset));
-            if (index == -1) { 
+            if (index == -1) {
                 return null;
             }
+            // Check for a backslash then it is no brace but a command
+            if (offset > 0 && document.getChar(offset - 1) == '\\')
+                return null;
 
             int peerIndex;
             if ((index % 2) == 1) {
-                fAnchor=RIGHT;
-                peerIndex = findPeerChar(document, offset, fAnchor, pairs.charAt(index), pairs.charAt(index-1));
+                fAnchor = LatexParserUtils.RIGHT;
+                peerIndex = LatexParserUtils.findPeerChar(document, offset, fAnchor, pairs.charAt(index), 
+                        pairs.charAt(index - 1));
                 if (peerIndex != -1)
                     return new Region(peerIndex, offset - peerIndex + 1);
             } else {
-                fAnchor=LEFT;
-                peerIndex = findPeerChar(document, offset, fAnchor, pairs.charAt(index), pairs.charAt(index+1)); 
+                fAnchor = LatexParserUtils.LEFT;
+                peerIndex = LatexParserUtils.findPeerChar(document, offset, fAnchor, pairs.charAt(index), 
+                        pairs.charAt(index + 1));
                 if (peerIndex != -1)
                     return new Region(offset, peerIndex - offset + 1);
             }
-            
+
         } catch (BadLocationException ble) {
             TexlipsePlugin.log("Bad location in TexPairMatcher.match()", ble);
         }
         return null;
     }
-    
-    /**
-     * Finds the peercharacter for opening character (can be either "left" or "right"
-     * character. The direction of the search is determined by the achor
-     * (i.e. anchor==LEFT -> forward search and opening character is "left",
-     * or anchor==RIGHT -> backward search and opening character is "right")
-     * 
-     * @param document
-     * @param offset
-     * @param anchor
-     * @param opening 
-     * @param closing matching character for opening
-     * @return index of the matching closing character, or -1 if the search failed
-     */
-    private int findPeerChar(IDocument document, int offset, int anchor, char opening, char closing) {
-        try {
-            int stack = 1, index;
-            index = offset;
-            while (stack > 0) {
-                if (anchor == LEFT) {
-                	index++;
-                } else {
-                    index--;
-                }
-                if ((index < 0) || (index >= document.getLength())) {
-                	index=-1;
-                	break;
-                }
-                
-                if (document.getChar(index) == opening)
-                    stack++;			
-                if (document.getChar(index) == closing)
-                    stack--;			
-            }
-            return index;
-        } catch (BadLocationException ble){
-            TexlipsePlugin.log("Bad location in TexPariMatcher.findPeerChar", ble);
-            return -1;
-        }
-    }
-    
+        
     /**
      * Returns anchor, i.e. whether the current character (in the document's
      * current position) is RIGHT (0) if the character is "right" character in a pair, 

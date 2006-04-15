@@ -13,11 +13,13 @@ import java.util.Arrays;
 
 import net.sourceforge.texlipse.TexlipsePlugin;
 import net.sourceforge.texlipse.properties.TexlipseProperties;
+import net.sourceforge.texlipse.texparser.LatexParserUtils;
 
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.DefaultAutoIndentStrategy;
 import org.eclipse.jface.text.DocumentCommand;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants;
@@ -159,25 +161,24 @@ public class TexAutoIndentStrategy extends DefaultAutoIndentStrategy {
      * 					the "\begin{...}"
      * @return	true, if it needs an end, else false
      */
-    private boolean needsEnd(String environment, String document, int coffset) {
+    private boolean needsEnd(String environment, IDocument document, int coffset) {
         int counter = 1;
         int offset = coffset;
-        String end = "\\end{" + environment + "}";
-        String begin = "\\begin{" + environment + "}";
         while (counter > 0) {
-            int startof = document.indexOf(begin, offset + 5);
-            int endof = document.indexOf(end, offset + 3);
-            if (startof == -1 && endof >= 0) {
+            IRegion end = LatexParserUtils.findEndEnvironment(document, environment, offset + 5);
+            if (end == null) {
+                return true;
+            }
+            IRegion start = LatexParserUtils.findBeginEnvironment(document, environment, offset + 7);
+            if (start == null) {
                 counter--;
-                offset = endof;
-            } else if (endof >= startof) {
-                offset = startof;
-                if (offset == -1)
-                    return true;
+                offset = end.getOffset();
+            } else if (end.getOffset() > start.getOffset()) {
                 counter++;
+                offset = start.getOffset();
             } else {
                 counter--;
-                offset = endof;
+                offset = end.getOffset();
             }
         }
         return false;
@@ -186,10 +187,9 @@ public class TexAutoIndentStrategy extends DefaultAutoIndentStrategy {
     /**
      * Performs indentation after new line is detected.
      * 
-     * @param document
-     *            Document where new line is detected.
-     * @param command
-     *            Command that represent the change of the document (new line).
+     * @param document Document where new line is detected.
+     * @param command Command that represent the change of the document (new
+     *            line).
      */
     private void smartIndentAfterNewLine(IDocument document,
             DocumentCommand command) {
@@ -245,7 +245,7 @@ public class TexAutoIndentStrategy extends DefaultAutoIndentStrategy {
                  * looks for the \begin-statement and inserts
                  * an equivalent \end-statement (respects \begin-indentation)
                  */
-                if (needsEnd(this.tools.getEnvironment(endText), document.get(), lineOffset)){
+                if (needsEnd(this.tools.getEnvironment(endText), document, lineOffset)){
                 	buf.append("\n" + prevIndentation + "\\end{"
                         + this.tools.getEnvironment(endText) + "}");
                     command.shiftsCaret = false;

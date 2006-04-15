@@ -13,7 +13,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -30,8 +29,11 @@ import net.sourceforge.texlipse.bibparser.node.AKeyvalDecl;
 import net.sourceforge.texlipse.bibparser.node.ANumValOrSid;
 import net.sourceforge.texlipse.bibparser.node.AStrbraceStringEntry;
 import net.sourceforge.texlipse.bibparser.node.AStrparenStringEntry;
-import net.sourceforge.texlipse.bibparser.node.AValueValOrSid;
+import net.sourceforge.texlipse.bibparser.node.AValueBValOrSid;
+import net.sourceforge.texlipse.bibparser.node.AValueQValOrSid;
 import net.sourceforge.texlipse.bibparser.node.TIdentifier;
+import net.sourceforge.texlipse.bibparser.node.TStringLiteral;
+import net.sourceforge.texlipse.bibparser.node.Token;
 import net.sourceforge.texlipse.model.ParseErrorMessage;
 import net.sourceforge.texlipse.model.ReferenceEntry;
 
@@ -315,13 +317,31 @@ public final class EntryRetriever extends DepthFirstAdapter {
     public void outAConcat(AConcat node) {
     }
     
-    public void inAValueValOrSid(AValueValOrSid node) {
+    public void inAValueBValOrSid(AValueBValOrSid node) {
+    }
+
+    public void inAValueQValOrSid(AValueQValOrSid node) {
+    }
+
+    public void outAValueBValOrSid(AValueBValOrSid node) {
+        outAValueValOrSid(node.getStringLiteral());
+    }
+
+    public void outAValueQValOrSid(AValueQValOrSid node) {
+        TStringLiteral tsl = node.getStringLiteral();
+        if (tsl != null) {
+            outAValueValOrSid(tsl);
+        } else {
+            warnings.add(new ParseErrorMessage(currEntry.startLine,
+                    1, currEntryType.length(),
+                    currField + " is empty in " + currEntry.key,
+                    IMarker.SEVERITY_WARNING));
+        }
     }
     
-    public void outAValueValOrSid(AValueValOrSid node) {
+    private void outAValueValOrSid(Token tsl) {
         //currEntryInfo.append(node.getStringLiteral().getText().replaceAll("\\s+", " "));
-        String fieldValue = node.getStringLiteral().getText().replaceAll("\\s+", " ");
-        String[] fieldValues = new String[0];
+        String fieldValue = tsl.getText().replaceAll("\\s+", " ");
         
         currEntryInfo.append(fieldValue);
         
@@ -334,49 +354,28 @@ public final class EntryRetriever extends DepthFirstAdapter {
             currEntry.year = fieldValue;
         }
         
-        
-        // add the entry to the index
-//        BibStringTriMap<ReferenceEntry> index = sortIndex.get(currField);
-//        if (index != null) {
-//            if (currField.equals("author") || currField.equals("editor")) {
-//                fieldValues = fieldValue.split(" and ");
-//            } else {
-//                fieldValues = new String[1];
-//                fieldValues[0] = fieldValue;
-//            }
-//            for (String fV : fieldValues) {
-//                fV = fV.trim();
-//                try {
-//                    index.put(fV, currEntry);
-//                } catch (NonUniqueException e) {
-//                    warnings.add(new ParseErrorMessage(currEntry.startLine,
-//                            node.getStringLiteral().getPos(),0,
-//                            "BibTex field " + currField + " with value " + fV + " is not unique",
-//                            IMarker.SEVERITY_WARNING));
-//                }               
-//            }
-//        }
-        
         // Test for empty fields
         if (fieldValue.equalsIgnoreCase("")) {
-            warnings.add(new ParseErrorMessage(node.getStringLiteral().getLine(),
-                    node.getStringLiteral().getPos(),0,
+            warnings.add(new ParseErrorMessage(tsl.getLine(),
+                    tsl.getPos(), 0,
                     currField + " is empty in " + currEntry.key,
                     IMarker.SEVERITY_WARNING));                 
         }
     }
-    
+
     public void inANumValOrSid(ANumValOrSid node) {
     }
-    
+  
     public void outANumValOrSid(ANumValOrSid node) {
-        currEntryInfo.append(node.getNumber().getText());
+        outAValueValOrSid(node.getNumber());
     }
     
     public void inAIdValOrSid(AIdValOrSid node) {
     }
     
     public void outAIdValOrSid(AIdValOrSid node) {
-        currEntryInfo.append(node.getIdentifier().getText());
+        // FIXME we need to check that the node is defined
+        //currEntryInfo.append(node.getIdentifier().getText());
+        outAValueValOrSid(node.getIdentifier());
     }
 }

@@ -2,7 +2,8 @@
 
 package net.sourceforge.texlipse.bibparser.node;
 
-import net.sourceforge.texlipse.bibparser.analysis.Analysis;
+import java.util.*;
+import net.sourceforge.texlipse.bibparser.analysis.*;
 
 public final class AConcat extends PConcat
 {

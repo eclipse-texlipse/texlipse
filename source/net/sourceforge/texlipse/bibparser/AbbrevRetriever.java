@@ -22,7 +22,8 @@ import net.sourceforge.texlipse.bibparser.node.AKeyvalDecl;
 import net.sourceforge.texlipse.bibparser.node.ANumValOrSid;
 import net.sourceforge.texlipse.bibparser.node.AStrbraceStringEntry;
 import net.sourceforge.texlipse.bibparser.node.AStrparenStringEntry;
-import net.sourceforge.texlipse.bibparser.node.AValueValOrSid;
+import net.sourceforge.texlipse.bibparser.node.AValueBValOrSid;
+import net.sourceforge.texlipse.bibparser.node.AValueQValOrSid;
 import net.sourceforge.texlipse.model.ReferenceEntry;
 
 
@@ -98,12 +99,18 @@ public final class AbbrevRetriever extends DepthFirstAdapter {
     public void outAConcat(AConcat node) {
     }
     
-    public void inAValueValOrSid(AValueValOrSid node) {
+    public void inAValueBValOrSid(AValueBValOrSid node) {
     }
-    
-    public void outAValueValOrSid(AValueValOrSid node) {
+
+    public void inAValueQValOrSid(AValueQValOrSid node) {
     }
-    
+
+    public void outAValueBValOrSid(AValueBValOrSid node) {
+    }
+
+    public void outAValueQValOrSid(AValueQValOrSid node) {
+    }
+
     public void inANumValOrSid(ANumValOrSid node) {
     }
     

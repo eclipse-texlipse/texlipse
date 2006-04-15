@@ -2,23 +2,7 @@
 
 package net.sourceforge.texlipse.bibparser.analysis;
 
-import net.sourceforge.texlipse.bibparser.node.ABibtex;
-import net.sourceforge.texlipse.bibparser.node.AConcat;
-import net.sourceforge.texlipse.bibparser.node.AEntryDef;
-import net.sourceforge.texlipse.bibparser.node.AEntrybraceEntry;
-import net.sourceforge.texlipse.bibparser.node.AEntryparenEntry;
-import net.sourceforge.texlipse.bibparser.node.AIdValOrSid;
-import net.sourceforge.texlipse.bibparser.node.AKeyvalDecl;
-import net.sourceforge.texlipse.bibparser.node.ANumValOrSid;
-import net.sourceforge.texlipse.bibparser.node.AStrbraceStringEntry;
-import net.sourceforge.texlipse.bibparser.node.AStrparenStringEntry;
-import net.sourceforge.texlipse.bibparser.node.AValueValOrSid;
-import net.sourceforge.texlipse.bibparser.node.Node;
-import net.sourceforge.texlipse.bibparser.node.PConcat;
-import net.sourceforge.texlipse.bibparser.node.PEntry;
-import net.sourceforge.texlipse.bibparser.node.PKeyvalDecl;
-import net.sourceforge.texlipse.bibparser.node.PStringEntry;
-import net.sourceforge.texlipse.bibparser.node.Start;
+import net.sourceforge.texlipse.bibparser.node.*;
 
 public class ReversedDepthFirstAdapter extends AnalysisAdapter
 {
@@ -259,24 +243,44 @@ public class ReversedDepthFirstAdapter extends AnalysisAdapter
         outAConcat(node);
     }
 
-    public void inAValueValOrSid(AValueValOrSid node)
+    public void inAValueBValOrSid(AValueBValOrSid node)
     {
         defaultIn(node);
     }
 
-    public void outAValueValOrSid(AValueValOrSid node)
+    public void outAValueBValOrSid(AValueBValOrSid node)
     {
         defaultOut(node);
     }
 
-    public void caseAValueValOrSid(AValueValOrSid node)
+    public void caseAValueBValOrSid(AValueBValOrSid node)
     {
-        inAValueValOrSid(node);
+        inAValueBValOrSid(node);
         if(node.getStringLiteral() != null)
         {
             node.getStringLiteral().apply(this);
         }
-        outAValueValOrSid(node);
+        outAValueBValOrSid(node);
+    }
+
+    public void inAValueQValOrSid(AValueQValOrSid node)
+    {
+        defaultIn(node);
+    }
+
+    public void outAValueQValOrSid(AValueQValOrSid node)
+    {
+        defaultOut(node);
+    }
+
+    public void caseAValueQValOrSid(AValueQValOrSid node)
+    {
+        inAValueQValOrSid(node);
+        if(node.getStringLiteral() != null)
+        {
+            node.getStringLiteral().apply(this);
+        }
+        outAValueQValOrSid(node);
     }
 
     public void inANumValOrSid(ANumValOrSid node)

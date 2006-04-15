@@ -25,58 +25,8 @@ public class Lexer
     public Lexer(PushbackReader in)
     {
         this.in = in;
-
-        if(gotoTable == null)
-        {
-            try
-            {
-                DataInputStream s = new DataInputStream(
-                    new BufferedInputStream(
-                    Lexer.class.getResourceAsStream("lexer.dat")));
-
-                // read gotoTable
-                int length = s.readInt();
-                gotoTable = new int[length][][][];
-                for(int i = 0; i < gotoTable.length; i++)
-                {
-                    length = s.readInt();
-                    gotoTable[i] = new int[length][][];
-                    for(int j = 0; j < gotoTable[i].length; j++)
-                    {
-                        length = s.readInt();
-                        gotoTable[i][j] = new int[length][3];
-                        for(int k = 0; k < gotoTable[i][j].length; k++)
-                        {
-                            for(int l = 0; l < 3; l++)
-                            {
-                                gotoTable[i][j][k][l] = s.readInt();
-                            }
-                        }
-                    }
-                }
-
-                // read accept
-                length = s.readInt();
-                accept = new int[length][];
-                for(int i = 0; i < accept.length; i++)
-                {
-                    length = s.readInt();
-                    accept[i] = new int[length];
-                    for(int j = 0; j < accept[i].length; j++)
-                    {
-                        accept[i][j] = s.readInt();
-                    }
-                }
-
-                s.close();
-            }
-            catch(Exception e)
-            {
-                throw new RuntimeException("The file \"lexer.dat\" is either missing or corrupted.");
-            }
-        }
     }
-
+ 
     public Token peek() throws LexerException, IOException
     {
         while(token == null)
@@ -744,6 +694,56 @@ public class Lexer
         public int id()
         {
             return id;
+        }
+    }
+
+    static 
+    {
+        try
+        {
+            DataInputStream s = new DataInputStream(
+                new BufferedInputStream(
+                Lexer.class.getResourceAsStream("lexer.dat")));
+
+            // read gotoTable
+            int length = s.readInt();
+            gotoTable = new int[length][][][];
+            for(int i = 0; i < gotoTable.length; i++)
+            {
+                length = s.readInt();
+                gotoTable[i] = new int[length][][];
+                for(int j = 0; j < gotoTable[i].length; j++)
+                {
+                    length = s.readInt();
+                    gotoTable[i][j] = new int[length][3];
+                    for(int k = 0; k < gotoTable[i][j].length; k++)
+                    {
+                        for(int l = 0; l < 3; l++)
+                        {
+                            gotoTable[i][j][k][l] = s.readInt();
+                        }
+                    }
+                }
+            }
+
+            // read accept
+            length = s.readInt();
+            accept = new int[length][];
+            for(int i = 0; i < accept.length; i++)
+            {
+                length = s.readInt();
+                accept[i] = new int[length];
+                for(int j = 0; j < accept[i].length; j++)
+                {
+                    accept[i][j] = s.readInt();
+                }
+            }
+
+            s.close();
+        }
+        catch(Exception e)
+        {
+            throw new RuntimeException("The file \"lexer.dat\" is either missing or corrupted.");
         }
     }
 }

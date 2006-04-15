@@ -14,8 +14,6 @@
  * @author Oskar Ojala
  */
 
-
-//Package fi.hut.soberit.texlipse.bibparser;
 //Package bibtex6;
 Package net.sourceforge.texlipse.bibparser;
 
@@ -23,7 +21,6 @@ Package net.sourceforge.texlipse.bibparser;
 Helpers
 
     unicode_input_character = [0..0xffff];
-
 //    ascii_char = [0..0x7f]; // conflict?
 
     ht = 0x0009;
@@ -41,7 +38,6 @@ Helpers
 
     q_str_char = [input_character - '"'] | '\"';
     b_str_char = [input_character - [ws + ['{' + '}']]];
-
 
     digit = ['0'..'9'];
     letter = ['a'..'z']|['A'..'Z'];
@@ -66,31 +62,6 @@ Tokens
 
     {normal} comment = input_character_nat*;
 
-// @include? not supported in BibTeX 0.99c so not supported here
-
-/*
-    {normal} article = ['A'+'a'] ['R'+'r'] ['T'+'t'] ['I'+'i'] ['C'+'c'] ['L'+'l'] ['E'+'e'];
-    {normal} book = ['B'+'b'] ['O'+'o'] ['O'+'o'] ['K'+'k'];
-    {normal} booklet = ['B'+'b'] ['O'+'o'] ['O'+'o'] ['K'+'k'] ['L'+'l'] ['E'+'e'] ['T'+'t'];
-    {normal} conference = ['C'+'c'] ['O'+'o'] ['N'+'n'] ['F'+'f'] ['E'+'e'] ['R'+'r'] ['E'+'e'] ['N'+'n'] ['C'+'c'] ['E'+'e'];
-    {normal} inbook = ['I'+'i'] ['N'+'n'] ['B'+'b'] ['O'+'o'] ['O'+'o'] ['K'+'k'];
-
-    {normal} incollection = ['I'+'i'] ['N'+'n'] ['C'+'c'] ['O'+'o'] ['L'+'l'] ['L'+'l'] ['E'+'e'] ['C'+'c'] ['T'+'t'] ['I'+'i'] ['O'+'o'] ['N'+'n'];
-    {normal} inproceedings = ['I'+'i'] ['N'+'n'] ['P'+'p'] ['R'+'r'] ['O'+'o'] ['C'+'c'] ['E'+'e'] ['E'+'e'] ['D'+'d'] ['I'+'i'] ['N'+'n'] ['G'+'g'] ['S'+'s'];
-    {normal} manual = ['M'+'m'] ['A'+'a'] ['N'+'n'] ['U'+'u'] ['A'+'a'] ['L'+'l'];
-    {normal} mastersthesis = ['M'+'m'] ['A'+'a'] ['S'+'s'] ['T'+'t'] ['E'+'e'] ['R'+'r'] ['S'+'s'] ['T'+'t'] ['H'+'h'] ['E'+'e'] ['S'+'s'] ['I'+'i'] ['S'+'s'];
-    {normal} misc = ['M'+'m'] ['I'+'i'] ['S'+'s'] ['C'+'c'];
-//bonus
-    {normal} patent = ['P'+'p'] ['A'+'a'] ['T'+'t'] ['E'+'e'] ['N'+'n'] ['T'+'t'];
-    {normal} periodical = ['P'+'p'] ['E'+'e'] ['R'+'r'] ['I'+'i'] ['O'+'o'] ['D'+'d'] ['I'+'i'] ['C'+'c'] ['A'+'a'] ['L'+'l'];
-
-    {normal} phdthesis = ['P'+'p'] ['H'+'h'] ['D'+'d'] ['T'+'t'] ['H'+'h'] ['E'+'e'] ['S'+'s'] ['I'+'i'] ['S'+'s'];
-    {normal} proceedings = ['P'+'p'] ['R'+'r'] ['O'+'o'] ['C'+'c'] ['E'+'e'] ['E'+'e'] ['D'+'d'] ['I'+'i'] ['N'+'n'] ['G'+'g'] ['S'+'s'];
-    {normal} techreport = ['T'+'t'] ['E'+'e'] ['C'+'c'] ['H'+'h'] ['R'+'r'] ['E'+'e'] ['P'+'p'] ['O'+'o'] ['R'+'r'] ['T'+'t'];
-    {normal} unpublished = ['U'+'u'] ['N'+'n'] ['P'+'p'] ['U'+'u'] ['B'+'b'] ['L'+'l'] ['I'+'i'] ['S'+'s'] ['H'+'h'] ['E'+'e'] ['D'+'d'];
-*/
-
-
     {inentry, assign->bracestring, bracestring, remove} l_brace = '{';
     {inentry->normal, assign->normal, bracestring, remove} r_brace = '}';
 
@@ -104,14 +75,11 @@ Tokens
     {inentry->assign} equals = '=';
     {assign} sharp = '#';
 
-
     {assign} number = digit+;
     {inentry, assign} identifier = (letter|digit|punctuation)+;
 
-
     {assign->qstring, qstring->assign} quotec = '"';
     {qstring} string_literal = q_str_char*;
-
 
 // ----------------------------------------------------------------------------
 Ignored Tokens
@@ -120,15 +88,12 @@ Ignored Tokens
     whitespace,
     comment;
 
-
 // ----------------------------------------------------------------------------
 Productions
 
 bibtex {-> bibtex}
 	= string_entry* entry*
 	{ -> New bibtex([string_entry.string_entry], [entry.entry])};
-
-//preamble_entry {-> } = preamble string_literal {-> };
 
 // d'oh...BibTeX grammar...we could cheat a bit here, but Sable does apparently not make it possible
 // to map two different productions to the same AST node (which isn't needed in a WELL DESIGNED grammar
@@ -145,28 +110,6 @@ entry {-> entry } = {entrybrace} entry_def l_brace [ckey]:identifier keyval_decl
 	| {entryparen} entry_def l_paren [ckey]:identifier keyval_decl+ comma? r_paren
 	{-> New entry.entryparen(entry_def.entry_def, ckey, [keyval_decl.keyval_decl])};
 
-
-// Enable if we want strict entry matches
-/*
-entry_def {-> entry_def} =
-		{article} article {-> New entry_def.article()}
-		| {book} book {-> New entry_def.book()}
-		| {booklet} booklet {-> New entry_def.booklet()}
-		| {conference} conference {-> New entry_def.conference()}
-		| {inbook} inbook {-> New entry_def.inbook()}
-		| {incollection} incollection {-> New entry_def.incollection()}
-		| {inproceedings} inproceedings {-> New entry_def.inproceedings()}
-		| {manual} manual {-> New entry_def.manual()}
-		| {mastersthesis} mastersthesis {-> New entry_def.mastersthesis()}
-		| {misc} misc {-> New entry_def.misc()}
-		| {patent} patent {-> New entry_def.patent()}
-		| {periodical} periodical {-> New entry_def.periodical()}
-		| {phdthesis} phdthesis {-> New entry_def.phdthesis()}
-		| {proceedings} proceedings {-> New entry_def.proceedings()}
-		| {techreport} techreport {-> New entry_def.techreport()}
-		| {unpublished} unpublished {-> New entry_def.unpublished()};
-*/
-
 entry_def {-> entry_def} = entry_name {-> New entry_def(entry_name)};
 
 keyval_decl {-> keyval_decl } = comma [vkey]:identifier equals val_or_sid concat*
@@ -174,7 +117,8 @@ keyval_decl {-> keyval_decl } = comma [vkey]:identifier equals val_or_sid concat
 
 // We won't match quotes, since it's not a big issue and should be visible by syntax
 // highlight in TeXlipse
-val_or_sid {-> val_or_sid} = {value} [q1]:quotec? string_literal [q2]:quotec? {-> New val_or_sid.value(string_literal)}
+val_or_sid {-> val_or_sid} = {value_b} string_literal {-> New val_or_sid.value_b(string_literal)}
+		| {value_q} [q1]:quotec string_literal? [q2]:quotec {-> New val_or_sid.value_q(string_literal)}
 		| {num} number {-> New val_or_sid.num(number)}
 		| {id} identifier {-> New val_or_sid.id(identifier)};
 
@@ -190,31 +134,14 @@ string_entry = {strbrace} identifier string_literal | {strparen} identifier stri
 
 entry = {entrybrace} entry_def identifier keyval_decl+ | {entryparen} entry_def identifier keyval_decl+;
 
-/*
-entry_def = {article}
-		| {book}
-		| {booklet}
-		| {conference}
-		| {inbook}
-		| {incollection}
-		| {inproceedings}
-		| {manual}
-		| {mastersthesis}
-		| {misc}
-		| {patent}
-		| {periodical}
-		| {phdthesis}
-		| {proceedings}
-		| {techreport}
-		| {unpublished};
-*/
 entry_def = entry_name;
 
 keyval_decl = identifier val_or_sid concat*;
 
 concat = val_or_sid;
 
-val_or_sid = {value} string_literal
+val_or_sid = {value_b} string_literal
+		| {value_q} string_literal?
 		| {num} number
 		| {id} identifier;
 

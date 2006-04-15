@@ -2,17 +2,18 @@
 
 package net.sourceforge.texlipse.bibparser.node;
 
-import net.sourceforge.texlipse.bibparser.analysis.Analysis;
+import java.util.*;
+import net.sourceforge.texlipse.bibparser.analysis.*;
 
-public final class AValueValOrSid extends PValOrSid
+public final class AValueBValOrSid extends PValOrSid
 {
     private TStringLiteral _stringLiteral_;
 
-    public AValueValOrSid()
+    public AValueBValOrSid()
     {
     }
 
-    public AValueValOrSid(
+    public AValueBValOrSid(
         TStringLiteral _stringLiteral_)
     {
         setStringLiteral(_stringLiteral_);
@@ -20,13 +21,13 @@ public final class AValueValOrSid extends PValOrSid
     }
     public Object clone()
     {
-        return new AValueValOrSid(
+        return new AValueBValOrSid(
             (TStringLiteral) cloneNode(_stringLiteral_));
     }
 
     public void apply(Switch sw)
     {
-        ((Analysis) sw).caseAValueValOrSid(this);
+        ((Analysis) sw).caseAValueBValOrSid(this);
     }
 
     public TStringLiteral getStringLiteral()

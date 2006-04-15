@@ -2,7 +2,7 @@
 
 package net.sourceforge.texlipse.bibparser.parser;
 
-import net.sourceforge.texlipse.bibparser.node.Token;
+import net.sourceforge.texlipse.bibparser.node.*;
 
 public class ParserException extends Exception
 {

@@ -5,59 +5,29 @@ package net.sourceforge.texlipse.bibparser.node;
 import java.util.*;
 import net.sourceforge.texlipse.bibparser.analysis.*;
 
-public final class AStrbraceStringEntry extends PStringEntry
+public final class AValueQValOrSid extends PValOrSid
 {
-    private TIdentifier _identifier_;
     private TStringLiteral _stringLiteral_;
 
-    public AStrbraceStringEntry()
+    public AValueQValOrSid()
     {
     }
 
-    public AStrbraceStringEntry(
-        TIdentifier _identifier_,
+    public AValueQValOrSid(
         TStringLiteral _stringLiteral_)
     {
-        setIdentifier(_identifier_);
-
         setStringLiteral(_stringLiteral_);
 
     }
     public Object clone()
     {
-        return new AStrbraceStringEntry(
-            (TIdentifier) cloneNode(_identifier_),
+        return new AValueQValOrSid(
             (TStringLiteral) cloneNode(_stringLiteral_));
     }
 
     public void apply(Switch sw)
     {
-        ((Analysis) sw).caseAStrbraceStringEntry(this);
-    }
-
-    public TIdentifier getIdentifier()
-    {
-        return _identifier_;
-    }
-
-    public void setIdentifier(TIdentifier node)
-    {
-        if(_identifier_ != null)
-        {
-            _identifier_.parent(null);
-        }
-
-        if(node != null)
-        {
-            if(node.parent() != null)
-            {
-                node.parent().removeChild(node);
-            }
-
-            node.parent(this);
-        }
-
-        _identifier_ = node;
+        ((Analysis) sw).caseAValueQValOrSid(this);
     }
 
     public TStringLiteral getStringLiteral()
@@ -88,18 +58,11 @@ public final class AStrbraceStringEntry extends PStringEntry
     public String toString()
     {
         return ""
-            + toString(_identifier_)
             + toString(_stringLiteral_);
     }
 
     void removeChild(Node child)
     {
-        if(_identifier_ == child)
-        {
-            _identifier_ = null;
-            return;
-        }
-
         if(_stringLiteral_ == child)
         {
             _stringLiteral_ = null;
@@ -110,12 +73,6 @@ public final class AStrbraceStringEntry extends PStringEntry
 
     void replaceChild(Node oldChild, Node newChild)
     {
-        if(_identifier_ == oldChild)
-        {
-            setIdentifier((TIdentifier) newChild);
-            return;
-        }
-
         if(_stringLiteral_ == oldChild)
         {
             setStringLiteral((TStringLiteral) newChild);

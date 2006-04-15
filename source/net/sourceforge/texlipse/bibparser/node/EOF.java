@@ -2,7 +2,7 @@
 
 package net.sourceforge.texlipse.bibparser.node;
 
-import net.sourceforge.texlipse.bibparser.analysis.Analysis;
+import net.sourceforge.texlipse.bibparser.analysis.*;
 
 public final class EOF extends Token
 {

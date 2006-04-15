@@ -9,6 +9,8 @@
  */
 package net.sourceforge.texlipse.properties;
 
+import java.io.File;
+
 import net.sourceforge.texlipse.TexlipsePlugin;
 import net.sourceforge.texlipse.builder.BuilderChooser;
 
@@ -46,6 +48,9 @@ public class TexlipseProjectPropertyPage extends PropertyPage {
     
     // text field for bib file
     private Text tempDirField;
+    
+    // text field for bib references file
+    private Text bibRefDirField;
 
     // checkbox for marking derived files
     private Button derivedCheckbox;
@@ -83,6 +88,8 @@ public class TexlipseProjectPropertyPage extends PropertyPage {
         addOutSection(composite);
         TexlipsePreferencePage.addSeparator(1, composite);
         addTempDirSection(composite);
+        TexlipsePreferencePage.addSeparator(1, composite);
+        addBibRefDirSection(composite);
         TexlipsePreferencePage.addSeparator(1, composite);
         addDerivedSection(composite);
         TexlipsePreferencePage.addSeparator(1, composite);
@@ -282,6 +289,51 @@ public class TexlipseProjectPropertyPage extends PropertyPage {
     }
     
     /**
+     * Create the bibRef dir section of the page.
+     * @param parent parent component
+     */
+    private void addBibRefDirSection(Composite parent) {
+        Composite composite = createDefaultComposite(parent, 3);
+
+        //Label for path field
+        Label label = new Label(composite, SWT.NONE);
+        label.setText(TexlipsePlugin.getResourceString("propertiesBibRefDirLabel"));
+        label.setLayoutData(new GridData());
+        label.setToolTipText(TexlipsePlugin.getResourceString("propertiesBibRefDirTooltip"));
+
+        // Path text field
+        bibRefDirField = new Text(composite, SWT.SINGLE | SWT.WRAP | SWT.BORDER);
+        bibRefDirField.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_FILL | GridData.GRAB_HORIZONTAL));
+        bibRefDirField.setToolTipText(TexlipsePlugin.getResourceString("propertiesBibRefDirTooltip"));
+        bibRefDirField.addModifyListener(new ModifyListener() {
+            public void modifyText(ModifyEvent e) {
+                validateBibRefFileField();}});
+    }
+    
+    /**
+     * Check that the directory name in the bibRef dir text field is a valid
+     * directory name.
+     */
+    private void validateBibRefFileField() {
+    	String text = bibRefDirField.getText();
+    	if (text != null && text.length() > 0) {            
+    		if (text.indexOf(';') >= 0) {
+    			setValid(false);
+    		} else {
+    			boolean exists = projectFileExists(text);
+    			if (!exists) { //also allow external paths
+    				File f = new File(text);
+    				setValid(f.exists());
+    			} else {
+    				setValid(exists);
+    			}
+    		}
+    	} else {
+    		setValid(true);
+    	}
+    }
+    
+    /**
      * Add the checkbox for controlling "derived"-flag.
      * @param parent parent component
      */
@@ -439,6 +491,11 @@ public class TexlipseProjectPropertyPage extends PropertyPage {
         String temp = TexlipseProperties.getProjectProperty(project,
                 TexlipseProperties.TEMP_DIR_PROPERTY);
         tempDirField.setText((temp != null) ? temp : "");
+        
+        // read bibRef dir
+        String bibRef = TexlipseProperties.getProjectProperty(project,
+                TexlipseProperties.BIBREF_DIR_PROPERTY);
+        bibRefDirField.setText((bibRef != null) ? bibRef : "");
 
         // find out the default builder
         String str = TexlipseProperties.getProjectProperty(project,
@@ -502,6 +559,12 @@ public class TexlipseProjectPropertyPage extends PropertyPage {
             tmpDir = tmpDir.trim();
         }
         
+        // check bibRef dir
+        String bibRefDir = bibRefDirField.getText();
+        if (bibRefDir != null) {
+            bibRefDir = bibRefDir.trim();
+        }
+        
         // check the preferred output format for this project
         String format = builderChooser.getSelectedFormat();
         if (format == null) {
@@ -557,6 +620,9 @@ public class TexlipseProjectPropertyPage extends PropertyPage {
                 
         TexlipseProperties.setProjectProperty(project,
                 TexlipseProperties.TEMP_DIR_PROPERTY, tmpDir);
+        
+        TexlipseProperties.setProjectProperty(project,
+                TexlipseProperties.BIBREF_DIR_PROPERTY, bibRefDir);
                 
         TexlipseProperties.setProjectProperty(project,
                 TexlipseProperties.OUTPUT_FORMAT, format);

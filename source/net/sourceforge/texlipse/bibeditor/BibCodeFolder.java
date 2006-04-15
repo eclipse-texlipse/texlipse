@@ -53,7 +53,7 @@ public class BibCodeFolder {
      * 
      * @param outline The outline data structure containing the document positions
      */
-    public void update(ArrayList outline) {
+    public void update(List outline) {
         model = (ProjectionAnnotationModel)editor.getAdapter(ProjectionAnnotationModel.class);
         if (model != null) {
             this.addMarks(outline);
@@ -65,7 +65,7 @@ public class BibCodeFolder {
      * 
      * @param outline The outline data structure containing the document positions
      */
-    private void addMarks(ArrayList outline) {
+    private void addMarks(List outline) {
         if (firstRun) {
             Map map = new HashMap();
             fillAnnotationMap(outline, map,
@@ -93,7 +93,7 @@ public class BibCodeFolder {
      * 
      * @param outline The outline data structure containing the document positions
      */
-    private void markTreeNodes(ArrayList outline) {
+    private void markTreeNodes(List outline) {
         markloop:
             for (ListIterator iter = outline.listIterator(); iter.hasNext();) {
                 ReferenceEntry re = (ReferenceEntry) iter.next();

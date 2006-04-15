@@ -60,7 +60,8 @@ implements IWorkbenchPreferencePage {
         
         addField(new BooleanFieldEditor(TexlipseProperties.BIB_CODE_FOLDING, TexlipsePlugin.getResourceString("preferenceBibCodeFolding"), getFieldEditorParent()));
         addField(new BooleanFieldEditor(TexlipseProperties.BIB_FOLD_INITIAL, TexlipsePlugin.getResourceString("preferenceBibFoldInitial"), getFieldEditorParent()));
-        addField(new BooleanFieldEditor(TexlipseProperties.BIB_STRING, TexlipsePlugin.getResourceString("preferenceBibString"), getFieldEditorParent()));
+        addField(new BooleanFieldEditor(TexlipseProperties.BIB_STRING, TexlipsePlugin.getResourceString("preferenceBibString"), getFieldEditorParent()));        
+        addField(new BooleanFieldEditor(TexlipseProperties.BIB_FREQSORT, TexlipsePlugin.getResourceString("preferenceBibFreqSort"), getFieldEditorParent()));
     }
     
     /**

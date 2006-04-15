@@ -896,9 +896,9 @@ public class TexDocumentModel implements IDocumentListener {
             String name = (String) iter.next();
             IResource res = project.findMember(path + name);
             if (res != null) {
-                BibParser parser = new BibParser(res.getLocation().toOSString());
+                BibParser parser = new BibParser(res.getLocation().toOSString(), project);
                 try {
-                    ArrayList bibEntriesList = parser.getEntries();
+                    List bibEntriesList = parser.getEntries();
                     if (bibEntriesList != null && bibEntriesList.size() > 0) {
                         bibContainer.addRefSource(path + name, bibEntriesList);
                     } else {

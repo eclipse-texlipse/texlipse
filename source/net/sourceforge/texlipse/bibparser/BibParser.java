@@ -15,14 +15,18 @@ import java.io.IOException;
 import java.io.PushbackReader;
 import java.io.Reader;
 import java.util.ArrayList;
+import java.util.Hashtable;
+import java.util.List;
 
 import net.sourceforge.texlipse.bibparser.lexer.LexerException;
 import net.sourceforge.texlipse.bibparser.node.Start;
 import net.sourceforge.texlipse.bibparser.parser.Parser;
 import net.sourceforge.texlipse.bibparser.parser.ParserException;
 import net.sourceforge.texlipse.model.ParseErrorMessage;
+import net.sourceforge.texlipse.model.ReferenceEntry;
 
 import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.resources.IProject;
 
 
 /**
@@ -33,11 +37,14 @@ import org.eclipse.core.resources.IMarker;
  * @author Oskar Ojala
  */
 public class BibParser {
-
+    
+    private IProject project;
     private String filename;
     private Reader reader;
     
     private ArrayList errors;
+    private ArrayList warnings;
+//    private Hashtable<String, BibStringTriMap<ReferenceEntry>> sortIndex;    
     private Start ast;
     
     /**
@@ -45,9 +52,11 @@ public class BibParser {
      * 
      * @param filename The file to parse
      */
-    public BibParser(String filename) {
+    public BibParser(String filename, IProject project) {
         this.filename = filename;
+        this.project = project;
         this.errors = new ArrayList();
+        this.warnings = new ArrayList();
     }
     
     /**
@@ -55,18 +64,20 @@ public class BibParser {
      * 
      * @param r A reader to the BibTeX-data to parse
      */
-    public BibParser(Reader r) {
+    public BibParser(Reader r, IProject project) {
+        this.project = project;
         this.reader = r;
         this.errors = new ArrayList();
+        this.warnings = new ArrayList();
     }
-
+    
     /**
      * Parses the document, constructs a list of the entries and returns
      * them.
      * 
      * @return BibTeX entries (<code>ReferenceEntry</code>)
      */
-    public ArrayList getEntries() throws IOException, FileNotFoundException {
+    public List<ReferenceEntry> getEntries() throws IOException, FileNotFoundException {
         try {
             BibLexer l;
             if (filename != null) {
@@ -80,9 +91,16 @@ public class BibParser {
             
             EntryRetriever er = new EntryRetriever();
             ast.apply(er);
-
+            
+            warnings = er.getWarnings();
+//            sortIndex = er.getSortIndex();
+            
+            // FIXME
+            // Search for files of the referenced material to be able to display
+            //new Thread(new BibFileReferenceSearch(sortIndex, project)).start();
+            
             return er.getEntries();
-
+            
             // TODO modularize SableCC error parsing
         } catch (LexerException le) {
             String msg = le.getMessage();
@@ -122,7 +140,22 @@ public class BibParser {
     /**
      * @return Returns the errors.
      */
-    public ArrayList getErrors() {
+    public ArrayList getErrors() {    	
         return errors;
+    }    
+    
+    /**
+     * @return Returns the warnings.
+     */
+    public ArrayList getWarnings() {    	
+        return warnings;
     }
+    
+    /**
+     * @return Returns the index structure of the bib file.
+     */
+//    public Hashtable<String, BibStringTriMap<ReferenceEntry>> getSortIndex() {
+//        return sortIndex;
+//    }    
+    
 }

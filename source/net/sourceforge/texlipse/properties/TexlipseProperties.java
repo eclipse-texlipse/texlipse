@@ -57,6 +57,7 @@ public class TexlipseProperties {
     public static final String OUTPUT_DIR_PROPERTY = "outputDir";
     public static final String SOURCE_DIR_PROPERTY = "srcDir";
     public static final String TEMP_DIR_PROPERTY = "tempDir";
+    public static final String BIBREF_DIR_PROPERTY = "bibrefDir";
     public static final String MARK_DERIVED_PROPERTY = "markDer";
     public static final String LANGUAGE_PROPERTY = "langSpell";
     public static final String MAKEINDEX_STYLEFILE_PROPERTY = "makeIndSty";
@@ -84,6 +85,7 @@ public class TexlipseProperties {
     
     public static final String BIB_COMPLETION = "bibCompletion";
     public static final String BIB_COMPLETION_DELAY = "bibDelay";
+    public static final String BIB_FREQSORT = "bibFreqSort";
     public static final String BIB_CODE_FOLDING = "bibCodeFolding";
     public static final String BIB_FOLD_INITIAL = "bibFoldInitial";
     public static final String BIB_STRING = "bibString";
@@ -371,6 +373,7 @@ public class TexlipseProperties {
         setProjectProperty(project, SOURCE_DIR_PROPERTY, prop.getProperty(SOURCE_DIR_PROPERTY, ""));
         setProjectProperty(project, OUTPUT_DIR_PROPERTY, prop.getProperty(OUTPUT_DIR_PROPERTY, ""));
         setProjectProperty(project, TEMP_DIR_PROPERTY, prop.getProperty(TEMP_DIR_PROPERTY, ""));
+        setProjectProperty(project, BIBREF_DIR_PROPERTY, prop.getProperty(BIBREF_DIR_PROPERTY, ""));
         setProjectProperty(project, BUILDER_NUMBER, prop.getProperty(BUILDER_NUMBER, ""));
         setProjectProperty(project, OUTPUT_FORMAT, prop.getProperty(OUTPUT_FORMAT, ""));
         setProjectProperty(project, MARK_DERIVED_PROPERTY, prop.getProperty(MARK_DERIVED_PROPERTY, ""));
@@ -410,6 +413,7 @@ public class TexlipseProperties {
         prop.setProperty(SOURCE_DIR_PROPERTY, getProjectProperty(project, SOURCE_DIR_PROPERTY));
         prop.setProperty(OUTPUT_DIR_PROPERTY, getProjectProperty(project, OUTPUT_DIR_PROPERTY));
         prop.setProperty(TEMP_DIR_PROPERTY, getProjectProperty(project, TEMP_DIR_PROPERTY));
+        prop.setProperty(BIBREF_DIR_PROPERTY, getProjectProperty(project, BIBREF_DIR_PROPERTY));
         prop.setProperty(BUILDER_NUMBER, getProjectProperty(project, BUILDER_NUMBER));
         prop.setProperty(OUTPUT_FORMAT, getProjectProperty(project, OUTPUT_FORMAT));
         prop.setProperty(MARK_DERIVED_PROPERTY, getProjectProperty(project, MARK_DERIVED_PROPERTY));

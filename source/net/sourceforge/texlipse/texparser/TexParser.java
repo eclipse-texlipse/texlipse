@@ -97,10 +97,26 @@ public class TexParser {
      * @param input The document
      */
     protected void extractPreamble(String input) {
+        // actually we should also check the order of these etc.
+        // (?:^|[^\\])\\document(?:class|style)
+        //if (input.indexOf("\\documentclass") == -1) {
         if (LatexParserUtils.findCommand(input, "\\documentclass", 0) == -1
                 && LatexParserUtils.findCommand(input, "\\documentstyle", 0) == -1) {
             return;
         }
+        
+//        // finds \begin {document} starting index
+//        int startDocIdx = input.indexOf("{document}");
+//        if (startDocIdx != -1) {
+//            int beginIdx = input.lastIndexOf("\\begin", startDocIdx);
+//            if (beginIdx != -1) {
+//                if (input.substring(beginIdx + 6, startDocIdx).matches("\\s*")) {
+//                    this.preamble = input.substring(0, startDocIdx + 10);
+//                    return;
+//                }
+//            }
+//        }
+//        this.preamble = input + "\\begin{document}";
         
         IRegion region = LatexParserUtils.findBeginEnvironment(input, "document", 0);
         if (region != null) {

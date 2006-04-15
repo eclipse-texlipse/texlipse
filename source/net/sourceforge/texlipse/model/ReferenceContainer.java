@@ -14,6 +14,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Container for referencing data (BibTeX and labels.) Holds the reference
@@ -45,7 +46,7 @@ public class ReferenceContainer {
      * @param key The key associated with these references in the internal set
      * @param refs The references to store
      */
-    public void addRefSource(String key, ArrayList refs) {
+    public void addRefSource(String key, List refs) {
         //ArrayList<ReferenceEntry> refs
         // Add filename to all references
         for (Iterator iter = refs.iterator(); iter.hasNext();) {
@@ -72,7 +73,7 @@ public class ReferenceContainer {
      * @param refs The reference source
      * @return True if the internal set was changed
      */
-    public boolean updateRefSource(String key, ArrayList refs) {
+    public boolean updateRefSource(String key, List refs) {
         if (referenceHash.containsKey(key)) {
             this.addRefSource(key, refs);
             this.organize();

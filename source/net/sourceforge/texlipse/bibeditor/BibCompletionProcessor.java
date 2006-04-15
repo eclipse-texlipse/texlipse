@@ -33,9 +33,9 @@ import org.eclipse.jface.text.contentassist.IContextInformationValidator;
  * @author Oskar Ojala
  */
 public class BibCompletionProcessor implements IContentAssistProcessor {
-
+    
     private BibTexTemplateCompletion templatesCompletion = new BibTexTemplateCompletion();
-
+    
     private BibDocumentModel model;
     private AbbrevManager abbrManager;
     
@@ -56,13 +56,38 @@ public class BibCompletionProcessor implements IContentAssistProcessor {
     public ICompletionProposal[] computeCompletionProposals(ITextViewer viewer, int offset) {
         if (abbrManager == null)
             this.abbrManager = this.model.getAbbrManager();
-
+        
         String completeDoc = viewer.getDocument().get();
-
-        //get available and matching template completitions
-        String latest=resolveLatestWord(completeDoc, offset);
+        
+        //get available and matching template completions
+        String latest = resolveLatestWord(completeDoc, offset);
         ICompletionProposal[] templates = computeTemplateCompletions(offset, latest.length(), latest, viewer);
-
+        
+        // ----------------------
+        /*
+        //calculate proposals from previously used values
+        ICompletionProposal[] repeats = null;
+        String line = "";
+        // Determine the begining of the line
+        for (int i = offset - 1; i > 0; i--) {  
+            char c = completeDoc.charAt(i);
+            // FIXME what if we're inside a string?
+            if (c == '\n' || (c == ',' && completeDoc.charAt(i - 1) =='}')) {
+                line = completeDoc.substring(i + 1, offset);
+                break;
+            }
+        }
+        
+        // try to split the line into a field type and a field value
+        String[] lineparts = line.split("=");
+        if (lineparts.length == 2) { // FIXME this fails if the line is foo = "foo = bar",
+            String field = lineparts[0].trim();
+            String value = lineparts[1].trim().substring(1);
+            repeats = computeRepeatCompletions(offset, value.length(), value, field);
+        }
+        */
+//      ----------------------
+        
         //get available and matching abbrev completitions
         ICompletionProposal[] abbrevs = null;        
         int completeStart = -1;
@@ -83,69 +108,85 @@ public class BibCompletionProcessor implements IContentAssistProcessor {
             abbrevs = computeAbbrevCompletions(offset, offset - completeStart, completeDoc.substring(completeStart, offset));
         }
         
-        //make combined list of abbrev and template completition proposals
+        //make combined list of repeats, abbrev and template completion proposals
         int size = 0;
+//        if (repeats != null)
+//            size += repeats.length;
         if (abbrevs != null)
             size += abbrevs.length;
         if (templates != null)
             size += templates.length;
 
-        if (size == 0)
+        // TODO replace this with arraycopy
+        
+        if (size == 0) {
             return null;
-        else {
+        } else {
             int index=0;
+            
             ICompletionProposal[] value = new ICompletionProposal[size];
+//          ----------------------
+            /*
+                        
+            if (repeats != null) {            	
+                for (int i=0; i < repeats.length; i++) {
+                    value[index] = repeats[i];
+                    index++;
+                }
+            }
+            */
+//          ----------------------
             if (abbrevs != null){
-        	  for (int i=0; i < abbrevs.length; i++) {
-        	  	value[index] = abbrevs[i];
-        	  	index++;
-        	  }
+                for (int i=0; i < abbrevs.length; i++) {
+                    value[index] = abbrevs[i];
+                    index++;
+                }
             }
             if (templates != null){
-          	  for (int i=0; i < templates.length; i++) {
-          	  	value[index] = templates[i];
-          	  	index++;
-          	  }
+                for (int i=0; i < templates.length; i++) {
+                    value[index] = templates[i];
+                    index++;
+                }
             }
             return value;
         }
     }
-
+    
     /* (non-Javadoc)
      * @see org.eclipse.jface.text.contentassist.IContentAssistProcessor#computeContextInformation(org.eclipse.jface.text.ITextViewer, int)
      */
     public IContextInformation[] computeContextInformation(ITextViewer viewer, int offset) {
         return null;
     }
-
+    
     /* (non-Javadoc)
      * @see org.eclipse.jface.text.contentassist.IContentAssistProcessor#getCompletionProposalAutoActivationCharacters()
      */
     public char[] getCompletionProposalAutoActivationCharacters() {
         return new char[] {'=', '#'};
     }
-
+    
     /* (non-Javadoc)
      * @see org.eclipse.jface.text.contentassist.IContentAssistProcessor#getContextInformationAutoActivationCharacters()
      */
     public char[] getContextInformationAutoActivationCharacters() {
         return null;
     }
-
+    
     /* (non-Javadoc)
      * @see org.eclipse.jface.text.contentassist.IContentAssistProcessor#getErrorMessage()
      */
     public String getErrorMessage() {
         return null;
     }
-
+    
     /* (non-Javadoc)
      * @see org.eclipse.jface.text.contentassist.IContentAssistProcessor#getContextInformationValidator()
      */
     public IContextInformationValidator getContextInformationValidator() {
         return null;
     }
-
+    
     /**
      * Computes the abbreviation completions available based on the prefix.
      * 
@@ -158,7 +199,7 @@ public class BibCompletionProcessor implements IContentAssistProcessor {
         ReferenceEntry[] abbrevs = abbrManager.getCompletions(prefix);
         if (abbrevs == null)
             return null;
-
+        
         ICompletionProposal[] result = new ICompletionProposal[abbrevs.length];
         
         for (int i = 0; i < abbrevs.length; i++) {         
@@ -169,7 +210,42 @@ public class BibCompletionProcessor implements IContentAssistProcessor {
         }
         return result;
     }
-   
+    
+    
+    /** Computes the repeated entries completions available based on the prefix.
+     * 
+     * @param offset Cursor offset in the document
+     * @param replacementLength Length of the text to be replaced
+     * @param prefix The start of the abbreviation or ""
+     * @return An array containing all possible completions
+     */
+//    private ICompletionProposal[] computeRepeatCompletions(int offset, int replacementLength, String prefix, String field) {
+//        
+//        BibStringTriMap<ReferenceEntry> index = 
+//            model.getSortIndex().get(field.toLowerCase());
+//        
+//        if (index == null) return new ICompletionProposal[0];
+//        
+//        // Special case the author field, as it is a list of elements separated by "and"
+//        if ((field.equalsIgnoreCase("author") || field.equalsIgnoreCase("editor")) && prefix.contains(" and ")) {
+//            prefix = (prefix.substring(prefix.lastIndexOf(" and ") + 5)).trim();
+//            if (prefix.endsWith(" and"))
+//                prefix = "";
+//            replacementLength = prefix.length();
+//        }
+//        
+//        // Find all entries of the field that start with prefix
+//        ArrayList<String> repeats = index.getKeys(prefix, true);	   
+//        ICompletionProposal[] result = new ICompletionProposal[repeats.size()];
+//        
+//        for (int i = 0; i < repeats.size(); i++) {    	   
+//            result[i] = new CompletionProposal(repeats.get(i),
+//                    offset - replacementLength,replacementLength,
+//                    repeats.get(i).length());
+//        }
+//        return result;
+//    }
+    
     /**
      * Resolves the latest word immediately before the cursor position and returns it
      * 
@@ -187,10 +263,10 @@ public class BibCompletionProcessor implements IContentAssistProcessor {
         }
         index--;
         if (index > 0)
-            return doc.substring(offset-index, offset);
+            return doc.substring(offset - index, offset);
         return "";
     }
-
+    
     /**
      * Computes the template completions available based on the prefix.
      * 
@@ -211,7 +287,7 @@ public class BibCompletionProcessor implements IContentAssistProcessor {
                 returnProposals.add(proposal);
             }
         }
-
+        
         ICompletionProposal[] proposals = new ICompletionProposal[returnProposals.size()];
         returnProposals.toArray(proposals);
         

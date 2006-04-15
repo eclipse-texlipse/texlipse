@@ -9,6 +9,8 @@
  */
 package net.sourceforge.texlipse.model;
 
+import java.io.File;
+
 import org.eclipse.jface.text.Position;
 
 /**
@@ -31,6 +33,16 @@ public final class ReferenceEntry extends AbstractEntry {
      */
     public Position position;
 
+    // FIXME
+    public String author;
+    public String journal;
+    public String year;
+    
+    /**
+     * The document of the reference declaration (used for BibTeX viewing)
+     */
+    public File refFile;
+    
     /**
      * The filename where the reference lives in
      */

@@ -9,7 +9,7 @@
  */
 package net.sourceforge.texlipse.bibeditor;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import net.sourceforge.texlipse.TexlipsePlugin;
 import net.sourceforge.texlipse.editor.TexPairMatcher;
@@ -175,7 +175,7 @@ public class BibEditor extends TextEditor {
      * 
      * @param outlineTree The outline data structure containing the document positions
      */
-    public void updateCodeFolder(ArrayList outlineTree) {
+    public void updateCodeFolder(List outlineTree) {
         this.folder.update(outlineTree);
     }
     

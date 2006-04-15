@@ -10,6 +10,14 @@
 package net.sourceforge.texlipse.bibparser;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import net.sourceforge.texlipse.bibparser.analysis.DepthFirstAdapter;
 import net.sourceforge.texlipse.bibparser.node.ABibtex;
@@ -23,7 +31,11 @@ import net.sourceforge.texlipse.bibparser.node.ANumValOrSid;
 import net.sourceforge.texlipse.bibparser.node.AStrbraceStringEntry;
 import net.sourceforge.texlipse.bibparser.node.AStrparenStringEntry;
 import net.sourceforge.texlipse.bibparser.node.AValueValOrSid;
+import net.sourceforge.texlipse.bibparser.node.TIdentifier;
+import net.sourceforge.texlipse.model.ParseErrorMessage;
 import net.sourceforge.texlipse.model.ReferenceEntry;
+
+import org.eclipse.core.resources.IMarker;
 
 
 /**
@@ -37,26 +49,124 @@ import net.sourceforge.texlipse.model.ReferenceEntry;
  */
 public final class EntryRetriever extends DepthFirstAdapter {
     
-    private ArrayList entries = new ArrayList(); //type: ReferenceEntry
+    private ArrayList<ParseErrorMessage> warnings = new ArrayList<ParseErrorMessage>();
+    
+    private List entries = new ArrayList(); //type: ReferenceEntry
+    
+//    private Hashtable<String, BibStringTriMap<ReferenceEntry>> sortIndex;
     private ReferenceEntry currEntry;
-    private StringBuffer currEntryInfo;
+    private StringBuffer currEntryInfo;    
+    private String currEntryType;
+    private String currField;
+
+    /**
+     * Currently defined fields for an entry
+     */
+    private Set currDefinedFields;
+
+    /**
+     * All defined keys -- can be used for testing whether a key is unique
+     */
+    private Set allDefinedKeys;
+    
+    /**
+     * A list of required fields for the different BibTeX entries
+     */
+    private static Map<String, List<String>> requiredFieldsPerType;
+    
+    public void initializeStatics() {
+        String[] article = {"author", "title", "journal", "year"};                     
+        String[] book = {"title", "publisher", "year"};
+        String[] booklet = {"title"};
+        String[] conference = {"author", "title", "booktitle", "year"};
+        String[] inbook = {"title", "publisher", "year"};
+        String[] incollection = {"author", "title", "booktitle", "publisher", "year"};
+        String[] inproceedings = {"author", "title", "booktitle", "year"};;
+        String[] manual = {"title"};
+        String[] mastersthesis = {"author", "title", "school", "year"};
+        String[] phdthesis = {"author", "title", "school", "year"};        
+        String[] techreport = {"author", "title", "institution", "year"};
+        String[] proceedings = {"title", "year"};
+        String[] unpublished = {"author", "title", "note"};
+
+        requiredFieldsPerType = new HashMap<String, List<String>>();
+        requiredFieldsPerType.put("article", new ArrayList<String>(Arrays.asList(article)));
+        requiredFieldsPerType.put("book", new ArrayList<String>(Arrays.asList(book)));
+        requiredFieldsPerType.put("booklet", new ArrayList<String>(Arrays.asList(booklet)));
+        requiredFieldsPerType.put("conference", new ArrayList<String>(Arrays.asList(conference)));
+        requiredFieldsPerType.put("inbook", new ArrayList<String>(Arrays.asList(inbook)));
+        requiredFieldsPerType.put("incollection", new ArrayList<String>(Arrays.asList(incollection)));
+        requiredFieldsPerType.put("inproceedings", new ArrayList<String>(Arrays.asList(inproceedings)));
+        requiredFieldsPerType.put("manual", new ArrayList<String>(Arrays.asList(manual)));
+        requiredFieldsPerType.put("mastersthesis", new ArrayList<String>(Arrays.asList(mastersthesis)));        
+        requiredFieldsPerType.put("phdthesis", new ArrayList<String>(Arrays.asList(phdthesis)));
+        requiredFieldsPerType.put("techreport", new ArrayList<String>(Arrays.asList(techreport)));
+        requiredFieldsPerType.put("proceedings", new ArrayList<String>(Arrays.asList(proceedings)));
+        requiredFieldsPerType.put("unpublished", new ArrayList<String>(Arrays.asList(unpublished)));
+    }
+    
+    public EntryRetriever() {
+        if (requiredFieldsPerType == null) {
+            initializeStatics();
+        }
+        
+        this.currDefinedFields = new HashSet();
+        
+        this.allDefinedKeys = new HashSet();
+        
+//        sortIndex = new Hashtable<String, BibStringTriMap<ReferenceEntry>>();
+//
+//        // indexkey is a special field representing the bibtex key 
+//        sortIndex.put("indexkey", new BibStringTriMap<ReferenceEntry>(true));
+//
+//        // List of the different fields to be indexed and available for completion proposals
+//        sortIndex.put("journal", new BibStringTriMap<ReferenceEntry>(false));
+//        
+//        BibStringTriMap<ReferenceEntry> author = new BibStringTriMap<ReferenceEntry>(false);
+//        sortIndex.put("author", author);
+//        sortIndex.put("editor", author);
+//        
+//        BibStringTriMap<ReferenceEntry> institution = new BibStringTriMap<ReferenceEntry>(false);
+//        sortIndex.put("institution", institution);
+//        sortIndex.put("school", institution);
+//        
+//        sortIndex.put("year", new BibStringTriMap<ReferenceEntry>(false));
+//        sortIndex.put("booktitle", new BibStringTriMap<ReferenceEntry>(false));
+    }
     
     /**
      * @return The entries as a list of <code>ReferenceEntry</code>s
      */
-    public ArrayList getEntries() {
+//    public ArrayList<ReferenceEntry> getEntries() {
+//        return sortIndex.get("indexkey").getValues();
+//    }
+    public List getEntries() {
         return entries;
     }
+    
+    /**
+     * @return A list of warnings in the file
+     */
+    public ArrayList getWarnings() {
+        return warnings;
+    }
+    
+    /**
+     * @return The index structure of this bib file
+     */
+//    public Hashtable<String,BibStringTriMap<ReferenceEntry>> getSortIndex() {
+//        return sortIndex;
+//    }
     
     public void inABibtex(ABibtex node) {
     }
     
     public void outABibtex(ABibtex node) {
     }
-
+    
     public void inAStrbraceStringEntry(AStrbraceStringEntry node) {
     }
-
+    
     public void outAStrbraceStringEntry(AStrbraceStringEntry node) {
     }
     
@@ -66,6 +176,57 @@ public final class EntryRetriever extends DepthFirstAdapter {
     public void outAStrparenStringEntry(AStrparenStringEntry node) {
     }
     
+    private void inBibtexEntry(TIdentifier tid) {
+        currEntry = new ReferenceEntry(tid.getText());
+        currEntry.startLine = tid.getLine();
+        currEntryInfo = new StringBuffer();
+        
+        if (!allDefinedKeys.add(currEntry.key)) {
+            warnings.add(new ParseErrorMessage(currEntry.startLine,
+                    tid.getPos() - 1, currEntry.key.length(),
+                    "BibTex key " + currEntry.key + " is not unique",
+                    IMarker.SEVERITY_WARNING));
+        }
+        
+//        try {
+//            sortIndex.get("indexkey").put(currEntry.key, currEntry);
+//        } catch (NonUniqueException e) {
+//        }
+    }
+
+    private void outBibtexEntry() {
+        if (currEntry.author == null) {
+            currEntry.author = "-";
+        }
+        if (currEntry.year == null) {
+            currEntry.year = "-";
+        }
+        if (currEntry.journal == null) {
+            currEntry.journal = "-";
+        }
+        currEntry.info = currEntryInfo.toString();
+        entries.add(currEntry);
+        // useless -- uses the wrong token
+        //currEntry.endLine = node.getIdentifier().getLine();
+
+        List reqFieldList = requiredFieldsPerType.get(currEntryType);
+        if (reqFieldList != null) {
+            if (!currDefinedFields.containsAll(reqFieldList)) {
+                for (Iterator iter = reqFieldList.iterator(); iter.hasNext();) {
+                    String reqField = (String) iter.next();
+                    if (!currDefinedFields.contains(reqField)) {
+                        warnings.add(new ParseErrorMessage(currEntry.startLine,
+                                0, currEntryType.length() + 1,
+                                currEntryType + " " + currEntry.key +
+                                " is missing required field " + reqField,
+                                IMarker.SEVERITY_WARNING));                 
+                    }
+                }
+            }
+        }
+        currDefinedFields.clear();
+    }
+    
     /**
      * Called when entering a bibliography entry, starts
      * forming an entry for the entry list
@@ -73,9 +234,7 @@ public final class EntryRetriever extends DepthFirstAdapter {
      * @param node an <code>AEntry</code> value
      */
     public void inAEntrybraceEntry(AEntrybraceEntry node) {
-        currEntry = new ReferenceEntry(node.getIdentifier().getText());
-        currEntry.startLine = node.getIdentifier().getLine();
-        currEntryInfo = new StringBuffer();
+        inBibtexEntry(node.getIdentifier());
     }
     
     /**
@@ -85,19 +244,16 @@ public final class EntryRetriever extends DepthFirstAdapter {
      * @param node an <code>AEntry</code> value
      */
     public void outAEntrybraceEntry(AEntrybraceEntry node) {
-        currEntry.info = currEntryInfo.toString();
-        entries.add(currEntry);
+        outBibtexEntry();
     }
     
     public void inAEntryparenEntry(AEntryparenEntry node) {
-        currEntry = new ReferenceEntry(node.getIdentifier().getText());
-        currEntry.startLine = node.getIdentifier().getLine();
-        currEntryInfo = new StringBuffer();
+        // FIXME check that this is correct
+        inBibtexEntry(node.getIdentifier());
     }
-
+    
     public void outAEntryparenEntry(AEntryparenEntry node) {
-        currEntry.info = currEntryInfo.toString();
-        entries.add(currEntry);
+        outBibtexEntry();
     }
     
     public void inAEntryDef(AEntryDef node) {
@@ -108,15 +264,28 @@ public final class EntryRetriever extends DepthFirstAdapter {
      *
      * @param node an <code>AEntryDef</code> value
      */
-    public void outAEntryDef(AEntryDef node) {
-        //currEntryInfo.append(node.getEntryName().getText().substring(1).toLowerCase());
+    public void outAEntryDef(AEntryDef node) {        
         currEntryInfo.append(node.getEntryName().getText().substring(1));
         currEntryInfo.append('\n');
+        currEntryType = node.getEntryName().getText().substring(1).toLowerCase();
     }
     
     public void inAKeyvalDecl(AKeyvalDecl node) {
-        currEntryInfo.append(node.getIdentifier().getText().toLowerCase());
+        currField = node.getIdentifier().getText().toLowerCase();
+        currEntryInfo.append(currField);
         currEntryInfo.append(": ");
+                
+        if (!currDefinedFields.add(currField)) {
+            warnings.add(new ParseErrorMessage(node.getIdentifier().getLine(),
+                    node.getIdentifier().getPos() - 1, currField.length(),
+                    "Field " + currField + " appears more than once in entry " + currField,
+                    IMarker.SEVERITY_WARNING));
+        }
+        
+        // Can't currently handle crossref correctly. Use a safe approximation
+        // of assuming all required fields were added via crossref.
+        //if (currField.equals("crossref"))
+        //    currRequiredFields.clear();
     }
     
     public void outAKeyvalDecl(AKeyvalDecl node) {
@@ -133,7 +302,51 @@ public final class EntryRetriever extends DepthFirstAdapter {
     }
     
     public void outAValueValOrSid(AValueValOrSid node) {
-        currEntryInfo.append(node.getStringLiteral().getText().replaceAll("\\s+", " "));
+        //currEntryInfo.append(node.getStringLiteral().getText().replaceAll("\\s+", " "));
+        String fieldValue = node.getStringLiteral().getText().replaceAll("\\s+", " ");
+        String[] fieldValues = new String[0];
+        
+        currEntryInfo.append(fieldValue);
+        
+        // TODO testing new nodes
+        if ("author".equals(currField) || "editor".equals(currField)) {
+            currEntry.author = fieldValue;
+        } else if ("journal".equals(currField)) {
+            currEntry.journal = fieldValue;
+        } else if ("year".equals(currField)) {
+            currEntry.year = fieldValue;
+        }
+        
+        
+        // add the entry to the index
+//        BibStringTriMap<ReferenceEntry> index = sortIndex.get(currField);
+//        if (index != null) {
+//            if (currField.equals("author") || currField.equals("editor")) {
+//                fieldValues = fieldValue.split(" and ");
+//            } else {
+//                fieldValues = new String[1];
+//                fieldValues[0] = fieldValue;
+//            }
+//            for (String fV : fieldValues) {
+//                fV = fV.trim();
+//                try {
+//                    index.put(fV, currEntry);
+//                } catch (NonUniqueException e) {
+//                    warnings.add(new ParseErrorMessage(currEntry.startLine,
+//                            node.getStringLiteral().getPos(),0,
+//                            "BibTex field " + currField + " with value " + fV + " is not unique",
+//                            IMarker.SEVERITY_WARNING));
+//                }               
+//            }
+//        }
+        
+        // Test for empty fields
+        if (fieldValue.equalsIgnoreCase("")) {
+            warnings.add(new ParseErrorMessage(node.getStringLiteral().getLine(),
+                    node.getStringLiteral().getPos(),0,
+                    currField + " is empty in " + currEntry.key,
+                    IMarker.SEVERITY_WARNING));                 
+        }
     }
     
     public void inANumValOrSid(ANumValOrSid node) {

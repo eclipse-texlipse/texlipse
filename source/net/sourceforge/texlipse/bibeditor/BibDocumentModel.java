@@ -13,9 +13,13 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
+import java.util.List;
 
 import net.sourceforge.texlipse.TexlipsePlugin;
+import net.sourceforge.texlipse.bibparser.BibOutlineContainer;
 import net.sourceforge.texlipse.bibparser.BibParser;
 import net.sourceforge.texlipse.editor.TexDocumentParseException;
 import net.sourceforge.texlipse.model.MarkerHandler;
@@ -37,11 +41,12 @@ import org.eclipse.ui.part.FileEditorInput;
  * @author Oskar Ojala
  */
 public class BibDocumentModel {
-
+    
     private BibEditor editor;
-    private ArrayList currentOutline;
+    private List entryList;    
     private ArrayList abbrevs;
     private AbbrevManager abbrManager;
+//    private Hashtable<String, BibStringTriMap<ReferenceEntry>> sortIndex;
     
     private ReferenceContainer bibContainer;
     
@@ -61,7 +66,11 @@ public class BibDocumentModel {
     public AbbrevManager getAbbrManager() {
         return abbrManager;
     }
-
+    
+//    public Hashtable<String, BibStringTriMap<ReferenceEntry>> getSortIndex() {
+//        return sortIndex;
+//    }
+    
     /**
      * Parses the BibTeX -document and retrieves parse errors and other useful
      * data.
@@ -72,16 +81,22 @@ public class BibDocumentModel {
      */
     private void doParse() throws TexDocumentParseException {
         try {
-            BibParser parser = new BibParser(new StringReader(this.editor.getDocumentProvider().getDocument(this.editor.getEditorInput()).get()));
+            IProject project = ((FileEditorInput)editor.getEditorInput()).getFile().getProject();
+            BibParser parser = new BibParser(new StringReader(this.editor.getDocumentProvider().getDocument(this.editor.getEditorInput()).get()),project);
             
-            this.currentOutline = parser.getEntries();
+            this.entryList = parser.getEntries();
+//            this.sortIndex = parser.getSortIndex();
             
             ArrayList parseErrors = parser.getErrors();
+            ArrayList parseWarnings = parser.getWarnings();            
             MarkerHandler marker = MarkerHandler.getInstance();
             marker.clearErrorMarkers(editor);
             if (parseErrors.size() > 0) {
-                marker.createErrorMarkers(editor, parseErrors);
+                marker.createErrorMarkers(editor, parseErrors);                
                 throw new TexDocumentParseException("Fatal errors in file");
+            }
+            if (parseWarnings.size() > 0) {
+                marker.createErrorMarkers(editor, parseWarnings);                
             }
             
             this.abbrevs = parser.getAbbrevs();
@@ -100,7 +115,7 @@ public class BibDocumentModel {
         Arrays.sort(esar);
         this.abbrManager.setAbbrevs(esar);
     }
-
+    
     /**
      * Updates the BibTeX -data in the BibTeX-container.
      */
@@ -118,22 +133,24 @@ public class BibDocumentModel {
         }
         boolean changed = bibContainer.updateRefSource(
                 resource.getFullPath().removeFirstSegments(1).toString(),
-                currentOutline);
+                entryList);
         if (changed) {
             TexlipseProperties.setSessionProperty(project,
                     TexlipseProperties.BIBFILES_CHANGED,
                     new Boolean(true));
         }
     }
-
+    
     /**
      * Updates the outline view when outline.doSave is called.
      */
     private void updateOutline() {
-        this.editor.getOutlinePage().update(this.currentOutline);
+        //this.editor.getOutlinePage().update(sortIndex);
+        BibOutlineContainer boc = new BibOutlineContainer(entryList, true);
+        this.editor.getOutlinePage().update(boc);
     }
-
-
+    
+    
     /**
      * Updates the document positions of the outline. These are used both
      * for outline navigation and code folding.
@@ -147,11 +164,21 @@ public class BibDocumentModel {
             // do nothing
         }
         document.addPositionCategory(BibOutlinePage.SEGMENTS);
-        
+
         try {
+            // needs sort because the etries are not returned here in the correct
+            // order, fucking STUPID coding
+
+            Collections.sort(entryList, new Comparator<ReferenceEntry>() {
+                public int compare(ReferenceEntry A, ReferenceEntry B) {
+                    return A.startLine - B.startLine;
+                }
+            });
+            
             int beginOffset = -1, endOffset = -1;
             ReferenceEntry prev = null, next = null;
-            Iterator it = currentOutline.iterator();
+            //Iterator it = currentOutline.iterator();
+            Iterator it = entryList.iterator();
             if (it.hasNext()) {
                 prev = (ReferenceEntry) it.next();
                 beginOffset = document.getLineOffset(prev.startLine - 1);
@@ -161,10 +188,10 @@ public class BibDocumentModel {
                 
                 endOffset = document.getLineOffset(next.startLine - 1);
                 int length =  endOffset - beginOffset;
-
+                
                 prev.setPosition(beginOffset, length);
                 document.addPosition(BibOutlinePage.SEGMENTS, prev.position);
-
+                
                 prev = next;
                 beginOffset = endOffset;
             }
@@ -172,7 +199,6 @@ public class BibDocumentModel {
                 prev.setPosition(beginOffset, document.getLength() - beginOffset);
                 document.addPosition(BibOutlinePage.SEGMENTS, prev.position);                    
             }
-
         } catch (BadPositionCategoryException bpce) {
             TexlipsePlugin.log("BibDocumentModel.updateDocumentPositions: bad position category ", bpce);
         } catch (BadLocationException ble) {
@@ -194,10 +220,10 @@ public class BibDocumentModel {
                 this.updateOutline();
             }
             updateAbbrManager();
-            editor.updateCodeFolder(currentOutline);            
+            editor.updateCodeFolder(entryList);
         } catch (TexDocumentParseException e) {
             // We do nothing, since the error is already added
-//            TexlipsePlugin.log("There were parse errors in the document", e);
+//          TexlipsePlugin.log("There were parse errors in the document", e);
         }
     }
 }

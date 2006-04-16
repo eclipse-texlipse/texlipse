@@ -72,6 +72,8 @@ public final class EntryRetriever extends DepthFirstAdapter {
      */
     private Set allDefinedKeys;
     
+    private Map abbrevs;
+    
     /**
      * A list of required fields for the different BibTeX entries
      */
@@ -132,6 +134,7 @@ public final class EntryRetriever extends DepthFirstAdapter {
         this.currDefinedFields = new HashSet();
         
         this.allDefinedKeys = new HashSet();
+        this.abbrevs = new HashMap();
         
 //        sortIndex = new Hashtable<String, BibStringTriMap<ReferenceEntry>>();
 //
@@ -184,12 +187,17 @@ public final class EntryRetriever extends DepthFirstAdapter {
     }
     
     public void inAStrbraceStringEntry(AStrbraceStringEntry node) {
+        if (abbrevs.put(node.getIdentifier().getText(),
+                node.getStringLiteral().getText()) != null) {
+            ; // TODO
+        }
     }
     
     public void outAStrbraceStringEntry(AStrbraceStringEntry node) {
     }
     
     public void inAStrparenStringEntry(AStrparenStringEntry node) {
+        // TODO
     }
     
     public void outAStrparenStringEntry(AStrparenStringEntry node) {
@@ -324,13 +332,14 @@ public final class EntryRetriever extends DepthFirstAdapter {
     }
 
     public void outAValueBValOrSid(AValueBValOrSid node) {
-        outAValueValOrSid(node.getStringLiteral());
+        outAValueValOrSid(node.getStringLiteral().getText(),
+                node.getStringLiteral());
     }
 
     public void outAValueQValOrSid(AValueQValOrSid node) {
         TStringLiteral tsl = node.getStringLiteral();
         if (tsl != null) {
-            outAValueValOrSid(tsl);
+            outAValueValOrSid(tsl.getText(), tsl);
         } else {
             warnings.add(new ParseErrorMessage(currEntry.startLine,
                     1, currEntryType.length(),
@@ -339,9 +348,9 @@ public final class EntryRetriever extends DepthFirstAdapter {
         }
     }
     
-    private void outAValueValOrSid(Token tsl) {
+    private void outAValueValOrSid(String text, Token tsl) {
         //currEntryInfo.append(node.getStringLiteral().getText().replaceAll("\\s+", " "));
-        String fieldValue = tsl.getText().replaceAll("\\s+", " ");
+        String fieldValue = text.replaceAll("\\s+", " ");
         
         currEntryInfo.append(fieldValue);
         
@@ -367,7 +376,8 @@ public final class EntryRetriever extends DepthFirstAdapter {
     }
   
     public void outANumValOrSid(ANumValOrSid node) {
-        outAValueValOrSid(node.getNumber());
+        outAValueValOrSid(node.getNumber().getText(),
+                node.getNumber());
     }
     
     public void inAIdValOrSid(AIdValOrSid node) {
@@ -376,6 +386,9 @@ public final class EntryRetriever extends DepthFirstAdapter {
     public void outAIdValOrSid(AIdValOrSid node) {
         // FIXME we need to check that the node is defined
         //currEntryInfo.append(node.getIdentifier().getText());
-        outAValueValOrSid(node.getIdentifier());
+        String expansion = (String) abbrevs.get(node.getIdentifier().getText());
+        if (expansion != null) {
+            outAValueValOrSid(expansion, node.getIdentifier());
+        }
     }
 }

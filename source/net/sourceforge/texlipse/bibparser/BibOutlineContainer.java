@@ -1,6 +1,7 @@
 package net.sourceforge.texlipse.bibparser;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -28,8 +29,7 @@ public class BibOutlineContainer {
     public static final String SORTJOURNAL = "journal";
     public static final String SORTINDEX = "index";
     
-    private static int MAX_PARTITIONSIZE = 6;
-    private static int MAX_PARTITIONNUMBER = 20;
+    private static int MAX_PARTITIONSIZE = 15;
     
     public BibOutlineContainer(List entries, boolean topLevel) {
         this.childEntries = entries;
@@ -122,7 +122,7 @@ public class BibOutlineContainer {
                 return ((ReferenceEntry) A).author.compareTo(((ReferenceEntry) B).author);
             }
         });
-        //partition();
+        partition();
     }
 
     public BibOutlineContainer buildJournalSort() {
@@ -181,42 +181,69 @@ public class BibOutlineContainer {
         if (childEntries.size() < MAX_PARTITIONSIZE) {
             return;
         }
-        childContainers = new ArrayList();
+        //childContainers = new ArrayList();
 
-        // FIXME some problems with this
+        // TODO polish
         
         // calculate hierarchy levels and partitions
         int totalPartitions = (int) Math.ceil((double) childEntries.size() / (double) MAX_PARTITIONSIZE);
-        int partitionSize = (int) Math.ceil((double) childEntries.size() /
-                (double) Math.min(totalPartitions, MAX_PARTITIONNUMBER));
+
+        ArrayList bottomContainers = new ArrayList();
+        ReferenceEntry[] childArray = new ReferenceEntry[childEntries.size()];
+        childEntries.toArray(childArray);
         
         String prevName = ((ReferenceEntry) childEntries.get(0)).key;
         String nextName = "...";
-        while (childEntries.size() > 0) {
-            int partitionEnd = Math.min(childEntries.size(), partitionSize);
+        for (int i = 0; i < totalPartitions; i++) {
+            //int partitionEnd = Math.min(childEntries.size(), MAX_PARTITIONSIZE);
+            int partitionSize = Math.min(childEntries.size() - MAX_PARTITIONSIZE * i,
+                    MAX_PARTITIONSIZE);
 
-            // probably doesn't work...
-            //List children = childEntries.subList(0, partitionEnd);
-            //childEntries.removeRange(0, partitionEnd);
-
-            // if it doesn't work...
-            ArrayList children = new ArrayList();
-            ListIterator liter = childEntries.listIterator();
-            for (int i = 0; i < partitionEnd; i++) {
-                ReferenceEntry re = (ReferenceEntry) liter.next();
-                children.add(re);
-                liter.remove();
-            }
-
-            String pre1 = differentiatingPrefix(((ReferenceEntry) children.get(0)).key, prevName);
-            prevName = ((ReferenceEntry) children.get(children.size()-1)).key;
-            nextName = childEntries.size() > 0 ? ((ReferenceEntry) childEntries.get(0)).key : "...";
-            String pre2 = differentiatingPrefix(prevName, nextName);
+            ReferenceEntry[] newChildren = new ReferenceEntry[partitionSize];
+            System.arraycopy(childArray, MAX_PARTITIONSIZE * i, newChildren, 0, partitionSize);
+            //Arrays.asList(newChildren);
             
-            BibOutlineContainer boc = new BibOutlineContainer(children, pre1 + "..." + pre2);
-            boc.partition();
-            childContainers.add(boc);
+//            String pre1 = differentiatingPrefix(((ReferenceEntry) children.get(0)).key, prevName);
+//            prevName = ((ReferenceEntry) children.get(children.size()-1)).key;
+//            nextName = childEntries.size() > 0 ? ((ReferenceEntry) childEntries.get(0)).key : "...";
+//            String pre2 = differentiatingPrefix(prevName, nextName);
+
+            String pre1 = differentiatingPrefix(newChildren[0].key, prevName);
+            prevName = newChildren[newChildren.length-1].key;
+            nextName = childEntries.size() > 0 ? childArray[0].key : "...";
+            String pre2 = differentiatingPrefix(prevName, nextName);
+
+            
+            //BibOutlineContainer boc = new BibOutlineContainer(children, pre1 + "..." + pre2);
+            BibOutlineContainer boc = new BibOutlineContainer(Arrays.asList(newChildren), pre1 + "..." + pre2);
+            bottomContainers.add(boc);
         }
+        
+        // subdivide
+        while (bottomContainers.size() > MAX_PARTITIONSIZE) {
+            ArrayList midContainers = new ArrayList();
+            while (bottomContainers.size() > 0) {
+                int partitionEnd = Math.min(bottomContainers.size(), MAX_PARTITIONSIZE);
+                
+                // probably doesn't work...
+                //List children = childEntries.subList(0, partitionEnd);
+                //childEntries.removeRange(0, partitionEnd);
+                
+                // if it doesn't work...
+                ArrayList children = new ArrayList();
+                ListIterator liter = bottomContainers.listIterator();
+                for (int j = 0; j < partitionEnd; j++) {
+                    children.add(liter.next());
+                    liter.remove();
+                }
+                
+                BibOutlineContainer boc = new BibOutlineContainer(children, "A...B");
+                midContainers.add(boc);
+            }
+            bottomContainers = midContainers;
+        }
+        
+        childContainers = bottomContainers;
         childEntries = null;
     }
     

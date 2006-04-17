@@ -169,6 +169,7 @@ public class ViewerConfigDialog extends Dialog {
         registry.setInverse(inverseSearchValues[inverseChooser.getSelectionIndex()]);
         registry.setForward(forwardChoice.getSelection());
         
+        // Ask user if launch configs should be updated
         try {
             ILaunchManager manager = DebugPlugin.getDefault().getLaunchManager();
             if (manager != null) {
@@ -177,14 +178,14 @@ public class ViewerConfigDialog extends Dialog {
                 if (type != null) {
                     ILaunchConfiguration[] configs = manager.getLaunchConfigurations(type);
                     if (configs != null) {
-                        // Check all configurations in the history
+                        // Check all configurations
                         int returnCode = 0;
                         MessageDialogWithToggle md = null;
                         for (int i = 0; i < configs.length ; i++) {
                             ILaunchConfiguration c = configs[i];
                             if (c.getType().getIdentifier().equals(TexLaunchConfigurationDelegate.CONFIGURATION_ID)) {
                                 if (c.getAttribute("viewerCurrent", "").equals(name)) {
-                                    // We've found a config in the history which was based on this config
+                                    // We've found a config which was based on this viewer 
                                     if (0 == returnCode) {
                                         String message = MessageFormat.format(
                                             TexlipsePlugin.getResourceString("preferenceViewerUpdateConfigurationQuestion"),

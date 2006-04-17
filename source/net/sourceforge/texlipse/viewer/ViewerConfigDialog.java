@@ -11,13 +11,21 @@ package net.sourceforge.texlipse.viewer;
 
 
 import java.io.File;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 
 import net.sourceforge.texlipse.TexlipsePlugin;
 
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.debug.core.DebugPlugin;
+import org.eclipse.debug.core.ILaunchConfiguration;
+import org.eclipse.debug.core.ILaunchConfigurationType;
+import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
+import org.eclipse.debug.core.ILaunchManager;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.MessageDialogWithToggle;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
@@ -161,10 +169,67 @@ public class ViewerConfigDialog extends Dialog {
         registry.setInverse(inverseSearchValues[inverseChooser.getSelectionIndex()]);
         registry.setForward(forwardChoice.getSelection());
         
+        try {
+            ILaunchManager manager = DebugPlugin.getDefault().getLaunchManager();
+            if (manager != null) {
+                ILaunchConfigurationType type = manager.getLaunchConfigurationType(
+                    TexLaunchConfigurationDelegate.CONFIGURATION_ID);
+                if (type != null) {
+                    ILaunchConfiguration[] configs = manager.getLaunchConfigurations(type);
+                    if (configs != null) {
+                        // Check all configurations in the history
+                        int returnCode = 0;
+                        MessageDialogWithToggle md = null;
+                        for (int i = 0; i < configs.length ; i++) {
+                            ILaunchConfiguration c = configs[i];
+                            if (c.getType().getIdentifier().equals(TexLaunchConfigurationDelegate.CONFIGURATION_ID)) {
+                                if (c.getAttribute("viewerCurrent", "").equals(name)) {
+                                    // We've found a config in the history which was based on this config
+                                    if (0 == returnCode) {
+                                        String message = MessageFormat.format(
+                                            TexlipsePlugin.getResourceString("preferenceViewerUpdateConfigurationQuestion"),
+                                            new Object[] { c.getName() });
+                                        md = MessageDialogWithToggle.openYesNoCancelQuestion(getShell(),
+                                            TexlipsePlugin.getResourceString("preferenceViewerUpdateConfigurationTitle"), message,
+                                            TexlipsePlugin.getResourceString("preferenceViewerUpdateConfigurationAlwaysApply"),
+                                            false, null, null);
+                                        
+                                        if (md.getReturnCode() == MessageDialogWithToggle.CANCEL)
+                                            return;
+                                        
+                                        returnCode = md.getReturnCode();
+                                    } 
+                                        
+                                    // If answer was yes, update each config with latest values from registry
+                                    if (returnCode == IDialogConstants.YES_ID) {
+                                        ILaunchConfigurationWorkingCopy workingCopy = c.getWorkingCopy();
+                                        workingCopy.setAttributes(registry.asMap());
+
+                                        // We need to set at least one attribute using a one-shot setter method
+                                        // because the method setAttributes does not mark the config as dirty. 
+                                        // A dirty config is required for a doSave to do anything useful. 
+                                        workingCopy.setAttribute("viewerCurrent", name);
+                                        workingCopy.doSave();
+                                    }
+                                    
+                                    // Reset return-code if we should be asked again
+                                    if (!md.getToggleState()) {
+                                        returnCode = 0;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (CoreException e) {
+            // Something wrong with the config, or could not read attributes, so swallow and skip
+        }
+
         setReturnCode(OK);
         close();
     }
-       
+    
     /**
      * Create the contents of the dialog.
      * @param parent parent component
@@ -466,3 +531,4 @@ public class ViewerConfigDialog extends Dialog {
 		}
 	}
 }
+

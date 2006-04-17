@@ -11,12 +11,14 @@ import java.util.ListIterator;
 import net.sourceforge.texlipse.model.ReferenceEntry;
 
 /**
- * implements Cloneable 
+ * A container for BibTeX outlines. Can be sorted in different ways.
+ *  
  * @author Oskar Ojala
  */
 public class BibOutlineContainer {
 
-    private String name;
+    private String startName;
+    private String endName;
     private String sorting; // TODO ENUMs here    
     private List childContainers; // BibOutlineContainer
     private List childEntries; // ReferenceEntry
@@ -37,9 +39,10 @@ public class BibOutlineContainer {
         this.sorting = SORTNATURAL;
     }
 
-    private BibOutlineContainer(List entries, String name) {
+    private BibOutlineContainer(List entries, String sName, String eName) {
         this.childEntries = entries;
-        this.name = name;
+        this.startName = sName;
+        this.endName = eName;
         this.topLevel = false;
     }
 
@@ -54,59 +57,56 @@ public class BibOutlineContainer {
         return newboc;
     }
 
-
-    public BibOutlineContainer buildYearSort() {
-        // make a shallow copy
-        BibOutlineContainer newboc = childCopy(SORTYEAR);
-//        Collections.sort(newboc.childEntries, new Comparator<ReferenceEntry>() {
-//            public int compare(ReferenceEntry A, ReferenceEntry B) {
-//                return A.year.compareTo(B.year);
-//            }
-//        });
-        Collections.sort(newboc.childEntries, new Comparator() {
-            public int compare(Object A, Object B) {
-                return ((ReferenceEntry) A).year.compareTo(((ReferenceEntry) B).year);
-            }
-        });
-
-        //newboc.partition();
-        return newboc;
-    }
-
+    
     public BibOutlineContainer buildAuthorSort() {
-        // make a shallow copy
+        // Make a shallow copy
         BibOutlineContainer newboc = childCopy(SORTAUTHOR);
         newboc.authorSort();
+        
+        // Replace the keys with the names of the authors
+        for (Iterator iter = newboc.childEntries.iterator(); iter.hasNext();) {
+            ReferenceEntry re = (ReferenceEntry) iter.next();
+            re.key = re.author + "; " + re.key;
+        }
+        // Build a tree structure
+        newboc.partition();
         return newboc;
     }
 
+    //private static final Pattern rmBraces = Pattern.compile("(^|[^\\\\])(:?\\{|\\})");
+    
     private void authorSort() {
         // duplicate entries with several authors
         ArrayList copyChildren = new ArrayList();
         for (Iterator iter = childEntries.iterator(); iter.hasNext();) {
             ReferenceEntry re = (ReferenceEntry) iter.next();
-            if (re.author.indexOf(" and ") != -1) {
-                String[] authors = re.author.split(" and ");
-                // TODO we make some simple copies of this entry and
-                // because they will only be in the outline, we won't
-                // copy every value
-                
-                // FIXME we need something like this for the author formats...
-//                if (authors[0].indexOf(',') == -1) {
-//                    int pos = authors[0].lastIndexOf(' ');
-//                    if (pos != -1) {
-//                        re.author = authors[0].substring(pos+1) + ", " + authors[0].substring(0, pos); 
-//                    }
-//                }
-                
-                for (int i = 1; i < authors.length; i++) {
-                    ReferenceEntry copyRe = new ReferenceEntry(re.key);
-                    copyRe.position = re.position;
-                    copyRe.refFile = re.refFile;
-                    
-                    copyRe.author = authors[i];
-                    copyChildren.add(copyRe);
+            re.author = re.author.replaceAll("\\\\(.)", "$1");
+
+            String[] authors = re.author.split(" and ");
+            
+            // TODO fails e.g. on "Foo {Bar (Tutor)}", need to check braces
+            // formats the author so that the last name is first
+            for (int i = 0; i < authors.length; i++) {
+                if (authors[i].indexOf(',') == -1
+                        && !(authors[i].startsWith("{") && authors[i].endsWith("}"))) {
+                    int pos = authors[i].lastIndexOf(' ');
+                    if (pos != -1) {
+                        authors[i] = authors[i].substring(pos+1) + ", " + authors[i].substring(0, pos); 
+                    }
                 }
+                // Remove braces
+                authors[i] = authors[i].replaceAll("(^|[^\\\\])(:?\\{|\\})", "$1");
+            }
+
+            // We make some simple copies of this entry and because they will
+            // only be in the outline, we won't copy every value
+            re.author = authors[0];
+            for (int i = 1; i < authors.length; i++) {
+                ReferenceEntry copyRe = new ReferenceEntry(re.key);
+                copyRe.position = re.position;
+                copyRe.refFile = re.refFile;
+                copyRe.author = authors[i];
+                copyChildren.add(copyRe);
             }
         }
         // merge the lists
@@ -122,11 +122,31 @@ public class BibOutlineContainer {
                 return ((ReferenceEntry) A).author.compareTo(((ReferenceEntry) B).author);
             }
         });
-        partition();
+    }
+
+    public BibOutlineContainer buildYearSort() {
+        BibOutlineContainer newboc = childCopy(SORTYEAR);
+//        Collections.sort(newboc.childEntries, new Comparator<ReferenceEntry>() {
+//            public int compare(ReferenceEntry A, ReferenceEntry B) {
+//                return A.year.compareTo(B.year);
+//            }
+//        });
+        Collections.sort(newboc.childEntries, new Comparator() {
+            public int compare(Object A, Object B) {
+                return ((ReferenceEntry) A).year.compareTo(((ReferenceEntry) B).year);
+            }
+        });
+
+        for (Iterator iter = newboc.childEntries.iterator(); iter.hasNext();) {
+            ReferenceEntry re = (ReferenceEntry) iter.next();
+            re.key = re.year + "; " + re.key;
+        }
+
+        newboc.partition();
+        return newboc;
     }
 
     public BibOutlineContainer buildJournalSort() {
-        // make a shallow copy
         BibOutlineContainer newboc = childCopy(SORTJOURNAL);
 //        Collections.sort(newboc.childEntries, new Comparator<ReferenceEntry>() {
 //            public int compare(ReferenceEntry A, ReferenceEntry B) {
@@ -138,12 +158,15 @@ public class BibOutlineContainer {
                 return ((ReferenceEntry) A).journal.compareTo(((ReferenceEntry) B).journal);
             }
         });
-        //newboc.partition();
+        for (Iterator iter = newboc.childEntries.iterator(); iter.hasNext();) {
+            ReferenceEntry re = (ReferenceEntry) iter.next();
+            re.key = re.journal + "; " + re.key;
+        }
+        newboc.partition();
         return newboc;
     }
 
     public BibOutlineContainer buildIndexSort() {
-        // make a shallow copy
         BibOutlineContainer newboc = childCopy(SORTINDEX);
 //        Collections.sort(newboc.childEntries, new Comparator<ReferenceEntry>() {
 //            public int compare(ReferenceEntry A, ReferenceEntry B) {
@@ -155,7 +178,7 @@ public class BibOutlineContainer {
                 return ((ReferenceEntry) A).key.compareTo(((ReferenceEntry) B).key);
             }
         });
-        //newboc.partition();
+        newboc.partition();
         return newboc;
     }
 
@@ -165,7 +188,8 @@ public class BibOutlineContainer {
         int shorter = Math.min(s1.length(), s2.length());
         for (; i < shorter; i++) {
             if (s1.charAt(i) != s2.charAt(i)) {
-                return s1.substring(0, i+1);
+                int l = Math.max(4, i+1);
+                return s1.substring(0, l);
             }
         }
         // the other one was shorter
@@ -192,6 +216,13 @@ public class BibOutlineContainer {
         ReferenceEntry[] childArray = new ReferenceEntry[childEntries.size()];
         childEntries.toArray(childArray);
         
+        // total levels
+//        int levels = 1;
+//        for (int entries = MAX_PARTITIONSIZE; entries < totalPartitions; entries *= MAX_PARTITIONSIZE) {
+//            levels++;
+//        }
+        
+        
         String prevName = ((ReferenceEntry) childEntries.get(0)).key;
         String nextName = "...";
         for (int i = 0; i < totalPartitions; i++) {
@@ -201,7 +232,6 @@ public class BibOutlineContainer {
 
             ReferenceEntry[] newChildren = new ReferenceEntry[partitionSize];
             System.arraycopy(childArray, MAX_PARTITIONSIZE * i, newChildren, 0, partitionSize);
-            //Arrays.asList(newChildren);
             
 //            String pre1 = differentiatingPrefix(((ReferenceEntry) children.get(0)).key, prevName);
 //            prevName = ((ReferenceEntry) children.get(children.size()-1)).key;
@@ -213,9 +243,8 @@ public class BibOutlineContainer {
             nextName = childEntries.size() > 0 ? childArray[0].key : "...";
             String pre2 = differentiatingPrefix(prevName, nextName);
 
-            
             //BibOutlineContainer boc = new BibOutlineContainer(children, pre1 + "..." + pre2);
-            BibOutlineContainer boc = new BibOutlineContainer(Arrays.asList(newChildren), pre1 + "..." + pre2);
+            BibOutlineContainer boc = new BibOutlineContainer(Arrays.asList(newChildren), pre1, pre2);
             bottomContainers.add(boc);
         }
         
@@ -237,8 +266,9 @@ public class BibOutlineContainer {
                     liter.remove();
                 }
 
-                // FIXME name
-                BibOutlineContainer boc = new BibOutlineContainer(children, "A...B");
+                String sName = ((BibOutlineContainer) children.get(0)).startName;
+                String eName = ((BibOutlineContainer) children.get(0)).endName;
+                BibOutlineContainer boc = new BibOutlineContainer(children, sName, eName);
                 midContainers.add(boc);
             }
             bottomContainers = midContainers;
@@ -249,7 +279,7 @@ public class BibOutlineContainer {
     }
     
     public String toString() {
-        return name;
+        return startName + "..." + endName;
     }
     
     /**
@@ -264,13 +294,6 @@ public class BibOutlineContainer {
      */
     public List getChildEntries() {
         return childEntries;
-    }
-
-    /**
-     * @return Returns the name.
-     */
-    public String getName() {
-        return name;
     }
 
     /**

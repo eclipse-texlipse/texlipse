@@ -15,7 +15,6 @@ import java.io.IOException;
 import java.io.PushbackReader;
 import java.io.Reader;
 import java.util.ArrayList;
-import java.util.Hashtable;
 import java.util.List;
 
 import net.sourceforge.texlipse.bibparser.lexer.LexerException;
@@ -23,7 +22,6 @@ import net.sourceforge.texlipse.bibparser.node.Start;
 import net.sourceforge.texlipse.bibparser.parser.Parser;
 import net.sourceforge.texlipse.bibparser.parser.ParserException;
 import net.sourceforge.texlipse.model.ParseErrorMessage;
-import net.sourceforge.texlipse.model.ReferenceEntry;
 
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
@@ -44,7 +42,6 @@ public class BibParser {
     
     private ArrayList errors;
     private ArrayList warnings;
-//    private Hashtable<String, BibStringTriMap<ReferenceEntry>> sortIndex;    
     private Start ast;
     
     /**
@@ -94,7 +91,6 @@ public class BibParser {
             ast.apply(er);
             er.finishParse();
             warnings = er.getWarnings();
-//            sortIndex = er.getSortIndex();
             
             // FIXME
             // Search for files of the referenced material to be able to display
@@ -151,12 +147,4 @@ public class BibParser {
     public ArrayList getWarnings() {    	
         return warnings;
     }
-    
-    /**
-     * @return Returns the index structure of the bib file.
-     */
-//    public Hashtable<String, BibStringTriMap<ReferenceEntry>> getSortIndex() {
-//        return sortIndex;
-//    }    
-    
 }

@@ -60,16 +60,14 @@ public final class EntryRetriever extends DepthFirstAdapter {
         }
     }
     
-    
     //private ArrayList<ParseErrorMessage> warnings = new ArrayList<ParseErrorMessage>();
     private ArrayList warnings = new ArrayList();
     
-    private List entries = new ArrayList(); //type: ReferenceEntry
+    //private List<ReferenceEntry> entries = new ArrayList<ReferenceEntry>();
+    private List entries = new ArrayList();
     
-//    private Hashtable<String, BibStringTriMap<ReferenceEntry>> sortIndex;
     private ReferenceEntry currEntry;
     private StringBuffer currEntryInfo;    
-    //private String currEntryType;
     private Token currEntryType;
     private String currField;
     private String crossref;
@@ -84,16 +82,30 @@ public final class EntryRetriever extends DepthFirstAdapter {
      */
     private Set allDefinedKeys;
     
+    private static final Map predefAbbrevs = new HashMap();
     private Map abbrevs;
     private Map crossrefs; // String->List(EntryText)
     
     /**
      * A list of required fields for the different BibTeX entries
      */
-    //private static Map<String, List<String>> requiredFieldsPerType;
-    private static Map requiredFieldsPerType;
+    //private static final Map<String, List<String>> requiredFieldsPerType = new HashMap<String, List<String>>();
+    private static final Map requiredFieldsPerType = new HashMap();
     
-    public void initializeStatics() {
+    static {
+        predefAbbrevs.put("jan", "January");
+        predefAbbrevs.put("feb", "February");
+        predefAbbrevs.put("mar", "March");
+        predefAbbrevs.put("apr", "April");
+        predefAbbrevs.put("may", "May");
+        predefAbbrevs.put("jun", "June");
+        predefAbbrevs.put("jul", "July");
+        predefAbbrevs.put("aug", "August");
+        predefAbbrevs.put("sep", "September");
+        predefAbbrevs.put("oct", "October");
+        predefAbbrevs.put("nov", "November");
+        predefAbbrevs.put("dec", "December");
+
         String[] article = {"author", "title", "journal", "year"};                     
         String[] book = {"title", "publisher", "year"};
         String[] booklet = {"title"};
@@ -108,7 +120,6 @@ public final class EntryRetriever extends DepthFirstAdapter {
         String[] proceedings = {"title", "year"};
         String[] unpublished = {"author", "title", "note"};
 
-//        requiredFieldsPerType = new HashMap<String, List<String>>();
 //        requiredFieldsPerType.put("article", new ArrayList<String>(Arrays.asList(article)));
 //        requiredFieldsPerType.put("book", new ArrayList<String>(Arrays.asList(book)));
 //        requiredFieldsPerType.put("booklet", new ArrayList<String>(Arrays.asList(booklet)));
@@ -123,7 +134,6 @@ public final class EntryRetriever extends DepthFirstAdapter {
 //        requiredFieldsPerType.put("proceedings", new ArrayList<String>(Arrays.asList(proceedings)));
 //        requiredFieldsPerType.put("unpublished", new ArrayList<String>(Arrays.asList(unpublished)));
 
-        requiredFieldsPerType = new HashMap();
         requiredFieldsPerType.put("article", new ArrayList(Arrays.asList(article)));
         requiredFieldsPerType.put("book", new ArrayList(Arrays.asList(book)));
         requiredFieldsPerType.put("booklet", new ArrayList(Arrays.asList(booklet)));
@@ -136,46 +146,20 @@ public final class EntryRetriever extends DepthFirstAdapter {
         requiredFieldsPerType.put("phdthesis", new ArrayList(Arrays.asList(phdthesis)));
         requiredFieldsPerType.put("techreport", new ArrayList(Arrays.asList(techreport)));
         requiredFieldsPerType.put("proceedings", new ArrayList(Arrays.asList(proceedings)));
-        requiredFieldsPerType.put("unpublished", new ArrayList(Arrays.asList(unpublished)));
+        requiredFieldsPerType.put("unpublished", new ArrayList(Arrays.asList(unpublished)));    
     }
-    
+
     public EntryRetriever() {
-        if (requiredFieldsPerType == null) {
-            initializeStatics();
-        }
-        
         this.currDefinedFields = new HashSet();
         
         this.allDefinedKeys = new HashSet();
-        this.abbrevs = new HashMap();
+        this.abbrevs = new HashMap(predefAbbrevs);
         this.crossrefs = new HashMap();
-        
-//        sortIndex = new Hashtable<String, BibStringTriMap<ReferenceEntry>>();
-//
-//        // indexkey is a special field representing the bibtex key 
-//        sortIndex.put("indexkey", new BibStringTriMap<ReferenceEntry>(true));
-//
-//        // List of the different fields to be indexed and available for completion proposals
-//        sortIndex.put("journal", new BibStringTriMap<ReferenceEntry>(false));
-//        
-//        BibStringTriMap<ReferenceEntry> author = new BibStringTriMap<ReferenceEntry>(false);
-//        sortIndex.put("author", author);
-//        sortIndex.put("editor", author);
-//        
-//        BibStringTriMap<ReferenceEntry> institution = new BibStringTriMap<ReferenceEntry>(false);
-//        sortIndex.put("institution", institution);
-//        sortIndex.put("school", institution);
-//        
-//        sortIndex.put("year", new BibStringTriMap<ReferenceEntry>(false));
-//        sortIndex.put("booktitle", new BibStringTriMap<ReferenceEntry>(false));
     }
     
     /**
      * @return The entries as a list of <code>ReferenceEntry</code>s
      */
-//    public ArrayList<ReferenceEntry> getEntries() {
-//        return sortIndex.get("indexkey").getValues();
-//    }
     public List getEntries() {
         return entries;
     }
@@ -187,6 +171,9 @@ public final class EntryRetriever extends DepthFirstAdapter {
         return warnings;
     }
     
+    /**
+     * Finish the parse by setting all remaining warnings
+     */
     public void finishParse() {
         // Set warnings for unfulfilled cross references
         Set keys = crossrefs.entrySet();
@@ -204,34 +191,30 @@ public final class EntryRetriever extends DepthFirstAdapter {
         }
     }
     
-    /**
-     * @return The index structure of this bib file
-     */
-//    public Hashtable<String,BibStringTriMap<ReferenceEntry>> getSortIndex() {
-//        return sortIndex;
-//    }
-    
     public void inABibtex(ABibtex node) {
     }
     
     public void outABibtex(ABibtex node) {
     }
     
-    public void inAStrbraceStringEntry(AStrbraceStringEntry node) {
-        if (abbrevs.put(node.getIdentifier().getText(),
-                node.getStringLiteral().getText()) != null) {
-            warnings.add(new ParseErrorMessage(node.getIdentifier().getLine(),
-                    node.getIdentifier().getPos() - 1, node.getIdentifier().getText().length(),
-                    "String key " + node.getIdentifier().getText() + " is not unique",
+    private void inAnAbbrev(TIdentifier tid, TStringLiteral tsl) {
+        if (abbrevs.put(tid.getText(), tsl.getText()) != null) {
+            warnings.add(new ParseErrorMessage(tid.getLine(),
+                    tid.getPos() - 1, tid.getText().length(),
+                    "String key " + tid.getText() + " is not unique",
                     IMarker.SEVERITY_WARNING));
         }
+    }
+    
+    public void inAStrbraceStringEntry(AStrbraceStringEntry node) {
+        inAnAbbrev(node.getIdentifier(), node.getStringLiteral());
     }
     
     public void outAStrbraceStringEntry(AStrbraceStringEntry node) {
     }
     
     public void inAStrparenStringEntry(AStrparenStringEntry node) {
-        // TODO
+        inAnAbbrev(node.getIdentifier(), node.getStringLiteral());
     }
     
     public void outAStrparenStringEntry(AStrparenStringEntry node) {
@@ -248,11 +231,6 @@ public final class EntryRetriever extends DepthFirstAdapter {
                     "BibTex key " + currEntry.key + " is not unique",
                     IMarker.SEVERITY_WARNING));
         }
-        
-//        try {
-//            sortIndex.get("indexkey").put(currEntry.key, currEntry);
-//        } catch (NonUniqueException e) {
-//        }
     }
 
     private void setMissingWarnings(Token t, Set fields) {
@@ -286,7 +264,7 @@ public final class EntryRetriever extends DepthFirstAdapter {
         }
         currEntry.info = currEntryInfo.toString();
         entries.add(currEntry);
-        // useless -- uses the wrong token
+        // TODO useless -- uses the wrong token
         //currEntry.endLine = node.getIdentifier().getLine();
 
         if (crossref != null) {
@@ -333,7 +311,6 @@ public final class EntryRetriever extends DepthFirstAdapter {
     }
     
     public void inAEntryparenEntry(AEntryparenEntry node) {
-        // FIXME check that this is correct
         inBibtexEntry(node.getIdentifier());
     }
     
@@ -352,7 +329,6 @@ public final class EntryRetriever extends DepthFirstAdapter {
     public void outAEntryDef(AEntryDef node) {        
         currEntryInfo.append(node.getEntryName().getText().substring(1));
         currEntryInfo.append('\n');
-        //currEntryType = node.getEntryName().getText().substring(1).toLowerCase();
         currEntryType = node.getEntryName();
         currEntryType.setText(currEntryType.getText().substring(1).toLowerCase());
     }
@@ -365,15 +341,9 @@ public final class EntryRetriever extends DepthFirstAdapter {
         if (!currDefinedFields.add(currField)) {
             warnings.add(new ParseErrorMessage(node.getIdentifier().getLine(),
                     node.getIdentifier().getPos() - 1, currField.length(),
-                    "Field " + currField + " appears more than once in entry " + currField,
+                    "Field " + currField + " appears more than once in entry " + currEntry.key,
                     IMarker.SEVERITY_WARNING));
         }
-
-        // TODO
-        // Can't currently handle crossref correctly. Use a safe approximation
-        // of assuming all required fields were added via crossref.
-        //if (currField.equals("crossref"))
-        //    currRequiredFields.clear();
     }
     
     public void outAKeyvalDecl(AKeyvalDecl node) {

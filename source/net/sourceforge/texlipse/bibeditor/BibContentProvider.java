@@ -9,9 +9,7 @@
  */
 package net.sourceforge.texlipse.bibeditor;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import net.sourceforge.texlipse.bibparser.BibOutlineContainer;
@@ -32,8 +30,6 @@ import org.eclipse.jface.viewers.Viewer;
 public class BibContentProvider implements ITreeContentProvider {
     
     private IPositionUpdater fPositionUpdater = new DefaultPositionUpdater(BibOutlinePage.SEGMENTS);
-//    private List rootElements = new ArrayList(0);
-    //private Hashtable<String, BibStringTriMap<ReferenceEntry>> sortIndex = new Hashtable<String, BibStringTriMap<ReferenceEntry>>();
     private Map contentIndex = new HashMap();
     private BibOutlineContainer content;
     private String sortBy = BibOutlineContainer.SORTNATURAL;
@@ -63,13 +59,9 @@ public class BibContentProvider implements ITreeContentProvider {
                     content = changeSort(sortBy);
                 }
             }
-            
-//            this.rootElements = inp.getChildEntries();
-//            if (newInput instanceof Hashtable) {
-//                this.sortIndex = (Hashtable) newInput;
-//            }
-            if (document != null)
+            if (document != null) {
                 document.addPositionUpdater(fPositionUpdater);
+            }
         }
     }
     
@@ -77,10 +69,6 @@ public class BibContentProvider implements ITreeContentProvider {
      * @see org.eclipse.jface.viewers.IContentProvider#dispose()
      */
     public void dispose() {
-//        if (rootElements != null) {
-//            rootElements.clear();
-//            rootElements = null;
-//        }
         if (contentIndex != null) {
             contentIndex.clear();
             contentIndex = null;
@@ -89,29 +77,6 @@ public class BibContentProvider implements ITreeContentProvider {
             content = null;
         }
     }
-    
-//    private Object[] getElements(BibStringTriMap<ReferenceEntry> element, String prefix) {
-//        if (element != null) {
-//            Object[] res;
-//            if (element.isSplit()) {
-//                res = element.getNextKeyLetters(prefix).toArray();
-//                for (int i = 0; i < res.length; i++) {
-//                    res[i] = prefix + res[i] + "...";
-//                }
-//            } else {
-//                if (element.isUnique()) {
-//                    res = element.getValues().toArray();	
-//                } else {
-//                    res = element.getKeys().toArray();
-//                    Arrays.sort(res, Collator.getInstance());
-//                }
-//            }
-//            return res;
-//        } else {
-//            return null;
-//        }
-//    }
-    
     
     private Object[] getContainerChildren(BibOutlineContainer boc) {
         if (boc.getChildEntries() != null) {
@@ -126,12 +91,6 @@ public class BibContentProvider implements ITreeContentProvider {
      */
     public Object[] getElements(Object element) {
         return getContainerChildren(content); // (BibOutlineContainer) element
-        //return rootElements.toArray();
-        
-//    	if (sortIndex != null) {
-//    		BibStringTriMap<ReferenceEntry> elements = sortIndex.get(sortBy.toLowerCase());
-//    		return getElements(elements, "");
-//    	} else return null;    	
     }
     
     /* (non-Javadoc)
@@ -139,16 +98,13 @@ public class BibContentProvider implements ITreeContentProvider {
      */
     public boolean hasChildren(Object element) {
         return !(element instanceof ReferenceEntry);
-        //return element == rootElements;
-        //return (element instanceof String);
     }
     
     /* (non-Javadoc)
      * @see org.eclipse.jface.viewers.ITreeContentProvider#getParent(java.lang.Object)
      */
     public Object getParent(Object element) {
-       // if (element instanceof ReferenceEntry)
-       //     return rootElements;
+        // TODO
         return null;
     }
     
@@ -159,26 +115,6 @@ public class BibContentProvider implements ITreeContentProvider {
         if (element instanceof BibOutlineContainer) {
             return getContainerChildren((BibOutlineContainer) element);
         }
-        
-//        if (element == rootElements)
-//            return rootElements.toArray();
-        
-//        if (element instanceof String) { //Only String elements have children
-//        	String s = (String)element;
-//        	BibStringTriMap<ReferenceEntry> sortElement = sortIndex.get(sortBy);
-//        	if (sortElement != null) {        		
-//        		if (s.endsWith("...")) {
-//        			sortElement = sortElement.getTri(s.substring(0, s.length()- 3));
-//        			if (sortElement!= null) {
-//        				return getElements(sortElement, s.substring(0, s.length()- 3));
-//        			} else return new Object[0]; //Error, should never happen; 
-//        		} else { //Get the actual ReferenceEntries belonging to the key
-//        			ArrayList<ReferenceEntry> entries = sortElement.getAll((String)element);        		
-//        			return entries.toArray();
-//        		}
-//        	}
-//            return rootElements.toArray();
-//        }
         return new Object[0];
     }
     

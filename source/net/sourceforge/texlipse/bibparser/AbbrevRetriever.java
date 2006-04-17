@@ -39,8 +39,6 @@ import net.sourceforge.texlipse.model.ReferenceEntry;
 public final class AbbrevRetriever extends DepthFirstAdapter {
 
     private ArrayList abbrevs = new ArrayList(); //type: ReferenceEntry
-    private ReferenceEntry currEntry;
-    private String currEntryInfo;
     
     /**
      * @return The abbreviations as a list of <code>ReferenceEntry</code>s

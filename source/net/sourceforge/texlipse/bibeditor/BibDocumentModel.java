@@ -13,8 +13,6 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 
@@ -46,7 +44,6 @@ public class BibDocumentModel {
     private List entryList;    
     private ArrayList abbrevs;
     private AbbrevManager abbrManager;
-//    private Hashtable<String, BibStringTriMap<ReferenceEntry>> sortIndex;
     
     private ReferenceContainer bibContainer;
     
@@ -67,10 +64,6 @@ public class BibDocumentModel {
         return abbrManager;
     }
     
-//    public Hashtable<String, BibStringTriMap<ReferenceEntry>> getSortIndex() {
-//        return sortIndex;
-//    }
-    
     /**
      * Parses the BibTeX -document and retrieves parse errors and other useful
      * data.
@@ -85,7 +78,6 @@ public class BibDocumentModel {
             BibParser parser = new BibParser(new StringReader(this.editor.getDocumentProvider().getDocument(this.editor.getEditorInput()).get()),project);
             
             this.entryList = parser.getEntries();
-//            this.sortIndex = parser.getSortIndex();
             
             ArrayList parseErrors = parser.getErrors();
             ArrayList parseWarnings = parser.getWarnings();            
@@ -145,7 +137,6 @@ public class BibDocumentModel {
      * Updates the outline view when outline.doSave is called.
      */
     private void updateOutline() {
-        //this.editor.getOutlinePage().update(sortIndex);
         BibOutlineContainer boc = new BibOutlineContainer(entryList, true);
         this.editor.getOutlinePage().update(boc);
     }
@@ -166,15 +157,6 @@ public class BibDocumentModel {
         document.addPositionCategory(BibOutlinePage.SEGMENTS);
 
         try {
-            // needs sort because the etries are not returned here in the correct
-            // order, fucking STUPID coding
-
-//            Collections.sort(entryList, new Comparator<ReferenceEntry>() {
-//                public int compare(ReferenceEntry A, ReferenceEntry B) {
-//                    return A.startLine - B.startLine;
-//                }
-//            });
-            
             int beginOffset = -1, endOffset = -1;
             ReferenceEntry prev = null, next = null;
             //Iterator it = currentOutline.iterator();
@@ -223,7 +205,7 @@ public class BibDocumentModel {
             editor.updateCodeFolder(entryList);
         } catch (TexDocumentParseException e) {
             // We do nothing, since the error is already added
-//          TexlipsePlugin.log("There were parse errors in the document", e);
+            // TexlipsePlugin.log("There were parse errors in the document", e);
         }
     }
 }

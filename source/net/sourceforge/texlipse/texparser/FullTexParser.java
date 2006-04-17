@@ -11,6 +11,7 @@ import net.sourceforge.texlipse.TexlipsePlugin;
 import net.sourceforge.texlipse.model.OutlineNode;
 import net.sourceforge.texlipse.model.ParseErrorMessage;
 import net.sourceforge.texlipse.model.ReferenceContainer;
+import net.sourceforge.texlipse.properties.TexlipseProperties;
 import net.sourceforge.texlipse.texparser.lexer.LexerException;
 
 import org.eclipse.core.resources.IFile;
@@ -61,15 +62,30 @@ public class FullTexParser extends TexParser {
      */
     public void parseDocument(ReferenceContainer labels, ReferenceContainer bibs)
     throws IOException {
+        //TODO what about the errors
+        //Clear old errors
+        this.errors = null;
         try {
             // parse partially
+            //TODO make this working correct
+            changedFile = null;   //<- remove this, to enable reparsing instead of fullparsing
             if (changedFile != null && changedInput != null
                     && !changedFile.equals(mainFile)) {
                 // find the parent of the changed input
                 findParent(this.outlineTree);
                 if (parent != null) {
                     // remove the nodes and parse the changed input
-                    deleteNodes(parent);
+                    for (int i=0; i < this.outlineTree.size(); i++){
+                        OutlineNode on = (OutlineNode)this.outlineTree.get(i);
+                        if (on.getIFile().equals(changedFile)){
+                            this.outlineTree.remove(i);
+                            i--;
+                        }
+                        else{
+                            deleteNodes(on);
+                        }
+                    }
+                    
                     LatexLexer lexer = new LatexLexer(new PushbackReader(
                             new StringReader(changedInput), 1024));
                     LatexParser inputParser = new LatexParser();
@@ -78,7 +94,8 @@ public class FullTexParser extends TexParser {
                     // add the nodes to the tree
                     ArrayList newNodes = inputParser.getOutlineTree();
                     addFileNames(newNodes, changedFile);
-                    addToTree(parent.getChildren(), newNodes, null, null);
+                    addToTree(this.outlineTree, newNodes, this.parent, null);
+                    //addToTree(parent.getChildren(), newNodes, null, null);
                     
                     // parse inputs recursively
                     if (inputParser.getInputs().size() > 0) {
@@ -105,7 +122,6 @@ public class FullTexParser extends TexParser {
                     }
                 }
                 this.extractPreamble(input);
-                
                 // start the parse
                 LatexLexer lexer = new LatexLexer(new PushbackReader(
                         new StringReader(input), 1024));
@@ -159,11 +175,16 @@ public class FullTexParser extends TexParser {
      */
     private void deleteNodes(OutlineNode parent) {
         ArrayList children = parent.getChildren();
+        if (children == null) return;
         for (int i = 0; i < children.size(); i++) {
             OutlineNode on = (OutlineNode) children.get(i);
             if (on.getIFile().equals(changedFile)) {
                 children.remove(i);
                 i--;
+            }
+            else {
+                if (on.getChildren() != null)
+                    deleteNodes(on);
             }
         }
     }
@@ -179,7 +200,7 @@ public class FullTexParser extends TexParser {
         for (int i = 0; i < children.size(); i++) {
             OutlineNode on = (OutlineNode) children.get(i);
             if (on.getIFile().equals(changedFile)) {
-                this.parent = on.getParent();
+                this.parent = on;
                 this.position = i;
                 return;
             } else {
@@ -230,7 +251,15 @@ public class FullTexParser extends TexParser {
             String fileName = inputNode.getName();
             if (fileName.indexOf('.') == -1) 
                 fileName += TEX_FILE_ENDING;
-            IFile file = currentProject.getFile(fileName);
+            IFile file = null;
+            String dir = TexlipseProperties.getProjectProperty(currentProject, TexlipseProperties.SOURCE_DIR_PROPERTY);
+            if (dir != null && dir.length() > 0) {
+                file = currentProject.getFolder(dir).getFile(fileName);
+            }
+            else
+                file = currentProject.getFile(fileName);
+
+            //IFile file = currentProject.getFile(fileName);
             
             String inputContent;
             try {
@@ -246,14 +275,16 @@ public class FullTexParser extends TexParser {
                     if (editorInput.equals(inputNode.getParent().getIFile()
                             .getName())) {
                         this.errors = new ArrayList(1);
+                        //TODO Set marker to the right position (\include)
                         this.errors.add(new ParseErrorMessage(inputNode
                                 .getBeginLine(), 7, inputNode.getName()
                                 .length(), e.getMessage(),
                                 IMarker.SEVERITY_ERROR));
                     }
+                } else {
+                    TexlipsePlugin.log("Error reading from file"
+                            + file.getProjectRelativePath().toOSString(), e);
                 }
-                TexlipsePlugin.log("Error reading from file"
-                        + file.getProjectRelativePath().toOSString(), e);
                 inputContent = null;
             }
             if (inputContent != null) {
@@ -281,6 +312,55 @@ public class FullTexParser extends TexParser {
     }
     
     /**
+     * 
+     * @param tree
+     * @param newNodes
+     * @param inputNode
+     * @param cIndex
+     */
+    private void addToTree(ArrayList tree, ArrayList newNodes,
+            OutlineNode inputNode, int cIndex) {
+        if (inputNode != null) {
+            OutlineNode parent = inputNode;
+            // find the correct position where to add the newNodes
+            int biggest = -1;
+            while (parent.getChildren() != null) {
+                ArrayList children = parent.getChildren();
+                for (int i=0; i<children.size(); i++){
+                    OutlineNode child = (OutlineNode) children.get(i);
+                    if (child.getType()>=biggest) {
+                        biggest = child.getType();
+                        parent = child;
+                    }
+                }
+            }
+            int index = cIndex;
+            // add the nodes to the tree
+            OutlineNode on;
+            //ArrayList later = new ArrayList();
+            int fullIndex = 0;
+            for (int k = 0; k < newNodes.size(); k++) {
+                on = (OutlineNode) newNodes.get(k);
+                while (parent != null && parent.getType() >= on.getType()){
+                    OutlineNode newParent = parent.getParent();
+                    if (newParent != null) {
+                        ArrayList children = newParent.getChildren();
+                        int newindex = findPosition (children, parent);
+                        index = newindex + 1;
+                    } 
+                    parent = newParent;
+                }
+                if (parent == null) {
+                    tree.add(fullIndex++, on);
+                } else {
+                    on.setParent(parent);
+                    parent.addChild(on, index++);
+                }
+            }
+        }
+    }
+
+    /**
      * Adds the nodes to the tree.
      * @param tree the part of the tree, where the nodes should be added.
      * @param newNodes the nodes to be added
@@ -290,7 +370,7 @@ public class FullTexParser extends TexParser {
     private void addToTree(ArrayList tree, ArrayList newNodes,
             OutlineNode inputNode, IFile file) {
         // if the new Nodes have a parent node add them at this node
-        if (inputNode != null && inputNode.getParent() != null) {
+        if (inputNode != null) {
             OutlineNode parent = inputNode.getParent();
             // find the right position where to add them at the children
             int index = 0;
@@ -298,19 +378,57 @@ public class FullTexParser extends TexParser {
                 index = findPosition(parent.getChildren(), inputNode, file);
             }
             // add the nodes to the tree
-            OutlineNode on;
+            OutlineNode on = null;
+            ArrayList later = new ArrayList();
+            int fullIndex = findPosition(tree, inputNode) + 1;
             for (int k = 0; k < newNodes.size(); k++) {
                 on = (OutlineNode) newNodes.get(k);
-                on.setParent(parent);
-                parent.addChild(on, index + k);
+                //Check if the current nodes type is smaller then the parents type 
+                while (parent != null && parent.getType() >= on.getType()){
+                    ArrayList children = parent.getChildren();
+                    for (int i = index; i < children.size(); i++) {
+                        OutlineNode child = (OutlineNode) children.get(i);
+                        //Put all remaining childs into an arraylist which we append later
+                        later.add(child);
+                        parent.deleteChild(child);
+                    }
+                    OutlineNode newParent = parent.getParent();
+                    if (newParent != null) {
+                        //Get the correct position
+                        children = newParent.getChildren();
+                        int newindex = findPosition (children, parent);
+                        index = newindex + 1;
+                    } 
+                    parent = newParent;
+                }
+                if (parent == null) {
+                    tree.add(fullIndex++, on);
+                } else {
+                    on.setParent(parent);
+                    parent.addChild(on, index++);
+                }
             }
-            // if there is no parent node, add the nodes to the root 
-        } else {
-            int index = findPosition(tree, inputNode, file);
-            for (int j = 0; j < newNodes.size(); j++) {
-                tree.add(index + j, newNodes.get(j));
-            }
+            if (later.size() > 0)
+                addToTree(tree, later, on, 0);
+        } 
+    }
+    
+    /**
+     * Finds the position of inputNode in the ArrayList.
+     * @param tree
+     * @param inputNode
+     * @return the index of the inputNode
+     */
+    private int findPosition (ArrayList tree, OutlineNode inputNode) {
+        OutlineNode on = inputNode;
+        do {
+        for (int i = 0; i < tree.size(); i++) {
+            OutlineNode element = (OutlineNode) tree.get(i);
+            if (element == on)
+                return i;
         }
+        } while ((on=on.getParent()) != null);
+        return -1;
     }
     
     /**

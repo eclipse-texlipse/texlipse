@@ -103,6 +103,15 @@ public class OutlineNode {
     }
     
     /**
+     * Deletes a child from the node
+     * @param child the child to delete
+     * @return true if the child exists, else false
+     */
+    public boolean deleteChild (OutlineNode child) {
+        return this.children.remove(child);
+    }
+    
+    /**
      * @return Returns the children.
      */
     public ArrayList getChildren() {

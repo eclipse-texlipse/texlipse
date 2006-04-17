@@ -35,6 +35,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IPartListener;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPart;
@@ -157,6 +158,7 @@ public class TexOutlineTreeView extends ViewPart implements  ISelectionChangedLi
                 control.setRedraw(false);
                 // save viewer state
                 //ISelection selection = viewer.getSelection();
+                //Todo: Change this
                 treeViewer.getTree().deselectAll();
                 
                 Object[] expandedElements = treeViewer.getExpandedElements();
@@ -259,14 +261,14 @@ public class TexOutlineTreeView extends ViewPart implements  ISelectionChangedLi
                     // the position of a node in an other file isn't available.
                     IWorkbenchPage cPage = TexlipsePlugin.getCurrentWorkbenchPage();
                     editor = (TexEditor) cPage.findEditor(input);
-                    if (editor == null) 
+                    if (editor == null)
                         editor = (TexEditor) cPage.openEditor(input, "net.sourceforge.texlipse.TexEditor");
-                    if (cPage.getActiveEditor() != editor) 
+                    if (cPage.getActiveEditor() != editor)
                         cPage.activate(editor);
                     IDocument doc = editor.getDocumentProvider().getDocument(editor.getEditorInput());
-                    int beginOffset = doc.getLineOffset(node.getBeginLine()-1);
+                    int beginOffset = doc.getLineOffset(node.getBeginLine() - 1);
                     int length;
-                    if (node.getEndLine() -1 == doc.getNumberOfLines()) 
+                    if (node.getEndLine() - 1 == doc.getNumberOfLines())
                         length = doc.getLength() - beginOffset;
                     else
                         length = doc.getLineOffset(node.getEndLine() - 1) - beginOffset;
@@ -515,9 +517,13 @@ public class TexOutlineTreeView extends ViewPart implements  ISelectionChangedLi
     }
     
     /**
-     * Not used.
+     * Unregister the fulloutline if the editor is deactivated
      */
     public void partDeactivated(IWorkbenchPart part) {
+        if (part instanceof TexEditor) {
+            editor = (TexEditor) part;
+            editor.unregisterFullOutline(this);
+        }
     }
     
     /**
@@ -527,11 +533,12 @@ public class TexOutlineTreeView extends ViewPart implements  ISelectionChangedLi
     }
     
     /**
-     * unregisteres the full outline.
+     * unregisteres the full outline and removes the PartListener
      * @see org.eclipse.ui.IWorkbenchPart#dispose()
      */
     public void dispose() {
         super.dispose();
+        getViewSite().getPage().removePartListener(this);
         editor.unregisterFullOutline(this);
     }
 }

@@ -508,6 +508,7 @@ public class TexDocumentModel implements IDocumentListener {
         try {
             lock.acquire();
             parseJob.cancel();
+            parseJob2.cancel();
             this.setDirty(true);
         } finally {
             lock.release();
@@ -533,13 +534,24 @@ public class TexDocumentModel implements IDocumentListener {
             parseJob.schedule(parseDelay);
             
 //          B----------------------------------- mmaus
-            parseJob2.setChangedFile(getCurrentProject().getFile(this.editor.getEditorInput().getName()));
-            parseJob2.setChangedInput(event.getDocument().get());
-            parseJob2.schedule(parseDelay);
+            //Only parse if fullOutline is on
+            if (fullOutline != null) {
+                IResource res = (IResource) this.editor.getEditorInput().getAdapter(IResource.class);
+                if (res == null || res.getType() != IResource.FILE) {
+                    // No file is selected, so user must be browsing
+                    // with the navigator. Don't build anything yet.
+                    return;
+                }
+                IFile file = getCurrentProject().getFile(res.getProjectRelativePath());
+                parseJob2.setChangedFile(file);
+                parseJob2.setChangedInput(event.getDocument().get());
+                parseJob2.schedule(parseDelay);
+            }
 //          E----------------------------------- mmaus
         }
     }
 
+    
     /**
      * Parses the LaTeX-document and adds error markers if there were any
      * errors. Throws <code>TexDocumentParseException</code> if there were
@@ -611,7 +623,7 @@ public class TexDocumentModel implements IDocumentListener {
             IProgressMonitor monitor) throws TexDocumentParseException {
         // create the full parser if not available yet. initialize it with the
         // project main file and a handle to the current project.
-
+        //TODO every file in a project has it's own FullTexParser, but one per project is enough
         if (this.fullParser == null) {
             try {
                 IFile mainFile = TexlipseProperties

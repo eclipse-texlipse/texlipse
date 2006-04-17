@@ -92,7 +92,7 @@ public class BibParser {
             
             EntryRetriever er = new EntryRetriever();
             ast.apply(er);
-            
+            er.finishParse();
             warnings = er.getWarnings();
 //            sortIndex = er.getSortIndex();
             

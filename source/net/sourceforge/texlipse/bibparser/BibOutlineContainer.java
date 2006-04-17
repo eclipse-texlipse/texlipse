@@ -236,7 +236,8 @@ public class BibOutlineContainer {
                     children.add(liter.next());
                     liter.remove();
                 }
-                
+
+                // FIXME name
                 BibOutlineContainer boc = new BibOutlineContainer(children, "A...B");
                 midContainers.add(boc);
             }

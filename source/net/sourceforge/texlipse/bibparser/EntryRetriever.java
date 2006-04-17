@@ -51,6 +51,16 @@ import org.eclipse.core.resources.IMarker;
  */
 public final class EntryRetriever extends DepthFirstAdapter {
     
+    private final class EntryText {
+        Token token;
+        Set definedFields;
+        public EntryText(Token t, Set df) {
+            token = t;
+            definedFields = df;
+        }
+    }
+    
+    
     //private ArrayList<ParseErrorMessage> warnings = new ArrayList<ParseErrorMessage>();
     private ArrayList warnings = new ArrayList();
     
@@ -59,8 +69,10 @@ public final class EntryRetriever extends DepthFirstAdapter {
 //    private Hashtable<String, BibStringTriMap<ReferenceEntry>> sortIndex;
     private ReferenceEntry currEntry;
     private StringBuffer currEntryInfo;    
-    private String currEntryType;
+    //private String currEntryType;
+    private Token currEntryType;
     private String currField;
+    private String crossref;
 
     /**
      * Currently defined fields for an entry
@@ -73,6 +85,7 @@ public final class EntryRetriever extends DepthFirstAdapter {
     private Set allDefinedKeys;
     
     private Map abbrevs;
+    private Map crossrefs; // String->List(EntryText)
     
     /**
      * A list of required fields for the different BibTeX entries
@@ -135,6 +148,7 @@ public final class EntryRetriever extends DepthFirstAdapter {
         
         this.allDefinedKeys = new HashSet();
         this.abbrevs = new HashMap();
+        this.crossrefs = new HashMap();
         
 //        sortIndex = new Hashtable<String, BibStringTriMap<ReferenceEntry>>();
 //
@@ -173,6 +187,23 @@ public final class EntryRetriever extends DepthFirstAdapter {
         return warnings;
     }
     
+    public void finishParse() {
+        // Set warnings for unfulfilled cross references
+        Set keys = crossrefs.entrySet();
+        for (Iterator iter = keys.iterator(); iter.hasNext();) {
+            Map.Entry mapping = (Map.Entry) iter.next();
+            List crefs = (List) mapping.getValue();
+            for (Iterator iter2 = crefs.iterator(); iter2.hasNext();) {
+                EntryText et = (EntryText) iter2.next();
+                setMissingWarnings(et.token, et.definedFields);
+                warnings.add(new ParseErrorMessage(et.token.getLine(),
+                        et.token.getPos() - 1, et.token.getText().length(),
+                        "Cross reference " + mapping.getKey() + " does not exist",
+                        IMarker.SEVERITY_WARNING));
+            }
+        }
+    }
+    
     /**
      * @return The index structure of this bib file
      */
@@ -189,7 +220,10 @@ public final class EntryRetriever extends DepthFirstAdapter {
     public void inAStrbraceStringEntry(AStrbraceStringEntry node) {
         if (abbrevs.put(node.getIdentifier().getText(),
                 node.getStringLiteral().getText()) != null) {
-            ; // TODO
+            warnings.add(new ParseErrorMessage(node.getIdentifier().getLine(),
+                    node.getIdentifier().getPos() - 1, node.getIdentifier().getText().length(),
+                    "String key " + node.getIdentifier().getText() + " is not unique",
+                    IMarker.SEVERITY_WARNING));
         }
     }
     
@@ -221,6 +255,25 @@ public final class EntryRetriever extends DepthFirstAdapter {
 //        }
     }
 
+    private void setMissingWarnings(Token t, Set fields) {
+        List reqFieldList = (List) requiredFieldsPerType.get(t.getText());
+        if (reqFieldList != null) {
+            if (!fields.containsAll(reqFieldList)) {
+                for (Iterator iter = reqFieldList.iterator(); iter.hasNext();) {
+                    String reqField = (String) iter.next();
+                    if (!fields.contains(reqField)) {
+                        // FIXME key
+                        warnings.add(new ParseErrorMessage(t.getLine(),
+                                t.getPos()-1, t.getText().length(),
+                                t + currEntry.key +
+                                " is missing required field " + reqField,
+                                IMarker.SEVERITY_WARNING));                 
+                    }
+                }
+            }
+        }   
+    }
+    
     private void outBibtexEntry() {
         if (currEntry.author == null) {
             currEntry.author = "-";
@@ -236,19 +289,24 @@ public final class EntryRetriever extends DepthFirstAdapter {
         // useless -- uses the wrong token
         //currEntry.endLine = node.getIdentifier().getLine();
 
-        List reqFieldList = (List) requiredFieldsPerType.get(currEntryType);
-        if (reqFieldList != null) {
-            if (!currDefinedFields.containsAll(reqFieldList)) {
-                for (Iterator iter = reqFieldList.iterator(); iter.hasNext();) {
-                    String reqField = (String) iter.next();
-                    if (!currDefinedFields.contains(reqField)) {
-                        warnings.add(new ParseErrorMessage(currEntry.startLine,
-                                0, currEntryType.length() + 1,
-                                currEntryType + " " + currEntry.key +
-                                " is missing required field " + reqField,
-                                IMarker.SEVERITY_WARNING));                 
-                    }
-                }
+        if (crossref != null) {
+            List crefs = (List) crossrefs.get(crossref);
+            if (crefs == null) {
+                crefs = new ArrayList();
+            }
+            crefs.add(new EntryText(currEntryType,
+                    new HashSet(currDefinedFields)));
+            crossrefs.put(crossref, crefs);
+            crossref = null;
+        } else {
+            setMissingWarnings(currEntryType, currDefinedFields);
+        }
+        if (crossrefs.containsKey(currEntry.key)) {
+            List crefs = (List) crossrefs.remove(currEntry.key);
+            for (Iterator iter = crefs.iterator(); iter.hasNext();) {
+                EntryText et = (EntryText) iter.next();
+                et.definedFields.addAll(currDefinedFields);
+                setMissingWarnings(et.token, et.definedFields);
             }
         }
         currDefinedFields.clear();
@@ -294,7 +352,9 @@ public final class EntryRetriever extends DepthFirstAdapter {
     public void outAEntryDef(AEntryDef node) {        
         currEntryInfo.append(node.getEntryName().getText().substring(1));
         currEntryInfo.append('\n');
-        currEntryType = node.getEntryName().getText().substring(1).toLowerCase();
+        //currEntryType = node.getEntryName().getText().substring(1).toLowerCase();
+        currEntryType = node.getEntryName();
+        currEntryType.setText(currEntryType.getText().substring(1).toLowerCase());
     }
     
     public void inAKeyvalDecl(AKeyvalDecl node) {
@@ -308,7 +368,8 @@ public final class EntryRetriever extends DepthFirstAdapter {
                     "Field " + currField + " appears more than once in entry " + currField,
                     IMarker.SEVERITY_WARNING));
         }
-        
+
+        // TODO
         // Can't currently handle crossref correctly. Use a safe approximation
         // of assuming all required fields were added via crossref.
         //if (currField.equals("crossref"))
@@ -342,25 +403,24 @@ public final class EntryRetriever extends DepthFirstAdapter {
             outAValueValOrSid(tsl.getText(), tsl);
         } else {
             warnings.add(new ParseErrorMessage(currEntry.startLine,
-                    1, currEntryType.length(),
+                    1, currEntryType.getText().length(),
                     currField + " is empty in " + currEntry.key,
                     IMarker.SEVERITY_WARNING));
         }
     }
     
     private void outAValueValOrSid(String text, Token tsl) {
-        //currEntryInfo.append(node.getStringLiteral().getText().replaceAll("\\s+", " "));
         String fieldValue = text.replaceAll("\\s+", " ");
-        
         currEntryInfo.append(fieldValue);
         
-        // TODO testing new nodes
         if ("author".equals(currField) || "editor".equals(currField)) {
             currEntry.author = fieldValue;
         } else if ("journal".equals(currField)) {
             currEntry.journal = fieldValue;
         } else if ("year".equals(currField)) {
             currEntry.year = fieldValue;
+        } else if ("crossref".equals(currField)) {
+            crossref = fieldValue;
         }
         
         // Test for empty fields
@@ -376,19 +436,22 @@ public final class EntryRetriever extends DepthFirstAdapter {
     }
   
     public void outANumValOrSid(ANumValOrSid node) {
-        outAValueValOrSid(node.getNumber().getText(),
-                node.getNumber());
+        outAValueValOrSid(node.getNumber().getText(), node.getNumber());
     }
     
     public void inAIdValOrSid(AIdValOrSid node) {
     }
     
     public void outAIdValOrSid(AIdValOrSid node) {
-        // FIXME we need to check that the node is defined
-        //currEntryInfo.append(node.getIdentifier().getText());
-        String expansion = (String) abbrevs.get(node.getIdentifier().getText());
+        TIdentifier tid = node.getIdentifier();
+        String expansion = (String) abbrevs.get(tid.getText());
         if (expansion != null) {
-            outAValueValOrSid(expansion, node.getIdentifier());
+            outAValueValOrSid(expansion, tid);
+        } else {
+            warnings.add(new ParseErrorMessage(tid.getLine(),
+                    tid.getPos()-1, tid.getText().length(),
+                    "The abbreviation " + tid.getText() + " is undefined",
+                    IMarker.SEVERITY_WARNING));
         }
     }
 }

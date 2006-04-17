@@ -31,7 +31,7 @@ public class TexPartitionScanner extends RuleBasedPartitionScanner {
 	
 	public final static String TEX_DEFAULT = "__tex_default";
 	public final static String TEX_COMMENT = "__tex_commentPartition";
-	public static final String TEX_MATH = "__tex_mathParitition"; 
+	public static final String TEX_MATH = "__tex_mathPartition"; 
 	public static final String TEX_CURLY_BRACKETS = "__tex_curlyBracketPartition";
 	public static final String TEX_SQUARE_BRACKETS = "__tex_squareBracketPartition";
 	public static final String[] TEX_PARTITION_TYPES = new String[] {

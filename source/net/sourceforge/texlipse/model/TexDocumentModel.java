@@ -82,7 +82,6 @@ public class TexDocumentModel implements IDocumentListener {
          */
         protected IStatus run(IProgressMonitor monitor) {
             try {
-                
                 // before parsing stuff, only takes time when run the first time
                 if (bibContainer == null) {
                     createReferenceContainers();
@@ -123,7 +122,6 @@ public class TexDocumentModel implements IDocumentListener {
                     }
                     return result;
                 }
-                
                 // parsing not ok
                 return Status.CANCEL_STATUS;
             } catch (Exception e) {
@@ -1084,8 +1082,8 @@ public class TexDocumentModel implements IDocumentListener {
     public void setStatusLineErrorMessage(String msg){
         SubStatusLineManager slm = 
             (SubStatusLineManager) editor.getEditorSite().getActionBars().getStatusLineManager();
-        slm.setVisible(true);
         slm.setErrorMessage(msg);
+        slm.setVisible(true);
     }
     
     /**
@@ -1095,7 +1093,8 @@ public class TexDocumentModel implements IDocumentListener {
     public void removeStatusLineErrorMessage(){
         SubStatusLineManager slm = 
             (SubStatusLineManager) editor.getEditorSite().getActionBars().getStatusLineManager();
-        slm.setVisible(false);
+        //slm.setVisible(false);
+        slm.setErrorMessage(null);
     }
     
 //  E----------------------------------- mmaus

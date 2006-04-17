@@ -80,6 +80,7 @@ public class TexCompletionProcessor implements IContentAssistProcessor {
         if (refManager == null)
             this.refManager = this.model.getRefMana();
         
+        model.removeStatusLineErrorMessage();
         IDocument doc = viewer.getDocument();
         
         // try to see if a text area is selected

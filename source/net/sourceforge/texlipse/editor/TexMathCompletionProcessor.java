@@ -47,23 +47,26 @@ public class TexMathCompletionProcessor implements IContentAssistProcessor {
      * @see org.eclipse.jface.text.contentassist.IContentAssistProcessor#computeCompletionProposals(org.eclipse.jface.text.ITextViewer, int)
      */
     public ICompletionProposal[] computeCompletionProposals(ITextViewer viewer, int offset) {
+        model.removeStatusLineErrorMessage();
         String lineStart = "";
+        
         IDocument doc = viewer.getDocument();
         try {
             int lineStartOffset = doc.getLineOffset(doc.getLineOfOffset(offset));
             lineStart = doc.get(lineStartOffset, offset - lineStartOffset);
-            
         } catch (BadLocationException e) {
             TexlipsePlugin.log("TexCompletionProcessor: ", e);
             return new ICompletionProposal[0];
         }
+        
         if (lineStart.endsWith("\\\\"))
             return null;
                 
         int backpos = lineStart.lastIndexOf('\\');
-        int templatepos = lineStart.lastIndexOf(' ') + 1;
+        int templatepos = Math.max(Math.max(lineStart.lastIndexOf(' '),
+                lineStart.lastIndexOf('$')), lineStart.lastIndexOf('}')) + 1;
 
-        String replacement = templatepos < 0 ? lineStart : lineStart.substring(templatepos);
+        String replacement = lineStart.substring(templatepos);
 
         ICompletionProposal[] templateProposals = computeTemplateCompletions(offset, replacement.length(), replacement, viewer);
         

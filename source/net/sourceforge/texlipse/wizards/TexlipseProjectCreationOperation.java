@@ -18,6 +18,7 @@ import net.sourceforge.texlipse.builder.TexlipseNature;
 import net.sourceforge.texlipse.properties.TexlipseProperties;
 import net.sourceforge.texlipse.templates.ProjectTemplateManager;
 
+import org.eclipse.core.internal.resources.ResourceException;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
@@ -89,6 +90,7 @@ public class TexlipseProjectCreationOperation implements IRunnableWithProgress {
             TexlipseProperties.setProjectProperty(project, TexlipseProperties.LANGUAGE_PROPERTY, "en");
             TexlipseProperties.setProjectProperty(project, TexlipseProperties.MARK_DERIVED_PROPERTY, "true");
             TexlipseProperties.setProjectProperty(project, TexlipseProperties.MAKEINDEX_STYLEFILE_PROPERTY, "");
+            TexlipseProperties.setProjectProperty(project, TexlipseProperties.BIBREF_DIR_PROPERTY, "");
             TexlipseProperties.setProjectProperty(project, TexlipseProperties.OUTPUTFILE_PROPERTY, attributes.getOutputFile());
             TexlipseProperties.setProjectProperty(project, TexlipseProperties.OUTPUT_FORMAT, attributes.getOutputFormat());
             TexlipseProperties.setProjectProperty(project, TexlipseProperties.BUILDER_NUMBER, attributes.getBuilder()+"");
@@ -210,7 +212,6 @@ public class TexlipseProjectCreationOperation implements IRunnableWithProgress {
      * @throws CoreException
      */
     private void createDir(IProject project, IProgressMonitor monitor, String dir) throws CoreException {
-        
         if (dir != null && dir.length() > 0) {
             IFolder folder = project.getFolder(dir);
             folder.create(true, true, monitor);

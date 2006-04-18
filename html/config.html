@@ -127,28 +127,50 @@ User-created project templates can be deleted easily via this page.
 To view a template, start a new project with that template.
 
 
-<h3> <a name="viewer"></a> Viewer Settings </h3>
+<h3> <a name="viewer"></a> Viewer Settings</h3>
 
 <p>
-This page shows the list of example configurations for an external viewer program.
-The configuration at the top of the list is used when activating the previewer.
+This page shows the list of configuration defaults for external viewer programs.
+The viewers are sorted by priority, from high to low, and when a preview is launched 
+from the editor the topmost viewer matching the current output format is used.
 Viewer configurations can be edited by choosing a configuration name from the
 list and pressing the edit-button. A viewer configuration dialog will appear.
 The viewer program location and viewer arguments can be changed from this
 dialog. If the arguments-field contains the special string &quot;<code>%file</code>&quot;,
-it will be replaced with the input file name when launching viewer.
+it will be replaced with the input file name when launching viewer, and if
+the arguments-field contains the string &quot;<code>%fullfile</code>&quot; it's replaced
+with the full path of the input file.
 </p>
 <p>
-The build before launch -checkbox controls whether the project will be built
-automatically before launching viewer. If the <b>Project &gt; Build Automatically</b>
--option is used, this checkbox has no effect.
+On Windows the viewer configuration defaults page also contains
+two group boxes titled "DDE Message to send on view" and "... on rebuild". These
+let you specify DDE messages (a Windows only IPC mechanism) that should be sent
+when launching the viewer and before a rebuild. This is very handy with Acrobat, 
+where you can automatically close the open document before a rebuild. Note that
+for the close document command to work, the document has to be opened using a DDE command.
+Therfore it would be best to remove the <code>%file</code> argument from the acrobat
+configuration if DDE is used.
 </p>
+<p>
+After editing a viewer configuration default you may be asked if you would like to
+update any launch configurations that has been based on this default. This is usually a 
+good thing to do, unless you've made spesific customizations to a launch configuration.
+</p>
+<!-- Depricated:
+	<p>
+	The build before launch -checkbox controls whether the project will be built
+	automatically before launching viewer. If the <b>Project &gt; Build Automatically</b>
+	-option is used, this checkbox has no effect.
+	</p>
+-->
 <p>
 The inverse search port number is the port that is opened for external viewer programs
 to input inverse search (navigation from output file to source file) commands.
 </p>
 <p>
-&nbsp;
+The return focus to Eclipse checkbox allows you to force Eclipse to regain focus after 
+a preview has been launched. This can be handy when working on dual monitors, when you
+want to get right back to writing after seeing the results.
 </p>
 
 

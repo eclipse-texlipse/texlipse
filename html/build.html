@@ -76,18 +76,21 @@ or from the menu: <b>Latex &gt; Preview Document</b>.
 
 <p>
 Almost any application capable of displaying output files (dvi, ps or pdf) can
-be used as a viewer. Configuring a viewer is done via the <b>Texlipse &gt; Viewer
-Settings</b> -preference page. Read more about it in the
+be used as a viewer. Configuring a viewer is done via the <b>Texlipse &gt; Viewer Settings</b> -preference page. Read more about it in the
 <a href="config.html#viewer">configuration section</a>.
 </p>
 <p>
-The Viewer Settings -preference page has multiple viewer configurations as
-examples. Read more about setting up a viewer program in the 
+The Viewer Settings -preference page lists the available viewers, and you can add
+more or edit the default configuration for each viewer. Read more about setting up a viewer program in the 
 <a href="config.html#viewer">configuration section</a>.
 </p>
 
 
 <h3> Using preview </h3>
+
+<p>A preview is launched by pressing the preview-button in the menubar 
+(<span style="background-image: url(images/preview.gif); width: 16px;"></span>), 
+or by pressing the preview hotkey (usually Ctrl+4).</p>
 
 <p>
 The previewer always tries to open the output file of the current project.
@@ -98,6 +101,16 @@ be launched. Also, if the project&#39;s output file has been deleted after the l
 or is not yet created, the viewer obviously can&#39;t view anything.
 </p>
 
+<p>
+When launching a preview from the editor, Texlipse first checks the viewer settings
+to see which viewer is the preferred viewer for the current output format (pdf, dvi, gs). It
+then looks trough the list of recent launches, and tries to find a launch config
+matching the preferred viewer. If no launch config is found, a new one is created
+based on the viewer defaults in the viewer settings, and the new config is run. The
+next time a document is previewed with the same viewer the config is reused.
+</p>
+
+<a name="forwardsearch"></a>
 <h3> Using source to output linking </h3>
 <p>
 Linking source to output means that the viewer is launched viewing the 
@@ -114,14 +127,16 @@ is launched, <code>%line</code> is replaced with the line number where
 the cursor is, <code>%texfile</code> is replaced with the name of the 
 file that is currently being edited and <code>%file</code> is replaced 
 with the project output file name.
-</p><p>
-Using forward search is easy once it is configured correctly. Just press 
-the preview-button in the menubar, or hit the preview hotkey (usually Ctrl+4).
-<br/>
-preview button:
-<br/>
-<img alt="preview icon" src="images/preview.gif"/>
 </p>
+
+<p>
+On Windows it is also possible to use DDE messages to
+let the viewer know where to open the document. In Acrobat Professional
+this can be done by adding <code>[MenuitemExecute("GoBack")]</code> to the
+end of the DDE Open message. See <a href="config.html">viewer configuration</a>
+ for more about DDE.
+</p>
+
 
 
 <a name="sourcelink"></a>

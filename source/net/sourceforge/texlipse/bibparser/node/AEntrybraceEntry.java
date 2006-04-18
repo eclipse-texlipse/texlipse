@@ -10,6 +10,7 @@ public final class AEntrybraceEntry extends PEntry
     private PEntryDef _entryDef_;
     private TIdentifier _identifier_;
     private final LinkedList _keyvalDecl_ = new TypedLinkedList(new KeyvalDecl_Cast());
+    private TRBrace _rBrace_;
 
     public AEntrybraceEntry()
     {
@@ -18,7 +19,8 @@ public final class AEntrybraceEntry extends PEntry
     public AEntrybraceEntry(
         PEntryDef _entryDef_,
         TIdentifier _identifier_,
-        List _keyvalDecl_)
+        List _keyvalDecl_,
+        TRBrace _rBrace_)
     {
         setEntryDef(_entryDef_);
 
@@ -29,13 +31,16 @@ public final class AEntrybraceEntry extends PEntry
             this._keyvalDecl_.addAll(_keyvalDecl_);
         }
 
+        setRBrace(_rBrace_);
+
     }
     public Object clone()
     {
         return new AEntrybraceEntry(
             (PEntryDef) cloneNode(_entryDef_),
             (TIdentifier) cloneNode(_identifier_),
-            cloneList(_keyvalDecl_));
+            cloneList(_keyvalDecl_),
+            (TRBrace) cloneNode(_rBrace_));
     }
 
     public void apply(Switch sw)
@@ -104,12 +109,38 @@ public final class AEntrybraceEntry extends PEntry
         _keyvalDecl_.addAll(list);
     }
 
+    public TRBrace getRBrace()
+    {
+        return _rBrace_;
+    }
+
+    public void setRBrace(TRBrace node)
+    {
+        if(_rBrace_ != null)
+        {
+            _rBrace_.parent(null);
+        }
+
+        if(node != null)
+        {
+            if(node.parent() != null)
+            {
+                node.parent().removeChild(node);
+            }
+
+            node.parent(this);
+        }
+
+        _rBrace_ = node;
+    }
+
     public String toString()
     {
         return ""
             + toString(_entryDef_)
             + toString(_identifier_)
-            + toString(_keyvalDecl_);
+            + toString(_keyvalDecl_)
+            + toString(_rBrace_);
     }
 
     void removeChild(Node child)
@@ -128,6 +159,12 @@ public final class AEntrybraceEntry extends PEntry
 
         if(_keyvalDecl_.remove(child))
         {
+            return;
+        }
+
+        if(_rBrace_ == child)
+        {
+            _rBrace_ = null;
             return;
         }
 
@@ -162,6 +199,12 @@ public final class AEntrybraceEntry extends PEntry
                 oldChild.parent(null);
                 return;
             }
+        }
+
+        if(_rBrace_ == oldChild)
+        {
+            setRBrace((TRBrace) newChild);
+            return;
         }
 
     }

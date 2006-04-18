@@ -7,33 +7,25 @@ import net.sourceforge.texlipse.bibparser.analysis.*;
 
 public final class ABibtex extends PBibtex
 {
-    private final LinkedList _stringEntry_ = new TypedLinkedList(new StringEntry_Cast());
-    private final LinkedList _entry_ = new TypedLinkedList(new Entry_Cast());
+    private final LinkedList _bibEntry_ = new TypedLinkedList(new BibEntry_Cast());
 
     public ABibtex()
     {
     }
 
     public ABibtex(
-        List _stringEntry_,
-        List _entry_)
+        List _bibEntry_)
     {
         {
-            this._stringEntry_.clear();
-            this._stringEntry_.addAll(_stringEntry_);
-        }
-
-        {
-            this._entry_.clear();
-            this._entry_.addAll(_entry_);
+            this._bibEntry_.clear();
+            this._bibEntry_.addAll(_bibEntry_);
         }
 
     }
     public Object clone()
     {
         return new ABibtex(
-            cloneList(_stringEntry_),
-            cloneList(_entry_));
+            cloneList(_bibEntry_));
     }
 
     public void apply(Switch sw)
@@ -41,43 +33,26 @@ public final class ABibtex extends PBibtex
         ((Analysis) sw).caseABibtex(this);
     }
 
-    public LinkedList getStringEntry()
+    public LinkedList getBibEntry()
     {
-        return _stringEntry_;
+        return _bibEntry_;
     }
 
-    public void setStringEntry(List list)
+    public void setBibEntry(List list)
     {
-        _stringEntry_.clear();
-        _stringEntry_.addAll(list);
-    }
-
-    public LinkedList getEntry()
-    {
-        return _entry_;
-    }
-
-    public void setEntry(List list)
-    {
-        _entry_.clear();
-        _entry_.addAll(list);
+        _bibEntry_.clear();
+        _bibEntry_.addAll(list);
     }
 
     public String toString()
     {
         return ""
-            + toString(_stringEntry_)
-            + toString(_entry_);
+            + toString(_bibEntry_);
     }
 
     void removeChild(Node child)
     {
-        if(_stringEntry_.remove(child))
-        {
-            return;
-        }
-
-        if(_entry_.remove(child))
+        if(_bibEntry_.remove(child))
         {
             return;
         }
@@ -86,24 +61,7 @@ public final class ABibtex extends PBibtex
 
     void replaceChild(Node oldChild, Node newChild)
     {
-        for(ListIterator i = _stringEntry_.listIterator(); i.hasNext();)
-        {
-            if(i.next() == oldChild)
-            {
-                if(newChild != null)
-                {
-                    i.set(newChild);
-                    oldChild.parent(null);
-                    return;
-                }
-
-                i.remove();
-                oldChild.parent(null);
-                return;
-            }
-        }
-
-        for(ListIterator i = _entry_.listIterator(); i.hasNext();)
+        for(ListIterator i = _bibEntry_.listIterator(); i.hasNext();)
         {
             if(i.next() == oldChild)
             {
@@ -122,33 +80,11 @@ public final class ABibtex extends PBibtex
 
     }
 
-    private class StringEntry_Cast implements Cast
+    private class BibEntry_Cast implements Cast
     {
         public Object cast(Object o)
         {
-            PStringEntry node = (PStringEntry) o;
-
-            if((node.parent() != null) &&
-                (node.parent() != ABibtex.this))
-            {
-                node.parent().removeChild(node);
-            }
-
-            if((node.parent() == null) ||
-                (node.parent() != ABibtex.this))
-            {
-                node.parent(ABibtex.this);
-            }
-
-            return node;
-        }
-    }
-
-    private class Entry_Cast implements Cast
-    {
-        public Object cast(Object o)
-        {
-            PEntry node = (PEntry) o;
+            PBibEntry node = (PBibEntry) o;
 
             if((node.parent() != null) &&
                 (node.parent() != ABibtex.this))

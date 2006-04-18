@@ -51,6 +51,8 @@ normal, inentry, assign, bracestring, qstring, remove;
 // ----------------------------------------------------------------------------
 Tokens
 
+    {normal} taskcomment = '%' [sp + ht]* 'TODO' input_character_nb* line_terminator;
+
     {inentry, assign, bracestring, remove} whitespace = (sp | ht | ff | line_terminator)+;
 
     {normal->inentry} estring = '@' ['S'+'s'] ['T'+'t'] ['R'+'r'] ['I'+'i'] ['N'+'n'] ['G'+'g'];
@@ -91,9 +93,20 @@ Ignored Tokens
 // ----------------------------------------------------------------------------
 Productions
 
+/*
 bibtex {-> bibtex}
 	= string_entry* entry*
 	{ -> New bibtex([string_entry.string_entry], [entry.entry])};
+*/
+
+bibtex {-> bibtex}
+	= bib_entry*
+	{-> New bibtex([bib_entry.bib_entry])};
+
+bib_entry {-> bib_entry} =
+	{bibstre} string_entry {-> New bib_entry.bibstre(string_entry.string_entry)}
+	| {bibe} entry {-> New bib_entry.bibe(entry.entry)}
+	| {bibtask} taskcomment {-> New bib_entry.bibtask(taskcomment)};
 
 // d'oh...BibTeX grammar...we could cheat a bit here, but Sable does apparently not make it possible
 // to map two different productions to the same AST node (which isn't needed in a WELL DESIGNED grammar
@@ -106,9 +119,9 @@ string_entry {-> string_entry}
 	{-> New string_entry.strparen(ckey, value)};
 
 entry {-> entry } = {entrybrace} entry_def l_brace [ckey]:identifier keyval_decl+ comma? r_brace
-	{-> New entry.entrybrace(entry_def.entry_def, ckey, [keyval_decl.keyval_decl])}
+	{-> New entry.entrybrace(entry_def.entry_def, ckey, [keyval_decl.keyval_decl], r_brace)}
 	| {entryparen} entry_def l_paren [ckey]:identifier keyval_decl+ comma? r_paren
-	{-> New entry.entryparen(entry_def.entry_def, ckey, [keyval_decl.keyval_decl])};
+	{-> New entry.entryparen(entry_def.entry_def, ckey, [keyval_decl.keyval_decl], r_paren)};
 
 entry_def {-> entry_def} = entry_name {-> New entry_def(entry_name)};
 
@@ -128,11 +141,18 @@ concat {-> concat} = sharp val_or_sid {->New concat(val_or_sid)};
 // ----------------------------------------------------------------------------
 Abstract Syntax Tree
 
-bibtex = string_entry* entry*;
+//bibtex = string_entry* entry*;
+
+bibtex = bib_entry*;
+
+bib_entry = {bibstre} string_entry
+		| {bibe} entry
+		| {bibtask} taskcomment;
 
 string_entry = {strbrace} identifier string_literal | {strparen} identifier string_literal;
 
-entry = {entrybrace} entry_def identifier keyval_decl+ | {entryparen} entry_def identifier keyval_decl+;
+entry = {entrybrace} entry_def identifier keyval_decl+ r_brace
+		| {entryparen} entry_def identifier keyval_decl+ r_paren;
 
 entry_def = entry_name;
 

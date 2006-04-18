@@ -13,6 +13,9 @@ public interface Analysis extends Switch
 
     void caseStart(Start node);
     void caseABibtex(ABibtex node);
+    void caseABibstreBibEntry(ABibstreBibEntry node);
+    void caseABibeBibEntry(ABibeBibEntry node);
+    void caseABibtaskBibEntry(ABibtaskBibEntry node);
     void caseAStrbraceStringEntry(AStrbraceStringEntry node);
     void caseAStrparenStringEntry(AStrparenStringEntry node);
     void caseAEntrybraceEntry(AEntrybraceEntry node);
@@ -25,6 +28,7 @@ public interface Analysis extends Switch
     void caseANumValOrSid(ANumValOrSid node);
     void caseAIdValOrSid(AIdValOrSid node);
 
+    void caseTTaskcomment(TTaskcomment node);
     void caseTWhitespace(TWhitespace node);
     void caseTEstring(TEstring node);
     void caseTScribeComment(TScribeComment node);

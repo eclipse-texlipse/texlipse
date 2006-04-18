@@ -73,6 +73,21 @@ public class AnalysisAdapter implements Analysis
         defaultCase(node);
     }
 
+    public void caseABibstreBibEntry(ABibstreBibEntry node)
+    {
+        defaultCase(node);
+    }
+
+    public void caseABibeBibEntry(ABibeBibEntry node)
+    {
+        defaultCase(node);
+    }
+
+    public void caseABibtaskBibEntry(ABibtaskBibEntry node)
+    {
+        defaultCase(node);
+    }
+
     public void caseAStrbraceStringEntry(AStrbraceStringEntry node)
     {
         defaultCase(node);
@@ -124,6 +139,11 @@ public class AnalysisAdapter implements Analysis
     }
 
     public void caseAIdValOrSid(AIdValOrSid node)
+    {
+        defaultCase(node);
+    }
+
+    public void caseTTaskcomment(TTaskcomment node)
     {
         defaultCase(node);
     }

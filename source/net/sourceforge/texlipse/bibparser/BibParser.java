@@ -41,7 +41,8 @@ public class BibParser {
     private Reader reader;
     
     private ArrayList errors;
-    private ArrayList warnings;
+    private List warnings;
+    private List tasks;
     private Start ast;
     
     /**
@@ -91,6 +92,7 @@ public class BibParser {
             ast.apply(er);
             er.finishParse();
             warnings = er.getWarnings();
+            tasks = er.getTasks();
             
             // FIXME
             // Search for files of the referenced material to be able to display
@@ -137,14 +139,21 @@ public class BibParser {
     /**
      * @return Returns the errors.
      */
-    public ArrayList getErrors() {    	
+    public ArrayList getErrors() {
         return errors;
     }    
     
     /**
      * @return Returns the warnings.
      */
-    public ArrayList getWarnings() {    	
+    public List getWarnings() {
         return warnings;
+    }
+    
+    /**
+     * @return Returns the tasks
+     */
+    public List getTasks() {
+        return tasks;
     }
 }

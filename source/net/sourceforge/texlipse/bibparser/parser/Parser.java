@@ -177,189 +177,183 @@ public class Parser
 			push(goTo(0), list);
 		    }
 		    break;
-                    case 2: /* reduce AAbibtex3Bibtex */
+                    case 2: /* reduce ABibstreBibEntry */
 		    {
 			ArrayList list = new2();
-			push(goTo(0), list);
+			push(goTo(1), list);
 		    }
 		    break;
-                    case 3: /* reduce AAbibtex4Bibtex */
+                    case 3: /* reduce ABibeBibEntry */
 		    {
 			ArrayList list = new3();
-			push(goTo(0), list);
+			push(goTo(1), list);
 		    }
 		    break;
-                    case 4: /* reduce AAstrbracestringentry1StringEntry */
+                    case 4: /* reduce ABibtaskBibEntry */
 		    {
 			ArrayList list = new4();
 			push(goTo(1), list);
 		    }
 		    break;
-                    case 5: /* reduce AAstrbracestringentry2StringEntry */
+                    case 5: /* reduce AAstrbracestringentry1StringEntry */
 		    {
 			ArrayList list = new5();
-			push(goTo(1), list);
+			push(goTo(2), list);
 		    }
 		    break;
-                    case 6: /* reduce AAstrbracestringentry3StringEntry */
+                    case 6: /* reduce AAstrbracestringentry2StringEntry */
 		    {
 			ArrayList list = new6();
-			push(goTo(1), list);
+			push(goTo(2), list);
 		    }
 		    break;
-                    case 7: /* reduce AAstrbracestringentry4StringEntry */
+                    case 7: /* reduce AAstrbracestringentry3StringEntry */
 		    {
 			ArrayList list = new7();
-			push(goTo(1), list);
+			push(goTo(2), list);
 		    }
 		    break;
-                    case 8: /* reduce AAstrparenstringentry1StringEntry */
+                    case 8: /* reduce AAstrbracestringentry4StringEntry */
 		    {
 			ArrayList list = new8();
-			push(goTo(1), list);
+			push(goTo(2), list);
 		    }
 		    break;
-                    case 9: /* reduce AAstrparenstringentry2StringEntry */
+                    case 9: /* reduce AAstrparenstringentry1StringEntry */
 		    {
 			ArrayList list = new9();
-			push(goTo(1), list);
+			push(goTo(2), list);
 		    }
 		    break;
-                    case 10: /* reduce AAstrparenstringentry3StringEntry */
+                    case 10: /* reduce AAstrparenstringentry2StringEntry */
 		    {
 			ArrayList list = new10();
-			push(goTo(1), list);
+			push(goTo(2), list);
 		    }
 		    break;
-                    case 11: /* reduce AAstrparenstringentry4StringEntry */
+                    case 11: /* reduce AAstrparenstringentry3StringEntry */
 		    {
 			ArrayList list = new11();
-			push(goTo(1), list);
+			push(goTo(2), list);
 		    }
 		    break;
-                    case 12: /* reduce AAentrybraceentry1Entry */
+                    case 12: /* reduce AAstrparenstringentry4StringEntry */
 		    {
 			ArrayList list = new12();
 			push(goTo(2), list);
 		    }
 		    break;
-                    case 13: /* reduce AAentrybraceentry2Entry */
+                    case 13: /* reduce AAentrybraceentry1Entry */
 		    {
 			ArrayList list = new13();
-			push(goTo(2), list);
+			push(goTo(3), list);
 		    }
 		    break;
-                    case 14: /* reduce AAentryparenentry1Entry */
+                    case 14: /* reduce AAentrybraceentry2Entry */
 		    {
 			ArrayList list = new14();
-			push(goTo(2), list);
+			push(goTo(3), list);
 		    }
 		    break;
-                    case 15: /* reduce AAentryparenentry2Entry */
+                    case 15: /* reduce AAentryparenentry1Entry */
 		    {
 			ArrayList list = new15();
-			push(goTo(2), list);
+			push(goTo(3), list);
 		    }
 		    break;
-                    case 16: /* reduce AEntryDef */
+                    case 16: /* reduce AAentryparenentry2Entry */
 		    {
 			ArrayList list = new16();
 			push(goTo(3), list);
 		    }
 		    break;
-                    case 17: /* reduce AAkeyvaldecl1KeyvalDecl */
+                    case 17: /* reduce AEntryDef */
 		    {
 			ArrayList list = new17();
 			push(goTo(4), list);
 		    }
 		    break;
-                    case 18: /* reduce AAkeyvaldecl2KeyvalDecl */
+                    case 18: /* reduce AAkeyvaldecl1KeyvalDecl */
 		    {
 			ArrayList list = new18();
-			push(goTo(4), list);
+			push(goTo(5), list);
 		    }
 		    break;
-                    case 19: /* reduce AValueBValOrSid */
+                    case 19: /* reduce AAkeyvaldecl2KeyvalDecl */
 		    {
 			ArrayList list = new19();
 			push(goTo(5), list);
 		    }
 		    break;
-                    case 20: /* reduce AAvalueqvalorsid1ValOrSid */
+                    case 20: /* reduce AValueBValOrSid */
 		    {
 			ArrayList list = new20();
-			push(goTo(5), list);
+			push(goTo(6), list);
 		    }
 		    break;
-                    case 21: /* reduce AAvalueqvalorsid2ValOrSid */
+                    case 21: /* reduce AAvalueqvalorsid1ValOrSid */
 		    {
 			ArrayList list = new21();
-			push(goTo(5), list);
+			push(goTo(6), list);
 		    }
 		    break;
-                    case 22: /* reduce ANumValOrSid */
+                    case 22: /* reduce AAvalueqvalorsid2ValOrSid */
 		    {
 			ArrayList list = new22();
-			push(goTo(5), list);
+			push(goTo(6), list);
 		    }
 		    break;
-                    case 23: /* reduce AIdValOrSid */
+                    case 23: /* reduce ANumValOrSid */
 		    {
 			ArrayList list = new23();
-			push(goTo(5), list);
+			push(goTo(6), list);
 		    }
 		    break;
-                    case 24: /* reduce AConcat */
+                    case 24: /* reduce AIdValOrSid */
 		    {
 			ArrayList list = new24();
 			push(goTo(6), list);
 		    }
 		    break;
-                    case 25: /* reduce ATerminal$StringEntry */
+                    case 25: /* reduce AConcat */
 		    {
 			ArrayList list = new25();
 			push(goTo(7), list);
 		    }
 		    break;
-                    case 26: /* reduce ANonTerminal$StringEntry */
+                    case 26: /* reduce ATerminal$BibEntry */
 		    {
 			ArrayList list = new26();
-			push(goTo(7), list);
+			push(goTo(8), list);
 		    }
 		    break;
-                    case 27: /* reduce ATerminal$Entry */
+                    case 27: /* reduce ANonTerminal$BibEntry */
 		    {
 			ArrayList list = new27();
 			push(goTo(8), list);
 		    }
 		    break;
-                    case 28: /* reduce ANonTerminal$Entry */
+                    case 28: /* reduce ATerminal$KeyvalDecl */
 		    {
 			ArrayList list = new28();
-			push(goTo(8), list);
+			push(goTo(9), list);
 		    }
 		    break;
-                    case 29: /* reduce ATerminal$KeyvalDecl */
+                    case 29: /* reduce ANonTerminal$KeyvalDecl */
 		    {
 			ArrayList list = new29();
 			push(goTo(9), list);
 		    }
 		    break;
-                    case 30: /* reduce ANonTerminal$KeyvalDecl */
+                    case 30: /* reduce ATerminal$Concat */
 		    {
 			ArrayList list = new30();
-			push(goTo(9), list);
-		    }
-		    break;
-                    case 31: /* reduce ATerminal$Concat */
-		    {
-			ArrayList list = new31();
 			push(goTo(10), list);
 		    }
 		    break;
-                    case 32: /* reduce ANonTerminal$Concat */
+                    case 31: /* reduce ANonTerminal$Concat */
 		    {
-			ArrayList list = new32();
+			ArrayList list = new31();
 			push(goTo(10), list);
 		    }
 		    break;
@@ -389,13 +383,10 @@ public class Parser
         PBibtex pbibtexNode1;
         {
         TypedLinkedList listNode2 = new TypedLinkedList();
-        TypedLinkedList listNode3 = new TypedLinkedList();
-        {
-        }
         {
         }
 
-        pbibtexNode1 = new ABibtex(listNode2, listNode3);
+        pbibtexNode1 = new ABibtex(listNode2);
         }
 	nodeList.add(pbibtexNode1);
         return nodeList;
@@ -411,7 +402,6 @@ public class Parser
         PBibtex pbibtexNode1;
         {
         TypedLinkedList listNode3 = new TypedLinkedList();
-        TypedLinkedList listNode4 = new TypedLinkedList();
         {
         TypedLinkedList listNode2 = new TypedLinkedList();
         listNode2 = (TypedLinkedList)nodeArrayList1.get(0);
@@ -420,10 +410,8 @@ public class Parser
 	  listNode3.addAll(listNode2);
 	}
         }
-        {
-        }
 
-        pbibtexNode1 = new ABibtex(listNode3, listNode4);
+        pbibtexNode1 = new ABibtex(listNode3);
         }
 	nodeList.add(pbibtexNode1);
         return nodeList;
@@ -431,70 +419,61 @@ public class Parser
 
 
 
-    ArrayList new2() /* reduce AAbibtex3Bibtex */
+    ArrayList new2() /* reduce ABibstreBibEntry */
     {
         ArrayList nodeList = new ArrayList();
 
         ArrayList nodeArrayList1 = (ArrayList) pop();
-        PBibtex pbibtexNode1;
+        PBibEntry pbibentryNode1;
         {
-        TypedLinkedList listNode2 = new TypedLinkedList();
-        TypedLinkedList listNode4 = new TypedLinkedList();
-        {
-        }
-        {
-        TypedLinkedList listNode3 = new TypedLinkedList();
-        listNode3 = (TypedLinkedList)nodeArrayList1.get(0);
-	if(listNode3 != null)
-	{
-	  listNode4.addAll(listNode3);
-	}
-        }
+        PStringEntry pstringentryNode2;
+        pstringentryNode2 = (PStringEntry)nodeArrayList1.get(0);
 
-        pbibtexNode1 = new ABibtex(listNode2, listNode4);
+        pbibentryNode1 = new ABibstreBibEntry(pstringentryNode2);
         }
-	nodeList.add(pbibtexNode1);
+	nodeList.add(pbibentryNode1);
         return nodeList;
     }
 
 
 
-    ArrayList new3() /* reduce AAbibtex4Bibtex */
+    ArrayList new3() /* reduce ABibeBibEntry */
     {
         ArrayList nodeList = new ArrayList();
 
-        ArrayList nodeArrayList2 = (ArrayList) pop();
         ArrayList nodeArrayList1 = (ArrayList) pop();
-        PBibtex pbibtexNode1;
+        PBibEntry pbibentryNode1;
         {
-        TypedLinkedList listNode3 = new TypedLinkedList();
-        TypedLinkedList listNode5 = new TypedLinkedList();
-        {
-        TypedLinkedList listNode2 = new TypedLinkedList();
-        listNode2 = (TypedLinkedList)nodeArrayList1.get(0);
-	if(listNode2 != null)
-	{
-	  listNode3.addAll(listNode2);
-	}
-        }
-        {
-        TypedLinkedList listNode4 = new TypedLinkedList();
-        listNode4 = (TypedLinkedList)nodeArrayList2.get(0);
-	if(listNode4 != null)
-	{
-	  listNode5.addAll(listNode4);
-	}
-        }
+        PEntry pentryNode2;
+        pentryNode2 = (PEntry)nodeArrayList1.get(0);
 
-        pbibtexNode1 = new ABibtex(listNode3, listNode5);
+        pbibentryNode1 = new ABibeBibEntry(pentryNode2);
         }
-	nodeList.add(pbibtexNode1);
+	nodeList.add(pbibentryNode1);
         return nodeList;
     }
 
 
 
-    ArrayList new4() /* reduce AAstrbracestringentry1StringEntry */
+    ArrayList new4() /* reduce ABibtaskBibEntry */
+    {
+        ArrayList nodeList = new ArrayList();
+
+        ArrayList nodeArrayList1 = (ArrayList) pop();
+        PBibEntry pbibentryNode1;
+        {
+        TTaskcomment ttaskcommentNode2;
+        ttaskcommentNode2 = (TTaskcomment)nodeArrayList1.get(0);
+
+        pbibentryNode1 = new ABibtaskBibEntry(ttaskcommentNode2);
+        }
+	nodeList.add(pbibentryNode1);
+        return nodeList;
+    }
+
+
+
+    ArrayList new5() /* reduce AAstrbracestringentry1StringEntry */
     {
         ArrayList nodeList = new ArrayList();
 
@@ -519,7 +498,7 @@ public class Parser
 
 
 
-    ArrayList new5() /* reduce AAstrbracestringentry2StringEntry */
+    ArrayList new6() /* reduce AAstrbracestringentry2StringEntry */
     {
         ArrayList nodeList = new ArrayList();
 
@@ -545,7 +524,7 @@ public class Parser
 
 
 
-    ArrayList new6() /* reduce AAstrbracestringentry3StringEntry */
+    ArrayList new7() /* reduce AAstrbracestringentry3StringEntry */
     {
         ArrayList nodeList = new ArrayList();
 
@@ -571,7 +550,7 @@ public class Parser
 
 
 
-    ArrayList new7() /* reduce AAstrbracestringentry4StringEntry */
+    ArrayList new8() /* reduce AAstrbracestringentry4StringEntry */
     {
         ArrayList nodeList = new ArrayList();
 
@@ -598,7 +577,7 @@ public class Parser
 
 
 
-    ArrayList new8() /* reduce AAstrparenstringentry1StringEntry */
+    ArrayList new9() /* reduce AAstrparenstringentry1StringEntry */
     {
         ArrayList nodeList = new ArrayList();
 
@@ -623,7 +602,7 @@ public class Parser
 
 
 
-    ArrayList new9() /* reduce AAstrparenstringentry2StringEntry */
+    ArrayList new10() /* reduce AAstrparenstringentry2StringEntry */
     {
         ArrayList nodeList = new ArrayList();
 
@@ -649,7 +628,7 @@ public class Parser
 
 
 
-    ArrayList new10() /* reduce AAstrparenstringentry3StringEntry */
+    ArrayList new11() /* reduce AAstrparenstringentry3StringEntry */
     {
         ArrayList nodeList = new ArrayList();
 
@@ -675,7 +654,7 @@ public class Parser
 
 
 
-    ArrayList new11() /* reduce AAstrparenstringentry4StringEntry */
+    ArrayList new12() /* reduce AAstrparenstringentry4StringEntry */
     {
         ArrayList nodeList = new ArrayList();
 
@@ -702,7 +681,7 @@ public class Parser
 
 
 
-    ArrayList new12() /* reduce AAentrybraceentry1Entry */
+    ArrayList new13() /* reduce AAentrybraceentry1Entry */
     {
         ArrayList nodeList = new ArrayList();
 
@@ -716,6 +695,7 @@ public class Parser
         PEntryDef pentrydefNode2;
         TIdentifier tidentifierNode3;
         TypedLinkedList listNode5 = new TypedLinkedList();
+        TRBrace trbraceNode6;
         pentrydefNode2 = (PEntryDef)nodeArrayList1.get(0);
         tidentifierNode3 = (TIdentifier)nodeArrayList3.get(0);
         {
@@ -726,8 +706,9 @@ public class Parser
 	  listNode5.addAll(listNode4);
 	}
         }
+        trbraceNode6 = (TRBrace)nodeArrayList5.get(0);
 
-        pentryNode1 = new AEntrybraceEntry(pentrydefNode2, tidentifierNode3, listNode5);
+        pentryNode1 = new AEntrybraceEntry(pentrydefNode2, tidentifierNode3, listNode5, trbraceNode6);
         }
 	nodeList.add(pentryNode1);
         return nodeList;
@@ -735,74 +716,7 @@ public class Parser
 
 
 
-    ArrayList new13() /* reduce AAentrybraceentry2Entry */
-    {
-        ArrayList nodeList = new ArrayList();
-
-        ArrayList nodeArrayList6 = (ArrayList) pop();
-        ArrayList nodeArrayList5 = (ArrayList) pop();
-        ArrayList nodeArrayList4 = (ArrayList) pop();
-        ArrayList nodeArrayList3 = (ArrayList) pop();
-        ArrayList nodeArrayList2 = (ArrayList) pop();
-        ArrayList nodeArrayList1 = (ArrayList) pop();
-        PEntry pentryNode1;
-        {
-        PEntryDef pentrydefNode2;
-        TIdentifier tidentifierNode3;
-        TypedLinkedList listNode5 = new TypedLinkedList();
-        pentrydefNode2 = (PEntryDef)nodeArrayList1.get(0);
-        tidentifierNode3 = (TIdentifier)nodeArrayList3.get(0);
-        {
-        TypedLinkedList listNode4 = new TypedLinkedList();
-        listNode4 = (TypedLinkedList)nodeArrayList4.get(0);
-	if(listNode4 != null)
-	{
-	  listNode5.addAll(listNode4);
-	}
-        }
-
-        pentryNode1 = new AEntrybraceEntry(pentrydefNode2, tidentifierNode3, listNode5);
-        }
-	nodeList.add(pentryNode1);
-        return nodeList;
-    }
-
-
-
-    ArrayList new14() /* reduce AAentryparenentry1Entry */
-    {
-        ArrayList nodeList = new ArrayList();
-
-        ArrayList nodeArrayList5 = (ArrayList) pop();
-        ArrayList nodeArrayList4 = (ArrayList) pop();
-        ArrayList nodeArrayList3 = (ArrayList) pop();
-        ArrayList nodeArrayList2 = (ArrayList) pop();
-        ArrayList nodeArrayList1 = (ArrayList) pop();
-        PEntry pentryNode1;
-        {
-        PEntryDef pentrydefNode2;
-        TIdentifier tidentifierNode3;
-        TypedLinkedList listNode5 = new TypedLinkedList();
-        pentrydefNode2 = (PEntryDef)nodeArrayList1.get(0);
-        tidentifierNode3 = (TIdentifier)nodeArrayList3.get(0);
-        {
-        TypedLinkedList listNode4 = new TypedLinkedList();
-        listNode4 = (TypedLinkedList)nodeArrayList4.get(0);
-	if(listNode4 != null)
-	{
-	  listNode5.addAll(listNode4);
-	}
-        }
-
-        pentryNode1 = new AEntryparenEntry(pentrydefNode2, tidentifierNode3, listNode5);
-        }
-	nodeList.add(pentryNode1);
-        return nodeList;
-    }
-
-
-
-    ArrayList new15() /* reduce AAentryparenentry2Entry */
+    ArrayList new14() /* reduce AAentrybraceentry2Entry */
     {
         ArrayList nodeList = new ArrayList();
 
@@ -817,6 +731,7 @@ public class Parser
         PEntryDef pentrydefNode2;
         TIdentifier tidentifierNode3;
         TypedLinkedList listNode5 = new TypedLinkedList();
+        TRBrace trbraceNode6;
         pentrydefNode2 = (PEntryDef)nodeArrayList1.get(0);
         tidentifierNode3 = (TIdentifier)nodeArrayList3.get(0);
         {
@@ -827,8 +742,9 @@ public class Parser
 	  listNode5.addAll(listNode4);
 	}
         }
+        trbraceNode6 = (TRBrace)nodeArrayList6.get(0);
 
-        pentryNode1 = new AEntryparenEntry(pentrydefNode2, tidentifierNode3, listNode5);
+        pentryNode1 = new AEntrybraceEntry(pentrydefNode2, tidentifierNode3, listNode5, trbraceNode6);
         }
 	nodeList.add(pentryNode1);
         return nodeList;
@@ -836,7 +752,78 @@ public class Parser
 
 
 
-    ArrayList new16() /* reduce AEntryDef */
+    ArrayList new15() /* reduce AAentryparenentry1Entry */
+    {
+        ArrayList nodeList = new ArrayList();
+
+        ArrayList nodeArrayList5 = (ArrayList) pop();
+        ArrayList nodeArrayList4 = (ArrayList) pop();
+        ArrayList nodeArrayList3 = (ArrayList) pop();
+        ArrayList nodeArrayList2 = (ArrayList) pop();
+        ArrayList nodeArrayList1 = (ArrayList) pop();
+        PEntry pentryNode1;
+        {
+        PEntryDef pentrydefNode2;
+        TIdentifier tidentifierNode3;
+        TypedLinkedList listNode5 = new TypedLinkedList();
+        TRParen trparenNode6;
+        pentrydefNode2 = (PEntryDef)nodeArrayList1.get(0);
+        tidentifierNode3 = (TIdentifier)nodeArrayList3.get(0);
+        {
+        TypedLinkedList listNode4 = new TypedLinkedList();
+        listNode4 = (TypedLinkedList)nodeArrayList4.get(0);
+	if(listNode4 != null)
+	{
+	  listNode5.addAll(listNode4);
+	}
+        }
+        trparenNode6 = (TRParen)nodeArrayList5.get(0);
+
+        pentryNode1 = new AEntryparenEntry(pentrydefNode2, tidentifierNode3, listNode5, trparenNode6);
+        }
+	nodeList.add(pentryNode1);
+        return nodeList;
+    }
+
+
+
+    ArrayList new16() /* reduce AAentryparenentry2Entry */
+    {
+        ArrayList nodeList = new ArrayList();
+
+        ArrayList nodeArrayList6 = (ArrayList) pop();
+        ArrayList nodeArrayList5 = (ArrayList) pop();
+        ArrayList nodeArrayList4 = (ArrayList) pop();
+        ArrayList nodeArrayList3 = (ArrayList) pop();
+        ArrayList nodeArrayList2 = (ArrayList) pop();
+        ArrayList nodeArrayList1 = (ArrayList) pop();
+        PEntry pentryNode1;
+        {
+        PEntryDef pentrydefNode2;
+        TIdentifier tidentifierNode3;
+        TypedLinkedList listNode5 = new TypedLinkedList();
+        TRParen trparenNode6;
+        pentrydefNode2 = (PEntryDef)nodeArrayList1.get(0);
+        tidentifierNode3 = (TIdentifier)nodeArrayList3.get(0);
+        {
+        TypedLinkedList listNode4 = new TypedLinkedList();
+        listNode4 = (TypedLinkedList)nodeArrayList4.get(0);
+	if(listNode4 != null)
+	{
+	  listNode5.addAll(listNode4);
+	}
+        }
+        trparenNode6 = (TRParen)nodeArrayList6.get(0);
+
+        pentryNode1 = new AEntryparenEntry(pentrydefNode2, tidentifierNode3, listNode5, trparenNode6);
+        }
+	nodeList.add(pentryNode1);
+        return nodeList;
+    }
+
+
+
+    ArrayList new17() /* reduce AEntryDef */
     {
         ArrayList nodeList = new ArrayList();
 
@@ -854,7 +841,7 @@ public class Parser
 
 
 
-    ArrayList new17() /* reduce AAkeyvaldecl1KeyvalDecl */
+    ArrayList new18() /* reduce AAkeyvaldecl1KeyvalDecl */
     {
         ArrayList nodeList = new ArrayList();
 
@@ -880,7 +867,7 @@ public class Parser
 
 
 
-    ArrayList new18() /* reduce AAkeyvaldecl2KeyvalDecl */
+    ArrayList new19() /* reduce AAkeyvaldecl2KeyvalDecl */
     {
         ArrayList nodeList = new ArrayList();
 
@@ -913,7 +900,7 @@ public class Parser
 
 
 
-    ArrayList new19() /* reduce AValueBValOrSid */
+    ArrayList new20() /* reduce AValueBValOrSid */
     {
         ArrayList nodeList = new ArrayList();
 
@@ -931,7 +918,7 @@ public class Parser
 
 
 
-    ArrayList new20() /* reduce AAvalueqvalorsid1ValOrSid */
+    ArrayList new21() /* reduce AAvalueqvalorsid1ValOrSid */
     {
         ArrayList nodeList = new ArrayList();
 
@@ -949,7 +936,7 @@ public class Parser
 
 
 
-    ArrayList new21() /* reduce AAvalueqvalorsid2ValOrSid */
+    ArrayList new22() /* reduce AAvalueqvalorsid2ValOrSid */
     {
         ArrayList nodeList = new ArrayList();
 
@@ -969,7 +956,7 @@ public class Parser
 
 
 
-    ArrayList new22() /* reduce ANumValOrSid */
+    ArrayList new23() /* reduce ANumValOrSid */
     {
         ArrayList nodeList = new ArrayList();
 
@@ -987,7 +974,7 @@ public class Parser
 
 
 
-    ArrayList new23() /* reduce AIdValOrSid */
+    ArrayList new24() /* reduce AIdValOrSid */
     {
         ArrayList nodeList = new ArrayList();
 
@@ -1005,7 +992,7 @@ public class Parser
 
 
 
-    ArrayList new24() /* reduce AConcat */
+    ArrayList new25() /* reduce AConcat */
     {
         ArrayList nodeList = new ArrayList();
 
@@ -1024,18 +1011,18 @@ public class Parser
 
 
 
-    ArrayList new25() /* reduce ATerminal$StringEntry */
+    ArrayList new26() /* reduce ATerminal$BibEntry */
     {
         ArrayList nodeList = new ArrayList();
 
         ArrayList nodeArrayList1 = (ArrayList) pop();
         TypedLinkedList listNode2 = new TypedLinkedList();
         {
-        PStringEntry pstringentryNode1;
-        pstringentryNode1 = (PStringEntry)nodeArrayList1.get(0);
-	if(pstringentryNode1 != null)
+        PBibEntry pbibentryNode1;
+        pbibentryNode1 = (PBibEntry)nodeArrayList1.get(0);
+	if(pbibentryNode1 != null)
 	{
-	  listNode2.add(pstringentryNode1);
+	  listNode2.add(pbibentryNode1);
 	}
         }
 	nodeList.add(listNode2);
@@ -1044,7 +1031,7 @@ public class Parser
 
 
 
-    ArrayList new26() /* reduce ANonTerminal$StringEntry */
+    ArrayList new27() /* reduce ANonTerminal$BibEntry */
     {
         ArrayList nodeList = new ArrayList();
 
@@ -1053,16 +1040,16 @@ public class Parser
         TypedLinkedList listNode3 = new TypedLinkedList();
         {
         TypedLinkedList listNode1 = new TypedLinkedList();
-        PStringEntry pstringentryNode2;
+        PBibEntry pbibentryNode2;
         listNode1 = (TypedLinkedList)nodeArrayList1.get(0);
-        pstringentryNode2 = (PStringEntry)nodeArrayList2.get(0);
+        pbibentryNode2 = (PBibEntry)nodeArrayList2.get(0);
 	if(listNode1 != null)
 	{
 	  listNode3.addAll(listNode1);
 	}
-	if(pstringentryNode2 != null)
+	if(pbibentryNode2 != null)
 	{
-	  listNode3.add(pstringentryNode2);
+	  listNode3.add(pbibentryNode2);
 	}
         }
 	nodeList.add(listNode3);
@@ -1071,54 +1058,7 @@ public class Parser
 
 
 
-    ArrayList new27() /* reduce ATerminal$Entry */
-    {
-        ArrayList nodeList = new ArrayList();
-
-        ArrayList nodeArrayList1 = (ArrayList) pop();
-        TypedLinkedList listNode2 = new TypedLinkedList();
-        {
-        PEntry pentryNode1;
-        pentryNode1 = (PEntry)nodeArrayList1.get(0);
-	if(pentryNode1 != null)
-	{
-	  listNode2.add(pentryNode1);
-	}
-        }
-	nodeList.add(listNode2);
-        return nodeList;
-    }
-
-
-
-    ArrayList new28() /* reduce ANonTerminal$Entry */
-    {
-        ArrayList nodeList = new ArrayList();
-
-        ArrayList nodeArrayList2 = (ArrayList) pop();
-        ArrayList nodeArrayList1 = (ArrayList) pop();
-        TypedLinkedList listNode3 = new TypedLinkedList();
-        {
-        TypedLinkedList listNode1 = new TypedLinkedList();
-        PEntry pentryNode2;
-        listNode1 = (TypedLinkedList)nodeArrayList1.get(0);
-        pentryNode2 = (PEntry)nodeArrayList2.get(0);
-	if(listNode1 != null)
-	{
-	  listNode3.addAll(listNode1);
-	}
-	if(pentryNode2 != null)
-	{
-	  listNode3.add(pentryNode2);
-	}
-        }
-	nodeList.add(listNode3);
-        return nodeList;
-    }
-
-
-
-    ArrayList new29() /* reduce ATerminal$KeyvalDecl */
+    ArrayList new28() /* reduce ATerminal$KeyvalDecl */
     {
         ArrayList nodeList = new ArrayList();
 
@@ -1138,7 +1078,7 @@ public class Parser
 
 
 
-    ArrayList new30() /* reduce ANonTerminal$KeyvalDecl */
+    ArrayList new29() /* reduce ANonTerminal$KeyvalDecl */
     {
         ArrayList nodeList = new ArrayList();
 
@@ -1165,7 +1105,7 @@ public class Parser
 
 
 
-    ArrayList new31() /* reduce ATerminal$Concat */
+    ArrayList new30() /* reduce ATerminal$Concat */
     {
         ArrayList nodeList = new ArrayList();
 
@@ -1185,7 +1125,7 @@ public class Parser
 
 
 
-    ArrayList new32() /* reduce ANonTerminal$Concat */
+    ArrayList new31() /* reduce ANonTerminal$Concat */
     {
         ArrayList nodeList = new ArrayList();
 
@@ -1214,93 +1154,91 @@ public class Parser
 
     private static int[][][] actionTable;
 /*      {
-			{{-1, REDUCE, 0}, {0, SHIFT, 1}, {3, SHIFT, 2}, },
-			{{-1, ERROR, 1}, {4, SHIFT, 9}, {7, SHIFT, 10}, },
-			{{-1, REDUCE, 16}, },
-			{{-1, ERROR, 3}, {16, ACCEPT, -1}, },
-			{{-1, REDUCE, 25}, },
-			{{-1, REDUCE, 27}, },
-			{{-1, ERROR, 6}, {4, SHIFT, 11}, {7, SHIFT, 12}, },
-			{{-1, REDUCE, 1}, {0, SHIFT, 1}, {3, SHIFT, 2}, },
-			{{-1, REDUCE, 2}, {3, SHIFT, 2}, },
-			{{-1, ERROR, 9}, {13, SHIFT, 16}, },
-			{{-1, ERROR, 10}, {13, SHIFT, 17}, },
-			{{-1, ERROR, 11}, {13, SHIFT, 18}, },
-			{{-1, ERROR, 12}, {13, SHIFT, 19}, },
-			{{-1, REDUCE, 26}, },
-			{{-1, REDUCE, 3}, {3, SHIFT, 2}, },
-			{{-1, REDUCE, 28}, },
-			{{-1, ERROR, 16}, {10, SHIFT, 20}, },
-			{{-1, ERROR, 17}, {10, SHIFT, 21}, },
-			{{-1, ERROR, 18}, {9, SHIFT, 22}, },
-			{{-1, ERROR, 19}, {9, SHIFT, 22}, },
-			{{-1, ERROR, 20}, {14, SHIFT, 26}, {15, SHIFT, 27}, },
-			{{-1, ERROR, 21}, {14, SHIFT, 28}, {15, SHIFT, 29}, },
-			{{-1, ERROR, 22}, {13, SHIFT, 30}, },
-			{{-1, REDUCE, 29}, },
-			{{-1, ERROR, 24}, {5, SHIFT, 31}, {9, SHIFT, 32}, },
-			{{-1, ERROR, 25}, {8, SHIFT, 34}, {9, SHIFT, 35}, },
-			{{-1, ERROR, 26}, {15, SHIFT, 36}, },
-			{{-1, ERROR, 27}, {5, SHIFT, 37}, {14, SHIFT, 38}, },
-			{{-1, ERROR, 28}, {15, SHIFT, 39}, },
-			{{-1, ERROR, 29}, {8, SHIFT, 40}, {14, SHIFT, 41}, },
-			{{-1, ERROR, 30}, {10, SHIFT, 42}, },
-			{{-1, REDUCE, 12}, },
-			{{-1, ERROR, 32}, {5, SHIFT, 43}, {13, SHIFT, 30}, },
-			{{-1, REDUCE, 30}, },
-			{{-1, REDUCE, 14}, },
-			{{-1, ERROR, 35}, {8, SHIFT, 44}, {13, SHIFT, 30}, },
-			{{-1, ERROR, 36}, {5, SHIFT, 45}, {14, SHIFT, 46}, },
+			{{-1, REDUCE, 0}, {0, SHIFT, 1}, {1, SHIFT, 2}, {4, SHIFT, 3}, },
 			{{-1, REDUCE, 4}, },
-			{{-1, ERROR, 38}, {5, SHIFT, 47}, },
-			{{-1, ERROR, 39}, {8, SHIFT, 48}, {14, SHIFT, 49}, },
-			{{-1, REDUCE, 8}, },
-			{{-1, ERROR, 41}, {8, SHIFT, 50}, },
-			{{-1, ERROR, 42}, {12, SHIFT, 51}, {13, SHIFT, 52}, {14, SHIFT, 53}, {15, SHIFT, 54}, },
+			{{-1, ERROR, 2}, {5, SHIFT, 10}, {8, SHIFT, 11}, },
+			{{-1, REDUCE, 17}, },
+			{{-1, ERROR, 4}, {17, ACCEPT, -1}, },
+			{{-1, REDUCE, 26}, },
+			{{-1, REDUCE, 2}, },
+			{{-1, REDUCE, 3}, },
+			{{-1, ERROR, 8}, {5, SHIFT, 12}, {8, SHIFT, 13}, },
+			{{-1, REDUCE, 1}, {0, SHIFT, 1}, {1, SHIFT, 2}, {4, SHIFT, 3}, },
+			{{-1, ERROR, 10}, {14, SHIFT, 15}, },
+			{{-1, ERROR, 11}, {14, SHIFT, 16}, },
+			{{-1, ERROR, 12}, {14, SHIFT, 17}, },
+			{{-1, ERROR, 13}, {14, SHIFT, 18}, },
+			{{-1, REDUCE, 27}, },
+			{{-1, ERROR, 15}, {11, SHIFT, 19}, },
+			{{-1, ERROR, 16}, {11, SHIFT, 20}, },
+			{{-1, ERROR, 17}, {10, SHIFT, 21}, },
+			{{-1, ERROR, 18}, {10, SHIFT, 21}, },
+			{{-1, ERROR, 19}, {15, SHIFT, 25}, {16, SHIFT, 26}, },
+			{{-1, ERROR, 20}, {15, SHIFT, 27}, {16, SHIFT, 28}, },
+			{{-1, ERROR, 21}, {14, SHIFT, 29}, },
+			{{-1, REDUCE, 28}, },
+			{{-1, ERROR, 23}, {6, SHIFT, 30}, {10, SHIFT, 31}, },
+			{{-1, ERROR, 24}, {9, SHIFT, 33}, {10, SHIFT, 34}, },
+			{{-1, ERROR, 25}, {16, SHIFT, 35}, },
+			{{-1, ERROR, 26}, {6, SHIFT, 36}, {15, SHIFT, 37}, },
+			{{-1, ERROR, 27}, {16, SHIFT, 38}, },
+			{{-1, ERROR, 28}, {9, SHIFT, 39}, {15, SHIFT, 40}, },
+			{{-1, ERROR, 29}, {11, SHIFT, 41}, },
 			{{-1, REDUCE, 13}, },
+			{{-1, ERROR, 31}, {6, SHIFT, 42}, {14, SHIFT, 29}, },
+			{{-1, REDUCE, 29}, },
 			{{-1, REDUCE, 15}, },
+			{{-1, ERROR, 34}, {9, SHIFT, 43}, {14, SHIFT, 29}, },
+			{{-1, ERROR, 35}, {6, SHIFT, 44}, {15, SHIFT, 45}, },
 			{{-1, REDUCE, 5}, },
-			{{-1, ERROR, 46}, {5, SHIFT, 56}, },
-			{{-1, REDUCE, 6}, },
+			{{-1, ERROR, 37}, {6, SHIFT, 46}, },
+			{{-1, ERROR, 38}, {9, SHIFT, 47}, {15, SHIFT, 48}, },
 			{{-1, REDUCE, 9}, },
-			{{-1, ERROR, 49}, {8, SHIFT, 57}, },
-			{{-1, REDUCE, 10}, },
-			{{-1, REDUCE, 22}, },
-			{{-1, REDUCE, 23}, },
-			{{-1, ERROR, 53}, {14, SHIFT, 58}, {15, SHIFT, 59}, },
-			{{-1, REDUCE, 19}, },
-			{{-1, REDUCE, 17}, {11, SHIFT, 60}, },
+			{{-1, ERROR, 40}, {9, SHIFT, 49}, },
+			{{-1, ERROR, 41}, {13, SHIFT, 50}, {14, SHIFT, 51}, {15, SHIFT, 52}, {16, SHIFT, 53}, },
+			{{-1, REDUCE, 14}, },
+			{{-1, REDUCE, 16}, },
+			{{-1, REDUCE, 6}, },
+			{{-1, ERROR, 45}, {6, SHIFT, 55}, },
 			{{-1, REDUCE, 7}, },
+			{{-1, REDUCE, 10}, },
+			{{-1, ERROR, 48}, {9, SHIFT, 56}, },
 			{{-1, REDUCE, 11}, },
-			{{-1, REDUCE, 20}, },
-			{{-1, ERROR, 59}, {14, SHIFT, 63}, },
-			{{-1, ERROR, 60}, {12, SHIFT, 51}, {13, SHIFT, 52}, {14, SHIFT, 53}, {15, SHIFT, 54}, },
-			{{-1, REDUCE, 31}, },
-			{{-1, REDUCE, 18}, {11, SHIFT, 60}, },
-			{{-1, REDUCE, 21}, },
+			{{-1, REDUCE, 23}, },
 			{{-1, REDUCE, 24}, },
-			{{-1, REDUCE, 32}, },
+			{{-1, ERROR, 52}, {15, SHIFT, 57}, {16, SHIFT, 58}, },
+			{{-1, REDUCE, 20}, },
+			{{-1, REDUCE, 18}, {12, SHIFT, 59}, },
+			{{-1, REDUCE, 8}, },
+			{{-1, REDUCE, 12}, },
+			{{-1, REDUCE, 21}, },
+			{{-1, ERROR, 58}, {15, SHIFT, 62}, },
+			{{-1, ERROR, 59}, {13, SHIFT, 50}, {14, SHIFT, 51}, {15, SHIFT, 52}, {16, SHIFT, 53}, },
+			{{-1, REDUCE, 30}, },
+			{{-1, REDUCE, 19}, {12, SHIFT, 59}, },
+			{{-1, REDUCE, 22}, },
+			{{-1, REDUCE, 25}, },
+			{{-1, REDUCE, 31}, },
         };*/
     private static int[][][] gotoTable;
 /*      {
-			{{-1, 3}, },
-			{{-1, 4}, {7, 13}, },
-			{{-1, 5}, {8, 15}, {14, 15}, },
+			{{-1, 4}, },
+			{{-1, 5}, {9, 14}, },
 			{{-1, 6}, },
-			{{-1, 23}, {24, 33}, {25, 33}, },
-			{{-1, 55}, {60, 64}, },
-			{{-1, 61}, {62, 65}, },
 			{{-1, 7}, },
-			{{-1, 8}, {7, 14}, },
-			{{-1, 24}, {19, 25}, },
-			{{-1, 62}, },
+			{{-1, 8}, },
+			{{-1, 22}, {23, 32}, {24, 32}, },
+			{{-1, 54}, {59, 63}, },
+			{{-1, 60}, {61, 64}, },
+			{{-1, 9}, },
+			{{-1, 23}, {18, 24}, },
+			{{-1, 61}, },
         };*/
     private static String[] errorMessages;
 /*      {
-			"expecting: estring, entry name, EOF",
+			"expecting: taskcomment, estring, entry name, EOF",
 			"expecting: '{', '('",
 			"expecting: EOF",
-			"expecting: entry name, EOF",
 			"expecting: identifier",
 			"expecting: '='",
 			"expecting: ','",
@@ -1321,7 +1259,7 @@ public class Parser
         };*/
     private static int[] errors;
 /*      {
-			0, 1, 1, 2, 0, 3, 1, 0, 3, 4, 4, 4, 4, 0, 3, 3, 5, 5, 6, 6, 7, 7, 4, 8, 9, 10, 11, 12, 11, 13, 5, 3, 14, 8, 3, 15, 12, 0, 16, 13, 0, 17, 18, 3, 3, 0, 16, 0, 0, 17, 0, 19, 19, 7, 19, 19, 0, 0, 19, 20, 18, 19, 19, 19, 19, 19, 
+			0, 0, 1, 1, 2, 0, 0, 0, 1, 0, 3, 3, 3, 3, 0, 4, 4, 5, 5, 6, 6, 3, 7, 8, 9, 10, 11, 10, 12, 4, 0, 13, 7, 0, 14, 11, 0, 15, 12, 0, 16, 17, 0, 0, 0, 15, 0, 0, 16, 0, 18, 18, 6, 18, 18, 0, 0, 18, 19, 17, 18, 18, 18, 18, 18, 
         };*/
 
     static 

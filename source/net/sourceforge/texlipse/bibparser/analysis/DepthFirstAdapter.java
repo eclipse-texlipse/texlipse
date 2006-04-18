@@ -47,20 +47,73 @@ public class DepthFirstAdapter extends AnalysisAdapter
     {
         inABibtex(node);
         {
-            Object temp[] = node.getStringEntry().toArray();
+            Object temp[] = node.getBibEntry().toArray();
             for(int i = 0; i < temp.length; i++)
             {
-                ((PStringEntry) temp[i]).apply(this);
-            }
-        }
-        {
-            Object temp[] = node.getEntry().toArray();
-            for(int i = 0; i < temp.length; i++)
-            {
-                ((PEntry) temp[i]).apply(this);
+                ((PBibEntry) temp[i]).apply(this);
             }
         }
         outABibtex(node);
+    }
+
+    public void inABibstreBibEntry(ABibstreBibEntry node)
+    {
+        defaultIn(node);
+    }
+
+    public void outABibstreBibEntry(ABibstreBibEntry node)
+    {
+        defaultOut(node);
+    }
+
+    public void caseABibstreBibEntry(ABibstreBibEntry node)
+    {
+        inABibstreBibEntry(node);
+        if(node.getStringEntry() != null)
+        {
+            node.getStringEntry().apply(this);
+        }
+        outABibstreBibEntry(node);
+    }
+
+    public void inABibeBibEntry(ABibeBibEntry node)
+    {
+        defaultIn(node);
+    }
+
+    public void outABibeBibEntry(ABibeBibEntry node)
+    {
+        defaultOut(node);
+    }
+
+    public void caseABibeBibEntry(ABibeBibEntry node)
+    {
+        inABibeBibEntry(node);
+        if(node.getEntry() != null)
+        {
+            node.getEntry().apply(this);
+        }
+        outABibeBibEntry(node);
+    }
+
+    public void inABibtaskBibEntry(ABibtaskBibEntry node)
+    {
+        defaultIn(node);
+    }
+
+    public void outABibtaskBibEntry(ABibtaskBibEntry node)
+    {
+        defaultOut(node);
+    }
+
+    public void caseABibtaskBibEntry(ABibtaskBibEntry node)
+    {
+        inABibtaskBibEntry(node);
+        if(node.getTaskcomment() != null)
+        {
+            node.getTaskcomment().apply(this);
+        }
+        outABibtaskBibEntry(node);
     }
 
     public void inAStrbraceStringEntry(AStrbraceStringEntry node)
@@ -139,6 +192,10 @@ public class DepthFirstAdapter extends AnalysisAdapter
                 ((PKeyvalDecl) temp[i]).apply(this);
             }
         }
+        if(node.getRBrace() != null)
+        {
+            node.getRBrace().apply(this);
+        }
         outAEntrybraceEntry(node);
     }
 
@@ -169,6 +226,10 @@ public class DepthFirstAdapter extends AnalysisAdapter
             {
                 ((PKeyvalDecl) temp[i]).apply(this);
             }
+        }
+        if(node.getRParen() != null)
+        {
+            node.getRParen().apply(this);
         }
         outAEntryparenEntry(node);
     }

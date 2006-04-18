@@ -46,20 +46,73 @@ public class ReversedDepthFirstAdapter extends AnalysisAdapter
     {
         inABibtex(node);
         {
-            Object temp[] = node.getEntry().toArray();
+            Object temp[] = node.getBibEntry().toArray();
             for(int i = temp.length - 1; i >= 0; i--)
             {
-                ((PEntry) temp[i]).apply(this);
-            }
-        }
-        {
-            Object temp[] = node.getStringEntry().toArray();
-            for(int i = temp.length - 1; i >= 0; i--)
-            {
-                ((PStringEntry) temp[i]).apply(this);
+                ((PBibEntry) temp[i]).apply(this);
             }
         }
         outABibtex(node);
+    }
+
+    public void inABibstreBibEntry(ABibstreBibEntry node)
+    {
+        defaultIn(node);
+    }
+
+    public void outABibstreBibEntry(ABibstreBibEntry node)
+    {
+        defaultOut(node);
+    }
+
+    public void caseABibstreBibEntry(ABibstreBibEntry node)
+    {
+        inABibstreBibEntry(node);
+        if(node.getStringEntry() != null)
+        {
+            node.getStringEntry().apply(this);
+        }
+        outABibstreBibEntry(node);
+    }
+
+    public void inABibeBibEntry(ABibeBibEntry node)
+    {
+        defaultIn(node);
+    }
+
+    public void outABibeBibEntry(ABibeBibEntry node)
+    {
+        defaultOut(node);
+    }
+
+    public void caseABibeBibEntry(ABibeBibEntry node)
+    {
+        inABibeBibEntry(node);
+        if(node.getEntry() != null)
+        {
+            node.getEntry().apply(this);
+        }
+        outABibeBibEntry(node);
+    }
+
+    public void inABibtaskBibEntry(ABibtaskBibEntry node)
+    {
+        defaultIn(node);
+    }
+
+    public void outABibtaskBibEntry(ABibtaskBibEntry node)
+    {
+        defaultOut(node);
+    }
+
+    public void caseABibtaskBibEntry(ABibtaskBibEntry node)
+    {
+        inABibtaskBibEntry(node);
+        if(node.getTaskcomment() != null)
+        {
+            node.getTaskcomment().apply(this);
+        }
+        outABibtaskBibEntry(node);
     }
 
     public void inAStrbraceStringEntry(AStrbraceStringEntry node)
@@ -123,6 +176,10 @@ public class ReversedDepthFirstAdapter extends AnalysisAdapter
     public void caseAEntrybraceEntry(AEntrybraceEntry node)
     {
         inAEntrybraceEntry(node);
+        if(node.getRBrace() != null)
+        {
+            node.getRBrace().apply(this);
+        }
         {
             Object temp[] = node.getKeyvalDecl().toArray();
             for(int i = temp.length - 1; i >= 0; i--)
@@ -154,6 +211,10 @@ public class ReversedDepthFirstAdapter extends AnalysisAdapter
     public void caseAEntryparenEntry(AEntryparenEntry node)
     {
         inAEntryparenEntry(node);
+        if(node.getRParen() != null)
+        {
+            node.getRParen().apply(this);
+        }
         {
             Object temp[] = node.getKeyvalDecl().toArray();
             for(int i = temp.length - 1; i >= 0; i--)

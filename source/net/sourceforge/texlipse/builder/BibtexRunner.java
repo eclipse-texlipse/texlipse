@@ -60,16 +60,18 @@ public class BibtexRunner extends AbstractProgramRunner {
      * @return arguments for the bibtex program when building the given resource
      */
     public String getArguments(IResource resource) {
-        String args = "";
-        
-        String os = System.getProperty("os.name").toLowerCase();
-        if (os.indexOf("windows") >= 0) {
-            args = getIncludeDirArguments(resource.getProject());
-        }
+        //String args = "";
+
+        // Seems unnecessary now, but we need more testing
+//        String os = System.getProperty("os.name").toLowerCase();
+//        if (os.indexOf("windows") >= 0) {
+//            args = getIncludeDirArguments(resource.getProject());
+//        }
         
         String name = resource.getName();
         String baseName = name.substring(0, name.lastIndexOf('.'));
-        return args + baseName;
+        //return args + baseName;
+        return baseName;
     }
 
     /**
@@ -88,6 +90,7 @@ public class BibtexRunner extends AbstractProgramRunner {
             bibDirs = "";
         }
         
+        // TODO useless? shouldn't be such a project property
         String aDir = TexlipseProperties.getProjectProperty(project, TexlipseProperties.BIBFILE_PROPERTY);
         if (aDir == null) {
             aDir = "";

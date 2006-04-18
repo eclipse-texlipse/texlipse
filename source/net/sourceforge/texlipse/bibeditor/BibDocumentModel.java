@@ -80,7 +80,9 @@ public class BibDocumentModel {
             this.entryList = parser.getEntries();
             
             ArrayList parseErrors = parser.getErrors();
-            ArrayList parseWarnings = parser.getWarnings();            
+            List parseWarnings = parser.getWarnings();
+            List tasks = parser.getTasks();
+            
             MarkerHandler marker = MarkerHandler.getInstance();
             marker.clearErrorMarkers(editor);
             if (parseErrors.size() > 0) {
@@ -89,6 +91,9 @@ public class BibDocumentModel {
             }
             if (parseWarnings.size() > 0) {
                 marker.createErrorMarkers(editor, parseWarnings);                
+            }
+            if (tasks.size() > 0) {
+                marker.createTaskMarkers(editor, tasks);
             }
             
             this.abbrevs = parser.getAbbrevs();
@@ -157,6 +162,7 @@ public class BibDocumentModel {
         document.addPositionCategory(BibOutlinePage.SEGMENTS);
 
         try {
+            /*
             int beginOffset = -1, endOffset = -1;
             ReferenceEntry prev = null, next = null;
             //Iterator it = currentOutline.iterator();
@@ -180,6 +186,14 @@ public class BibDocumentModel {
             if (beginOffset != -1) {
                 prev.setPosition(beginOffset, document.getLength() - beginOffset);
                 document.addPosition(BibOutlinePage.SEGMENTS, prev.position);                    
+            }
+            */
+            for (Iterator iter = entryList.iterator(); iter.hasNext();) {
+                ReferenceEntry re = (ReferenceEntry) iter.next();
+                int beginOffset = document.getLineOffset(re.startLine - 1);
+                int length = document.getLineOffset(re.endLine) - beginOffset;
+                re.setPosition(beginOffset, length);
+                document.addPosition(BibOutlinePage.SEGMENTS, re.position);
             }
         } catch (BadPositionCategoryException bpce) {
             TexlipsePlugin.log("BibDocumentModel.updateDocumentPositions: bad position category ", bpce);

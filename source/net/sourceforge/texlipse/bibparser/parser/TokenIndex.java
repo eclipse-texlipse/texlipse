@@ -9,88 +9,93 @@ class TokenIndex extends AnalysisAdapter
 {
     int index;
 
-    public void caseTEstring(TEstring node)
+    public void caseTTaskcomment(TTaskcomment node)
     {
         index = 0;
     }
 
-    public void caseTScribeComment(TScribeComment node)
+    public void caseTEstring(TEstring node)
     {
         index = 1;
     }
 
-    public void caseTPreamble(TPreamble node)
+    public void caseTScribeComment(TScribeComment node)
     {
         index = 2;
     }
 
-    public void caseTEntryName(TEntryName node)
+    public void caseTPreamble(TPreamble node)
     {
         index = 3;
     }
 
-    public void caseTLBrace(TLBrace node)
+    public void caseTEntryName(TEntryName node)
     {
         index = 4;
     }
 
-    public void caseTRBrace(TRBrace node)
+    public void caseTLBrace(TLBrace node)
     {
         index = 5;
     }
 
-    public void caseTBString(TBString node)
+    public void caseTRBrace(TRBrace node)
     {
         index = 6;
     }
 
-    public void caseTLParen(TLParen node)
+    public void caseTBString(TBString node)
     {
         index = 7;
     }
 
-    public void caseTRParen(TRParen node)
+    public void caseTLParen(TLParen node)
     {
         index = 8;
     }
 
-    public void caseTComma(TComma node)
+    public void caseTRParen(TRParen node)
     {
         index = 9;
     }
 
-    public void caseTEquals(TEquals node)
+    public void caseTComma(TComma node)
     {
         index = 10;
     }
 
-    public void caseTSharp(TSharp node)
+    public void caseTEquals(TEquals node)
     {
         index = 11;
     }
 
-    public void caseTNumber(TNumber node)
+    public void caseTSharp(TSharp node)
     {
         index = 12;
     }
 
-    public void caseTIdentifier(TIdentifier node)
+    public void caseTNumber(TNumber node)
     {
         index = 13;
     }
 
-    public void caseTQuotec(TQuotec node)
+    public void caseTIdentifier(TIdentifier node)
     {
         index = 14;
     }
 
-    public void caseTStringLiteral(TStringLiteral node)
+    public void caseTQuotec(TQuotec node)
     {
         index = 15;
     }
 
-    public void caseEOF(EOF node)
+    public void caseTStringLiteral(TStringLiteral node)
     {
         index = 16;
+    }
+
+    public void caseEOF(EOF node)
+    {
+        index = 17;
     }
 }

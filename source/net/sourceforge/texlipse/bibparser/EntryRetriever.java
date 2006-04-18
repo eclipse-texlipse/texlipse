@@ -19,6 +19,9 @@ import java.util.Map;
 import java.util.Set;
 
 import net.sourceforge.texlipse.bibparser.analysis.DepthFirstAdapter;
+import net.sourceforge.texlipse.bibparser.node.ABibeBibEntry;
+import net.sourceforge.texlipse.bibparser.node.ABibstreBibEntry;
+import net.sourceforge.texlipse.bibparser.node.ABibtaskBibEntry;
 import net.sourceforge.texlipse.bibparser.node.ABibtex;
 import net.sourceforge.texlipse.bibparser.node.AConcat;
 import net.sourceforge.texlipse.bibparser.node.AEntryDef;
@@ -61,7 +64,9 @@ public final class EntryRetriever extends DepthFirstAdapter {
     }
     
     //private ArrayList<ParseErrorMessage> warnings = new ArrayList<ParseErrorMessage>();
-    private ArrayList warnings = new ArrayList();
+    private List warnings = new ArrayList();
+   
+    private List tasks = new ArrayList(); // type: ParseErrorMessage
     
     //private List<ReferenceEntry> entries = new ArrayList<ReferenceEntry>();
     private List entries = new ArrayList();
@@ -167,10 +172,17 @@ public final class EntryRetriever extends DepthFirstAdapter {
     /**
      * @return A list of warnings in the file
      */
-    public ArrayList getWarnings() {
+    public List getWarnings() {
         return warnings;
     }
     
+    /**
+     * @return A list of task markers in the file
+     */
+    public List getTasks() {
+        return tasks;
+    }
+
     /**
      * Finish the parse by setting all remaining warnings
      */
@@ -197,6 +209,30 @@ public final class EntryRetriever extends DepthFirstAdapter {
     public void outABibtex(ABibtex node) {
     }
     
+    public void inABibeBibEntry(ABibeBibEntry node) {
+    }
+
+    public void inABibstreBibEntry(ABibstreBibEntry node) {
+    }
+
+    public void inABibtaskBibEntry(ABibtaskBibEntry node) {
+    }
+
+    public void outABibeBibEntry(ABibeBibEntry node) {
+    }
+
+    public void outABibstreBibEntry(ABibstreBibEntry node) {
+    }
+
+    public void outABibtaskBibEntry(ABibtaskBibEntry node) {
+        int start = node.getTaskcomment().getText().indexOf("TODO");
+        String taskText = node.getTaskcomment().getText().substring(start + 4).trim();
+        
+        tasks.add(new ParseErrorMessage(node.getTaskcomment().getLine(),
+                node.getTaskcomment().getPos(),
+                taskText.length(), taskText, IMarker.SEVERITY_INFO));
+    }
+
     private void inAnAbbrev(TIdentifier tid, TStringLiteral tsl) {
         if (abbrevs.put(tid.getText(), tsl.getText()) != null) {
             warnings.add(new ParseErrorMessage(tid.getLine(),
@@ -252,7 +288,7 @@ public final class EntryRetriever extends DepthFirstAdapter {
         }   
     }
     
-    private void outBibtexEntry() {
+    private void outBibtexEntry(Token endToken) {
         if (currEntry.author == null) {
             currEntry.author = "-";
         }
@@ -263,6 +299,7 @@ public final class EntryRetriever extends DepthFirstAdapter {
             currEntry.journal = "-";
         }
         currEntry.info = currEntryInfo.toString();
+        currEntry.endLine = endToken.getLine();
         entries.add(currEntry);
         // TODO useless -- uses the wrong token
         //currEntry.endLine = node.getIdentifier().getLine();
@@ -307,7 +344,7 @@ public final class EntryRetriever extends DepthFirstAdapter {
      * @param node an <code>AEntry</code> value
      */
     public void outAEntrybraceEntry(AEntrybraceEntry node) {
-        outBibtexEntry();
+        outBibtexEntry(node.getRBrace());
     }
     
     public void inAEntryparenEntry(AEntryparenEntry node) {
@@ -315,7 +352,7 @@ public final class EntryRetriever extends DepthFirstAdapter {
     }
     
     public void outAEntryparenEntry(AEntryparenEntry node) {
-        outBibtexEntry();
+        outBibtexEntry(node.getRParen());
     }
     
     public void inAEntryDef(AEntryDef node) {

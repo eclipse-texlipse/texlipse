@@ -10,6 +10,7 @@ public final class AEntryparenEntry extends PEntry
     private PEntryDef _entryDef_;
     private TIdentifier _identifier_;
     private final LinkedList _keyvalDecl_ = new TypedLinkedList(new KeyvalDecl_Cast());
+    private TRParen _rParen_;
 
     public AEntryparenEntry()
     {
@@ -18,7 +19,8 @@ public final class AEntryparenEntry extends PEntry
     public AEntryparenEntry(
         PEntryDef _entryDef_,
         TIdentifier _identifier_,
-        List _keyvalDecl_)
+        List _keyvalDecl_,
+        TRParen _rParen_)
     {
         setEntryDef(_entryDef_);
 
@@ -29,13 +31,16 @@ public final class AEntryparenEntry extends PEntry
             this._keyvalDecl_.addAll(_keyvalDecl_);
         }
 
+        setRParen(_rParen_);
+
     }
     public Object clone()
     {
         return new AEntryparenEntry(
             (PEntryDef) cloneNode(_entryDef_),
             (TIdentifier) cloneNode(_identifier_),
-            cloneList(_keyvalDecl_));
+            cloneList(_keyvalDecl_),
+            (TRParen) cloneNode(_rParen_));
     }
 
     public void apply(Switch sw)
@@ -104,12 +109,38 @@ public final class AEntryparenEntry extends PEntry
         _keyvalDecl_.addAll(list);
     }
 
+    public TRParen getRParen()
+    {
+        return _rParen_;
+    }
+
+    public void setRParen(TRParen node)
+    {
+        if(_rParen_ != null)
+        {
+            _rParen_.parent(null);
+        }
+
+        if(node != null)
+        {
+            if(node.parent() != null)
+            {
+                node.parent().removeChild(node);
+            }
+
+            node.parent(this);
+        }
+
+        _rParen_ = node;
+    }
+
     public String toString()
     {
         return ""
             + toString(_entryDef_)
             + toString(_identifier_)
-            + toString(_keyvalDecl_);
+            + toString(_keyvalDecl_)
+            + toString(_rParen_);
     }
 
     void removeChild(Node child)
@@ -128,6 +159,12 @@ public final class AEntryparenEntry extends PEntry
 
         if(_keyvalDecl_.remove(child))
         {
+            return;
+        }
+
+        if(_rParen_ == child)
+        {
+            _rParen_ = null;
             return;
         }
 
@@ -162,6 +199,12 @@ public final class AEntryparenEntry extends PEntry
                 oldChild.parent(null);
                 return;
             }
+        }
+
+        if(_rParen_ == oldChild)
+        {
+            setRParen((TRParen) newChild);
+            return;
         }
 
     }

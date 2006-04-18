@@ -50,7 +50,7 @@ import org.eclipse.swt.widgets.Text;
  * This dialog can be used for editing old configs or creating new ones.
  * 
  * @author Kimmo Karlsson
- * @author Tor Arne VestbÃ¸
+ * @author Tor Arne Vestbø
  */
 public class ViewerConfigDialog extends Dialog {
 

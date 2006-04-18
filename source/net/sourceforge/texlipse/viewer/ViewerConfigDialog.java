@@ -144,6 +144,11 @@ public class ViewerConfigDialog extends Dialog {
             return;
         }
         
+        if (formatChooser.getSelectionIndex() == -1) {
+            setStatus("preferenceViewerFormatEmpty", "");
+            return;
+        }
+        
         // if adding new configuration, existing name is not valid
         if (nameList != null && nameList.contains(name)) {
             setStatus("preferenceViewerDialogNameExists", name);
@@ -452,11 +457,9 @@ public class ViewerConfigDialog extends Dialog {
         };
         
         // find out which option to choose by default
-        int index = 0;
-        while (index < inverseSearchValues.length &&
-                !inverseSearchValues[index].equals(registry.getInverse())) {
-            index++;
-        }
+        int index = inverseSearchValues.length - 1;
+        for (; index > 0 && !inverseSearchValues[index].equals(registry.getInverse()); index--) {}
+        
         
         inverseChooser = new Combo(parent, SWT.DROP_DOWN | SWT.READ_ONLY);
         inverseChooser.setLayoutData(new GridData());

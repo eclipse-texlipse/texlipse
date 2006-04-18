@@ -312,7 +312,7 @@ public class FullTexParser extends TexParser {
     }
     
     /**
-     * 
+     * This routine is a quick hack, could be buggy
      * @param tree
      * @param newNodes
      * @param inputNode
@@ -372,25 +372,28 @@ public class FullTexParser extends TexParser {
         // if the new Nodes have a parent node add them at this node
         if (inputNode != null) {
             OutlineNode parent = inputNode.getParent();
-            // find the right position where to add them at the children
+            // find the right position where to add thenew nodes at the children
             int index = 0;
-            if (parent.getChildren() != null) {
+            if (parent != null && parent.getChildren() != null) {
                 index = findPosition(parent.getChildren(), inputNode, file);
             }
             // add the nodes to the tree
             OutlineNode on = null;
             ArrayList later = new ArrayList();
-            int fullIndex = findPosition(tree, inputNode) + 1;
+            //TODO How to determine fullIndex if reparsing
+            int fullIndex = tree.size();
             for (int k = 0; k < newNodes.size(); k++) {
                 on = (OutlineNode) newNodes.get(k);
                 //Check if the current nodes type is smaller then the parents type 
                 while (parent != null && parent.getType() >= on.getType()){
                     ArrayList children = parent.getChildren();
-                    for (int i = index; i < children.size(); i++) {
-                        OutlineNode child = (OutlineNode) children.get(i);
-                        //Put all remaining childs into an arraylist which we append later
-                        later.add(child);
-                        parent.deleteChild(child);
+                    if (children != null) {
+                    	for (int i = index; i < children.size(); i++) {
+                    		OutlineNode child = (OutlineNode) children.get(i);
+                    		//Put all remaining childs into an arraylist which we append later
+                    		later.add(child);
+                    		parent.deleteChild(child);
+                    	}
                     }
                     OutlineNode newParent = parent.getParent();
                     if (newParent != null) {

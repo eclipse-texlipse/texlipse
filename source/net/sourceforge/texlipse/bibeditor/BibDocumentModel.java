@@ -188,6 +188,13 @@ public class BibDocumentModel {
                 document.addPosition(BibOutlinePage.SEGMENTS, prev.position);                    
             }
             */
+            // This hack is needed because Eclipse doesn't allow us to get 
+            // the offset of the last line in the document
+            int lastLine = document.getNumberOfLines();
+            ReferenceEntry rel = (ReferenceEntry) entryList.get(entryList.size() - 1);
+            if (rel.endLine == lastLine) {
+                rel.endLine--;
+            }
             for (Iterator iter = entryList.iterator(); iter.hasNext();) {
                 ReferenceEntry re = (ReferenceEntry) iter.next();
                 int beginOffset = document.getLineOffset(re.startLine - 1);

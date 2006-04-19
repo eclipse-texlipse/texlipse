@@ -46,6 +46,7 @@ import net.sourceforge.texlipse.texparser.node.TCword;
 import net.sourceforge.texlipse.texparser.node.TOptargument;
 import net.sourceforge.texlipse.texparser.node.TStar;
 import net.sourceforge.texlipse.texparser.node.TTaskcomment;
+import net.sourceforge.texlipse.texparser.node.TVtext;
 import net.sourceforge.texlipse.texparser.node.TWhitespace;
 import net.sourceforge.texlipse.texparser.node.Token;
 
@@ -763,6 +764,25 @@ public class LatexParser {
                     String taskText = t.getText().substring(start + 4).trim();
                     
                     tasks.add(new ParseErrorMessage(t.getLine(), t.getPos(), taskText.length(), taskText, IMarker.SEVERITY_INFO));
+                } else if (t instanceof TVtext) {
+                    // Fold
+                    OutlineNode on = new OutlineNode(t.getText(),
+                            OutlineNode.TYPE_ENVIRONMENT,
+                            t.getLine(), t.getPos(),
+                            t.getText().length());
+
+                    // TODO uses memory, but doesn't require much code...
+                    String[] lines = t.getText().split("\\n\\r|\\n|\\r");
+                    on.setEndLine(t.getLine() + lines.length);
+                    
+                    if (!blocks.empty()) {
+                        OutlineNode prev = (OutlineNode) blocks.peek();
+                        prev.addChild(on);
+                        on.setParent(prev);
+                    } else {
+                        outlineTree.add(on);
+                    }
+
                 }
             }
         }

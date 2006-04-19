@@ -19,6 +19,7 @@ import net.sourceforge.texlipse.texparser.node.TArgument;
 import net.sourceforge.texlipse.texparser.node.TBverbatim;
 import net.sourceforge.texlipse.texparser.node.TCnew;
 import net.sourceforge.texlipse.texparser.node.TCword;
+import net.sourceforge.texlipse.texparser.node.TEverbatim;
 import net.sourceforge.texlipse.texparser.node.TLBrace;
 import net.sourceforge.texlipse.texparser.node.TOptargument;
 import net.sourceforge.texlipse.texparser.node.TRBrace;
@@ -155,12 +156,13 @@ public class LatexLexer extends Lexer {
                 }
             }
         } else if (state.equals(State.VERBATIM)) {
-            // we don't really need the contents, so we discard them here
-            // for better efficiency
+            // we store some contents to be able to code fold
             if (token instanceof TBverbatim) {
+                text = new StringBuffer(token.getText());
                 vline = token.getLine();
                 vpos = token.getPos();
             } else if (token instanceof TVtext || token instanceof TWhitespace) {
+                text.append(token.getText());
                 token = null;
             } else if (token instanceof EOF) {
                 throw new LexerException("[" + vline + "," + vpos 
@@ -188,6 +190,11 @@ public class LatexLexer extends Lexer {
             } else if (token instanceof EOF) {
                 throw new LexerException("[" + argStart.getLine() + 
                         "," + argStart.getPos() + "] The verb-command isn't closed: unexpected end of file");
+            }
+        } else if (state.equals(State.NORMAL)) {
+            if (token instanceof TEverbatim) {
+                text.append(token.getText());
+                token = new TVtext(text.toString(), vline, vpos);
             }
         }
     }

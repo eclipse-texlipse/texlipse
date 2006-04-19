@@ -9,6 +9,7 @@
  */
 package net.sourceforge.texlipse.builder;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -27,7 +28,7 @@ import org.eclipse.swt.widgets.Display;
 public class OutputScanner {
 
     // input stream to scan
-    private InputStream in;
+    private BufferedInputStream in;
     
     // output stream to write user's responses
     private OutputStream out;
@@ -59,7 +60,7 @@ public class OutputScanner {
      * @param console
      */
     public OutputScanner(InputStream in, OutputStream out, String[] trig, String console) {
-        this.in = in;
+        this.in = new BufferedInputStream(in);
         this.out = out;
         this.triggerString = trig;
         this.okPressed = false;
@@ -92,14 +93,25 @@ public class OutputScanner {
             // when the user pressed ok on our dialog
             int startOfLine = 0;
             int okIndex = 0;
+            int maxLength = 0;
+            if (triggerString != null) {
+                //determine max length of a triggerString
+                for (int i = 0; i < triggerString.length; i++) {
+                    if (maxLength < triggerString[i].length()) 
+                        maxLength = triggerString[i].length();
+                }
+            }
             while (true) {
                 
                 int nextByte = in.read();
                 if (nextByte == -1) break;
                 sb.append((char)nextByte);
                 
-                if (triggerString != null){
+                //TriggerStrings can only occur if the program is waiting for input => in.available() == 0
+                if (triggerString != null && in.available() == 0) {
                     for (int i = 0; i < triggerString.length; i++) {
+                        if (sb.length() > maxLength)
+                            okIndex = sb.length() - maxLength;
                         int foundIndex = sb.indexOf(triggerString[i], okIndex);
                         if (foundIndex >= 0) {
                             currentTriggerStringLength = triggerString[i].length();
@@ -115,7 +127,7 @@ public class OutputScanner {
                     }
                 }
                 
-                if ((char)nextByte == '\n' && consoleOutput != null) {
+                if (consoleOutput != null && (char)nextByte == '\n') {
                     int lf = 1;
                     if (sb.charAt(sb.length()-2) == '\r') { // fix for windows linefeeds
                         lf++;

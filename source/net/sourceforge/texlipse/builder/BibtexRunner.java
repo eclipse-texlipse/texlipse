@@ -16,6 +16,7 @@ import net.sourceforge.texlipse.TexlipsePlugin;
 import net.sourceforge.texlipse.properties.TexlipseProperties;
 
 import org.eclipse.core.resources.IContainer;
+import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 
@@ -55,12 +56,26 @@ public class BibtexRunner extends AbstractProgramRunner {
         return "Bibtex program";
     }
     
+    protected String[] getQueryString() {
+        return new String[] {"Please type input file name (no extension)--"};
+    }
+
     /**
      * @param resource the project's main file to build
      * @return arguments for the bibtex program when building the given resource
      */
     public String getArguments(IResource resource) {
-        //String args = "";
+        String args = super.getArguments(resource);
+        //Bibtex stops if there is a fileextension, so remove it
+        String name = resource.getName();
+        String baseName = name.substring(0, name.lastIndexOf('.'));
+        int bPos = args.indexOf(baseName + "." + getInputFormat());
+        if (bPos >= 0) {
+            args = args.substring(0, bPos + baseName.length()) + 
+            args.substring(bPos + baseName.length() + 1 + getInputFormat().length());
+        }
+        return args;
+        // String args = "";
 
         // Seems unnecessary now, but we need more testing
 //        String os = System.getProperty("os.name").toLowerCase();
@@ -68,10 +83,10 @@ public class BibtexRunner extends AbstractProgramRunner {
 //            args = getIncludeDirArguments(resource.getProject());
 //        }
         
-        String name = resource.getName();
+/*        String name = resource.getName();
         String baseName = name.substring(0, name.lastIndexOf('.'));
         //return args + baseName;
-        return baseName;
+        return baseName;*/
     }
 
     /**
@@ -174,17 +189,17 @@ public class BibtexRunner extends AbstractProgramRunner {
                     
                     String fileName = nextLine.substring(index + 9);
                     IResource resource = sourceDir.findMember(fileName);
-                    createMarker(resource, lineNumber, message);
+                    createMarker(resource, lineNumber, message, IMarker.SEVERITY_WARNING);
                     
                 } else if (nextLine.startsWith("Warning--")) {
                     
                     // if followed by another warning, this is the endlist with no info
-                    createMarker(bibResource, lineNumber, message);
-                    createMarker(bibResource, lineNumber, nextLine.substring(9));
+                    createMarker(bibResource, lineNumber, message, IMarker.SEVERITY_WARNING);
+                    createMarker(bibResource, lineNumber, nextLine.substring(9), IMarker.SEVERITY_WARNING);
                     
                 } else {
                     // list of warnings ended
-                    createMarker(bibResource, lineNumber, message);
+                    createMarker(bibResource, lineNumber, message, IMarker.SEVERITY_WARNING);
                 }
                 
             } else if (line.startsWith("Database file ")) {

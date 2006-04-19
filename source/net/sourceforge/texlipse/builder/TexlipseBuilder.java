@@ -241,6 +241,7 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
         IContainer folder = TexlipseProperties.getProjectSourceDir(project);
         
         IFile tmpFile = createTempFileName(folder);
+        tmpFile.setDerived(true);
         TexlipseProperties.setSessionProperty(project, TexlipseProperties.PARTIAL_BUILD_FILE, tmpFile);
         if (tmpFile == null) {
             throw new CoreException(TexlipsePlugin.stat("Can't create temp file"));

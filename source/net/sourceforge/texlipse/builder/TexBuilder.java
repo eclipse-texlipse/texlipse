@@ -9,6 +9,7 @@
  */
 package net.sourceforge.texlipse.builder;
 
+import net.sourceforge.texlipse.TexlipsePlugin;
 import net.sourceforge.texlipse.properties.TexlipseProperties;
 import net.sourceforge.texlipse.viewer.ViewerManager;
 
@@ -17,6 +18,9 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.QualifiedName;
+import org.eclipse.jface.dialogs.MessageDialogWithToggle;
+import org.eclipse.swt.widgets.Shell;
 
 
 /**
@@ -90,11 +94,61 @@ public class TexBuilder extends AbstractBuilder {
     }
     
     /**
+     * Opens a messabox where the user is asked wether he wants to continue the build
+     * @param project
+     * @return
+     * @throws CoreException
+     */
+    private boolean askUserForContinue(IProject project) throws CoreException{
+        Object c = project.getSessionProperty(new QualifiedName(null, "AlwaysContinueBuilding"));
+        if (c == null) {
+            // ask the user if he wants to continue
+            final Shell shell = TexlipsePlugin.getCurrentWorkbenchPage().getActiveEditor().getSite().getShell();
+            final StringBuffer toggle = new StringBuffer();
+            final StringBuffer returnCode = new StringBuffer();
+
+            shell.getDisplay().syncExec(new Runnable() {
+               public void run() {
+                   final MessageDialogWithToggle mess = MessageDialogWithToggle.openOkCancelConfirm(
+                           TexlipsePlugin.getCurrentWorkbenchPage().getActiveEditor().getSite().getShell(), 
+                           TexlipsePlugin.getResourceString("builderErrorDuringBuildTitle"), 
+                           TexlipsePlugin.getResourceString("builderErrorDuringBuild"), 
+                           TexlipsePlugin.getResourceString("builderErrorDuringBuildToggle"), false, null, null);
+                   if (mess.getToggleState()) {
+                       toggle.append(true);
+                   }
+                   if (mess.getReturnCode() == MessageDialogWithToggle.CANCEL)
+                       returnCode.append(false);
+                } 
+            });
+            
+            if (toggle.length() > 0) {
+                if (returnCode.length() > 0) {
+                    project.setSessionProperty(new QualifiedName(null, "AlwaysContinueBuilding"), new Boolean(false));
+                } else {
+                    project.setSessionProperty(new QualifiedName(null, "AlwaysContinueBuilding"), new Boolean(true));
+                }
+            }
+            if (returnCode.length() > 0) {
+                return false;
+            }
+        } else {
+            //we have a saved state
+            Boolean b = (Boolean) c;
+            if (b.booleanValue() == true)
+                return true;
+            else
+                return false;
+        }
+        return true;
+    }
+    
+    /**
      * Run latex and optionally bibtex to produce a dvi file.
      * @throws CoreException if the build fails at any point
      */
     public void buildResource(IResource resource) throws CoreException {
-
+        boolean error = false;
 		stopped = false;
         // Make sure we close the output document first 
     	// (using DDE on Win32)
@@ -105,11 +159,15 @@ public class TexBuilder extends AbstractBuilder {
     	}
     	  		
     	monitor.subTask("Building document");
-        latex.run(resource);
+        try {
+            latex.run(resource);
+        } catch (BuilderCoreException ex) {
+            //Don't stop here, we will ask the user later
+            error = true;
+        }
         monitor.worked(10);
         if (stopped)
             return;
-
         IProject project = resource.getProject();
         String runBib = (String) TexlipseProperties.getSessionProperty(project, TexlipseProperties.SESSION_BIBTEX_RERUN);
         Boolean bibChange = (Boolean) TexlipseProperties.getSessionProperty(project, TexlipseProperties.BIBFILES_CHANGED);
@@ -123,6 +181,12 @@ public class TexBuilder extends AbstractBuilder {
         String[] bibs = (String[]) TexlipseProperties.getSessionProperty(project, TexlipseProperties.BIBFILE_PROPERTY);
         
         if (bibs != null && bibs.length > 0 && (runBib != null || bibChange != null)) {
+            
+            if (error) {
+                if (askUserForContinue(project) == false) {
+                    throw new BuilderCoreException(TexlipsePlugin.stat("Errors during build. See the problems dialog."));
+                }
+            }
             
             bibtex.run(resource);
             if (stopped)
@@ -149,16 +213,32 @@ public class TexBuilder extends AbstractBuilder {
                 monitor.worked(10);
             }
               
-            latex.run(resource);
+            try {
+                latex.run(resource);
+            } catch (BuilderCoreException ex) {
+                if (!error)
+                    throw ex;
+            }
             if (stopped)
                 return;
             monitor.worked(10);
-            latex.run(resource);
+            try {
+                latex.run(resource);
+            } catch (BuilderCoreException ex) {
+                if (!error)
+                    throw ex;
+            }
             if (stopped)
                 return;
             monitor.worked(10);
             
         } else if (rerun != null || runIdx != null || runNomencl != null) {
+
+            if (error) {
+                if (askUserForContinue(project) == false) {
+                    throw new BuilderCoreException(TexlipsePlugin.stat("Errors during build. See the problems dialog."));
+                }
+            }
             
             if (runIdx != null) {
                 makeIndex.run(resource);
@@ -177,7 +257,12 @@ public class TexBuilder extends AbstractBuilder {
                 monitor.worked(10);
             }
             
-            latex.run(resource);
+            try {
+                latex.run(resource);
+            } catch (BuilderCoreException ex) {
+                if (!error)
+                    throw ex;
+            }
             if (stopped)
                 return;
             monitor.worked(10);

@@ -22,7 +22,6 @@ import net.sourceforge.texlipse.properties.TexlipseProperties;
 import net.sourceforge.texlipse.texparser.LatexParserUtils;
 import net.sourceforge.texlipse.viewer.ViewerManager;
 
-import org.eclipse.core.internal.resources.ResourceException;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -242,7 +241,6 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
         IContainer folder = TexlipseProperties.getProjectSourceDir(project);
         
         IFile tmpFile = createTempFileName(folder);
-        tmpFile.setDerived(true);
         TexlipseProperties.setSessionProperty(project, TexlipseProperties.PARTIAL_BUILD_FILE, tmpFile);
         if (tmpFile == null) {
             throw new CoreException(TexlipsePlugin.stat("Can't create temp file"));
@@ -255,6 +253,7 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
         } else {
             tmpFile.create(bar, true, monitor);
         }
+        tmpFile.setDerived(true);
         
         // build temp file
         buildPartialFile(tmpFile, monitor);

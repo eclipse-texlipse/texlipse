@@ -131,11 +131,13 @@ public class ViewerOutputScanner implements Runnable {
             file = file.substring(projDir.length());
             // yap also adds the output dir
             IFolder outdir = TexlipseProperties.getProjectOutputDir(project);
-            String outdirName = outdir.getProjectRelativePath().toString() + File.separator;
-            index = file.indexOf(outdirName);
-            if (index == 0) {
-                // remove output path
-                file = file.substring(outdirName.length());
+            if (outdir != null) {
+                String outdirName = outdir.getProjectRelativePath().toString() + File.separator;
+                index = file.indexOf(outdirName);
+                if (index == 0) {
+                    // remove output path
+                    file = file.substring(outdirName.length());
+                }
             }
             resource = project.findMember(file);
             if (resource == null) {

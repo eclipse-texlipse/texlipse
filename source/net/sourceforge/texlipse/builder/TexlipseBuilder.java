@@ -22,6 +22,7 @@ import net.sourceforge.texlipse.properties.TexlipseProperties;
 import net.sourceforge.texlipse.texparser.LatexParserUtils;
 import net.sourceforge.texlipse.viewer.ViewerManager;
 
+import org.eclipse.core.internal.resources.ResourceException;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -568,8 +569,12 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
         // mark temp files as derived
         markTempFiles(project, sourceDir);
         
-        // possibly move output & temp files away from the source dir
-        moveOutput(project, sourceDir, monitor);
+        
+        try { // possibly move output & temp files away from the source dir
+            moveOutput(project, sourceDir, monitor);
+        } catch (CoreException e) {
+            throw new BuilderCoreException(TexlipsePlugin.stat("Could not write to output file. Please close the output document in your viewer and rebuild."));
+        }
         moveTempFiles(project, monitor);
         
 		monitor.done();

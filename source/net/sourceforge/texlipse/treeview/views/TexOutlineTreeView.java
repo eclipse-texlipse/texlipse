@@ -35,7 +35,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IPartListener;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPart;
@@ -108,7 +107,7 @@ public class TexOutlineTreeView extends ViewPart implements  ISelectionChangedLi
      */
     public void createPartControl(Composite parent) {
         createActions();
-        treeViewer = new TreeViewer(parent, SWT.MULTI | SWT.H_SCROLL
+        treeViewer = new TreeViewer(parent, SWT.H_SCROLL
                 | SWT.V_SCROLL);
         
         treeViewer.addSelectionChangedListener(this);
@@ -137,9 +136,10 @@ public class TexOutlineTreeView extends ViewPart implements  ISelectionChangedLi
         getViewSite().getPage().addPartListener(this);
         // register it directly if the view is already created.
         IEditorPart part = getViewSite().getPage().getActiveEditor();
-        if(part!=null && part instanceof TexEditor) {
-            editor = (TexEditor) part;
-            editor.registerFullOutline(this);	
+        if (part != null && part instanceof TexEditor) {
+            TexEditor e = (TexEditor) part;
+            // editor = (TexEditor) part;
+            e.registerFullOutline(this);
         }
     }
     
@@ -157,8 +157,7 @@ public class TexOutlineTreeView extends ViewPart implements  ISelectionChangedLi
             if (control != null && !control.isDisposed()) {
                 control.setRedraw(false);
                 // save viewer state
-                //ISelection selection = viewer.getSelection();
-                //Todo: Change this
+                ISelection selection = treeViewer.getSelection();
                 treeViewer.getTree().deselectAll();
                 
                 Object[] expandedElements = treeViewer.getExpandedElements();
@@ -172,6 +171,10 @@ public class TexOutlineTreeView extends ViewPart implements  ISelectionChangedLi
                 
                 treeViewer.refresh();
                 
+                //restore the selection
+                treeViewer.removeSelectionChangedListener(this);
+                treeViewer.setSelection(selection);
+                treeViewer.addSelectionChangedListener(this);
                 control.setRedraw(true);
                 
                 // disable the refresh button
@@ -252,6 +255,7 @@ public class TexOutlineTreeView extends ViewPart implements  ISelectionChangedLi
         }
         else {
             OutlineNode node = (OutlineNode) ((IStructuredSelection) selection).getFirstElement();
+            editor.resetHighlightRange();
             
             if(node.getIFile()!=null){
                 FileEditorInput input = new FileEditorInput(node.getIFile());
@@ -260,19 +264,20 @@ public class TexOutlineTreeView extends ViewPart implements  ISelectionChangedLi
                     // this position must be calculated here, because
                     // the position of a node in an other file isn't available.
                     IWorkbenchPage cPage = TexlipsePlugin.getCurrentWorkbenchPage();
-                    editor = (TexEditor) cPage.findEditor(input);
-                    if (editor == null)
-                        editor = (TexEditor) cPage.openEditor(input, "net.sourceforge.texlipse.TexEditor");
-                    if (cPage.getActiveEditor() != editor)
-                        cPage.activate(editor);
-                    IDocument doc = editor.getDocumentProvider().getDocument(editor.getEditorInput());
+                    TexEditor e = (TexEditor) cPage.findEditor(input);
+                    //editor = (TexEditor) cPage.findEditor(input);
+                    if (e == null)
+                        e = (TexEditor) cPage.openEditor(input, "net.sourceforge.texlipse.TexEditor");
+                    if (cPage.getActiveEditor() != e)
+                        cPage.activate(e);
+                    IDocument doc = e.getDocumentProvider().getDocument(e.getEditorInput());
                     int beginOffset = doc.getLineOffset(node.getBeginLine() - 1);
                     int length;
                     if (node.getEndLine() - 1 == doc.getNumberOfLines())
                         length = doc.getLength() - beginOffset;
                     else
                         length = doc.getLineOffset(node.getEndLine() - 1) - beginOffset;
-                    editor.setHighlightRange(beginOffset, length, true);
+                    e.setHighlightRange(beginOffset, length, true);
                 } catch (PartInitException e) {
                     TexlipsePlugin.log("Can't open editor.", e);
                 } catch (BadLocationException e) {
@@ -499,8 +504,10 @@ public class TexOutlineTreeView extends ViewPart implements  ISelectionChangedLi
      */
     public void partActivated(IWorkbenchPart part) {
         if (part instanceof TexEditor) {
-            editor = (TexEditor) part;
-            editor.registerFullOutline(this);
+            if (editor != null)
+                editor.unregisterFullOutline(this);
+            TexEditor e = (TexEditor) part;
+            e.registerFullOutline(this);
         }
     }
     
@@ -520,10 +527,10 @@ public class TexOutlineTreeView extends ViewPart implements  ISelectionChangedLi
      * Unregister the fulloutline if the editor is deactivated
      */
     public void partDeactivated(IWorkbenchPart part) {
-        if (part instanceof TexEditor) {
-            editor = (TexEditor) part;
-            editor.unregisterFullOutline(this);
-        }
+/*        if (part instanceof TexEditor) {
+            TexEditor e = (TexEditor) part;
+            e.unregisterFullOutline(this);
+        }*/
     }
     
     /**

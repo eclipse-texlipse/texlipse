@@ -623,15 +623,28 @@ public class TexDocumentModel implements IDocumentListener {
             IProgressMonitor monitor) throws TexDocumentParseException {
         // create the full parser if not available yet. initialize it with the
         // project main file and a handle to the current project.
-        //TODO every file in a project has it's own FullTexParser, but one per project is enough
         if (this.fullParser == null) {
-            try {
-                IFile mainFile = TexlipseProperties
-                        .getProjectSourceFile(getCurrentProject());
-                this.fullParser = new FullTexParser(getCurrentProject(),
-                        mainFile);
-            } catch (IllegalArgumentException e) {
-                TexlipsePlugin.log("Project main file not set.", e);
+            //Determine project
+            IProject project;
+            if (changedFile != null)
+                project = changedFile.getProject();
+            else
+                project = TexlipsePlugin.getCurrentProject();
+
+            Object projectFullParser = TexlipseProperties.getSessionProperty(project, 
+                    TexlipseProperties.SESSION_PROJECT_FULLOUTLINE);
+            if (projectFullParser != null) {
+                this.fullParser = (FullTexParser) projectFullParser;
+            }
+            else {
+                try {
+                    IFile mainFile = TexlipseProperties.getProjectSourceFile(getCurrentProject());
+                    this.fullParser = new FullTexParser(getCurrentProject(), mainFile);
+                    TexlipseProperties.setSessionProperty(project, 
+                            TexlipseProperties.SESSION_PROJECT_FULLOUTLINE, this.fullParser);
+                } catch (IllegalArgumentException e) {
+                    TexlipsePlugin.log("Project main file not set.", e);
+                }
             }
         }
 

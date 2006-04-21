@@ -30,6 +30,7 @@ import org.eclipse.jface.text.source.projection.ProjectionViewer;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.editors.text.TextEditor;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.eclipse.ui.texteditor.SourceViewerDecorationSupport;
@@ -307,9 +308,23 @@ public class TexEditor extends TextEditor {
      * @param view the view.
      */
     public void registerFullOutline(TexOutlineTreeView view) {
+        boolean projectChange = false;
+        if (view == null || view.getEditor() == null) {
+            projectChange = true;
+        }
+        else if (view.getEditor().getEditorInput() instanceof IFileEditorInput) {
+            IFileEditorInput oldInput = (IFileEditorInput) view.getEditor().getEditorInput();
+            IFileEditorInput newInput = (IFileEditorInput) this.getEditorInput();
+            // Check whether the project changes
+            if (!oldInput.getFile().getProject().equals(newInput.getFile().getProject()))
+                projectChange = true;
+        } else
+            projectChange = true;
+
         this.fullOutline = view;
         this.fullOutline.setEditor(this);
-        this.documentModel.updateFullOutline();
+        if (projectChange)
+            this.documentModel.updateFullOutline();
     }
     
     /**

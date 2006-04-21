@@ -161,6 +161,7 @@ public class TexlipseProperties {
     public static final String SESSION_PROPERTIES_LOAD = "propsLoaded";
     // attribute for session properties to hold the viewer process object
     public static final String SESSION_ATTRIBUTE_VIEWER = "active.viewer";
+    public static final String SESSION_PROJECT_FULLOUTLINE = "project.fullTexParser";
     
     /**
        * A named preference that controls whether bracket matching highlighting is turned on or off.

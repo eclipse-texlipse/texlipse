@@ -64,12 +64,19 @@ public class TexPartitionScanner extends RuleBasedPartitionScanner {
         rules.add(new MultiLineRule("$", "$", math));
         rules.add(new TexEnvironmentRule("eqnarray", math));
         rules.add(new TexEnvironmentRule("eqnarray*", math));
+        rules.add(new TexEnvironmentRule("math", math));
+        rules.add(new TexEnvironmentRule("displaymath", math));
+        //AMSMath environments
         rules.add(new TexEnvironmentRule("align", math));
         rules.add(new TexEnvironmentRule("align*", math));
         rules.add(new TexEnvironmentRule("alignat", math));
         rules.add(new TexEnvironmentRule("alignat*", math));
-        rules.add(new TexEnvironmentRule("math", math));
-        rules.add(new TexEnvironmentRule("displaymath", math));
+        rules.add(new TexEnvironmentRule("flalign", math));
+        rules.add(new TexEnvironmentRule("flalign*", math));
+        rules.add(new TexEnvironmentRule("multline", math));
+        rules.add(new TexEnvironmentRule("multline*", math));
+        rules.add(new TexEnvironmentRule("gather", math));
+        rules.add(new TexEnvironmentRule("gather*", math));
 
 		IPredicateRule[] result = new IPredicateRule[rules.size()];
 		rules.toArray(result);

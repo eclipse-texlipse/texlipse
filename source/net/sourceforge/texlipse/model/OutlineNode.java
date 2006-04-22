@@ -23,7 +23,8 @@ import org.eclipse.jface.text.Position;
  */
 public class OutlineNode {
     
-    // These should be allocated between 0-100
+    // These should be allocated between -1 to 100
+    public static final int TYPE_DOCUMENT = -1;
     public static final int TYPE_PART = 0;
     public static final int TYPE_CHAPTER = 1;
     public static final int TYPE_SECTION = 2;
@@ -78,6 +79,11 @@ public class OutlineNode {
         this.declarationLength = length;
     }
 
+    public OutlineNode copy() {
+        OutlineNode on = new OutlineNode(name, type, beginLine, offsetOnLine, declarationLength);
+        on.endLine = endLine;
+        return on;
+    }
     
     /**
      * Adds a child to this node.

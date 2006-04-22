@@ -20,6 +20,7 @@ import net.sourceforge.texlipse.bibparser.BibParser;
 import net.sourceforge.texlipse.editor.TexDocumentParseException;
 import net.sourceforge.texlipse.editor.TexEditor;
 import net.sourceforge.texlipse.outline.TexOutlinePage;
+import net.sourceforge.texlipse.outline.TexProjectOutline;
 import net.sourceforge.texlipse.properties.TexlipseProperties;
 import net.sourceforge.texlipse.texparser.FullTexParser;
 import net.sourceforge.texlipse.texparser.LatexRefExtractingParser;
@@ -317,6 +318,7 @@ public class TexDocumentModel implements IDocumentListener {
     
     private TexEditor editor;
     private TexParser parser;
+    private TexProjectOutline projectOutline;
     
     private TexOutlineInput outlineInput;
     
@@ -565,6 +567,9 @@ public class TexDocumentModel implements IDocumentListener {
         if (this.parser == null) {
             this.parser = new TexParser(this.editor.getDocumentProvider().getDocument(this.editor.getEditorInput()));
         }
+        if (projectOutline == null) {
+            projectOutline = new TexProjectOutline(getCurrentProject(), labelContainer, bibContainer);
+        }
         
         try {
             this.parser.parseDocument(labelContainer, bibContainer);
@@ -594,6 +599,13 @@ public class TexDocumentModel implements IDocumentListener {
         if (parser.isFatalErrors()) {
             throw new TexDocumentParseException("Fatal errors in file, parsing aborted.");
         }
+
+        // FIXME consider pathnames
+        String fileName = editor.getEditorInput().getName();        
+        projectOutline.addOutline(parser.getOutlineTree(), fileName);
+        // FIXME add checks that we actually want this and then insert it
+        //List fo = projectOutline.getFullOutline();
+
         
         updateReferences(monitor);
         

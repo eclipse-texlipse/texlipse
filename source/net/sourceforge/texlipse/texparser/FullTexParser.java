@@ -125,13 +125,12 @@ public class FullTexParser extends TexParser {
                 // start the parse
                 LatexLexer lexer = new LatexLexer(new PushbackReader(
                         new StringReader(input), 1024));
+                OutlineNode on = null;
                 if (this.preamble != null) {
-                    OutlineNode on = new OutlineNode("Preamble",
+                    on = new OutlineNode("Preamble",
                             OutlineNode.TYPE_PREAMBLE, 1, null);
-                    lparser.parse(lexer, labels, bibs, on);
-                } else {
-                    lparser.parse(lexer, labels, bibs);
                 }
+                lparser.parse(lexer, labels, bibs, on);
                 
                 this.outlineTree = lparser.getOutlineTree();
                 this.fatalErrors = lparser.isFatalErrors();

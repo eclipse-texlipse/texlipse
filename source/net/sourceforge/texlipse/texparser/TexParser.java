@@ -125,14 +125,22 @@ public class TexParser {
             this.preamble = input;
     }
 
+    
+    /**
+     * Parses the input
+     * 
+     * @throws IOException
+     */
+    public void parseDocument(ReferenceContainer labels, ReferenceContainer bibs) throws IOException {
+        parseDocument(labels, bibs, inputDoc.get());
+    }
+    
     /**
      * Parses the document
      * 
      * @throws IOException
      */
-    public void parseDocument(ReferenceContainer labels, ReferenceContainer bibs) throws IOException {
-        
-        String input = inputDoc.get();
+    public void parseDocument(ReferenceContainer labels, ReferenceContainer bibs, String input) throws IOException {
         
         // remove trailing ws (this is because a discrepancy in the lexer's 
         // and IDocument's line counting for trailing whitespace)

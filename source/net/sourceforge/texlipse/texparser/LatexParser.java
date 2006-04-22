@@ -617,9 +617,15 @@ public class LatexParser {
                         //inputs.add(t.getText());
                         if (!blocks.empty()) {
                             OutlineNode prev = (OutlineNode) blocks.peek();
-                            inputs.add(new OutlineNode(t.getText(), OutlineNode.TYPE_INPUT, t.getLine(), prev));
+                            OutlineNode on = new OutlineNode(t.getText(), OutlineNode.TYPE_INPUT, t.getLine(), prev);
+                            on.setEndLine(t.getLine());
+                            prev.addChild(on);
+                            inputs.add(on);
                         } else {
-                            inputs.add(new OutlineNode(t.getText(), OutlineNode.TYPE_INPUT, t.getLine(), null));
+                            OutlineNode on = new OutlineNode(t.getText(), OutlineNode.TYPE_INPUT, t.getLine(), null);
+                            on.setEndLine(t.getLine());
+                            outlineTree.add(on);
+                            inputs.add(on);
                         }
                     
                     } else if (prevToken instanceof TCnew) {

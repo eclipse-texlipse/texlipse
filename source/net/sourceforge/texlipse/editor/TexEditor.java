@@ -15,7 +15,6 @@ import net.sourceforge.texlipse.TexlipsePlugin;
 import net.sourceforge.texlipse.model.TexDocumentModel;
 import net.sourceforge.texlipse.outline.TexOutlinePage;
 import net.sourceforge.texlipse.properties.TexlipseProperties;
-import net.sourceforge.texlipse.smartkey.SmartKeyConverter;
 import net.sourceforge.texlipse.treeview.views.TexOutlineTreeView;
 
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -27,8 +26,6 @@ import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.IVerticalRuler;
 import org.eclipse.jface.text.source.projection.ProjectionSupport;
 import org.eclipse.jface.text.source.projection.ProjectionViewer;
-import org.eclipse.jface.util.IPropertyChangeListener;
-import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.editors.text.TextEditor;
@@ -59,7 +56,6 @@ public class TexEditor extends TextEditor {
     private ProjectionSupport fProjectionSupport;
     private BracketInserter fBracketInserter;
     
-    private SmartKeyConverter smartKeyConv;
     
     /**
      * Constructs a new editor.
@@ -98,37 +94,9 @@ public class TexEditor extends TextEditor {
 //      B----------------------------------- mmaus
         
         if (fullOutline != null) {
-            this.documentModel.updateFullOutline();
+            this.documentModel.updateNow();
         }
-
-        // enable smart key conversion directly if enabled.
-        if (TexlipsePlugin.getPreference(TexlipseProperties.SMART_KEY_ENABLE).equals("true")) {
-            this.getViewer().getTextWidget().addVerifyKeyListener(smartKeyConv);
-            this.getDocumentProvider().getDocument(getEditorInput()).addDocumentListener(smartKeyConv);
-        }
-
-        // listen for the smart key enable preference.
-        TexlipsePlugin.getDefault().getPreferenceStore()
-                .addPropertyChangeListener(new IPropertyChangeListener() {
-
-                    public void propertyChange(PropertyChangeEvent event) {
-                        if (event.getProperty().equals(TexlipseProperties.SMART_KEY_ENABLE)) {
-                            if (((Boolean) event.getNewValue()).booleanValue()) {
-                                getViewer().getTextWidget().addVerifyKeyListener(smartKeyConv);
-                                getDocumentProvider().getDocument(
-                                        getEditorInput()).addDocumentListener(
-                                        smartKeyConv);
-                            } else {
-                                getViewer().getTextWidget().removeVerifyKeyListener(smartKeyConv);
-                                getDocumentProvider().getDocument(
-                                        getEditorInput())
-                                        .removeDocumentListener(smartKeyConv);
-                            }
-                        }
-                    }
-                });
-
-//          E----------------------------------- mmaus
+//      E----------------------------------- mmaus
         
         ISourceViewer sourceViewer = getSourceViewer();
         if (sourceViewer instanceof ITextViewerExtension) {
@@ -147,7 +115,6 @@ public class TexEditor extends TextEditor {
     protected void initializeEditor() {
         super.initializeEditor();
         this.documentModel = new TexDocumentModel(this);
-        this.smartKeyConv = SmartKeyConverter.getInstance();
         setSourceViewerConfiguration(new TexSourceViewerConfiguration(this));
         // register a document provider to get latex support even in non-latex projects
         if (getDocumentProvider() == null) {
@@ -269,11 +236,6 @@ public class TexEditor extends TextEditor {
      */
     public void updateModelNow() {
     	this.documentModel.updateNow();
-//      B----------------------------------- mmaus
-    	if (fullOutline != null) {
-            documentModel.updateFullOutline();
-        }
-//      E----------------------------------- mmaus
     }
     
     /**
@@ -323,8 +285,11 @@ public class TexEditor extends TextEditor {
 
         this.fullOutline = view;
         this.fullOutline.setEditor(this);
-        if (projectChange)
-            this.documentModel.updateFullOutline();
+        if (projectChange) {
+            //If the project changes we have to update the fulloutline
+            this.fullOutline.projectChanged();
+            this.documentModel.updateNow();
+        }
     }
     
     /**

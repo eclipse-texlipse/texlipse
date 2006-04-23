@@ -338,6 +338,14 @@ public class TexOutlineTreeView extends ViewPart implements  ISelectionChangedLi
     }
     
     /**
+     * Call this method to reset all internal states after a project change 
+     *
+     */
+    public void projectChanged() {
+        this.expandLevel = 1;
+    }
+    
+    /**
      * Creates the actions assosiated with the outline. 
      */
     private void createActions() {
@@ -350,8 +358,10 @@ public class TexOutlineTreeView extends ViewPart implements  ISelectionChangedLi
             public void run() {
                 if (expandLevel > 1) {
                     expandLevel--;
+                    treeViewer.getControl().setRedraw(false);
                     treeViewer.collapseAll();
                     treeViewer.expandToLevel(expandLevel);
+                    treeViewer.getControl().setRedraw(true);
                 }
             }
         };
@@ -364,8 +374,10 @@ public class TexOutlineTreeView extends ViewPart implements  ISelectionChangedLi
                 if (expandLevel < input.getTreeDepth()) {
                     expandLevel++;
                 }
+                treeViewer.getControl().setRedraw(false);
                 treeViewer.collapseAll();
                 treeViewer.expandToLevel(expandLevel);
+                treeViewer.getControl().setRedraw(true);
             }
         };
         expand.setToolTipText("Expand one level");
@@ -527,10 +539,6 @@ public class TexOutlineTreeView extends ViewPart implements  ISelectionChangedLi
      * Unregister the fulloutline if the editor is deactivated
      */
     public void partDeactivated(IWorkbenchPart part) {
-/*        if (part instanceof TexEditor) {
-            TexEditor e = (TexEditor) part;
-            e.unregisterFullOutline(this);
-        }*/
     }
     
     /**

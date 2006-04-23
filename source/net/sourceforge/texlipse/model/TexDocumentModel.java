@@ -22,7 +22,6 @@ import net.sourceforge.texlipse.editor.TexEditor;
 import net.sourceforge.texlipse.outline.TexOutlinePage;
 import net.sourceforge.texlipse.outline.TexProjectOutline;
 import net.sourceforge.texlipse.properties.TexlipseProperties;
-import net.sourceforge.texlipse.texparser.FullTexParser;
 import net.sourceforge.texlipse.texparser.LatexRefExtractingParser;
 import net.sourceforge.texlipse.texparser.TexParser;
 import net.sourceforge.texlipse.treeview.views.TexOutlineTreeView;
@@ -55,7 +54,9 @@ import org.eclipse.ui.progress.WorkbenchJob;
  * LaTeX document model. Handles parsing of the document and updating
  * the outline, folding and content assist datastructures.
  * 
- * @author Taavi Hupponen, Oskar Ojala
+ * @author Taavi Hupponen
+ * @author Oskar Ojala
+ * @author Boris von Loesch
  */
 public class TexDocumentModel implements IDocumentListener {
    
@@ -141,6 +142,7 @@ public class TexDocumentModel implements IDocumentListener {
     private class PostParseJob extends WorkbenchJob {
         
         private ArrayList rootNodes;
+        private List fullOutlineNodes;
 
         /**
          * 
@@ -155,6 +157,13 @@ public class TexDocumentModel implements IDocumentListener {
          */
         public void setRootNodes(ArrayList rootNodes) {
             this.rootNodes = rootNodes;
+        }
+        
+        /**
+         * @param rootNodes
+         */
+        public void setFONodes (List rootNodes) {
+            this.fullOutlineNodes = rootNodes;
         }
 
         /**
@@ -173,130 +182,14 @@ public class TexDocumentModel implements IDocumentListener {
                     editor.getOutlinePage().update(outlineInput);
                 }
                 
-                return Status.OK_STATUS;
-            } catch (Exception e) {
-                // npe when exiting eclipse and saving
-                return Status.CANCEL_STATUS;
-            }
-        }
-    }
+                //Update FullOutline
+                if (fullOutlineNodes != null) {
 
-    // B----------------------------------- mmaus
-    
-    /**
-     * Job for performing the parsing in a background thread. When parsing is
-     * done schedules the PostParseJob, which updates the input for the full
-     * outline. waits for the PostParseJob to finish.
-     * 
-     * Monitor is polled often to detect cancellation.
-     * 
-     */
-    private class ParseJob2 extends Job {
-
-        private IFile fileChanged;
-        private String changedInput;
-
-        /**
-         * @param name name of the job
-         */
-        public ParseJob2(String name) {
-            super(name);
-        }
-
-        /**
-         * 
-         * @param fileChanged the reference to the file which changed.
-         */
-        public void setChangedFile(IFile fileChanged) {
-            this.fileChanged = fileChanged;
-        }
-
-        /**
-         * 
-         * @param changedInput the input which has changed
-         */
-        public void setChangedInput(String changedInput) {
-            this.changedInput = changedInput;
-        }
-
-        /**
-         * @see org.eclipse.core.runtime.jobs.Job#run(org.eclipse.core.runtime.IProgressMonitor)
-         */
-        protected IStatus run(IProgressMonitor monitor) {
-            try {
-                // parsing
-                ArrayList rootNodes;
-                try {
-                    rootNodes = doFullParse(this.fileChanged, this.changedInput, monitor);
-                } catch (TexDocumentParseException e1) {
-                    return Status.CANCEL_STATUS;
-                }
-                if (rootNodes == null) {
-                    return Status.CANCEL_STATUS;
-                }
-                pollCancel(monitor);
-
-                // handling of parse results
-                postParseJob2.setRootNodes(rootNodes);
-                postParseJob2.schedule();
-
-                try {
-                    postParseJob2.join();
-                } catch (InterruptedException e2) {
-                    return Status.CANCEL_STATUS;
-                }
-
-                // return parse status etc.
-                IStatus result = postParseJob2.getResult();
-                // parsing ok
-                if (result != null && result.equals(Status.OK_STATUS)) {
                     pollCancel(monitor);
-                    return result;
-                }
-
-                // parsing not ok
-                return Status.CANCEL_STATUS;
-            } catch (Exception e) {
-                return Status.CANCEL_STATUS;
-            }
-        }
-    }
-
-    /**
-     * Job for updating the full outline input. Runs in the ui thread.
-     * 
-     * Monitor is polled often to detect cancellation.
-     * 
-     * @author Taavi Hupponen
-     */
-    private class PostParseJob2 extends WorkbenchJob {
-
-        private ArrayList rootNodes;
-
-        /**
-         * @param name name of the job
-         */
-        public PostParseJob2(String name) {
-            super(name);
-        }
-
-        /**
-         * @param rootNodes
-         */
-        public void setRootNodes(ArrayList rootNodes) {
-            this.rootNodes = rootNodes;
-        }
-
-        /**
-         * @see org.eclipse.ui.progress.UIJob#runInUIThread(org.eclipse.core.runtime.IProgressMonitor)
-         */
-        public IStatus runInUIThread(IProgressMonitor monitor) {
-            try {
-                createOutlineInput(rootNodes, monitor);
-
-                pollCancel(monitor);
-                if (editor.getFullOutline() != null) {
-                    editor.getFullOutline().update(fullOutlineInput);
+                    if (editor.getFullOutline() != null) {
+                        //createOutlineInput(fullOutlineNodes, monitor);
+                        editor.getFullOutline().update(new TexOutlineInput(new ArrayList(fullOutlineNodes)));
+                    }
                 }
 
                 return Status.OK_STATUS;
@@ -307,14 +200,8 @@ public class TexDocumentModel implements IDocumentListener {
         }
     }
 
-    private FullTexParser fullParser;
-    private TexOutlineInput fullOutlineInput;
-    
-    // parsing jobs for the full outline.
-    private ParseJob2 parseJob2;
-    private PostParseJob2 postParseJob2;
 
-    // E----------------------------------- mmaus
+    private TexOutlineInput fullOutlineInput;
     
     private TexEditor editor;
     private TexParser parser;
@@ -356,15 +243,6 @@ public class TexDocumentModel implements IDocumentListener {
         parseJob.setPriority(Job.DECORATE); 
         postParseJob.setPriority(Job.DECORATE); 
     
-//      B----------------------------------- mmaus
-        
-        parseJob2 = new ParseJob2("Parsing");
-        postParseJob2 = new PostParseJob2("Updating");
-        parseJob2.setPriority(Job.DECORATE); 
-        postParseJob2.setPriority(Job.DECORATE);
-        
-//      E----------------------------------- mmaus
-        
         // get preferences
         this.autoParseEnabled = TexlipsePlugin.getDefault().getPreferenceStore().getBoolean(TexlipseProperties.AUTO_PARSING);
         this.parseDelay = TexlipsePlugin.getDefault().getPreferenceStore().getInt(TexlipseProperties.AUTO_PARSING_DELAY);
@@ -430,24 +308,6 @@ public class TexDocumentModel implements IDocumentListener {
         }
     }
 
-//  B----------------------------------- mmaus
-    
-    /**
-     * Cancels possibly running parseJob and schedules it to run again 
-     * immediately.
-     * 
-     * Called when new outline is created, so it is quite likely that there
-     * is no parseJob running.
-     * 
-     * If parseJob were running we could maybe use isDirty to figure out
-     * if it would be smarter to wait for the running parseJob.
-     */
-    public void updateFullOutline() {
-        parseJob2.cancel();
-        parseJob2.schedule();
-    }
-
-// E----------------------------------- mmaus
 
     /**
      * Returns the reference (label and BibTeX) for this model
@@ -475,9 +335,6 @@ public class TexDocumentModel implements IDocumentListener {
         return this.isDirty;
     }
 
-
-
-    
     
     /** 
      * Does nothing atm.
@@ -487,7 +344,6 @@ public class TexDocumentModel implements IDocumentListener {
     public void documentAboutToBeChanged(DocumentEvent event) {
     
     }
-
 
 
     /**
@@ -510,7 +366,6 @@ public class TexDocumentModel implements IDocumentListener {
         try {
             lock.acquire();
             parseJob.cancel();
-            parseJob2.cancel();
             this.setDirty(true);
         } finally {
             lock.release();
@@ -534,30 +389,34 @@ public class TexDocumentModel implements IDocumentListener {
         // reschedule parsing with delay
         if (autoParseEnabled) {
             parseJob.schedule(parseDelay);
-            
-//          B----------------------------------- mmaus
-            //Only parse if fullOutline is on
-            if (fullOutline != null) {
-                IResource res = (IResource) this.editor.getEditorInput().getAdapter(IResource.class);
-                if (res == null || res.getType() != IResource.FILE) {
-                    // No file is selected, so user must be browsing
-                    // with the navigator. Don't build anything yet.
-                    return;
-                }
-                IFile file = getCurrentProject().getFile(res.getProjectRelativePath());
-                parseJob2.setChangedFile(file);
-                parseJob2.setChangedInput(event.getDocument().get());
-                parseJob2.schedule(parseDelay);
-            }
-//          E----------------------------------- mmaus
         }
     }
 
     
     /**
+     * Creates if not exist the ProjectOutline
+     *
+     */
+    private void createProjectOutline() {
+        if (projectOutline == null) {
+            IProject project = getCurrentProject();
+            Object projectSessionOutLine = TexlipseProperties.getSessionProperty(project,
+                    TexlipseProperties.SESSION_PROJECT_FULLOUTLINE);
+            if (projectSessionOutLine != null)
+                projectOutline = (TexProjectOutline) projectSessionOutLine;
+            else {
+                projectOutline = new TexProjectOutline(getCurrentProject(), labelContainer, bibContainer);
+                TexlipseProperties.setSessionProperty(project, TexlipseProperties.SESSION_PROJECT_FULLOUTLINE,
+                        projectOutline);
+            }
+        }
+    }
+    
+    /**
      * Parses the LaTeX-document and adds error markers if there were any
      * errors. Throws <code>TexDocumentParseException</code> if there were
      * fatal parse errors that prohibit building an outline.
+     * 
      * @param monitor
      * 
      * @throws TexDocumentParseException
@@ -567,9 +426,7 @@ public class TexDocumentModel implements IDocumentListener {
         if (this.parser == null) {
             this.parser = new TexParser(this.editor.getDocumentProvider().getDocument(this.editor.getEditorInput()));
         }
-        if (projectOutline == null) {
-            projectOutline = new TexProjectOutline(getCurrentProject(), labelContainer, bibContainer);
-        }
+        createProjectOutline();
         
         try {
             this.parser.parseDocument(labelContainer, bibContainer);
@@ -600,12 +457,15 @@ public class TexDocumentModel implements IDocumentListener {
             throw new TexDocumentParseException("Fatal errors in file, parsing aborted.");
         }
 
-        // FIXME consider pathnames
-        String fileName = editor.getEditorInput().getName();        
+        IResource res = (IResource) this.editor.getEditorInput().getAdapter(IResource.class);
+        String fileName = res.getProjectRelativePath().toString();
         projectOutline.addOutline(parser.getOutlineTree(), fileName);
-        // FIXME add checks that we actually want this and then insert it
-        //List fo = projectOutline.getFullOutline();
-
+        if (editor.getFullOutline() != null) {
+            List fo = projectOutline.getFullOutline();
+            postParseJob.setFONodes(fo);
+        } else {
+            postParseJob.setFONodes(null);
+        }
         
         updateReferences(monitor);
         
@@ -622,77 +482,6 @@ public class TexDocumentModel implements IDocumentListener {
         return this.parser.getOutlineTree();
     }
 
-//  B----------------------------------- mmaus
-    
-    /**
-     * Parses the LaTeX-document and adds error markers if there were any
-     * errors. Throws <code>TexDocumentParseException</code> if there were
-     * fatal parse errors that prohibit building an outline.
-     * @param monitor
-     * @throws TexDocumentParseException 
-     */
-    private ArrayList doFullParse(IFile changedFile, String inputChanged,
-            IProgressMonitor monitor) throws TexDocumentParseException {
-        // create the full parser if not available yet. initialize it with the
-        // project main file and a handle to the current project.
-        if (this.fullParser == null) {
-            //Determine project
-            IProject project;
-            if (changedFile != null)
-                project = changedFile.getProject();
-            else
-                project = TexlipsePlugin.getCurrentProject();
-
-            Object projectFullParser = TexlipseProperties.getSessionProperty(project, 
-                    TexlipseProperties.SESSION_PROJECT_FULLOUTLINE);
-            if (projectFullParser != null) {
-                this.fullParser = (FullTexParser) projectFullParser;
-            }
-            else {
-                try {
-                    IFile mainFile = TexlipseProperties.getProjectSourceFile(getCurrentProject());
-                    this.fullParser = new FullTexParser(getCurrentProject(), mainFile);
-                    TexlipseProperties.setSessionProperty(project, 
-                            TexlipseProperties.SESSION_PROJECT_FULLOUTLINE, this.fullParser);
-                } catch (IllegalArgumentException e) {
-                    TexlipsePlugin.log("Project main file not set.", e);
-                }
-            }
-        }
-
-        // if the actual document has changed
-        if (changedFile != null) {
-            this.fullParser.setChangedFile(changedFile);
-        }
-        if (inputChanged != null) {
-            this.fullParser.setChangedInput(inputChanged);
-        }
-
-        // parse
-        try {
-            this.fullParser.parseDocument(labelContainer, bibContainer);
-        } catch (IOException e) {
-            TexlipsePlugin.log("Can't read file.", e);
-            throw new TexDocumentParseException(e);
-        }
-        pollCancel(monitor);
-
-        // error hadling
-        ArrayList errors = fullParser.getErrors();
-        MarkerHandler marker = MarkerHandler.getInstance();
-        if (errors != null && errors.size() > 0) {
-            marker.createErrorMarkers(editor, errors);
-        }
-
-        if (fullParser.isFatalErrors()) {
-            throw new TexDocumentParseException(
-                    "Fatal errors in file, parsing aborted.");
-        }
-
-        return this.fullParser.getOutlineTree();
-    }
-    
-//  E----------------------------------- mmaus
     
     /**
      * Traverses the OutlineNode tree and adds a Position for each
@@ -788,69 +577,6 @@ public class TexDocumentModel implements IDocumentListener {
         }
         return maxDepth;
     }
-    
-//  B----------------------------------- mmaus
-    
-    /**
-     * Traverses the OutlineNode tree.
-     * 
-     * Adds the nodes to type lists of the OutlineInput and 
-     * calculates the tree depth.
-     * 
-     * @param rootNodes
-     * @param monitor monitor for the job calling this method
-     */
-    private void createOutlineInput(ArrayList rootNodes, IProgressMonitor monitor) {
-        TexOutlineInput newOutlineInput = new TexOutlineInput(rootNodes);
-
-        // set the depth and add nodes to the tree
-        int maxDepth = 0;
-        for (Iterator iter = rootNodes.iterator(); iter.hasNext();) {
-            OutlineNode node = (OutlineNode) iter.next();
-            int localDepth = handleNode(node, 0, newOutlineInput);
-
-            if (localDepth > maxDepth) {
-                maxDepth = localDepth;
-            }
-            pollCancel(monitor);
-        }
-        pollCancel(monitor);
-
-        // set the new outline input
-        newOutlineInput.setTreeDepth(maxDepth);
-        this.fullOutlineInput = newOutlineInput;
-    }
-    
-    /**
-     * Adds a node to the outline input. Calculates the depth of the tree. Used
-     * recursively.
-     * 
-     * @param node the current node.
-     * @param parentDepth the depth to the parent.
-     * @param newOutlineInput the input for the full outline.
-     * @return
-     */
-    private int handleNode(OutlineNode node, int parentDepth, TexOutlineInput newOutlineInput) {        
-        
-        // add node to outline input
-        newOutlineInput.addNode(node);
-        
-        // iterate through the children
-        List children = node.getChildren();
-        int maxDepth = parentDepth + 1;
-        if (children != null) {
-            for (Iterator iter = children.iterator(); iter.hasNext();) {
-                int localDepth = handleNode((OutlineNode) iter.next(),
-                        parentDepth + 1, newOutlineInput);
-                if (localDepth > maxDepth) {
-                    maxDepth = localDepth;
-                }
-            }
-        }
-        return maxDepth;
-    }
-    
-//  E----------------------------------- mmaus
     
     /**
      * Updates the references and project data based on the data in the

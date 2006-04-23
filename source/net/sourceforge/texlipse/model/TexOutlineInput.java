@@ -11,6 +11,8 @@ package net.sourceforge.texlipse.model;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * Container class for outline input stuff. Includes the outline tree
@@ -33,6 +35,7 @@ public class TexOutlineInput {
 	public TexOutlineInput(ArrayList rootNodes) {
 		this.rootNodes = rootNodes;
 		typeLists = new HashMap();
+        treeDepth = -1;
 	}
 	
     /**
@@ -91,7 +94,10 @@ public class TexOutlineInput {
 	 * @return Returns the treeDepth.
 	 */
 	public int getTreeDepth() {
-		return treeDepth;
+        //Calculate TreeDepth on the fly
+		if (treeDepth == -1)
+            calculateTreeDepth();
+        return treeDepth;
 	}
 	/**
 	 * @param treeDepth The treeDepth to set.
@@ -99,4 +105,41 @@ public class TexOutlineInput {
 	public void setTreeDepth(int treeDepth) {
 		this.treeDepth = treeDepth;
 	}
+    
+    /**
+     * Calculates and sets the depth of the tree
+     *
+     */
+    public void calculateTreeDepth() {
+        treeDepth = 0;
+        for (Iterator iter = rootNodes.iterator(); iter.hasNext();) {
+            OutlineNode node = (OutlineNode) iter.next();
+            int localDepth = handleNode(node, 0);
+            if (localDepth > treeDepth)
+                treeDepth = localDepth;
+        }
+    }
+    
+    /**
+     * Calculates the depth of the tree. Used recursively.
+     * 
+     * @param node the current node.
+     * @param parentDepth the depth to the parent.
+     * @return
+     */
+    private int handleNode(OutlineNode node, int parentDepth) {
+
+        // iterate through the children
+        List children = node.getChildren();
+        int maxDepth = parentDepth + 1;
+        if (children != null) {
+            for (Iterator iter = children.iterator(); iter.hasNext();) {
+                int localDepth = handleNode((OutlineNode) iter.next(), parentDepth + 1);
+                if (localDepth > maxDepth)
+                    maxDepth = localDepth;
+            }
+        }
+        return maxDepth;
+    }
+
 }

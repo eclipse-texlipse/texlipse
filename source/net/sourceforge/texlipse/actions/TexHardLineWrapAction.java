@@ -136,10 +136,14 @@ public class TexHardLineWrapAction implements IEditorActionDelegate {
 					if (lines[index].trim().startsWith("\\item") && !itemFound) {
 						end = true;
 						itemFound = true;
-					}else {
+					} else {
 						temp.append(lines[index].trim()+" ");
 						itemFound = false;
-						index++;
+                        //Respect \\ with a subsequent line break
+                        if (lines[index].trim().endsWith("\\\\")) { 
+                            end = true;
+                        }
+                        index++;
 					}
 					
 				} else {

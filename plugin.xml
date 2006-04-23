@@ -809,8 +809,9 @@ ${cursor}
                label="&amp;Latex"
                id="net.sourceforge.texlipse.menus.latex">
             <separator name="sourceGroup"/>
-            <separator name="commentGroup"/>
             <separator name="latexGroup"/>
+            <separator name="commentGroup"/>
+            <separator name="spellGroup"/>
          </menu>
           <action
                 class="net.sourceforge.texlipse.actions.WordCountAction"
@@ -837,7 +838,7 @@ ${cursor}
                definitionId="net.sourceforge.texlipse.commands.setAsMainFile"
                id="net.sourceforge.texlipse.actions.setAsMainFile"
                label="Set As &amp;Main File"
-               menubarPath="net.sourceforge.texlipse.menus.latex/commentGroup"
+               menubarPath="net.sourceforge.texlipse.menus.latex/latexGroup"
                style="push"/>
          <action
                class="net.sourceforge.texlipse.actions.SaveAsTemplateAction"
@@ -845,7 +846,7 @@ ${cursor}
                icon="icons/savetemplate.gif"
                id="net.sourceforge.texlipse.actions.saveAsTemplate"
                label="Save As &amp;Template"
-               menubarPath="net.sourceforge.texlipse.menus.latex/commentGroup"               
+               menubarPath="net.sourceforge.texlipse.menus.latex/latexGroup"               
                style="push"
                toolbarPath="latexGroup"
                tooltip="Save this file as a project template"/>
@@ -855,7 +856,7 @@ ${cursor}
                icon="icons/buildpartially.gif"
                id="net.sourceforge.texlipse.actions.partialBuild"
                label="Build &amp;Partially"
-               menubarPath="net.sourceforge.texlipse.menus.latex/commentGroup"
+               menubarPath="net.sourceforge.texlipse.menus.latex/latexGroup"
                style="toggle"
                toolbarPath="latexGroup"
                tooltip="Toggle partial building on current project"/>
@@ -913,24 +914,25 @@ ${cursor}
                menubarPath="net.sourceforge.texlipse.menus.latex/commentGroup"
                style="push"/>
          <action
-               label="Correct &amp;Line Wrap"
                class="net.sourceforge.texlipse.actions.TexHardLineWrapAction"
-               style="push"
+               definitionId="net.sourceforge.texlipse.commands.texHardLineWrap"
+               id="net.sourceforge.texlipse.actions.texHardLineWrap"
+               label="Correct &amp;Line Wrap"
                menubarPath="net.sourceforge.texlipse.menus.latex/commentGroup"
-               id="net.sourceforge.texlipse.actions.texHardLineWrap"/>
+               style="push"/>
          <action
                class="net.sourceforge.texlipse.spelling.SpellCheckAction"
                definitionId="net.sourceforge.texlipse.commands.spellCheck"
                id="net.sourceforge.texlipse.actions.spellCheck"
                label="Check Spelling"
-               menubarPath="net.sourceforge.texlipse.menus.latex/commentGroup"
+               menubarPath="net.sourceforge.texlipse.menus.latex/spellGroup"
                style="push"/>
          <action
                class="net.sourceforge.texlipse.spelling.SpellUncheckAction"
                definitionId="net.sourceforge.texlipse.commands.spellUncheck"
                id="net.sourceforge.texlipse.actions.spellUncheck"
                label="Clear Spelling Errors"
-               menubarPath="net.sourceforge.texlipse.menus.latex/commentGroup"
+               menubarPath="net.sourceforge.texlipse.menus.latex/spellGroup"
                style="push"/>
          <action
                class="net.sourceforge.texlipse.actions.TexCollapseAction"

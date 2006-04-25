@@ -214,7 +214,13 @@ public class SpellChecker implements IPropertyChangeListener, IDocumentListener 
         
         String args = TexlipsePlugin.getPreference(SPELL_CHECKER_ARGUMENTS);
         
-        args = args.replaceAll("%encoding", TexlipsePlugin.getPreference(SPELL_CHECKER_ENCODING));
+        String encoding = TexlipsePlugin.getPreference(SPELL_CHECKER_ENCODING).toLowerCase();
+        args = args.replaceAll("%encoding", encoding);
+
+        // Aspell only responds to the name "iso8859-*". And since Eclipse uses
+        // the "right" name we need to rename before passing it on to Aspell
+        args = args.replaceAll("iso-8859", "iso8859"); 
+        
         args = args.replaceAll("%language", language);
         
         command = f.getAbsolutePath() + " " + args;
@@ -292,6 +298,14 @@ public class SpellChecker implements IPropertyChangeListener, IDocumentListener 
         // read the version info
         try {
             String message = input.readLine();
+            if (null == message) { // Something went wrong, get message from aspell's error stream
+                BufferedReader error = new BufferedReader(new InputStreamReader(spellProgram.getErrorStream()));
+                message = error.readLine();
+                if (null == message) {
+                    BuilderRegistry.printToConsole("Aspell failed! No output could be read.");
+                    return;
+                }
+            }
             BuilderRegistry.printToConsole("aspell> " + message.trim());
             // Now it's up and running :)
             // put it in terse mode, then it's faster

@@ -162,7 +162,7 @@ public class TexDocumentModel implements IDocumentListener {
         /**
          * @param rootNodes
          */
-        public void setFONodes (List rootNodes) {
+        public void setFONodes(List rootNodes) {
             this.fullOutlineNodes = rootNodes;
         }
 
@@ -398,17 +398,15 @@ public class TexDocumentModel implements IDocumentListener {
      *
      */
     private void createProjectOutline() {
-        if (projectOutline == null) {
-            IProject project = getCurrentProject();
-            Object projectSessionOutLine = TexlipseProperties.getSessionProperty(project,
-                    TexlipseProperties.SESSION_PROJECT_FULLOUTLINE);
-            if (projectSessionOutLine != null)
-                projectOutline = (TexProjectOutline) projectSessionOutLine;
-            else {
-                projectOutline = new TexProjectOutline(getCurrentProject(), labelContainer, bibContainer);
-                TexlipseProperties.setSessionProperty(project, TexlipseProperties.SESSION_PROJECT_FULLOUTLINE,
-                        projectOutline);
-            }
+        IProject project = getCurrentProject();
+        Object projectSessionOutLine = TexlipseProperties.getSessionProperty(project,
+                TexlipseProperties.SESSION_PROJECT_FULLOUTLINE);
+        if (projectSessionOutLine != null)
+            projectOutline = (TexProjectOutline) projectSessionOutLine;
+        else {
+            projectOutline = new TexProjectOutline(getCurrentProject(), labelContainer, bibContainer);
+            TexlipseProperties.setSessionProperty(project, TexlipseProperties.SESSION_PROJECT_FULLOUTLINE,
+                    projectOutline);
         }
     }
     
@@ -426,7 +424,9 @@ public class TexDocumentModel implements IDocumentListener {
         if (this.parser == null) {
             this.parser = new TexParser(this.editor.getDocumentProvider().getDocument(this.editor.getEditorInput()));
         }
-        createProjectOutline();
+        if (projectOutline == null) {
+            createProjectOutline();
+        }
         
         try {
             this.parser.parseDocument(labelContainer, bibContainer);
@@ -460,6 +460,7 @@ public class TexDocumentModel implements IDocumentListener {
         IResource res = (IResource) this.editor.getEditorInput().getAdapter(IResource.class);
         String fileName = res.getProjectRelativePath().toString();
         projectOutline.addOutline(parser.getOutlineTree(), fileName);
+
         if (editor.getFullOutline() != null) {
             List fo = projectOutline.getFullOutline();
             postParseJob.setFONodes(fo);

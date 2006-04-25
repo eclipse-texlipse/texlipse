@@ -91,13 +91,6 @@ public class TexEditor extends TextEditor {
         this.documentModel.initializeModel();
         this.documentModel.updateNow();
 
-//      B----------------------------------- mmaus
-        
-        if (fullOutline != null) {
-            this.documentModel.updateNow();
-        }
-//      E----------------------------------- mmaus
-        
         ISourceViewer sourceViewer = getSourceViewer();
         if (sourceViewer instanceof ITextViewerExtension) {
             if (fBracketInserter == null)

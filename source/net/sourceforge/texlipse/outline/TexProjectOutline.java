@@ -29,7 +29,8 @@ public class TexProjectOutline {
     }
 
     public void addOutline(List nodes, String fileName) {
-        // FIXME see loadInput()
+        // FIXME see loadInput() (we use full file name here, but without leading paths)
+        // -> should be 'path_from_srcdir/name.tex'
         outlines.put(fileName, nodes);
         
         IFile mainFile = TexlipseProperties.getProjectSourceFile(currentProject);

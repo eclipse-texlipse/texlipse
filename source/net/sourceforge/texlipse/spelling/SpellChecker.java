@@ -303,8 +303,10 @@ public class SpellChecker implements IPropertyChangeListener, IDocumentListener 
                 message = error.readLine();
                 if (null == message) {
                     BuilderRegistry.printToConsole("Aspell failed! No output could be read.");
-                    return;
+                } else {
+                    BuilderRegistry.printToConsole("aspell> " + message.trim());
                 }
+                return;
             }
             BuilderRegistry.printToConsole("aspell> " + message.trim());
             // Now it's up and running :)

@@ -85,9 +85,9 @@ public class TexCommandEntry extends AbstractEntry {
         this.info = _info;
         this.arguments = _arguments;
         this.context = NORMAL_CONTEXT;
-        int[] para = new int[_arguments];
+        parameter = new int[_arguments];
         for (int i = 0; i < _arguments; i++)
-            para[i] = MAND_PARAMETER;
+            parameter[i] = MAND_PARAMETER;
     }
 
     public TexCommandEntry(String _key, String _info, int _arguments, int _context) {
@@ -105,6 +105,33 @@ public class TexCommandEntry extends AbstractEntry {
     public TexCommandEntry(String _key, String _info, String _imageName) {
         this(_key, _info, 0, MATH_CONTEXT);
         this.imageDesc = TexlipsePlugin.getImageDescriptor(_imageName);
+    }
+
+    /**
+     * Copy construktor
+     * 
+     * @param c
+     */
+    public TexCommandEntry(TexCommandEntry c) {
+        this(c.key, c.info, c.arguments, c.context);
+        parameter = (int[]) c.parameter.clone();
+        depend = c.depend;
+        imageDesc = c.imageDesc;
+    }
+    
+    public boolean equals(Object object) {
+        if (object instanceof TexCommandEntry) {
+            TexCommandEntry obj = (TexCommandEntry) object;
+            //TODO this is no true equals method...
+            if (obj.key.equals(key) && obj.info.equals(info) && obj.arguments == arguments 
+                    && ((obj.depend == null && depend == null) || obj.depend.equals(depend))
+                    && obj.imageDesc == imageDesc && obj.parameter.length == parameter.length)
+                return true;
+            else
+                return false;
+        } else {
+            return super.equals(object);
+        }
     }
 
     /*

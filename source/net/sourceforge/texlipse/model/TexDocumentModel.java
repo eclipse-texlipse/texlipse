@@ -691,9 +691,9 @@ public class TexDocumentModel implements IDocumentListener {
      * @param commands
      */
     private void updateCommands(ArrayList commands) {
-        IResource resource = ((FileEditorInput)editor.getEditorInput()).getFile();
-        commandContainer.addRefSource(resource.getProjectRelativePath().toString(), commands);
-        commandContainer.organize();
+        IResource resource = ((FileEditorInput) editor.getEditorInput()).getFile();
+        if (commandContainer.addRefSource(resource.getProjectRelativePath().toString(), commands))
+            commandContainer.organize();
     }
     
     /**

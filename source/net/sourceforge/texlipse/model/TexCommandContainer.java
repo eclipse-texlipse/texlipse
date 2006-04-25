@@ -430,12 +430,18 @@ public class TexCommandContainer {
      * 
      * @param key The name of the reference source (filename)
      * @param refs The commands to insert
+     * @return true if the container needs a reorganize
      */
-    public void addRefSource(String key, ArrayList refs) {
+    public boolean addRefSource(String key, ArrayList refs) {
         size += refs.size();
         ArrayList al = (ArrayList) commandHash.put(key, refs);
         if (al != null)
             size -= al.size();
+        //Check if something has changed
+        if (refs.equals(al))
+            return false;
+        else
+            return true;
     }
 
     /**
@@ -461,8 +467,8 @@ public class TexCommandContainer {
      * and sorted.
      */
     public void organize() {
-        if (commandHash.size() == 0)
-            return;
+        //if (commandHash.size() == 0)
+        //    return;
         ArrayList allRefs = new ArrayList(size);
         if (commandHash.size() > 1) {
             for (Iterator iter = commandHash.values().iterator(); iter.hasNext();) {
@@ -473,7 +479,14 @@ public class TexCommandContainer {
             Iterator iter = commandHash.values().iterator();
             allRefs = (ArrayList) iter.next();
         }
-        
+        //copy all commands and change the context to activate them also in mathmode
+        ArrayList mathRefs = new ArrayList (allRefs.size());
+        for (Iterator iter = allRefs.iterator(); iter.hasNext();) {
+            Object c = iter.next();
+            TexCommandEntry element = new TexCommandEntry((TexCommandEntry) c);
+            element.context = TexCommandEntry.MATH_CONTEXT;
+            mathRefs.add(element);
+        }
         sortedCommands.clear();
         for (int i=0; i<builtIn.length; i++) sortedCommands.add(builtIn[i]);
         sortedCommands.addAll(allRefs);
@@ -485,6 +498,7 @@ public class TexCommandContainer {
         for (int i=0; i<functionNames.length; i++) sortedCommands.add(functionNames[i]);
         for (int i=0; i<stdBinOpSymbols.length; i++) sortedCommands.add(stdBinOpSymbols[i]);
         for (int i=0; i<stdBraces.length; i++) sortedCommands.add(stdBraces[i]);
+        sortedCommands.addAll(mathRefs);
         Collections.sort(sortedCommands);
         createContexts();
     }

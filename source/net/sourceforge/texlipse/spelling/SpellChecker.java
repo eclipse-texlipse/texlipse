@@ -460,12 +460,13 @@ public class SpellChecker implements IPropertyChangeListener, IDocumentListener 
             //lineToPost = lineToPost.replaceAll("\\ss[^a-zA-Z]", "ß");
         }
         
-        /**
+        /*
          * a prefixed "^" tells aspell to parse the line without exceptions. From
          * http://aspell.sourceforge.net/man-html/Through-A-Pipe.html#Through-A-Pipe:
          * "lines of single words prefixed with any of `*', `&', `@', `+', `-',
          * `~', `#', `!', `%', or `^'" are also valid and have a special meaning
          * Special meaning of "^" is to ignore all other prefixes.
+         * 
          */
         output.println("^" + lineToPost);
         output.flush();

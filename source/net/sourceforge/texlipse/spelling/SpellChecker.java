@@ -479,6 +479,9 @@ public class SpellChecker implements IPropertyChangeListener, IDocumentListener 
                 lines.add(result);
                 result = input.readLine();
             }
+            //Clear the input buffer (sometimes there are more than one empty line)
+            while (input.ready()) 
+                input.readLine();
         } catch (IOException e) {
             BuilderRegistry.printToConsole(TexlipsePlugin.getResourceString("spellProgramStartError"));
             TexlipsePlugin.log("aspell error at line " + lineNumber + ": " + lineToPost, e);

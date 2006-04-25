@@ -289,7 +289,7 @@ public class TexSourceViewerConfiguration extends SourceViewerConfiguration {
                     }
                     break;
                 case '\\':
-                    if (cstart < 0) {
+                    if (cstart < 0 && gstart < 0) {
                         cstart = i;
                     }
                     break;

@@ -22,12 +22,24 @@ public class TexEnvironmentRule implements IPredicateRule {
     protected char[] fEndSequence;
     /** The name of the environment */
     protected char[] fEnvName;
+    protected boolean fStar;
+    protected boolean fLastStar;
 
     public TexEnvironmentRule(String envName, IToken token) {
+        this (envName, false, token);
+    }
+    /**
+     * 
+     * @param envName Name of the environment
+     * @param star if true, this environment also detects the stared version of the environment
+     * @param token
+     */
+    public TexEnvironmentRule(String envName, boolean star, IToken token) {
         fStartSequence = ("\\begin").toCharArray();
         fEndSequence = ("\\end").toCharArray();
         fToken = token;
         fEnvName = envName.toCharArray();
+        fStar = star;
     }
 
     /**
@@ -42,6 +54,7 @@ public class TexEnvironmentRule implements IPredicateRule {
      * @since 2.0
      */
     protected IToken doEvaluate(ICharacterScanner scanner, boolean resume) {
+        fLastStar = true;
         if (resume) {
             if (endSequenceDetected(scanner))
                 return fToken;
@@ -134,6 +147,15 @@ public class TexEnvironmentRule implements IPredicateRule {
         }
         c = scanner.read();
         readChar++;
+        if (fStar && fLastStar && c == '*') {
+            //Stared environment detected
+            fLastStar = true;
+            c = scanner.read();
+            readChar++;
+        } else {
+            fLastStar = false;
+        }
+
         if (c != '}') {
             return unReadScanner(scanner, readChar);
         }

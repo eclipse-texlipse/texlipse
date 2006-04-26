@@ -14,6 +14,7 @@ import java.util.List;
 
 import net.sourceforge.texlipse.editor.scanner.TexEnvironmentRule;
 
+import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.rules.EndOfLineRule;
 import org.eclipse.jface.text.rules.IPredicateRule;
 import org.eclipse.jface.text.rules.IToken;
@@ -35,14 +36,16 @@ public class TexPartitionScanner extends RuleBasedPartitionScanner {
 	public static final String TEX_CURLY_BRACKETS = "__tex_curlyBracketPartition";
 	public static final String TEX_SQUARE_BRACKETS = "__tex_squareBracketPartition";
 	public static final String[] TEX_PARTITION_TYPES = new String[] {
-			TEX_DEFAULT, 
+			IDocument.DEFAULT_CONTENT_TYPE, 
 			TEX_COMMENT,
 			TEX_MATH,
 			TEX_CURLY_BRACKETS,
 			TEX_SQUARE_BRACKETS };
 	
 	public TexPartitionScanner() {
+        super();
 		IToken math 			= new Token(TEX_MATH);
+		IToken math2 			= new Token(TEX_MATH);
 		IToken texComment 		= new Token(TEX_COMMENT);
 		//IToken curly_bracket 	= new Token(TEX_CURLY_BRACKETS);
 		//IToken square_bracket	= new Token(TEX_SQUARE_BRACKETS);
@@ -54,29 +57,24 @@ public class TexPartitionScanner extends RuleBasedPartitionScanner {
 		rules.add(new EndOfLineRule("%", texComment));
         rules.add(new TexEnvironmentRule("comment", texComment));
 		rules.add(new SingleLineRule("\\\\[","]", Token.UNDEFINED));  //no math when using "\\[]" line breaks
-		rules.add(new MultiLineRule("\\[","\\]", math)); 
 		
 		rules.add(new SingleLineRule("\\$", " ", Token.UNDEFINED)); // not a math equation \$
 
-        rules.add(new TexEnvironmentRule("equation", math));
-        rules.add(new TexEnvironmentRule("equation*", math));
+        //This bosh rule is necessary to fix a bug in RuleBasedPartitionScanner
+		rules.add(new TexEnvironmentRule("qqfdshfkhsd", false, math));
+        rules.add(new MultiLineRule("\\[","\\]", math2)); 
         rules.add(new MultiLineRule("$$", "$$", math));
         rules.add(new MultiLineRule("$", "$", math));
-        rules.add(new TexEnvironmentRule("eqnarray", math));
-        rules.add(new TexEnvironmentRule("eqnarray*", math));
-        rules.add(new TexEnvironmentRule("math", math));
-        rules.add(new TexEnvironmentRule("displaymath", math));
+        rules.add(new TexEnvironmentRule("equation", true, math));
+        rules.add(new TexEnvironmentRule("eqnarray", true, math));
+        rules.add(new TexEnvironmentRule("math", false, math));
+        rules.add(new TexEnvironmentRule("displaymath", false, math));
         //AMSMath environments
-        rules.add(new TexEnvironmentRule("align", math));
-        rules.add(new TexEnvironmentRule("align*", math));
-        rules.add(new TexEnvironmentRule("alignat", math));
-        rules.add(new TexEnvironmentRule("alignat*", math));
-        rules.add(new TexEnvironmentRule("flalign", math));
-        rules.add(new TexEnvironmentRule("flalign*", math));
-        rules.add(new TexEnvironmentRule("multline", math));
-        rules.add(new TexEnvironmentRule("multline*", math));
-        rules.add(new TexEnvironmentRule("gather", math));
-        rules.add(new TexEnvironmentRule("gather*", math));
+        rules.add(new TexEnvironmentRule("align", true, math));
+        rules.add(new TexEnvironmentRule("alignat", true, math));
+        rules.add(new TexEnvironmentRule("flalign", true, math));
+        rules.add(new TexEnvironmentRule("multline", true, math));
+        rules.add(new TexEnvironmentRule("gather", true, math));
 
 		IPredicateRule[] result = new IPredicateRule[rules.size()];
 		rules.toArray(result);

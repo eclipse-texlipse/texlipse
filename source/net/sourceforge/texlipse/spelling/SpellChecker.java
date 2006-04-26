@@ -14,6 +14,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -523,7 +524,7 @@ public class SpellChecker implements IPropertyChangeListener, IDocumentListener 
             options[options.length - 2] = SPELL_CHECKER_IGNORE;
             options[options.length - 1] = SPELL_CHECKER_ADD;
 
-            createMarker(file, options, offset + column, word.length(),
+            createMarker(file, options, offset + column, word,
                     lineNumber);
         }
     }
@@ -536,18 +537,19 @@ public class SpellChecker implements IPropertyChangeListener, IDocumentListener 
      * @param charBegin  beginning offset in the file
      * @param wordLength length of the misspelled word
      */
-    private void createMarker(IResource file, String[] proposals, int charBegin, int wordLength, int lineNumber) {
+    private void createMarker(IResource file, String[] proposals, int charBegin, String word, int lineNumber) {
         
         HashMap attributes = new HashMap();
         attributes.put(IMarker.CHAR_START, new Integer(charBegin));
-        attributes.put(IMarker.CHAR_END, new Integer(charBegin+wordLength));
+        attributes.put(IMarker.CHAR_END, new Integer(charBegin+word.length()));
         attributes.put(IMarker.LINE_NUMBER, new Integer(lineNumber));
         attributes.put(IMarker.SEVERITY, new Integer(IMarker.SEVERITY_WARNING));
-        attributes.put(IMarker.MESSAGE, TexlipsePlugin.getResourceString("spellMarkerMessage"));
-        
+        attributes.put(IMarker.MESSAGE, 
+            MessageFormat.format(TexlipsePlugin.getResourceString("spellMarkerMessage"),
+                new Object[] { word }));
         try {
             MarkerUtilities.createMarker(file, attributes, SPELLING_ERROR_MARKER_TYPE);
-            addProposal(file, charBegin, charBegin+wordLength, proposals);
+            addProposal(file, charBegin, charBegin+word.length(), proposals);
             
         } catch (CoreException e) {
             TexlipsePlugin.log("Adding spelling marker", e);

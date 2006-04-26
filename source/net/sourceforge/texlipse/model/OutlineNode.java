@@ -79,9 +79,11 @@ public class OutlineNode {
         this.declarationLength = length;
     }
 
-    public OutlineNode copy() {
+    public OutlineNode copy(IFile texFile) {
         OutlineNode on = new OutlineNode(name, type, beginLine, offsetOnLine, declarationLength);
         on.endLine = endLine;
+        on.position = position;
+        on.file = texFile;
         return on;
     }
     

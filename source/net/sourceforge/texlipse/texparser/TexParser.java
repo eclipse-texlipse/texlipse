@@ -102,6 +102,7 @@ public class TexParser {
         //if (input.indexOf("\\documentclass") == -1) {
         if (LatexParserUtils.findCommand(input, "\\documentclass", 0) == -1
                 && LatexParserUtils.findCommand(input, "\\documentstyle", 0) == -1) {
+            this.preamble = null;
             return;
         }
         

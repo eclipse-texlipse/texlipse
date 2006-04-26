@@ -22,6 +22,8 @@ public class TexProjectParser {
     private IFile changedFile;
     private String changedInput;
 
+    private IFile file;
+    
     private TexParser parser;
     
     private ReferenceContainer labels;
@@ -57,12 +59,9 @@ public class TexProjectParser {
             TexlipsePlugin.log("Can't read file.", e);
             throw new TexDocumentParseException(e);
         }
-        
     }
-    
-    public List parseFile(String fileName) {
-        
-        IFile file = null;
+
+    public IFile findIFile(String fileName) {
         String dir = TexlipseProperties.getProjectProperty(currentProject,
                 TexlipseProperties.SOURCE_DIR_PROPERTY);
         
@@ -75,7 +74,16 @@ public class TexProjectParser {
         } else {
             file = currentProject.getFile(fileName);
         }
-        
+
+        return (file.exists() ? file : null);
+    }
+    
+    public List parseFile(IFile file) {
+        this.file = file;
+        return this.parseFile();
+    }
+    
+    public List parseFile() {
         try {
             String inputContent = readFile(file);
             parseDocument(inputContent);

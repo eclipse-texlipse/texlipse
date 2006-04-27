@@ -3,6 +3,7 @@ package net.sourceforge.texlipse.outline;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 
 import net.sourceforge.texlipse.model.OutlineNode;
@@ -117,6 +118,32 @@ public class TexProjectOutline {
                 }
             }
         }
+    }
+
+    private OutlineNode getParentLevel(List children, int level) {
+        // TODO we still need the "next biggest node"
+        if (children.size() == 0) {
+            return null;
+        }
+        OutlineNode lastNode = (OutlineNode) children.get(children.size() - 1);
+        if (lastNode.getType() == level) {
+            return lastNode;
+        } else if (lastNode.getType() > level) {
+            return null;
+        }
+        // reverse iteration
+        for (ListIterator li = children.listIterator(children.size() - 1);
+             li.hasPrevious();) {
+            List nodeChildren = ((OutlineNode) li.previous()).getChildren();
+            if (nodeChildren != null) {
+                OutlineNode found = getParentLevel(nodeChildren, level);
+                if (found != null) {
+                    return found;
+                }
+            }
+        }
+        // Now return the "best match", i.e. the smallest one that's larger
+        return lastNode;
     }
     
     private List loadInput(String name) {

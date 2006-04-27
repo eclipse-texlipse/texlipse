@@ -2,9 +2,8 @@
 
 package net.sourceforge.texlipse.texparser.node;
 
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
+import net.sourceforge.texlipse.texparser.analysis.*;
 
 public abstract class Node implements Switchable, Cloneable
 {

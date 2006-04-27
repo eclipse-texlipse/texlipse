@@ -239,12 +239,12 @@ public class AnalysisAdapter implements Analysis
         defaultCase(node);
     }
 
-    public void caseTCommentline(TCommentline node)
+    public void caseTTaskcomment(TTaskcomment node)
     {
         defaultCase(node);
     }
 
-    public void caseTTaskcomment(TTaskcomment node)
+    public void caseTCommentline(TCommentline node)
     {
         defaultCase(node);
     }

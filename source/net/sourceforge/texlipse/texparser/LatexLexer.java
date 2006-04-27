@@ -158,6 +158,7 @@ public class LatexLexer extends Lexer {
         } else if (state.equals(State.VERBATIM)) {
             // we store some contents to be able to code fold
             if (token instanceof TBverbatim) {
+                argStart = token;
                 text = new StringBuffer(token.getText());
                 vline = token.getLine();
                 vpos = token.getPos();
@@ -193,6 +194,12 @@ public class LatexLexer extends Lexer {
             }
         } else if (state.equals(State.NORMAL)) {
             if (token instanceof TEverbatim) {
+                String startCommand = argStart.getText().substring(argStart.getText().indexOf("{"));
+                String endCommand = token.getText().substring(token.getText().indexOf("{"));
+                if (!startCommand.equals(endCommand)) {
+                    throw new LexerException("[" + vline + "," + vpos 
+                            + "] The verbatim environment isn't closed with the correct command");                    
+                }
                 text.append(token.getText());
                 token = new TVtext(text.toString(), vline, vpos);
             }

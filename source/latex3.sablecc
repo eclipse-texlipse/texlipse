@@ -15,7 +15,6 @@
  */
 
 //Package texparser2;
-//Package fi.hut.soberit.texlipse.texparser;
 Package net.sourceforge.texlipse.texparser;
 
 // ----------------------------------------------------------------------------
@@ -34,7 +33,6 @@ Helpers
     brackets = ['[' + ']'];
 
     line_terminator = lf | cr | cr lf;
-//    line_terminator = [lf + cr]; // BAD! windows linebreaks should be treated as one token
     input_character = [unicode_input_character - [[cr + lf] + [sp + ht]]];
 
     skipped_not_percent = [unicode_input_character - '%'];
@@ -84,7 +82,6 @@ Tokens
     {normal->comcapt, comcapt} cinput = '\input';
     {normal->comcapt, comcapt} cinclude = '\include';
 
-
 // \newcommand{cmd}[args][opt]{def}
 // braces might be skipped in the first arg, some commands might be done with def,
 // neither is apparently recommended
@@ -94,15 +91,14 @@ Tokens
 // "The \providecommand command is identical to the \newcommand  command if a command with this name does not exist;
 // if it does already exist, the \providecommand does nothing and the old definition remains in effect."
 
-
     {normal} cpindex = '\printindex';
 
-    {normal->verbatim, comcapt->verbatim} bverbatim = '\begin' wspace* '{verbatim' ('*}' | '}');
-    {verbatim->normal} everbatim = '\end{verbatim' ('*}' | '}');
+	// Note: this doesn't check that the right command completes the verbatim
+    {normal->verbatim, comcapt->verbatim} bverbatim = '\begin' wspace* '{' ('lstlisting'|'verbatim'|'Verbatim') ('*}'|'}');
+    {verbatim->normal} everbatim = '\end{' ('lstlisting'|'verbatim'|'Verbatim') ('*}' | '}');
     {verbatim, verb} vtext = input_character;
 
     {normal->verb, comcapt->verb} cverb = '\verb' '*'?;
-
 
 // This is bogus: this token is always recognized in the custom lexer,
 // so it's only a placeholder for the argument found

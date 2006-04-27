@@ -2,7 +2,7 @@
 
 package net.sourceforge.texlipse.texparser.node;
 
-import net.sourceforge.texlipse.texparser.analysis.Analysis;
+import net.sourceforge.texlipse.texparser.analysis.*;
 
 public final class TCref extends Token
 {

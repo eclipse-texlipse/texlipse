@@ -46,7 +46,7 @@ public interface Analysis extends Switch
     void caseTCspace(TCspace node);
     void caseTWord(TWord node);
     void caseTSkippedArea(TSkippedArea node);
-    void caseTCommentline(TCommentline node);
     void caseTTaskcomment(TTaskcomment node);
+    void caseTCommentline(TCommentline node);
     void caseEOF(EOF node);
 }

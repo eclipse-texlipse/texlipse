@@ -43,6 +43,7 @@ public class LatexLexer extends Lexer {
     private int count;
     
     private Token argStart;
+    private Token verbStart;
     private StringBuffer text;
     
     /**
@@ -158,7 +159,7 @@ public class LatexLexer extends Lexer {
         } else if (state.equals(State.VERBATIM)) {
             // we store some contents to be able to code fold
             if (token instanceof TBverbatim) {
-                argStart = token;
+                verbStart = token;
                 text = new StringBuffer(token.getText());
                 vline = token.getLine();
                 vpos = token.getPos();
@@ -194,7 +195,7 @@ public class LatexLexer extends Lexer {
             }
         } else if (state.equals(State.NORMAL)) {
             if (token instanceof TEverbatim) {
-                String startCommand = argStart.getText().substring(argStart.getText().indexOf("{"));
+                String startCommand = verbStart.getText().substring(verbStart.getText().indexOf("{"));
                 String endCommand = token.getText().substring(token.getText().indexOf("{"));
                 if (!startCommand.equals(endCommand)) {
                     throw new LexerException("[" + vline + "," + vpos 

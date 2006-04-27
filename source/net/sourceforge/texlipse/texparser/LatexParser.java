@@ -778,7 +778,7 @@ public class LatexParser {
                             t.getText().length());
 
                     // TODO uses memory, but doesn't require much code...
-                    String[] lines = t.getText().split("\\n\\r|\\n|\\r");
+                    String[] lines = t.getText().split("\\r\\n|\\n|\\r");
                     on.setEndLine(t.getLine() + lines.length);
                     
                     if (!blocks.empty()) {

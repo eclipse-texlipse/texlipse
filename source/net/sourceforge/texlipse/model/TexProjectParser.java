@@ -12,7 +12,9 @@ import net.sourceforge.texlipse.texparser.TexParser;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 
 public class TexProjectParser {
 
@@ -29,8 +31,7 @@ public class TexProjectParser {
     private ReferenceContainer labels;
     private ReferenceContainer bibs;
     
-    // FIXME
-    private static String[] TEX_FILE_ENDING = {".tex", ".ltx"};
+    private static String TEX_FILE_ENDING = ".tex";
 
     
     public TexProjectParser(IProject currentProject, 
@@ -61,19 +62,29 @@ public class TexProjectParser {
         }
     }
 
-    public IFile findIFile(String fileName) {
+    public IFile findIFile(String fileName, IFile referringFile) {
+
+        // Append default ending
+        if (fileName.indexOf('.') == -1) { 
+            fileName += TEX_FILE_ENDING;
+        }
+        
+        IPath path = referringFile.getFullPath();
+        path = path.removeFirstSegments(1).removeLastSegments(1).append(fileName);
+        //IResource res = currentProject.findMember(path);
+        //res.exists();
+        file = currentProject.getFile(path);
+        //boolean f = file.exists();
+        
+        /*
         String dir = TexlipseProperties.getProjectProperty(currentProject,
                 TexlipseProperties.SOURCE_DIR_PROPERTY);
-        
-        // FIXME do this for the different kinds of endings (test) 
-        if (fileName.indexOf('.') == -1) 
-            fileName += TEX_FILE_ENDING[0];
-
         if (dir != null && dir.length() > 0) {
             file = currentProject.getFolder(dir).getFile(fileName);
         } else {
             file = currentProject.getFile(fileName);
         }
+        */
 
         return (file.exists() ? file : null);
     }

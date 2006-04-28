@@ -1,5 +1,6 @@
 package net.sourceforge.texlipse.outline;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -20,6 +21,7 @@ public class TexProjectOutline {
     private List topLevelNodes;
     private Map outlines = new HashMap();
     private IFile currentTexFile;
+    private OutlineNode virtualTopNode;
     
     private TexProjectParser fileParser;
     
@@ -30,9 +32,12 @@ public class TexProjectOutline {
         fileParser = new TexProjectParser(currentProject, labels, bibs);
     }
 
+    /**
+     * @param nodes The outline tree top
+     * @param fileName The path of the source file relative to the
+     *                 project's base directory
+     */
     public void addOutline(List nodes, String fileName) {
-        // FIXME see loadInput() (we use full file name here, but without leading paths)
-        // -> should be 'path_from_srcdir/name.tex'
         outlines.put(fileName, nodes);
         
         IFile mainFile = TexlipseProperties.getProjectSourceFile(currentProject);
@@ -42,15 +47,17 @@ public class TexProjectOutline {
         }
     }
     
+
+    
     public List getFullOutline() {
 
-        OutlineNode virtualTopNode = new OutlineNode("Entire document", OutlineNode.TYPE_DOCUMENT, 0, null);
+        virtualTopNode = new OutlineNode("Entire document", OutlineNode.TYPE_DOCUMENT, 0, null);
         
-        // TODO Fetch topLevelNodes -- check that this works
         currentTexFile = TexlipseProperties.getProjectSourceFile(currentProject);
         if (topLevelNodes == null) {
             topLevelNodes = fileParser.parseFile(currentTexFile);
-            outlines.put(currentTexFile.getName(), topLevelNodes);
+            String fullName = currentTexFile.getFullPath().removeFirstSegments(1).toString();
+            outlines.put(fullName, topLevelNodes);
         }
         addChildren(virtualTopNode, topLevelNodes, currentTexFile);
 
@@ -62,20 +69,33 @@ public class TexProjectOutline {
         return outlineTop;
     }
     
+    /**
+     * @param parent
+     * @param insertList
+     * @param texFile
+     * @return The last of the topmost inserted nodes
+     */
     private OutlineNode replaceInput(OutlineNode parent, List insertList, IFile texFile) {
         // An input node should never have any children
         // We need to raise the level depending on the type of the 1st node in the new outline
+        
         if (insertList.size() == 0) {
             return parent;
         }
+        /*
         OutlineNode firstNode = (OutlineNode) insertList.get(0);
         // FIXME do a real comparison method here instead, this doesn't work always
         while (firstNode.getType() <= parent.getType()) {
             parent = parent.getParent();
         }
-        
+        */
         for (Iterator iter2 = insertList.iterator(); iter2.hasNext();) {
             OutlineNode oldNode2 = (OutlineNode) iter2.next();
+            
+            while (oldNode2.getType() <= parent.getType()) {
+                parent = parent.getParent();
+            }
+            
             OutlineNode newNode = oldNode2.copy(texFile);
             parent.addChild(newNode);
             newNode.setParent(parent);
@@ -96,32 +116,46 @@ public class TexProjectOutline {
      * @param main
      * @param children
      */
-    private void addChildren(OutlineNode main, List children, IFile texFile) {
+    private boolean addChildren(OutlineNode main, List children, IFile texFile) {
+        boolean insert = false;
         for (Iterator iter = children.iterator(); iter.hasNext();) {
             OutlineNode node = (OutlineNode) iter.next();
             if (node.getType() == OutlineNode.TYPE_INPUT) {
                 // replace node with tree
                 List nodes = loadInput(node.getName());
-                OutlineNode insertTop = replaceInput(main, nodes, currentTexFile);
+                //OutlineNode insertTop = 
+                replaceInput(main, nodes, currentTexFile);
                 // If the insert came to a higher level than this one,
                 // then we need to go up...
+                /*
                 if (insertTop.getType() <= main.getType()) {
                     main = insertTop;
                 }
+                */
+                main = getParentLevel(virtualTopNode.getChildren(), main.getType());
+                insert = true;
             } else {
                 OutlineNode newNode = node.copy(texFile);
                 main.addChild(newNode);
                 newNode.setParent(main);
                 List oldChildren = node.getChildren();
                 if (oldChildren != null) {
-                    addChildren(newNode, oldChildren, texFile);
+                    if (addChildren(newNode, oldChildren, texFile)) {
+                        main = getParentLevel(virtualTopNode.getChildren(), main.getType());
+                    }
                 }
             }
         }
+        return insert;
     }
 
+    /**
+     * @param children The children to start searching from
+     * @param level The level (lower limit) to find
+     * @return Last node of the given level or the highest level that is
+     *         lower than the given level
+     */
     private OutlineNode getParentLevel(List children, int level) {
-        // TODO we still need the "next biggest node"
         if (children.size() == 0) {
             return null;
         }
@@ -147,13 +181,17 @@ public class TexProjectOutline {
     }
     
     private List loadInput(String name) {
-        // FIXME here we use the basename, while the insert uses the full filename
-        currentTexFile = fileParser.findIFile(name);
-        List nodes = (List) outlines.get(name);
+        currentTexFile = fileParser.findIFile(name, currentTexFile);
+        if (currentTexFile == null) {
+            // TODO set marker
+            return new ArrayList();
+        }
+        String fullName = currentTexFile.getFullPath().removeFirstSegments(1).toString();
+        List nodes = (List) outlines.get(fullName);
         if (nodes == null) {
             // FIXME we need to return something sensible here, not just null
             nodes = fileParser.parseFile();
-            outlines.put(name, nodes);
+            outlines.put(fullName, nodes);
         }
         return nodes;
     }

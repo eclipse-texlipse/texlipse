@@ -52,7 +52,7 @@ public class BibOutlineContainer {
         
         for (Iterator iter = childEntries.iterator(); iter.hasNext();) {
             ReferenceEntry re = (ReferenceEntry) iter.next();
-            newboc.childEntries.add(re);
+            newboc.childEntries.add(re.copy());
         }
         return newboc;
     }

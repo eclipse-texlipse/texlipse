@@ -80,6 +80,24 @@ public final class ReferenceEntry extends AbstractEntry {
         this.position = new Position(docOffset, length);
     }
     
+    /**
+     * Returns a shallow copy of this reference
+     * 
+     * @return A copy of this reference
+     */
+    public ReferenceEntry copy() {
+        ReferenceEntry re = new ReferenceEntry(key, info);
+        re.startLine = startLine;
+        re.endLine = endLine;
+        re.author = author;
+        re.journal = journal;
+        re.year = year;
+        re.refFile = refFile;
+        re.fileName = fileName;
+        re.position = position;
+        return re;
+    }
+    
     /* (non-Javadoc)
      * @see java.lang.Object#toString()
      */

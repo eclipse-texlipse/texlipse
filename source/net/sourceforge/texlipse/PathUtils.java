@@ -303,12 +303,11 @@ public class PathUtils {
 
 	/**
 	 * Loads the given properties from the given input stream.
-	 * Escapes the backslashes while reading.
 	 * @param prop properties object
 	 * @param stream the stream
 	 * @throws IOException if a read error occurs
 	 */
-	public static void loadEscaping(Properties prop, InputStream stream) throws IOException {
+	private static void loadEscaping(Properties prop, InputStream stream) throws IOException {
 	    
 	    ByteArrayOutputStream bos = new ByteArrayOutputStream();
 	    while (true) {
@@ -317,7 +316,7 @@ public class PathUtils {
 	            break;
 	        } else if (b == '\\') {
 	            // write extra backslash to escape them
-	            bos.write('\\');
+	            //bos.write('\\');
 	        }
 	        
 	        bos.write(b);

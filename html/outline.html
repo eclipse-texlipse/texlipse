@@ -61,5 +61,20 @@ An element cannot be dropped over itself or over its
 children. As with the copy/paste operations, dragging and dropping
 is only enabled when the outline is up to date.</p>
 
+<h1>Full document outline</h1>
+
+<p>The full document outline is a separate view that shows an outline of the
+entire project. This is done by starting from the main file of the project
+and merging all included files into the outline. The full documetn outline
+can be viewed by selecting <b>Window &gt; Show view &gt; Other...</b> and from
+there <b>TeXlipse &gt; Full LaTeX outline</b>.</p>
+
+<p>The full document outline works exactly as the single-file outline, but it
+should be noted that only <code>\input</code> and <code>\include</code> -includes
+are handled &ndash; not custom includes. Also, the outline has been designed to
+be fast, which could mean that some omplex include chains may not be resolved
+correctly. If this happens, the document author should consider whether a
+straightforward document hierarchy would suffice.</p>
+
 </body>
 </html>

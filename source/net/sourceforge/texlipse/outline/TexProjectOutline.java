@@ -8,11 +8,13 @@ import java.util.ListIterator;
 import java.util.Map;
 
 import net.sourceforge.texlipse.model.OutlineNode;
+import net.sourceforge.texlipse.model.ParseErrorMessage;
 import net.sourceforge.texlipse.model.ReferenceContainer;
 import net.sourceforge.texlipse.model.TexProjectParser;
 import net.sourceforge.texlipse.properties.TexlipseProperties;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 
 public class TexProjectOutline {
@@ -22,7 +24,7 @@ public class TexProjectOutline {
     private Map outlines = new HashMap();
     private IFile currentTexFile;
     private OutlineNode virtualTopNode;
-    
+    private List errors;
     private TexProjectParser fileParser;
     
     public TexProjectOutline(IProject currentProject,
@@ -30,6 +32,7 @@ public class TexProjectOutline {
         // TODO
         this.currentProject = currentProject;
         fileParser = new TexProjectParser(currentProject, labels, bibs);
+        this.errors = new ArrayList();
     }
 
     /**
@@ -49,7 +52,19 @@ public class TexProjectOutline {
     
 
     
+    public List getErrors() {
+        return errors;
+    }
+
+    /**
+     * Returns the complete outline starting with the main file
+     * and displaying all the files that are included from the main
+     * file
+     * 
+     * @return List containing <code>outlineNode</code>s
+     */
     public List getFullOutline() {
+        errors.clear();
 
         virtualTopNode = new OutlineNode("Entire document", OutlineNode.TYPE_DOCUMENT, 0, null);
         
@@ -102,6 +117,7 @@ public class TexProjectOutline {
             
             List oldChildren = oldNode2.getChildren();
             if (oldChildren != null) {
+                // TODO do we need to check parent level?
                 addChildren(newNode, oldChildren, texFile);
             }
         }
@@ -120,19 +136,20 @@ public class TexProjectOutline {
         boolean insert = false;
         for (Iterator iter = children.iterator(); iter.hasNext();) {
             OutlineNode node = (OutlineNode) iter.next();
+
+            // The tree shape might have changed...
+            if (insert) {
+                OutlineNode newMain = getParentLevel(virtualTopNode.getChildren(),
+                        OutlineNode.getSmallerType(node.getType()));
+                main = newMain == null ? virtualTopNode : newMain;
+            }
+            
             if (node.getType() == OutlineNode.TYPE_INPUT) {
                 // replace node with tree
                 List nodes = loadInput(node.getName());
-                //OutlineNode insertTop = 
                 replaceInput(main, nodes, currentTexFile);
-                // If the insert came to a higher level than this one,
-                // then we need to go up...
-                /*
-                if (insertTop.getType() <= main.getType()) {
-                    main = insertTop;
-                }
-                */
-                main = getParentLevel(virtualTopNode.getChildren(), main.getType());
+//                OutlineNode newMain = getParentLevel(virtualTopNode.getChildren(), main.getType());
+//                main = newMain == null ? main : newMain;
                 insert = true;
             } else {
                 OutlineNode newNode = node.copy(texFile);
@@ -180,18 +197,35 @@ public class TexProjectOutline {
         return lastNode;
     }
     
+    /**
+     * Loads input from the given file name
+     * 
+     * @param name
+     * @return
+     */
     private List loadInput(String name) {
         currentTexFile = fileParser.findIFile(name, currentTexFile);
         if (currentTexFile == null) {
-            // TODO set marker
+            errors.add(new ParseErrorMessage(1,
+                    0,
+                    0,
+                    "File " + name + " was not found",
+                    IMarker.SEVERITY_ERROR));
             return new ArrayList();
         }
         String fullName = currentTexFile.getFullPath().removeFirstSegments(1).toString();
         List nodes = (List) outlines.get(fullName);
         if (nodes == null) {
-            // FIXME we need to return something sensible here, not just null
             nodes = fileParser.parseFile();
             outlines.put(fullName, nodes);
+        }
+        if (nodes == null) {
+            errors.add(new ParseErrorMessage(1,
+                    0,
+                    0,
+                    "Unable to parse " + name + "",
+                    IMarker.SEVERITY_ERROR));
+            return new ArrayList();            
         }
         return nodes;
     }

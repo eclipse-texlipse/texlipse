@@ -244,6 +244,29 @@ public class OutlineNode {
 				super.toString();
     }
 
+    /**
+     * Returns one type smaller (=more important) than the
+     * given type.
+     * 
+     * @param type The current type
+     * @return A smaller (=more important) type
+     */
+    public static int getSmallerType(int type) {
+        // TODO think about the non-hierarchical types
+        if (type <= TYPE_PARAGRAPH) {
+            return type - 1;
+        }
+        switch (type) {
+        case TYPE_ENVIRONMENT:
+            return TYPE_PARAGRAPH;
+        case TYPE_PREAMBLE:
+            return TYPE_ENVIRONMENT;
+        case TYPE_INPUT:
+            return TYPE_PREAMBLE;
+        }
+        return TYPE_DOCUMENT;
+    }
+    
     /*
     public boolean likelySame(OutlineNode on) {
     	if (on.getType() != this.getType() || !this.getName().equals(on.getName())) {

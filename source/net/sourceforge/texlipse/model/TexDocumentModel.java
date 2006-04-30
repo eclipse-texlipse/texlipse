@@ -436,7 +436,7 @@ public class TexDocumentModel implements IDocumentListener {
         }
         pollCancel(monitor);
         
-        ArrayList errors = parser.getErrors();
+        List errors = parser.getErrors();
         List tasks = parser.getTasks();
         MarkerHandler marker = MarkerHandler.getInstance();
         // somewhat inelegantly ensures that errors marked in createProjectDatastructs()
@@ -463,6 +463,10 @@ public class TexDocumentModel implements IDocumentListener {
 
         if (editor.getFullOutline() != null) {
             List fo = projectOutline.getFullOutline();
+            errors = projectOutline.getErrors();
+            if (errors.size() > 0) {
+                marker.createErrorMarkers(editor, errors);
+            }
             postParseJob.setFONodes(fo);
         } else {
             postParseJob.setFONodes(null);

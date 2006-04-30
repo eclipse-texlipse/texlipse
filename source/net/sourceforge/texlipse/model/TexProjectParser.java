@@ -7,22 +7,16 @@ import java.util.List;
 
 import net.sourceforge.texlipse.TexlipsePlugin;
 import net.sourceforge.texlipse.editor.TexDocumentParseException;
-import net.sourceforge.texlipse.properties.TexlipseProperties;
 import net.sourceforge.texlipse.texparser.TexParser;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 
 public class TexProjectParser {
 
     private IProject currentProject;
-    private int position;
-    private IFile mainFile;
-    private IFile changedFile;
-    private String changedInput;
 
     private IFile file;
     
@@ -62,29 +56,23 @@ public class TexProjectParser {
         }
     }
 
+    /**
+     * Finds the given file from the project and returns it or null
+     * if such a file wasn't found.
+     * 
+     * @param fileName The name of the file to look for
+     * @param referringFile The file referring to this file (used for paths)
+     * @return The found file or null if it wasn't found
+     */
     public IFile findIFile(String fileName, IFile referringFile) {
 
         // Append default ending
         if (fileName.indexOf('.') == -1) { 
             fileName += TEX_FILE_ENDING;
         }
-        
         IPath path = referringFile.getFullPath();
         path = path.removeFirstSegments(1).removeLastSegments(1).append(fileName);
-        //IResource res = currentProject.findMember(path);
-        //res.exists();
         file = currentProject.getFile(path);
-        //boolean f = file.exists();
-        
-        /*
-        String dir = TexlipseProperties.getProjectProperty(currentProject,
-                TexlipseProperties.SOURCE_DIR_PROPERTY);
-        if (dir != null && dir.length() > 0) {
-            file = currentProject.getFolder(dir).getFile(fileName);
-        } else {
-            file = currentProject.getFile(fileName);
-        }
-        */
 
         return (file.exists() ? file : null);
     }
@@ -94,14 +82,20 @@ public class TexProjectParser {
         return this.parseFile();
     }
     
+    /**
+     * Parses a file that has been previously found with 
+     * <code>findIFile</code>. Note that if the find was not done or
+     * completed unsuccessfully, then this returns null.
+     * 
+     * @return Outline tree or null if parsing was unsuccessful.
+     */
     public List parseFile() {
         try {
             String inputContent = readFile(file);
             parseDocument(inputContent);
-            // FIXME we need to add the file-info to the OutlineTree here
             return (parser.isFatalErrors() ? null : parser.getOutlineTree());
         } catch (Exception e) {
-
+            // FIXME
         }
         return null;
     }

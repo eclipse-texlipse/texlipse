@@ -90,23 +90,24 @@ public class TexProjectOutline {
      * @param texFile
      * @return The last of the topmost inserted nodes
      */
-    private OutlineNode replaceInput(OutlineNode parent, List insertList, IFile texFile) {
+    private void replaceInput(OutlineNode parent, List insertList, IFile texFile) {
         // An input node should never have any children
         // We need to raise the level depending on the type of the 1st node in the new outline
         
         if (insertList.size() == 0) {
-            return parent;
+            return;
         }
-        /*
-        OutlineNode firstNode = (OutlineNode) insertList.get(0);
-        // FIXME do a real comparison method here instead, this doesn't work always
-        while (firstNode.getType() <= parent.getType()) {
-            parent = parent.getParent();
-        }
-        */
+
         for (Iterator iter2 = insertList.iterator(); iter2.hasNext();) {
             OutlineNode oldNode2 = (OutlineNode) iter2.next();
             
+            if (oldNode2.getType() == OutlineNode.TYPE_INPUT) {
+                List nodes = loadInput(oldNode2.getName());
+                replaceInput(parent, nodes, currentTexFile);
+                continue;
+            }
+
+//          FIXME do a real comparison method here instead, this doesn't work always
             while (oldNode2.getType() <= parent.getType()) {
                 parent = parent.getParent();
             }
@@ -121,8 +122,6 @@ public class TexProjectOutline {
                 addChildren(newNode, oldChildren, texFile);
             }
         }
-        List newChildren = parent.getChildren();
-        return (OutlineNode) newChildren.get(newChildren.size()-1);
     }
     
     /**

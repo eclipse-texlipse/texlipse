@@ -67,7 +67,8 @@ public class TexProjectParser {
     public IFile findIFile(String fileName, IFile referringFile) {
 
         // Append default ending
-        if (fileName.indexOf('.') == -1) { 
+        if (fileName.indexOf('.') == -1
+                || fileName.lastIndexOf('/') > fileName.lastIndexOf('.')) {
             fileName += TEX_FILE_ENDING;
         }
         IPath path = referringFile.getFullPath();

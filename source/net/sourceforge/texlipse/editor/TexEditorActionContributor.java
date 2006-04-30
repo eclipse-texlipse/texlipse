@@ -27,6 +27,7 @@ public class TexEditorActionContributor extends TextEditorActionContributor {
     private TexInsertMathSymbolAction[] stdCompare;
     private TexInsertMathSymbolAction[] stdBinOp;
     private TexInsertMathSymbolAction[] stdBraces;
+    private TexInsertMathSymbolAction[] stdAccents;
 
     /**
      * Fills the actions array with the TexCommandEntries from commands
@@ -36,10 +37,7 @@ public class TexEditorActionContributor extends TextEditorActionContributor {
      */
     private void createMathActions(TexInsertMathSymbolAction[] actions, TexCommandEntry[] commands) {
         for (int i = 0; i < commands.length; i++) {
-            String name = commands[i].key;
-            actions[i] = new TexInsertMathSymbolAction(name);
-            actions[i].setText(name);
-            actions[i].setImageDescriptor(commands[i].imageDesc);
+            actions[i] = new TexInsertMathSymbolAction(commands[i]);
         }
     }
 
@@ -51,12 +49,15 @@ public class TexEditorActionContributor extends TextEditorActionContributor {
         stdCompare = new TexInsertMathSymbolAction[TexCommandContainer.stdCompare.length];
         stdBinOp = new TexInsertMathSymbolAction[TexCommandContainer.stdBinOpSymbols.length];
         stdBraces = new TexInsertMathSymbolAction[TexCommandContainer.stdBraces.length];
+        stdAccents = new TexInsertMathSymbolAction[TexCommandContainer.stdAccents.length];
+
         createMathActions(greekSmall, TexCommandContainer.greekSmall);
         createMathActions(greekCapital, TexCommandContainer.greekCapital);
         createMathActions(arrows, TexCommandContainer.stdArrows);
         createMathActions(stdCompare, TexCommandContainer.stdCompare);
         createMathActions(stdBinOp, TexCommandContainer.stdBinOpSymbols);
         createMathActions(stdBraces, TexCommandContainer.stdBraces);
+        createMathActions(stdAccents, TexCommandContainer.stdAccents);
     }
 
     /*
@@ -75,6 +76,7 @@ public class TexEditorActionContributor extends TextEditorActionContributor {
             MenuManager compareMenu = new MenuManager("Compare symbols");
             MenuManager stdBinOpMenu = new MenuManager("Binary Operator");
             MenuManager stdBracesMenu = new MenuManager("Braces");
+            MenuManager stdAccentsMenu = new MenuManager("Accents");
             manager.add(captialGreekMenu);
             manager.add(smallGreekMenu);
             manager.add(new Separator());
@@ -82,6 +84,9 @@ public class TexEditorActionContributor extends TextEditorActionContributor {
             manager.add(compareMenu);
             manager.add(stdBinOpMenu);
             manager.add(stdBracesMenu);
+            manager.add(new Separator());
+            manager.add(stdAccentsMenu);
+            
 
             for (int i = 0; i < greekSmall.length; i++)
                 smallGreekMenu.add(greekSmall[i]);
@@ -95,6 +100,8 @@ public class TexEditorActionContributor extends TextEditorActionContributor {
                 stdBinOpMenu.add(stdBinOp[i]);
             for (int i = 0; i < stdBraces.length; i++)
                 stdBracesMenu.add(stdBraces[i]);
+            for (int i = 0; i < stdAccents.length; i++)
+                stdAccentsMenu.add(stdAccents[i]);
         }
     }
 
@@ -117,6 +124,8 @@ public class TexEditorActionContributor extends TextEditorActionContributor {
             stdBinOp[i].setActiveEditor(part);
         for (int i = 0; i < stdBraces.length; i++)
             stdBraces[i].setActiveEditor(part);
+        for (int i = 0; i < stdAccents.length; i++)
+            stdAccents[i].setActiveEditor(part);
     }
 
     /*

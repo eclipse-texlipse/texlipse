@@ -250,6 +250,19 @@ public class TexCommandContainer {
         new TexCommandEntry("|", "\\|\n\n", "mathSym/braces/norm")
     };
     
+    public static final TexCommandEntry[] stdAccents = {
+        new TexCommandEntry("hat", "\\hat{char}\n\n", 1, "mathSym/accents/hat"),
+        new TexCommandEntry("check", "\\check{char}\n\n", 1, "mathSym/accents/check"),
+        new TexCommandEntry("breve", "\\breve{char}\n\n", 1, "mathSym/accents/breve"),
+        new TexCommandEntry("acute", "\\acute{char}\n\n", 1, "mathSym/accents/acute"),
+        new TexCommandEntry("grave", "\\grave{char}\n\n", 1, "mathSym/accents/grave"),
+        new TexCommandEntry("tilde", "\\tilde{char}\n\n", 1, "mathSym/accents/tilde"),
+        new TexCommandEntry("bar", "\\bar{char}\n\n", 1, "mathSym/accents/bar"),
+        new TexCommandEntry("vec", "\\vec{char}\n\n", 1, "mathSym/accents/vec"),
+        new TexCommandEntry("dot", "\\dot{char}\n\n", 1, "mathSym/accents/dot"),
+        new TexCommandEntry("ddot", "\\ddot{char}\n\n", 1, "mathSym/accents/ddot")
+    };
+
     public static final TexCommandEntry[] stdArrows = {
         new TexCommandEntry("leftarrow", "\\leftarrow\n\nSimple arrow which points to the left", "mathSym/arrows/leftarrow"),
         new TexCommandEntry("gets", "\\gets\n\nSimple arrow which points to the left", "mathSym/arrows/leftarrow"),
@@ -498,6 +511,7 @@ public class TexCommandContainer {
         for (int i=0; i<functionNames.length; i++) sortedCommands.add(functionNames[i]);
         for (int i=0; i<stdBinOpSymbols.length; i++) sortedCommands.add(stdBinOpSymbols[i]);
         for (int i=0; i<stdBraces.length; i++) sortedCommands.add(stdBraces[i]);
+        for (int i=0; i<stdAccents.length; i++) sortedCommands.add(stdAccents[i]);
         sortedCommands.addAll(mathRefs);
         Collections.sort(sortedCommands);
         createContexts();

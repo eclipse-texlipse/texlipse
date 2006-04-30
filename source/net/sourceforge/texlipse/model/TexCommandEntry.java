@@ -108,6 +108,19 @@ public class TexCommandEntry extends AbstractEntry {
     }
 
     /**
+     * Creates a new math TexCommand 
+     * 
+     * @param _key
+     * @param _info Descriptive info text
+     * @param _arguments Number of mandatory arguments
+     * @param _imageName Name of an image of this command
+     */
+    public TexCommandEntry(String _key, String _info, int _arguments, String _imageName) {
+        this(_key, _info, _arguments, MATH_CONTEXT);
+        this.imageDesc = TexlipsePlugin.getImageDescriptor(_imageName);
+    }
+
+    /**
      * Copy construktor
      * 
      * @param c

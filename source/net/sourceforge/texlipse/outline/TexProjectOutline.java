@@ -183,6 +183,7 @@ public class TexProjectOutline {
             return null;
         }
         // reverse iteration
+        /*
         for (ListIterator li = children.listIterator(children.size() - 1);
              li.hasPrevious();) {
             List nodeChildren = ((OutlineNode) li.previous()).getChildren();
@@ -191,6 +192,14 @@ public class TexProjectOutline {
                 if (found != null) {
                     return found;
                 }
+          
+            }
+        }*/
+        List nodeChildren = lastNode.getChildren();
+        if (nodeChildren != null) {
+            OutlineNode found = getParentLevel(nodeChildren, level);
+            if (found != null) {
+                return found;
             }
         }
         // Now return the "best match", i.e. the smallest one that's larger

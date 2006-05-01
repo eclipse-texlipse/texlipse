@@ -4,19 +4,23 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
 
+import net.sourceforge.texlipse.model.MarkerHandler;
 import net.sourceforge.texlipse.model.OutlineNode;
-import net.sourceforge.texlipse.model.ParseErrorMessage;
 import net.sourceforge.texlipse.model.ReferenceContainer;
 import net.sourceforge.texlipse.model.TexProjectParser;
 import net.sourceforge.texlipse.properties.TexlipseProperties;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 
+/**
+ * Container for an outline representing the entire project
+ * 
+ * @author Oskar Ojala
+ *
+ */
 public class TexProjectOutline {
 
     private IProject currentProject;
@@ -50,12 +54,6 @@ public class TexProjectOutline {
         }
     }
     
-
-    
-    public List getErrors() {
-        return errors;
-    }
-
     /**
      * Returns the complete outline starting with the main file
      * and displaying all the files that are included from the main
@@ -68,6 +66,7 @@ public class TexProjectOutline {
 
         virtualTopNode = new OutlineNode("Entire document", OutlineNode.TYPE_DOCUMENT, 0, null);
         
+        // TODO clear markers?
         currentTexFile = TexlipseProperties.getProjectSourceFile(currentProject);
         if (topLevelNodes == null) {
             topLevelNodes = fileParser.parseFile(currentTexFile);
@@ -102,7 +101,7 @@ public class TexProjectOutline {
             OutlineNode oldNode2 = (OutlineNode) iter2.next();
             
             if (oldNode2.getType() == OutlineNode.TYPE_INPUT) {
-                List nodes = loadInput(oldNode2.getName());
+                List nodes = loadInput(oldNode2.getName(), texFile, oldNode2.getBeginLine());
                 replaceInput(parent, nodes, currentTexFile);
                 continue;
             }
@@ -145,7 +144,7 @@ public class TexProjectOutline {
             
             if (node.getType() == OutlineNode.TYPE_INPUT) {
                 // replace node with tree
-                List nodes = loadInput(node.getName());
+                List nodes = loadInput(node.getName(), texFile, node.getBeginLine());
                 replaceInput(main, nodes, currentTexFile);
 //                OutlineNode newMain = getParentLevel(virtualTopNode.getChildren(), main.getType());
 //                main = newMain == null ? main : newMain;
@@ -211,30 +210,32 @@ public class TexProjectOutline {
      * @param name
      * @return
      */
-    private List loadInput(String name) {
-        currentTexFile = fileParser.findIFile(name, currentTexFile);
-        if (currentTexFile == null) {
-            errors.add(new ParseErrorMessage(1,
-                    0,
-                    0,
-                    "File " + name + " was not found",
-                    IMarker.SEVERITY_ERROR));
+    private List loadInput(String name, IFile referringFile, int lineNumber) {
+        MarkerHandler marker = MarkerHandler.getInstance();
+        marker.clearProblemMarkers(referringFile);
+        
+        IFile newTexFile = fileParser.findIFile(name, referringFile);
+        if (newTexFile == null) {
+            marker.createErrorMarker(referringFile,
+                    "Could not find file " + name,
+                    lineNumber);
             return new ArrayList();
         }
-        String fullName = currentTexFile.getFullPath().removeFirstSegments(1).toString();
+        String fullName = newTexFile.getFullPath().removeFirstSegments(1).toString();
         List nodes = (List) outlines.get(fullName);
         if (nodes == null) {
             nodes = fileParser.parseFile();
             outlines.put(fullName, nodes);
         }
         if (nodes == null) {
-            errors.add(new ParseErrorMessage(1,
-                    0,
-                    0,
-                    "Unable to parse " + name + "",
-                    IMarker.SEVERITY_ERROR));
+            marker.createErrorMarker(referringFile,
+                    "Could not parse file " + name,
+                    lineNumber);
+
             return new ArrayList();            
         }
+        // TODO impact analysis + should this always be set
+        currentTexFile = newTexFile;
         return nodes;
     }
 }

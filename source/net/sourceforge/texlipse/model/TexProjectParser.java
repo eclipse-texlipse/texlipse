@@ -14,6 +14,10 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 
+/**
+ * @author Oskar Ojala
+ *
+ */
 public class TexProjectParser {
 
     private IProject currentProject;
@@ -75,7 +79,7 @@ public class TexProjectParser {
         path = path.removeFirstSegments(1).removeLastSegments(1).append(fileName);
         file = currentProject.getFile(path);
 
-        return (file.exists() ? file : null);
+        return file.exists() ? file : null;
     }
     
     public List parseFile(IFile file) {

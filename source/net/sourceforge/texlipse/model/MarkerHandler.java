@@ -15,7 +15,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import net.sourceforge.texlipse.TexlipsePlugin;
-import net.sourceforge.texlipse.builder.TexlipseBuilder;
 
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
@@ -53,7 +52,7 @@ public class MarkerHandler {
     }
 
     /**
-     * Create error markers from the given ParseErrorMessages.
+     * Create error markers from the given <code>ParseErrorMessage</code>s.
      * 
      * @param editor The editor to add the errors to
      * @param errors The errors to add as instances of <code>ParseErrorMessage</code>
@@ -62,15 +61,28 @@ public class MarkerHandler {
         createMarkers(editor, errors, IMarker.PROBLEM);
     }
 
-    public void createTaskMarkers(TextEditor editor, List errors) {
-        createMarkers(editor, errors, IMarker.TASK);
+    /**
+     * Create task markers from the given <code>ParseErrorMessage</code>s.
+     * 
+     * @param editor The editor to add the errors to
+     * @param tasks The tasks to add as instances of <code>ParseErrorMessage</code>
+     */
+    public void createTaskMarkers(TextEditor editor, List tasks) {
+        createMarkers(editor, tasks, IMarker.TASK);
     }
     
-    private void createMarkers(TextEditor editor, List errors, final String markerType) {
+    /**
+     * Creates markers from a given list of <code>ParseErrorMessage</code>s.
+     * 
+     * @param editor The editor to add the errors to
+     * @param markers The markers to add as instances of <code>ParseErrorMessage</code>
+     * @param markerType The type of the markers as <code>IMarker</code> types
+     */
+    private void createMarkers(TextEditor editor, List markers, final String markerType) {
         IResource resource = ((FileEditorInput)editor.getEditorInput()).getFile();
         IDocument document = editor.getDocumentProvider().getDocument(editor.getEditorInput());
         
-        for (Iterator iter = errors.iterator(); iter.hasNext();) {
+        for (Iterator iter = markers.iterator(); iter.hasNext();) {
             ParseErrorMessage msg = (ParseErrorMessage) iter.next();
             try {
                 int beginOffset = document.getLineOffset(msg.getLine() - 1) + msg.getPos();
@@ -164,11 +176,25 @@ public class MarkerHandler {
             return;
 
         try {
+            // TODO what should we clear and when?
             // regular problems == parsing errors
             resource.deleteMarkers(IMarker.PROBLEM, false, IResource.DEPTH_INFINITE);
             // builder markers == build problems (don't clean them)
             //resource.deleteMarkers(TexlipseBuilder.MARKER_TYPE, false, IResource.DEPTH_INFINITE);
             // don't clear spelling errors
+        } catch (CoreException e) {
+            TexlipsePlugin.log("Deleting error markers", e);
+        }
+    }
+
+    /**
+     * Clears the problem markers (such as parsing errors)
+     * 
+     * @param resource The resource whose markers to clear
+     */
+    public void clearProblemMarkers(IResource resource) {
+        try {
+            resource.deleteMarkers(IMarker.PROBLEM, false, IResource.DEPTH_INFINITE);
         } catch (CoreException e) {
             TexlipsePlugin.log("Deleting error markers", e);
         }
@@ -191,4 +217,25 @@ public class MarkerHandler {
         }
     }
 
+    /**
+     * Creates an error marker on the given line
+     * 
+     * @param resource The resource to create the error to
+     * @param message The message for the marker
+     * @param lineNumber The line number to create the error on
+     */
+    public void createErrorMarker(IResource resource, String message, int lineNumber) {
+        try {
+            HashMap map = new HashMap();
+            map.put(IMarker.LINE_NUMBER, new Integer(lineNumber));
+            map.put(IMarker.MESSAGE, message);
+            
+            map.put(IMarker.SEVERITY, new Integer(IMarker.SEVERITY_ERROR));
+            
+            MarkerUtilities.createMarker(resource, map, IMarker.PROBLEM);
+        } catch (CoreException ce) {
+            TexlipsePlugin.log("Creating marker", ce);
+        }
+    }
+    
 }

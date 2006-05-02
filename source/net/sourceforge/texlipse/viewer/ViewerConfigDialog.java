@@ -11,6 +11,7 @@ package net.sourceforge.texlipse.viewer;
 
 
 import java.io.File;
+import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 
@@ -138,30 +139,11 @@ public class ViewerConfigDialog extends Dialog {
      */
     protected void okPressed() {
         
+        if (!validateFields())
+            return;
+        
         String name = nameField.getText();
-        if (name == null || name.length() == 0) {
-            setStatus("preferenceViewerDialogNameEmpty", "");
-            return;
-        }
-        
-        if (formatChooser.getSelectionIndex() == -1) {
-            setStatus("preferenceViewerFormatEmpty", "");
-            return;
-        }
-        
-        // if adding new configuration, existing name is not valid
-        if (nameList != null && nameList.contains(name)) {
-            setStatus("preferenceViewerDialogNameExists", name);
-            return;
-        }
-        
-        File f = new File(fileField.getText());
-        if (!f.exists()) {
-            setStatus("preferenceViewerDialogFileNotFound", f.getAbsolutePath());
-            return;
-        }
-        
-        registry.setActiveViewer(name);
+        registry.setActiveViewer(nameField.getText());
         registry.setCommand(fileField.getText());
         registry.setArguments(argsField.getText());        
         registry.setDDEViewCommand(ddeViewGroup.command.getText());
@@ -266,34 +248,69 @@ public class ViewerConfigDialog extends Dialog {
         group.setLayout(new GridLayout());
         statusField = new Label(group, SWT.LEFT);
         statusField.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        statusField.setText(resolveStatus());
         statusField.setToolTipText(TexlipsePlugin.getResourceString("preferenceViewerStatusTooltip"));
         
         return composite;
     }
     
-    /**
-     * @return an initial status message for the status field
+    
+    
+    /* 
+     * @see org.eclipse.jface.dialogs.Dialog#createButtonBar(org.eclipse.swt.widgets.Composite)
      */
-    private String resolveStatus() {
-        String path = fileField.getText();
-        if (path != null && path.length() > 0) {
-            File file = new File(path);
-            if (!file.exists()) {
-                Button b = getButton(IDialogConstants.OK_ID);
-                if (b != null) {
-                    // set button status
-                    b.setEnabled(false);
-                }
-                return TexlipsePlugin.getResourceString("preferenceViewerDialogFileNotFound").replaceAll("%s", path);
-            }
+    protected Control createButtonBar(Composite parent) {
+        Control ctrl = super.createButtonBar(parent);
+        validateFields();
+        return ctrl;
+    }
+
+    private boolean validateFields() {
+        
+        boolean everythingOK = true;
+        
+        String name = nameField.getText();
+        if ( nameField.getText() == null ||  nameField.getText().length() == 0) {
+            setStatus("preferenceViewerDialogNameEmpty", "");
+            everythingOK = false;
         }
+        if (formatChooser.getSelectionIndex() == -1) {
+            setStatus("preferenceViewerFormatEmpty", "");
+            everythingOK = false;
+        }
+        
+        // if adding new configuration, existing name is not valid
+        if (nameList != null && nameList.contains(name)) {
+            setStatus("preferenceViewerDialogNameExists", name);
+            everythingOK = false;
+        }
+        
+        File f = new File(fileField.getText());
+        if (fileField.getText().trim().equals("")) {
+            setStatus("preferenceViewerDialogFileNoFile", "");
+            everythingOK = false;
+        }
+        else if (!f.exists()) {
+            setStatus("preferenceViewerDialogFileNotFound", "");
+            everythingOK = false;
+        }
+
+        if (!everythingOK) {
+            Button b = getButton(IDialogConstants.OK_ID);
+            if (b != null) {
+                // set button status
+                b.setEnabled(false);
+            }
+            return false;
+        }
+        
         Button b = getButton(IDialogConstants.OK_ID);
         if (b != null) {
-            // set button status
             b.setEnabled(true);
         }
-        return TexlipsePlugin.getResourceString("preferenceViewerDialogFileOk");
+        
+        setStatus("preferenceViewerDialogFileOk", "");
+        
+        return true;
     }
 
     /**
@@ -337,7 +354,7 @@ public class ViewerConfigDialog extends Dialog {
         fileField.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         fileField.addModifyListener(new ModifyListener() {
             public void modifyText(ModifyEvent e) {
-                statusField.setText(resolveStatus());
+                validateFields();
             }});
         
         Button browseButton = new Button(browser, SWT.PUSH);

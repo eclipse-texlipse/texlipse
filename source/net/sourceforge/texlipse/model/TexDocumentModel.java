@@ -201,8 +201,6 @@ public class TexDocumentModel implements IDocumentListener {
     }
 
 
-    private TexOutlineInput fullOutlineInput;
-    
     private TexEditor editor;
     private TexParser parser;
     private TexProjectOutline projectOutline;
@@ -262,8 +260,6 @@ public class TexDocumentModel implements IDocumentListener {
 		});	
     }
 
-
-
     /**
      * Initializes the model. Should be called immediately after constructing
      * an instance, otherwise parsing may fail.
@@ -274,8 +270,6 @@ public class TexDocumentModel implements IDocumentListener {
         createReferenceContainers();
     }
 
-    
-    
     /**
      * Cancels possibly running parseJob and schedules it to run again 
      * immediately.
@@ -290,8 +284,6 @@ public class TexDocumentModel implements IDocumentListener {
        parseJob.cancel();
        parseJob.schedule();
     }
-    
-  
     
     /**
      * Called from TexEditor.getAdapter(). If uptodate outline input is 
@@ -308,7 +300,6 @@ public class TexDocumentModel implements IDocumentListener {
         }
     }
 
-
     /**
      * Returns the reference (label and BibTeX) for this model
      * (ie. project).
@@ -324,7 +315,6 @@ public class TexDocumentModel implements IDocumentListener {
         return refMana;
     }
 
-
     /**
      * Returns whether current OutlineInput is dirty, i.e. if the
      * document has been changed after latest parsing.
@@ -335,7 +325,6 @@ public class TexDocumentModel implements IDocumentListener {
         return this.isDirty;
     }
 
-    
     /** 
      * Does nothing atm.
      * 
@@ -344,7 +333,6 @@ public class TexDocumentModel implements IDocumentListener {
     public void documentAboutToBeChanged(DocumentEvent event) {
     
     }
-
 
     /**
      * Called when document changes. Marks the document dirty and
@@ -379,12 +367,10 @@ public class TexDocumentModel implements IDocumentListener {
         	editor.getOutlinePage().modelGotDirty();
         }
     
-//      B----------------------------------- mmaus
         TexOutlineTreeView fullOutline = editor.getFullOutline();
-        if(fullOutline != null) {
+        if (fullOutline != null) {
             fullOutline.modelGotDirty();
         }
-//      E----------------------------------- mmaus
         
         // reschedule parsing with delay
         if (autoParseEnabled) {
@@ -422,27 +408,43 @@ public class TexDocumentModel implements IDocumentListener {
     private ArrayList doParse(IProgressMonitor monitor) throws TexDocumentParseException {
         
         if (this.parser == null) {
-            this.parser = new TexParser(this.editor.getDocumentProvider().getDocument(this.editor.getEditorInput()));
+            this.parser = new TexParser(editor.getDocumentProvider().getDocument(editor.getEditorInput()));
         }
         if (projectOutline == null) {
             createProjectOutline();
         }
         
         try {
-            this.parser.parseDocument(labelContainer, bibContainer);
+            parser.parseDocument(labelContainer, bibContainer);
         } catch (IOException e) {
             TexlipsePlugin.log("Can't read file.", e);
             throw new TexDocumentParseException(e);
         }
         pollCancel(monitor);
-        
+
         List errors = parser.getErrors();
         List tasks = parser.getTasks();
         MarkerHandler marker = MarkerHandler.getInstance();
+
+        if (editor.getFullOutline() != null) {
+            IResource res = (IResource) editor.getEditorInput().getAdapter(IResource.class);
+            String fileName = res.getProjectRelativePath().toString();
+            projectOutline.addOutline(parser.getOutlineTree(), fileName);
+            
+            List fo = projectOutline.getFullOutline();
+            postParseJob.setFONodes(fo);
+        } else {
+            postParseJob.setFONodes(null);
+        }
+        pollCancel(monitor);
+        
         // somewhat inelegantly ensures that errors marked in createProjectDatastructs()
         // aren't removed immediately
         if (!firstRun) {
-            marker.clearErrorMarkers(editor);
+            // The full outline already clears these
+            if (editor.getFullOutline() == null) {
+                marker.clearErrorMarkers(editor);
+            }
             marker.clearTaskMarkers(editor);
         } else {
             firstRun = false;
@@ -455,17 +457,6 @@ public class TexDocumentModel implements IDocumentListener {
         }
         if (parser.isFatalErrors()) {
             throw new TexDocumentParseException("Fatal errors in file, parsing aborted.");
-        }
-
-        IResource res = (IResource) this.editor.getEditorInput().getAdapter(IResource.class);
-        String fileName = res.getProjectRelativePath().toString();
-        projectOutline.addOutline(parser.getOutlineTree(), fileName);
-
-        if (editor.getFullOutline() != null) {
-            List fo = projectOutline.getFullOutline();
-            postParseJob.setFONodes(fo);
-        } else {
-            postParseJob.setFONodes(null);
         }
         
         updateReferences(monitor);
@@ -750,7 +741,7 @@ public class TexDocumentModel implements IDocumentListener {
      * @param project The current project
      */
     private void createProjectDatastructs(IProject project) {
-        IResource resource = ((FileEditorInput)editor.getEditorInput()).getFile();
+        //IResource resource = ((FileEditorInput)editor.getEditorInput()).getFile();
         
         IResource[] files = TexlipseProperties.getAllProjectFiles(project);        
         
@@ -758,7 +749,7 @@ public class TexDocumentModel implements IDocumentListener {
             IFile mainFile = TexlipseProperties.getProjectSourceFile(project);
 
             for (int i = 0; i < files.length; i++) {
-                IPath path = files[i].getFullPath();
+                //IPath path = files[i].getFullPath();
                 String ext = files[i].getFileExtension();
 				// here are the file types we want to parse
                 if ("tex".equals(ext) || "ltx".equals(ext) || "sty".equals(ext)) {
@@ -837,8 +828,6 @@ public class TexDocumentModel implements IDocumentListener {
         }
     }
     
-//  B----------------------------------- mmaus
-    
     /**
      * Write a message on the status line.
      * @param msg the message.
@@ -860,7 +849,5 @@ public class TexDocumentModel implements IDocumentListener {
         //slm.setVisible(false);
         slm.setErrorMessage(null);
     }
-    
-//  E----------------------------------- mmaus
     
 }

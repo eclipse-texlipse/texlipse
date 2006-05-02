@@ -1,11 +1,13 @@
 package net.sourceforge.texlipse.outline;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import net.sourceforge.texlipse.TexlipsePlugin;
 import net.sourceforge.texlipse.model.MarkerHandler;
 import net.sourceforge.texlipse.model.OutlineNode;
 import net.sourceforge.texlipse.model.ReferenceContainer;
@@ -19,7 +21,6 @@ import org.eclipse.core.resources.IProject;
  * Container for an outline representing the entire project
  * 
  * @author Oskar Ojala
- *
  */
 public class TexProjectOutline {
 
@@ -28,18 +29,17 @@ public class TexProjectOutline {
     private Map outlines = new HashMap();
     private IFile currentTexFile;
     private OutlineNode virtualTopNode;
-    private List errors;
     private TexProjectParser fileParser;
     
     public TexProjectOutline(IProject currentProject,
             ReferenceContainer labels, ReferenceContainer bibs) {
-        // TODO
         this.currentProject = currentProject;
         fileParser = new TexProjectParser(currentProject, labels, bibs);
-        this.errors = new ArrayList();
     }
 
     /**
+     * Adds an outline into the project (full document) outline
+     * 
      * @param nodes The outline tree top
      * @param fileName The path of the source file relative to the
      *                 project's base directory
@@ -48,8 +48,9 @@ public class TexProjectOutline {
         outlines.put(fileName, nodes);
         
         IFile mainFile = TexlipseProperties.getProjectSourceFile(currentProject);
+        String str = mainFile.getFullPath().removeFirstSegments(1).toString();
         
-        if (fileName.equals(mainFile.getName())) {
+        if (fileName.equals(str)) {
             this.topLevelNodes = nodes;
         }
     }
@@ -57,21 +58,29 @@ public class TexProjectOutline {
     /**
      * Returns the complete outline starting with the main file
      * and displaying all the files that are included from the main
-     * file
+     * file.
+     * 
+     * Note that this clears the problem markers from the main file
+     * and each included file. 
      * 
      * @return List containing <code>outlineNode</code>s
      */
     public List getFullOutline() {
-        errors.clear();
 
         virtualTopNode = new OutlineNode("Entire document", OutlineNode.TYPE_DOCUMENT, 0, null);
         
-        // TODO clear markers?
         currentTexFile = TexlipseProperties.getProjectSourceFile(currentProject);
+        MarkerHandler marker = MarkerHandler.getInstance();
+        marker.clearProblemMarkers(currentTexFile);
         if (topLevelNodes == null) {
-            topLevelNodes = fileParser.parseFile(currentTexFile);
-            String fullName = currentTexFile.getFullPath().removeFirstSegments(1).toString();
-            outlines.put(fullName, topLevelNodes);
+            try {
+                topLevelNodes = fileParser.parseFile(currentTexFile);
+                String fullName = currentTexFile.getFullPath().removeFirstSegments(1).toString();
+                outlines.put(fullName, topLevelNodes);
+            } catch (IOException ioe) {
+                TexlipsePlugin.log("Unable to create full document outline; main file is not parsable", ioe);
+                return new ArrayList();
+            }
         }
         addChildren(virtualTopNode, topLevelNodes, currentTexFile);
 
@@ -84,10 +93,11 @@ public class TexProjectOutline {
     }
     
     /**
-     * @param parent
-     * @param insertList
-     * @param texFile
-     * @return The last of the topmost inserted nodes
+     * Replaces an input node with the outline that the referred file contains.
+     * 
+     * @param parent The parent node to add the input to
+     * @param insertList The top level nodes of the outline to insert
+     * @param texFile The file that contains the nodes in <code>insertList</code>
      */
     private void replaceInput(OutlineNode parent, List insertList, IFile texFile) {
         // An input node should never have any children
@@ -96,7 +106,6 @@ public class TexProjectOutline {
         if (insertList.size() == 0) {
             return;
         }
-
         for (Iterator iter2 = insertList.iterator(); iter2.hasNext();) {
             OutlineNode oldNode2 = (OutlineNode) iter2.next();
             
@@ -106,7 +115,7 @@ public class TexProjectOutline {
                 continue;
             }
 
-//          FIXME do a real comparison method here instead, this doesn't work always
+            // TODO do a real comparison method here instead, this doesn't work always
             while (oldNode2.getType() <= parent.getType()) {
                 parent = parent.getParent();
             }
@@ -124,11 +133,13 @@ public class TexProjectOutline {
     }
     
     /**
-     * Adds OutlineNodes in children to main copying the children in the
+     * Adds OutlineNodes in <code>children</code> under the 
+     * node <code>main</code> copying the child nodes in the
      * process.
      * 
-     * @param main
-     * @param children
+     * @param main The parent node
+     * @param children The child nodes to add to the parent node
+     * @param texFile The file that contains the nodes in <code>insertList</code>
      */
     private boolean addChildren(OutlineNode main, List children, IFile texFile) {
         boolean insert = false;
@@ -146,8 +157,6 @@ public class TexProjectOutline {
                 // replace node with tree
                 List nodes = loadInput(node.getName(), texFile, node.getBeginLine());
                 replaceInput(main, nodes, currentTexFile);
-//                OutlineNode newMain = getParentLevel(virtualTopNode.getChildren(), main.getType());
-//                main = newMain == null ? main : newMain;
                 insert = true;
             } else {
                 OutlineNode newNode = node.copy(texFile);
@@ -165,6 +174,12 @@ public class TexProjectOutline {
     }
 
     /**
+     * Gets the appropriate parent node for the given level.
+     * Typically, the children of the top level node are given
+     * as the parameter so that the whole tree is searched. This
+     * method is useful for determining the node to insert new nodes
+     * under after an include ahs taken place.
+     * 
      * @param children The children to start searching from
      * @param level The level (lower limit) to find
      * @return Last node of the given level or the highest level that is
@@ -205,10 +220,13 @@ public class TexProjectOutline {
     }
     
     /**
-     * Loads input from the given file name
+     * Loads the outline from the given file. 
      * 
-     * @param name
-     * @return
+     * @param name The name of the file
+     * @param referringFile The file referring to (i.e. including) this file
+     * @param lineNumber The line number of the inclusion command
+     * @return The top level nodes of the parsed file or an empty list if parsing
+     * failed
      */
     private List loadInput(String name, IFile referringFile, int lineNumber) {
         MarkerHandler marker = MarkerHandler.getInstance();
@@ -224,15 +242,15 @@ public class TexProjectOutline {
         String fullName = newTexFile.getFullPath().removeFirstSegments(1).toString();
         List nodes = (List) outlines.get(fullName);
         if (nodes == null) {
-            nodes = fileParser.parseFile();
-            outlines.put(fullName, nodes);
-        }
-        if (nodes == null) {
-            marker.createErrorMarker(referringFile,
-                    "Could not parse file " + name,
-                    lineNumber);
-
-            return new ArrayList();            
+            try {
+                nodes = fileParser.parseFile();
+                outlines.put(fullName, nodes);
+            } catch (IOException ioe) {
+                marker.createErrorMarker(referringFile,
+                        "Could not parse file " + name + ", reason: " + ioe.getMessage(),
+                        lineNumber);
+                return new ArrayList();
+            }
         }
         // TODO impact analysis + should this always be set
         currentTexFile = newTexFile;

@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.List;
 
-import net.sourceforge.texlipse.TexlipsePlugin;
 import net.sourceforge.texlipse.editor.TexDocumentParseException;
 import net.sourceforge.texlipse.texparser.TexParser;
 
@@ -15,8 +14,9 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 
 /**
+ * A parser interface for finding and parsing files in a LaTeX-project.
+ * 
  * @author Oskar Ojala
- *
  */
 public class TexProjectParser {
 
@@ -29,35 +29,20 @@ public class TexProjectParser {
     private ReferenceContainer labels;
     private ReferenceContainer bibs;
     
-    private static String TEX_FILE_ENDING = ".tex";
+    private static final String TEX_FILE_ENDING = ".tex";
 
-    
+    /**
+     * Creates a new project parser
+     * 
+     * @param currentProject The project this parser should belong to
+     * @param labels The label container for this project
+     * @param bibs The BibTeX container for this project
+     */
     public TexProjectParser(IProject currentProject, 
             ReferenceContainer labels, ReferenceContainer bibs) {
         this.currentProject = currentProject;
         this.labels = labels;
         this.bibs = bibs;
-    }
-
-    /**
-     * Parses the document. Parses the complete project with its inputs recursively.
-     * At the first round the complete project is parsed. Then only the changed
-     * parts will be parsed again and the outlineTree will be generated.
-     * 
-     * @param labels the label container.
-     * @param bibs the bib container.
-     */
-    private void parseDocument(String input) throws TexDocumentParseException {
-        if (this.parser == null) {
-            this.parser = new TexParser(null);
-        }
-        try {
-            //String input = readFile(mainFile);
-            this.parser.parseDocument(labels, bibs, input);
-        } catch (IOException e) {
-            TexlipsePlugin.log("Can't read file.", e);
-            throw new TexDocumentParseException(e);
-        }
     }
 
     /**
@@ -82,7 +67,15 @@ public class TexProjectParser {
         return file.exists() ? file : null;
     }
     
-    public List parseFile(IFile file) {
+    /**
+     * Parses the given file
+     * 
+     * @param file The file to parse
+     * @return Outline tree
+     * @throws IOException if the file was not readable
+     * @throws TexDocumentParseException if the parsing ended in fatal errors
+     */
+    public List parseFile(IFile file) throws IOException {
         this.file = file;
         return this.parseFile();
     }
@@ -90,51 +83,67 @@ public class TexProjectParser {
     /**
      * Parses a file that has been previously found with 
      * <code>findIFile</code>. Note that if the find was not done or
-     * completed unsuccessfully, then this returns null.
+     * it completed unsuccessfully, then the behaviour of this method
+     * is undefined.
      * 
      * @return Outline tree or null if parsing was unsuccessful.
+     * @throws IOException if the file was not readable
+     * @throws TexDocumentParseException if the parsing ended in fatal errors
      */
-    public List parseFile() {
-        try {
-            String inputContent = readFile(file);
-            parseDocument(inputContent);
-            return (parser.isFatalErrors() ? null : parser.getOutlineTree());
-        } catch (Exception e) {
-            // FIXME
+    public List parseFile() throws IOException {
+        String inputContent = readFile(file);
+        parseDocument(inputContent);
+        if (parser.isFatalErrors()) {
+            throw new IOException("Unable to parse document successfully");
         }
-        return null;
+        return parser.getOutlineTree();
     }
     
     /**
+     * Parses the document. Parses the complete project with its inputs recursively.
+     * At the first round the complete project is parsed. Then only the changed
+     * parts will be parsed again and the outlineTree will be generated.
+     * 
+     * @param labels the label container.
+     * @param bibs the bib container.
+     */
+    private void parseDocument(String input) throws IOException {
+        if (this.parser == null) {
+            this.parser = new TexParser(null);
+        }
+        this.parser.parseDocument(labels, bibs, input);
+    }
+
+    /**
      * Reads a file from the project.
+     * 
      * @param file the file to be read.
      * @return The contents of the file as a String.
-     * @throws CoreException
      * @throws IOException
      */
     private String readFile(IFile file) throws IOException {
         String inputContent = "";
         try {
-            BufferedReader buf = new BufferedReader(new InputStreamReader(file
-                    .getContents()));
-        
-            String tmp;
-            // TODO efficiency
-            while ((tmp = buf.readLine()) != null) {
-                tmp = tmp.concat("\n");
-                inputContent = inputContent.concat(tmp);
+            BufferedReader buf = new BufferedReader(
+                    new InputStreamReader(file.getContents()));
+            
+            int length = 10000;
+            int read = length;
+            char[] fileData = new char[length];
+            while (read == length) {
+                read = buf.read(fileData, 0, length);
+                if (read > 0) {
+                    inputContent += new String(fileData);
+                }
             }
             buf.close();
-        
         } catch (CoreException e) {
-            TexlipsePlugin.log("The file does not exist", e);
+            // This should be very rare...
             throw new IOException(e.getMessage());
         }
-
         // TODO
         //return this.rmTrailingWhitespace(inputContent);
         return inputContent;
     }
-
     
 }

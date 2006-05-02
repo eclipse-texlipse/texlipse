@@ -28,6 +28,7 @@ import org.eclipse.jface.text.contentassist.IContentAssistant;
 import org.eclipse.jface.text.presentation.IPresentationReconciler;
 import org.eclipse.jface.text.presentation.PresentationReconciler;
 import org.eclipse.jface.text.rules.DefaultDamagerRepairer;
+import org.eclipse.jface.text.rules.RuleBasedScanner;
 import org.eclipse.jface.text.rules.Token;
 import org.eclipse.jface.text.source.IAnnotationHover;
 import org.eclipse.jface.text.source.ISourceViewer;
@@ -53,6 +54,7 @@ public class TexSourceViewerConfiguration extends SourceViewerConfiguration {
     private TexMathScanner mathScanner;
     private TexScanner scanner;
     private TexCommentScanner commentScanner;
+    private RuleBasedScanner verbatimScanner;
     private ColorManager colorManager;
     private TexAnnotationHover annotationHover;
     private ContentAssistant assistant;
@@ -175,6 +177,10 @@ public class TexSourceViewerConfiguration extends SourceViewerConfiguration {
         
         DefaultDamagerRepairer dr = null;
         
+        dr = new DefaultDamagerRepairer(getTexVerbatimScanner());
+        reconciler.setDamager(dr, TexPartitionScanner.TEX_VERBATIM);
+        reconciler.setRepairer(dr, TexPartitionScanner.TEX_VERBATIM);
+
         dr = new DefaultDamagerRepairer(getTeXMathScanner());
         reconciler.setDamager(dr, TexPartitionScanner.TEX_MATH);
         reconciler.setRepairer(dr, TexPartitionScanner.TEX_MATH);
@@ -244,6 +250,24 @@ public class TexSourceViewerConfiguration extends SourceViewerConfiguration {
         return commentScanner;
     }
     
+    /**
+     * Defines a verbatim scanner and sets the default color for it
+     * @return a scanner to detect varbatim style partitions
+     */
+    protected RuleBasedScanner getTexVerbatimScanner() {
+        if (verbatimScanner == null) {
+            //We need no rules, because the user can write everything inside a verbatim env
+            verbatimScanner = new RuleBasedScanner ();
+            verbatimScanner.setDefaultReturnToken(
+                    new Token(
+                            new TextAttribute(
+                                    colorManager.getColor(ColorManager.VERBATIM),
+                                    null,
+                                    colorManager.getStyle(ColorManager.VERBATIM_STYLE))));
+        }
+        return verbatimScanner;
+    }
+
     public ITextHover getTextHover(ISourceViewer sourceViewer, String contentType) {
         if (textHover == null) {
             textHover = new TexHover(editor);

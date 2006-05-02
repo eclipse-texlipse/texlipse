@@ -43,6 +43,7 @@ public class ColorManager {
     public static final String SQUARE_BRACKETS = "sqr.TexColor";
 	public static final String EQUATION = "equ.TexColor";
 	public static final String COMMENT  = "com.TexColor";
+    public static final String VERBATIM  = "verb.TexColor";
 	
 	//public static final String TEX_WHITE  = "whi.TexColor";
 	public static final String TEX_NUMBER = "num.TexColor";
@@ -58,6 +59,7 @@ public class ColorManager {
 	public static final String SQUARE_BRACKETS_STYLE = "sqr.TexStyle";
 	public static final String EQUATION_STYLE = "equ.TexStyle";
 	public static final String COMMENT_STYLE  = "com.TexStyle";
+    public static final String VERBATIM_STYLE  = "verb.TexStyle";
 	
 	//public static final String TEX_WHITE  = "whi.TexColor";
 	public static final String TEX_NUMBER_STYLE = "num.TexStyle";
@@ -73,6 +75,7 @@ public class ColorManager {
     private static final RGB DEFAULT_SQUARE_BRACKETS_COLOR = new RGB(243, 129, 37);
     private static final RGB DEFAULT_EQUATION_COLOR = new RGB(190, 100, 100);
     private static final RGB DEFAULT_COMMENT_COLOR = new RGB(190, 190, 190);
+    private static final RGB DEFAULT_VERBATIM_COLOR = new RGB(80, 80, 80);
     
     //private static final RGB DEFAULT_TEX_WHITE_COLOR = new RGB(125, 125, 125);
     private static final RGB DEFAULT_TEX_NUMBER_COLOR = new RGB(255, 100, 0);
@@ -88,6 +91,7 @@ public class ColorManager {
     private static final int DEFAULT_SQUARE_BRACKETS_STYLE = SWT.NORMAL;
     private static final int DEFAULT_EQUATION_STYLE = SWT.NORMAL;
     private static final int DEFAULT_COMMENT_STYLE = SWT.NORMAL;
+    private static final int DEFAULT_VERBATIM_STYLE = SWT.ITALIC;
     
     //private static final RGB DEFAULT_TEX_WHITE_COLOR = new RGB(125, 125, 125);
     private static final int DEFAULT_TEX_NUMBER_STYLE = SWT.NORMAL;
@@ -113,6 +117,7 @@ public class ColorManager {
         PreferenceConverter.setDefault(preferences, SQUARE_BRACKETS, DEFAULT_SQUARE_BRACKETS_COLOR);
         PreferenceConverter.setDefault(preferences, EQUATION, DEFAULT_EQUATION_COLOR);
         PreferenceConverter.setDefault(preferences, COMMENT, DEFAULT_COMMENT_COLOR);
+        PreferenceConverter.setDefault(preferences, VERBATIM, DEFAULT_VERBATIM_COLOR);
 
         //PreferenceConverter.setDefault(preferences, TEX_WHITE, DEFAULT_TEX_WHITE_COLOR);
         PreferenceConverter.setDefault(preferences, TEX_NUMBER, DEFAULT_TEX_NUMBER_COLOR);
@@ -127,6 +132,7 @@ public class ColorManager {
         preferences.setDefault(SQUARE_BRACKETS_STYLE, DEFAULT_SQUARE_BRACKETS_STYLE);
         preferences.setDefault(EQUATION_STYLE, DEFAULT_EQUATION_STYLE);
         preferences.setDefault(COMMENT_STYLE, DEFAULT_COMMENT_STYLE);
+        preferences.setDefault(VERBATIM_STYLE, DEFAULT_VERBATIM_STYLE);
 
         //PreferenceConverter.setDefault(preferences, TEX_WHITE, DEFAULT_TEX_WHITE_COLOR);
         preferences.setDefault(TEX_NUMBER_STYLE, DEFAULT_TEX_NUMBER_STYLE);

@@ -35,18 +35,21 @@ public class TexPartitionScanner extends RuleBasedPartitionScanner {
 	public static final String TEX_MATH = "__tex_mathPartition"; 
 	public static final String TEX_CURLY_BRACKETS = "__tex_curlyBracketPartition";
 	public static final String TEX_SQUARE_BRACKETS = "__tex_squareBracketPartition";
+    public static final String TEX_VERBATIM = "__tex_VerbatimPartition";
+    
 	public static final String[] TEX_PARTITION_TYPES = new String[] {
 			IDocument.DEFAULT_CONTENT_TYPE, 
 			TEX_COMMENT,
 			TEX_MATH,
 			TEX_CURLY_BRACKETS,
-			TEX_SQUARE_BRACKETS };
+			TEX_SQUARE_BRACKETS,
+            TEX_VERBATIM};
 	
 	public TexPartitionScanner() {
         super();
 		IToken math 			= new Token(TEX_MATH);
-		IToken math2 			= new Token(TEX_MATH);
 		IToken texComment 		= new Token(TEX_COMMENT);
+        IToken texVerbatim      = new Token(TEX_VERBATIM);
 		//IToken curly_bracket 	= new Token(TEX_CURLY_BRACKETS);
 		//IToken square_bracket	= new Token(TEX_SQUARE_BRACKETS);
 		
@@ -56,13 +59,20 @@ public class TexPartitionScanner extends RuleBasedPartitionScanner {
 		rules.add(new SingleLineRule("\\%"," ", Token.UNDEFINED)); //no comment when using "\%" in LaTeX 
 		rules.add(new EndOfLineRule("%", texComment));
         rules.add(new TexEnvironmentRule("comment", texComment));
-		rules.add(new SingleLineRule("\\\\[","]", Token.UNDEFINED));  //no math when using "\\[]" line breaks
+
+        //verbatim style environments (is not 100% correct because of \end {verbatim} is not valid)
+        rules.add(new TexEnvironmentRule("verbatim", false, texVerbatim));
+        rules.add(new TexEnvironmentRule("Verbatim", false, texVerbatim));
+        rules.add(new TexEnvironmentRule("lstlisting", false, texVerbatim));
+        rules.add(new SingleLineRule("\\verb+", "+", texVerbatim));
+
+        rules.add(new SingleLineRule("\\\\[","]", Token.UNDEFINED));  //no math when using "\\[]" line breaks
 		
 		rules.add(new SingleLineRule("\\$", " ", Token.UNDEFINED)); // not a math equation \$
 
         //This bosh rule is necessary to fix a bug in RuleBasedPartitionScanner
 		rules.add(new TexEnvironmentRule("qqfdshfkhsd", false, math));
-        rules.add(new MultiLineRule("\\[","\\]", math2)); 
+        rules.add(new MultiLineRule("\\[","\\]", math)); 
         rules.add(new MultiLineRule("$$", "$$", math));
         rules.add(new MultiLineRule("$", "$", math));
         rules.add(new TexEnvironmentRule("equation", true, math));
@@ -75,7 +85,7 @@ public class TexPartitionScanner extends RuleBasedPartitionScanner {
         rules.add(new TexEnvironmentRule("flalign", true, math));
         rules.add(new TexEnvironmentRule("multline", true, math));
         rules.add(new TexEnvironmentRule("gather", true, math));
-
+        
 		IPredicateRule[] result = new IPredicateRule[rules.size()];
 		rules.toArray(result);
 		setPredicateRules(result);

@@ -64,6 +64,8 @@ public class ColoringPreferencePage
         addField(new RadioGroupFieldEditor(ColorManager.TEX_NUMBER_STYLE, "", 3, RADIO_STYLE_STRING, getFieldEditorParent()));
         addField(new ColorFieldEditor(ColorManager.TEX_SPECIAL, TexlipsePlugin.getResourceString("preferenceColorSpeLabel"), getFieldEditorParent()));
         addField(new RadioGroupFieldEditor(ColorManager.TEX_SPECIAL_STYLE, "", 3, RADIO_STYLE_STRING, getFieldEditorParent()));
+        addField(new ColorFieldEditor(ColorManager.VERBATIM, TexlipsePlugin.getResourceString("preferenceColorVerbatimLabel"), getFieldEditorParent()));
+        addField(new RadioGroupFieldEditor(ColorManager.VERBATIM_STYLE, "", 3, RADIO_STYLE_STRING, getFieldEditorParent()));
     }
     protected void adjustGridLayout() {
         super.adjustGridLayout();

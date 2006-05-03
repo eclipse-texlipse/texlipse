@@ -84,5 +84,12 @@ public class TexLaunchConfigurationDelegate extends LaunchConfigurationDelegate 
         }
         
     }
+
+    protected IProject[] getProjectsForProblemSearch(ILaunchConfiguration configuration, String mode) throws CoreException {
+        return new IProject[] { TexlipsePlugin.getCurrentProject() };
+    }
+    
+    
+    
     
 }

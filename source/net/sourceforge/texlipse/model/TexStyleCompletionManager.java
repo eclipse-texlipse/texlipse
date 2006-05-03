@@ -1,3 +1,12 @@
+/*
+ * $Id$
+ *
+ * Copyright (c) 2006 by the TeXlipse team.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ */
 package net.sourceforge.texlipse.model;
 
 import java.util.Arrays;
@@ -13,6 +22,13 @@ import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.graphics.Point;
 
+/**
+ * Manages style completions.
+ * 
+ * (still work in progress)
+ * 
+ * @author Oskar Ojala
+ */
 public class TexStyleCompletionManager implements IPropertyChangeListener{
 
 //    private Map keyValue;
@@ -25,11 +41,19 @@ public class TexStyleCompletionManager implements IPropertyChangeListener{
         "bold", "italic", "roman", "sans serif", "small caps", "slanted", "teletype", "emphasize", "huge", "Huge"
     };
     
+    /**
+     * Creates a new style completion manager
+     */
     private TexStyleCompletionManager() {
 //        this.keyValue = new HashMap();
         readSettings();
     }
 
+    /**
+     * Returns the instance of the style completion manager
+     * 
+     * @return The singleton instance
+     */
     public static TexStyleCompletionManager getInstance() {
         if (theInstance == null) {
             theInstance = new TexStyleCompletionManager();
@@ -71,6 +95,13 @@ public class TexStyleCompletionManager implements IPropertyChangeListener{
         }
     }
 
+    /**
+     * Returns the style completion proposals
+     * 
+     * @param selectedText The selected text
+     * @param selectedRange The selected range
+     * @return An array of completion proposals
+     */
     public ICompletionProposal[] getStyleCompletions(String selectedText, Point selectedRange) {
 
         /*
@@ -116,6 +147,11 @@ public class TexStyleCompletionManager implements IPropertyChangeListener{
         return result;
     }
     
+    /**
+     * Returns the style context.
+     * 
+     * @return Array of style contexts
+     */
     public IContextInformation[] getStyleContext() {
         ContextInformation[] contextInfos = new ContextInformation[STYLELABELS.length];
         

@@ -8,26 +8,28 @@
 </head>
 
 <body>
-<h1> Configuration </h1>
+<h1>Configuration</h1>
 
 Configuring TeXlipse is possible through the preferences page.
 Additional project-specific options can be set from the properties page.
 Here is a description of both of these.
 
 
-<h2> Preferences page </h2>
+<h2>Preferences page</h2>
 
 The TeXlipse preferences page is in the Eclipse preferences menu
 (select: <b>Window &gt; Preferences</b>).
 
 
-<h3><a name="pref_bib"></a> BibTeX Editor </h3>
+<h3><a name="pref_bib"></a>BibTeX Editor</h3>
 
 These options are BibTeX-file editor specific. The code completion can be enabled
 or disabled and the delay for the completion menu to appear can be adjusted.
+Code folding can be enabled and all entries can be folded when a BibTeX-file is
+opened.
 
 
-<h3><a name="pref_bib_syn"></a> BibTeX Syntax Highlighting </h3>
+<h3><a name="pref_bib_syn"></a>BibTeX Syntax Highlighting</h3>
 
 These colors are used for highlighting BibTeX keywords when editing BibTeX files.
 
@@ -48,6 +50,7 @@ This page contains a list of external programs that are used when building.
 Not all programs are necessary in use, the actual programs needed depends
 on the project output format and build commands -settings.
 </p>
+
 <p>
 Choose one program in the list and press the edit-button. A configuration dialog
 will appear. The program configuration dialog contains a text field for specifying
@@ -56,6 +59,7 @@ default values that are provided should work on fairly recent systems.
 LaTeX version 7.3.x doesn't seem to support <code>--src-specials</code>
 -argument, so that may have to be changed when working with an older distribution.
 </p>
+
 <p>
 TeX distribution usually contains one directory, where all the executable programs
 are installed (usually called &quot;bin&quot;). That directory contains a lot of
@@ -67,6 +71,7 @@ text box to set the paths all at once. Press Browse-button, browse to the TeX-pr
 (the directory where <code>latex</code>, <code>bibtex</code>, etc. programs are) and
 press the big Apply-button at the bottom of the page. The program paths should all change.
 </p>
+
 <p>
 The console log means the Console View, which is accessible through
 <b>Window &gt; Show View &gt; Other &gt; Basic &gt; Console</b>.
@@ -85,11 +90,59 @@ The extension list can be modified, but it should not contain any of the input f
 (.tex, .ltx, .bib) or output file extensions (.dvi, .ps, .pdf) as that may mess up the building
 process.
 
+<h3><a name="pref_edit_temp"></a>Document templates</h3>
+
+Document templates are templates for creating documents when creating a new
+LaTeX project. This screen can be used to manage the user-defined templates.
+
 
 <h3><a name="pref_edit"></a> Editor </h3>
 
+<p>
 This page contains LaTeX-editor specific options. The code completion can be enabled
-or disabled and the delay for the completion menu to appear can be adjusted.
+or disabled and the delay for the completion menu to appear can be adjusted. Similarly,
+automatic parsing of documents after the last edit can be enabled. From here,
+automatic wrapping of text can also be adjusted.
+</p>
+
+<h3><a name="pref_edit_ind"></a> Indentation </h3> 
+
+Some Latex environments (those between <code>\begin</code> and <code>\end</code>)
+can have their contents indented to keep the document structure clear. Those environments
+are listed in this page. Also the indentation width, i.e. the number of spaces that is inserted
+to the beginning of a line, can be changed in this page.
+
+
+<h3><a name="pref_edit_out"></a> Outline </h3>
+
+<p>
+The LaTeX-editor has a configurable outline. This page has controls to
+enable or disable some common LaTeX document sections' appearance in the outline.
+There is also a list of environments to show in the outline.
+</p>
+
+<p>These settings also apply for the full LaTeX outline, which display an
+outline of the whole project.</p>
+
+<h3><a name="pref_smartkey"></a>Smart keys</h3>
+
+<p>
+Smart keys is a feature that works similarly as in vim-latex. Enabling smart
+backspace changes the behaviour of backspace so that when pressed when the
+cursor is after an accented character, e.g. \"o, the backspace deletes the entire
+accented character. Conversion of quotation marks converts " to the right kind
+of LaTeX quotation mark. Dollar sign and bracket completion adds a closing
+dollar sign or parenthesis automatically after an opening one has been typed.
+Ldots replacement automatically replaces ... with \ldots in text.
+</p>
+
+<h3><a name="pref_stylecomp"></a>Style completions</h3>
+
+<p>
+Style completions are intended to change the style of a marked region. When
+text is marked in the editor, pressing the content assist key (usually
+ctrl+space) shows a list of styles that can be applied to the given text.
+</p>
 
 
 <h3><a name="pref_edit_syn"></a> TeX Syntax Highlighting </h3>
@@ -106,26 +159,12 @@ The templates use the same syntax as the Java editor templates. The syntax is
 discussed in more detail in the Java editor help.
 
 
-<h3><a name="pref_edit_ind"></a> Indentation </h3> 
+<h3> <a name="pref_spellcheck"></a>Spellchecker</h3>
 
-Some Latex environments (those between <code>\begin</code> and <code>\end</code>)
-can have their contents indented to keep the document structure clear. Those environments
-are listed in this page. Also the indentation width, i.e. the number of spaces that is inserted
-to the beginning of a line, can be changed in this page.
-
-<h3><a name="pref_edit_out"></a> Outline </h3>
-
-The LaTeX-editor has a configurable outline. This page has controls to
-enable or disable some common LaTeX document sections' appearance in the outline.
-There is also a list of environments to show in the outline.
-
-
-<h3><a name="pref_edit_temp"></a> Project Templates </h3>
-
-User-created project templates can be deleted easily via this page. 
-
-To view a template, start a new project with that template.
-
+<p>
+On the spellchecker page the user can specify the aspell command to use as
+well as command line arguments.
+</p>
 
 <h3> <a name="viewer"></a> Viewer Settings</h3>
 

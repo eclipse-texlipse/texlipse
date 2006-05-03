@@ -1,3 +1,12 @@
+/*
+ * $Id$
+ *
+ * Copyright (c) 2006 by the TeXlipse team.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ */
 package net.sourceforge.texlipse.editor.hover;
 
 import java.util.regex.Matcher;
@@ -35,6 +44,9 @@ public class TexHover implements ITextHover, ITextHoverExtension {
         this.editor = editor;
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.jface.text.ITextHover#getHoverInfo(org.eclipse.jface.text.ITextViewer, org.eclipse.jface.text.IRegion)
+     */
     public String getHoverInfo(ITextViewer textViewer, IRegion hoverRegion) {
         try {
             return textViewer.getDocument().get(hoverRegion.getOffset(), hoverRegion.getLength());
@@ -136,7 +148,13 @@ public class TexHover implements ITextHover, ITextHoverExtension {
         return creator;
     }
 
-    public boolean isIgnoreChar(char c) {
+    /**
+     * Returns whether this character should be ignored
+     * 
+     * @param c
+     * @return
+     */
+    private boolean isIgnoreChar(char c) {
         if (Character.isLetterOrDigit(c))
             return false;
         return true;

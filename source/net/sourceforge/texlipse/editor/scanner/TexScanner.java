@@ -8,6 +8,7 @@
  * http://www.eclipse.org/legal/epl-v10.html
  */
 package net.sourceforge.texlipse.editor.scanner;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,13 +26,13 @@ import org.eclipse.jface.text.rules.Token;
 import org.eclipse.jface.text.rules.WhitespaceRule;
 import org.eclipse.jface.text.rules.WordRule;
 
-
 /**
  * TexScanner is used as a default scanner at the moment.
  * It works for "__tex_default" content type areas.
  * It uses defined rules to detect sequences and it returns the
  * specified token that satisfies a rule. The token defines how the
  * characters are presented.
+ * 
  * @see net.sourceforge.texlipse.editor.TexPartitionScanner
  * @author Antti Pirinen
  */
@@ -90,4 +91,3 @@ public class TexScanner extends RuleBasedScanner {
         setRules(result);
     }
 }
-

@@ -1,3 +1,12 @@
+/*
+ * $Id$
+ *
+ * Copyright (c) 2006 by the TeXlipse team.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ */
 package net.sourceforge.texlipse.treeview.views;
 
 import java.util.ArrayList;
@@ -45,6 +54,9 @@ import org.eclipse.ui.part.ViewPart;
 /**
  * The view for the full outline.
  *
+ * @author Markus Maus
+ * @author Reza Esmaeili Soumeeh
+ * @author Ehsan Baghi
  */
 public class TexOutlineTreeView extends ViewPart implements  ISelectionChangedListener, ISelectionProvider, IPartListener { 
     

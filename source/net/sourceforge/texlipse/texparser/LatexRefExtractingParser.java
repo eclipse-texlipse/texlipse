@@ -14,7 +14,6 @@ import java.io.PushbackReader;
 import java.io.StringReader;
 import java.util.ArrayList;
 
-import net.sourceforge.texlipse.model.CommandEntry;
 import net.sourceforge.texlipse.model.ReferenceEntry;
 import net.sourceforge.texlipse.model.TexCommandEntry;
 import net.sourceforge.texlipse.texparser.lexer.LexerException;
@@ -41,7 +40,7 @@ import net.sourceforge.texlipse.texparser.node.Token;
 public class LatexRefExtractingParser {
     
     private ArrayList labels;
-    private ArrayList commands; //type: CommandEntry
+    private ArrayList commands; //type: TexCommandEntry
     private String[] bibs;
     private String bibstyle;
     private boolean index;

@@ -3,7 +3,7 @@
 
 <toc label="Texlipse" topic="html/toc.html">
 	<topic label="Introduction" href="html/intro.html"/>
-	<topic label="Configuration" href="html/config.html"/>
+	<topic label="Configuration" href="html/configuration.html"/>
 	<topic label="Starting a new LaTeX project" href="html/startup.html"/>
 	<topic label="Highlighting and indenting" href="html/highl.html"/>
 	<topic label="Wrapping text" href="html/wrapping.html"/>
@@ -11,9 +11,10 @@
 	<topic label="Task and error markers" href="html/markers.html"/>
 	<topic label="Taking advantage of the document outline" href="html/outline.html"/>
 	<topic label="Miscellaneous editor functions" href="html/editormisc.html"/>
-	<topic label="LaTeX Table View" href="html/tableeditor.html"/>
+	<topic label="LaTeX table view" href="html/tableeditor.html"/>
 	<topic label="Using BibTeX" href="html/bibtex.html"/>
 	<topic label="Managing references" href="html/ref.html"/>
+	<topic label="Configuration reference" href="html/config.html"/>
 	<topic label="Building and previewing" href="html/build.html"/>
 	<topic label="Spell checking" href="html/spelling.html"/>
 </toc>

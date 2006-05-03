@@ -1,3 +1,12 @@
+/*
+ * $Id$
+ *
+ * Copyright (c) 2006 by the TeXlipse team.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ */
 package net.sourceforge.texlipse.bibparser;
 
 import java.util.ArrayList;
@@ -33,12 +42,25 @@ public class BibOutlineContainer {
     
     private static int MAX_PARTITIONSIZE = 15;
     
+    /**
+     * Creates a new container
+     * 
+     * @param entries The initial entries
+     * @param topLevel Whether or not this represents the top level of the hierarchy
+     */
     public BibOutlineContainer(List entries, boolean topLevel) {
         this.childEntries = entries;
         this.topLevel = topLevel;
         this.sorting = SORTNATURAL;
     }
 
+    /**
+     * Creates a new container
+     * 
+     * @param entries The initial entries
+     * @param sName Name of the first entry
+     * @param eName Name of the last entry
+     */
     private BibOutlineContainer(List entries, String sName, String eName) {
         this.childEntries = entries;
         this.startName = sName;
@@ -46,6 +68,13 @@ public class BibOutlineContainer {
         this.topLevel = false;
     }
 
+    /**
+     * Makes a copy of this container so that first level children are copied
+     * as new objects but lower levels are not
+     * 
+     * @param sorting The type of sorting that the new container will have
+     * @return A copy of this container
+     */
     private BibOutlineContainer childCopy(String sorting) {
         BibOutlineContainer newboc = new BibOutlineContainer(new ArrayList(), topLevel);
         newboc.sorting = sorting;
@@ -58,6 +87,11 @@ public class BibOutlineContainer {
     }
 
     
+    /**
+     * Builds a container sorted by authors
+     * 
+     * @return New container sorted by authors
+     */
     public BibOutlineContainer buildAuthorSort() {
         // Make a shallow copy
         BibOutlineContainer newboc = childCopy(SORTAUTHOR);
@@ -75,6 +109,9 @@ public class BibOutlineContainer {
 
     //private static final Pattern rmBraces = Pattern.compile("(^|[^\\\\])(:?\\{|\\})");
     
+    /**
+     * Does an author sort on this container
+     */
     private void authorSort() {
         // duplicate entries with several authors
         ArrayList copyChildren = new ArrayList();
@@ -124,6 +161,11 @@ public class BibOutlineContainer {
         });
     }
 
+    /**
+     * Builds a container sorted by year
+     * 
+     * @return New container sorted by year
+     */
     public BibOutlineContainer buildYearSort() {
         BibOutlineContainer newboc = childCopy(SORTYEAR);
 //        Collections.sort(newboc.childEntries, new Comparator<ReferenceEntry>() {
@@ -146,6 +188,11 @@ public class BibOutlineContainer {
         return newboc;
     }
 
+    /**
+     * Builds a container sorted by journal
+     * 
+     * @return New container sorted by journal
+     */
     public BibOutlineContainer buildJournalSort() {
         BibOutlineContainer newboc = childCopy(SORTJOURNAL);
 //        Collections.sort(newboc.childEntries, new Comparator<ReferenceEntry>() {
@@ -166,6 +213,11 @@ public class BibOutlineContainer {
         return newboc;
     }
 
+    /**
+     * Builds a container sorted by index
+     * 
+     * @return New container sorted by index
+     */
     public BibOutlineContainer buildIndexSort() {
         BibOutlineContainer newboc = childCopy(SORTINDEX);
 //        Collections.sort(newboc.childEntries, new Comparator<ReferenceEntry>() {
@@ -183,6 +235,14 @@ public class BibOutlineContainer {
     }
 
 
+    /**
+     * Calculate the shortest differentiating prefix between
+     * the strings that is at least 4 characters.
+     * 
+     * @param s1 First string
+     * @param s2 Second string
+     * @return Differentiating prefix
+     */
     private String differentiatingPrefix(String s1, String s2) {
         int i = 0;
         int shorter = Math.min(s1.length(), s2.length());
@@ -201,6 +261,9 @@ public class BibOutlineContainer {
     }
 
 
+    /**
+     * Partitions this container
+     */
     public void partition() {
         if (childEntries.size() < MAX_PARTITIONSIZE) {
             return;
@@ -278,6 +341,9 @@ public class BibOutlineContainer {
         childEntries = null;
     }
     
+    /* (non-Javadoc)
+     * @see java.lang.Object#toString()
+     */
     public String toString() {
         return startName + "..." + endName;
     }

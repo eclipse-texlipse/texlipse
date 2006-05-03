@@ -89,8 +89,9 @@ public class TexlipseProjectPropertyPage extends PropertyPage {
         TexlipsePreferencePage.addSeparator(1, composite);
         addTempDirSection(composite);
         TexlipsePreferencePage.addSeparator(1, composite);
-        addBibRefDirSection(composite);
-        TexlipsePreferencePage.addSeparator(1, composite);
+        // TODO after 1.1.0 evaluate whether this is needed
+        //addBibRefDirSection(composite);
+        //TexlipsePreferencePage.addSeparator(1, composite);
         addDerivedSection(composite);
         TexlipsePreferencePage.addSeparator(1, composite);
         addFormatSection(composite);
@@ -493,9 +494,9 @@ public class TexlipseProjectPropertyPage extends PropertyPage {
         tempDirField.setText((temp != null) ? temp : "");
         
         // read bibRef dir
-        String bibRef = TexlipseProperties.getProjectProperty(project,
-                TexlipseProperties.BIBREF_DIR_PROPERTY);
-        bibRefDirField.setText((bibRef != null) ? bibRef : "");
+//        String bibRef = TexlipseProperties.getProjectProperty(project,
+//                TexlipseProperties.BIBREF_DIR_PROPERTY);
+//        bibRefDirField.setText((bibRef != null) ? bibRef : "");
 
         // find out the default builder
         String str = TexlipseProperties.getProjectProperty(project,
@@ -560,10 +561,10 @@ public class TexlipseProjectPropertyPage extends PropertyPage {
         }
         
         // check bibRef dir
-        String bibRefDir = bibRefDirField.getText();
-        if (bibRefDir != null) {
-            bibRefDir = bibRefDir.trim();
-        }
+//        String bibRefDir = bibRefDirField.getText();
+//        if (bibRefDir != null) {
+//            bibRefDir = bibRefDir.trim();
+//        }
         
         // check the preferred output format for this project
         String format = builderChooser.getSelectedFormat();
@@ -621,8 +622,10 @@ public class TexlipseProjectPropertyPage extends PropertyPage {
         TexlipseProperties.setProjectProperty(project,
                 TexlipseProperties.TEMP_DIR_PROPERTY, tmpDir);
         
+//        TexlipseProperties.setProjectProperty(project,
+//                TexlipseProperties.BIBREF_DIR_PROPERTY, bibRefDir);
         TexlipseProperties.setProjectProperty(project,
-                TexlipseProperties.BIBREF_DIR_PROPERTY, bibRefDir);
+                TexlipseProperties.BIBREF_DIR_PROPERTY, "");
                 
         TexlipseProperties.setProjectProperty(project,
                 TexlipseProperties.OUTPUT_FORMAT, format);

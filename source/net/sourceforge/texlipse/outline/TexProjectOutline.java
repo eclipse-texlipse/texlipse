@@ -3,9 +3,11 @@ package net.sourceforge.texlipse.outline;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import net.sourceforge.texlipse.TexlipsePlugin;
 import net.sourceforge.texlipse.model.MarkerHandler;
@@ -26,15 +28,22 @@ public class TexProjectOutline {
 
     private IProject currentProject;
     private List topLevelNodes;
-    private Map outlines = new HashMap();
-    private IFile currentTexFile;
     private OutlineNode virtualTopNode;
     private TexProjectParser fileParser;
+    private Map outlines = new HashMap();
+    private Set included = new HashSet();
     
+    /**
+     * Creates a new project outline
+     * 
+     * @param currentProject The projet the outline represents
+     * @param labels The labels of the project
+     * @param bibs The bibliography of the project
+     */
     public TexProjectOutline(IProject currentProject,
             ReferenceContainer labels, ReferenceContainer bibs) {
         this.currentProject = currentProject;
-        fileParser = new TexProjectParser(currentProject, labels, bibs);
+        this.fileParser = new TexProjectParser(currentProject, labels, bibs);
     }
 
     /**
@@ -66,22 +75,23 @@ public class TexProjectOutline {
      * @return List containing <code>outlineNode</code>s
      */
     public List getFullOutline() {
-
+        included.clear();
         virtualTopNode = new OutlineNode("Entire document", OutlineNode.TYPE_DOCUMENT, 0, null);
         
-        currentTexFile = TexlipseProperties.getProjectSourceFile(currentProject);
+        IFile currentTexFile = TexlipseProperties.getProjectSourceFile(currentProject);
         MarkerHandler marker = MarkerHandler.getInstance();
         marker.clearProblemMarkers(currentTexFile);
+        String fullName = getProjectRelativeName(currentTexFile);
         if (topLevelNodes == null) {
             try {
                 topLevelNodes = fileParser.parseFile(currentTexFile);
-                String fullName = currentTexFile.getFullPath().removeFirstSegments(1).toString();
                 outlines.put(fullName, topLevelNodes);
             } catch (IOException ioe) {
                 TexlipsePlugin.log("Unable to create full document outline; main file is not parsable", ioe);
                 return new ArrayList();
             }
         }
+        included.add(fullName);
         addChildren(virtualTopNode, topLevelNodes, currentTexFile);
 
         List outlineTop = virtualTopNode.getChildren();
@@ -110,24 +120,28 @@ public class TexProjectOutline {
             OutlineNode oldNode2 = (OutlineNode) iter2.next();
             
             if (oldNode2.getType() == OutlineNode.TYPE_INPUT) {
-                List nodes = loadInput(oldNode2.getName(), texFile, oldNode2.getBeginLine());
-                replaceInput(parent, nodes, currentTexFile);
-                continue;
-            }
-
-            // TODO do a real comparison method here instead, this doesn't work always
-            while (oldNode2.getType() <= parent.getType()) {
-                parent = parent.getParent();
-            }
-            
-            OutlineNode newNode = oldNode2.copy(texFile);
-            parent.addChild(newNode);
-            newNode.setParent(parent);
-            
-            List oldChildren = oldNode2.getChildren();
-            if (oldChildren != null) {
-                // TODO do we need to check parent level?
-                addChildren(newNode, oldChildren, texFile);
+                // replace node with tree
+                IFile includedFile = resolveFile(oldNode2.getName(), texFile, oldNode2.getBeginLine());
+                if (includedFile != null) {
+                    List nodes = loadInput(includedFile, texFile, oldNode2.getBeginLine());
+                    replaceInput(parent, nodes, includedFile);
+                    included.remove(getProjectRelativeName(includedFile));
+                }
+            } else {
+                // TODO do a real comparison method here instead, this doesn't work always
+                while (oldNode2.getType() <= parent.getType()) {
+                    parent = parent.getParent();
+                }
+                
+                OutlineNode newNode = oldNode2.copy(texFile);
+                parent.addChild(newNode);
+                newNode.setParent(parent);
+                
+                List oldChildren = oldNode2.getChildren();
+                if (oldChildren != null) {
+                    // TODO do we need to check parent level?
+                    addChildren(newNode, oldChildren, texFile);
+                }
             }
         }
     }
@@ -155,9 +169,13 @@ public class TexProjectOutline {
             
             if (node.getType() == OutlineNode.TYPE_INPUT) {
                 // replace node with tree
-                List nodes = loadInput(node.getName(), texFile, node.getBeginLine());
-                replaceInput(main, nodes, currentTexFile);
-                insert = true;
+                IFile includedFile = resolveFile(node.getName(), texFile, node.getBeginLine());
+                if (includedFile != null) {
+                    List nodes = loadInput(includedFile, texFile, node.getBeginLine());
+                    replaceInput(main, nodes, includedFile);
+                    included.remove(getProjectRelativeName(includedFile));
+                    insert = true;
+                }
             } else {
                 OutlineNode newNode = node.copy(texFile);
                 main.addChild(newNode);
@@ -220,15 +238,15 @@ public class TexProjectOutline {
     }
     
     /**
-     * Loads the outline from the given file. 
+     * Resolves from a textual representation the IFile that corresponds
+     * to that file in the current project.
      * 
      * @param name The name of the file
      * @param referringFile The file referring to (i.e. including) this file
      * @param lineNumber The line number of the inclusion command
-     * @return The top level nodes of the parsed file or an empty list if parsing
-     * failed
+     * @return The corresponding IFile or null if no file was found
      */
-    private List loadInput(String name, IFile referringFile, int lineNumber) {
+    private IFile resolveFile(String name, IFile referringFile, int lineNumber) {
         MarkerHandler marker = MarkerHandler.getInstance();
         marker.clearProblemMarkers(referringFile);
         
@@ -237,9 +255,24 @@ public class TexProjectOutline {
             marker.createErrorMarker(referringFile,
                     "Could not find file " + name,
                     lineNumber);
-            return new ArrayList();
+            return null;
         }
-        String fullName = newTexFile.getFullPath().removeFirstSegments(1).toString();
+        return newTexFile;
+    }
+    
+    /**
+     * Loads the outline from the given file. 
+     * 
+     * @param newTexFile The file to parse
+     * @param referringFile The file referring to (i.e. including) this file
+     * @param lineNumber The line number of the inclusion command
+     * @return The top level nodes of the parsed file or an empty list if parsing
+     * failed
+     */
+    private List loadInput(IFile newTexFile, IFile referringFile, int lineNumber) {
+        MarkerHandler marker = MarkerHandler.getInstance();
+        
+        String fullName = getProjectRelativeName(newTexFile);         
         List nodes = (List) outlines.get(fullName);
         if (nodes == null) {
             try {
@@ -247,13 +280,28 @@ public class TexProjectOutline {
                 outlines.put(fullName, nodes);
             } catch (IOException ioe) {
                 marker.createErrorMarker(referringFile,
-                        "Could not parse file " + name + ", reason: " + ioe.getMessage(),
+                        "Could not parse file " + fullName + ", reason: " + ioe.getMessage(),
                         lineNumber);
                 return new ArrayList();
             }
         }
-        // TODO impact analysis + should this always be set
-        currentTexFile = newTexFile;
+        if (!included.add(fullName)) {
+            marker.createErrorMarker(referringFile,
+                    "Circular include of " + fullName,
+                    lineNumber);
+            return new ArrayList();            
+        }
         return nodes;
+    }
+    
+    /**
+     * Takes an IFile and returns the path to the file and filename
+     * relative to the project root directory.
+     * 
+     * @param file The file
+     * @return Path with filename relative to project
+     */
+    private String getProjectRelativeName(IFile file) {
+        return file.getFullPath().removeFirstSegments(1).toString();
     }
 }

@@ -131,18 +131,18 @@ public class TexProjectParser {
      * @throws IOException
      */
     private String readFile(IFile file) throws IOException {
-        String inputContent = "";
+        StringBuffer inputContent = new StringBuffer("");
         try {
             BufferedReader buf = new BufferedReader(
                     new InputStreamReader(file.getContents()));
             
-            int length = 10000;
+            final int length = 10000;
             int read = length;
             char[] fileData = new char[length];
             while (read == length) {
                 read = buf.read(fileData, 0, length);
                 if (read > 0) {
-                    inputContent += new String(fileData);
+                    inputContent.append(fileData, 0, read);
                 }
             }
             buf.close();
@@ -152,7 +152,7 @@ public class TexProjectParser {
         }
         // TODO
         //return this.rmTrailingWhitespace(inputContent);
-        return inputContent;
+        return inputContent.toString();
     }
     
 }

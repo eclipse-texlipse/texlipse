@@ -426,6 +426,18 @@ public class TexDocumentModel implements IDocumentListener {
         List tasks = parser.getTasks();
         MarkerHandler marker = MarkerHandler.getInstance();
 
+        // somewhat inelegantly ensures that errors marked in createProjectDatastructs()
+        // aren't removed immediately
+        if (!firstRun) {
+            // The full outline already clears these
+            //if (editor.getFullOutline() == null) {
+            marker.clearErrorMarkers(editor);
+            //}
+            marker.clearTaskMarkers(editor);
+        } else {
+            firstRun = false;
+        }
+
         if (editor.getFullOutline() != null) {
             IResource res = (IResource) editor.getEditorInput().getAdapter(IResource.class);
             String fileName = res.getProjectRelativePath().toString();
@@ -438,17 +450,6 @@ public class TexDocumentModel implements IDocumentListener {
         }
         pollCancel(monitor);
         
-        // somewhat inelegantly ensures that errors marked in createProjectDatastructs()
-        // aren't removed immediately
-        if (!firstRun) {
-            // The full outline already clears these
-            if (editor.getFullOutline() == null) {
-                marker.clearErrorMarkers(editor);
-            }
-            marker.clearTaskMarkers(editor);
-        } else {
-            firstRun = false;
-        }
         if (errors.size() > 0) {
             marker.createErrorMarkers(editor, errors);
         }

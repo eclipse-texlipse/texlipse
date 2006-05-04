@@ -52,9 +52,11 @@ public class TexJump2Label implements IEditorActionDelegate {
 	}
 
 	/**
+     * Extracts the label of a \ref{label} command if the character at position 
+     * offset is part of this \ref command 
 	 * @param doc
 	 * @param offset
-	 * @return
+	 * @return name of the referenced position
 	 */
 	private String getReference(IDocument doc, int offset){
 		try {
@@ -82,7 +84,12 @@ public class TexJump2Label implements IEditorActionDelegate {
 		}
 	}
 
-	public static IProject getProject(IEditorInput currentInput) {
+	/**
+     * Returns the project of the currentInput
+     * @param currentInput
+     * @return project or null if the file has no project or is no IFileEditorInput
+	 */
+    public static IProject getProject(IEditorInput currentInput) {
         IProject project = null;
         if (currentInput instanceof IFileEditorInput) {
             IFileEditorInput fileInput = (IFileEditorInput) currentInput;
@@ -92,7 +99,11 @@ public class TexJump2Label implements IEditorActionDelegate {
         return project;
     }
 	
-	public void run(IAction action) {
+	/*
+     *  (non-Javadoc)
+     * @see org.eclipse.ui.IActionDelegate#run(org.eclipse.jface.action.IAction)
+	 */
+    public void run(IAction action) {
 		TexEditor editor;
         if (targetEditor instanceof TexEditor) {
             editor = (TexEditor) targetEditor;
@@ -111,6 +122,7 @@ public class TexJump2Label implements IEditorActionDelegate {
                 return;
             IFile file = getProject(editor.getEditorInput()).getFile(label.fileName);
             try {
+                //Open the correct document and jump to label
                 AbstractTextEditor part = (AbstractTextEditor) IDE.openEditor(editor.getEditorSite().getPage(), file);
                 IDocument doc2 = part.getDocumentProvider().getDocument(part.getEditorInput());
                 int lineOffset = doc2.getLineOffset(label.startLine - 1);
@@ -125,7 +137,11 @@ public class TexJump2Label implements IEditorActionDelegate {
         }
 	}
 
-	public void selectionChanged(IAction action, ISelection selection) {
+    /*
+     *  (non-Javadoc)
+     * @see org.eclipse.ui.IActionDelegate#selectionChanged(org.eclipse.jface.action.IAction, org.eclipse.jface.viewers.ISelection)
+     */
+    public void selectionChanged(IAction action, ISelection selection) {
 		action.setEnabled(targetEditor instanceof TexEditor);
 	}
 

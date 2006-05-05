@@ -494,7 +494,8 @@ public class ViewerManager {
             outputDir = project;
         }
         
-        return outputDir.findMember(outFileName);
+        IResource resource = outputDir.findMember(outFileName);
+        return resource != null ? resource : project.getFile(outFileName);
     }
     
 

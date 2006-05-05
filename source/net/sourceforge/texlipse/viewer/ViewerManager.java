@@ -147,6 +147,15 @@ public class ViewerManager {
         return process;
     }
     
+    /**
+     * Closes the target output document using the DDE command from the
+     * default viewer, or the most recently launched preview. This method
+     * is probably fragile since the process and launches handling in
+     * Texlipse is too weak to always know what documents are locked and
+     * needs closing.  
+     * 
+     * @throws CoreException
+     */
     public static void closeOutputDocument() throws CoreException {
 		
         ViewerAttributeRegistry registry = new ViewerAttributeRegistry();
@@ -181,7 +190,7 @@ public class ViewerManager {
 			try {
                 Thread.sleep(500); // A small delay required
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                // swallow
             }
 
             returnFocusToEclipse(false);

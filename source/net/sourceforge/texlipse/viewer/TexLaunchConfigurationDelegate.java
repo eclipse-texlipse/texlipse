@@ -53,7 +53,7 @@ public class TexLaunchConfigurationDelegate extends LaunchConfigurationDelegate 
     }
 
     /**
-     * Launch the viewer.
+     * Launches the viewer specified in the  <code>configuration</code> argument
      */
     public void launch(ILaunchConfiguration configuration, String mode,
             ILaunch launch, IProgressMonitor monitor) throws CoreException {
@@ -77,7 +77,7 @@ public class TexLaunchConfigurationDelegate extends LaunchConfigurationDelegate 
             try {
                 Thread.sleep(500); // A small delay required
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                // swallow
             }
             
             ViewerManager.returnFocusToEclipse(false);
@@ -85,6 +85,9 @@ public class TexLaunchConfigurationDelegate extends LaunchConfigurationDelegate 
         
     }
 
+    /* 
+     * @see LaunchConfigurationDelegate#getProjectsForProblemSearch(ILaunchConfiguration, String)
+     */
     protected IProject[] getProjectsForProblemSearch(ILaunchConfiguration configuration, String mode) throws CoreException {
         return new IProject[] { TexlipsePlugin.getCurrentProject() };
     }

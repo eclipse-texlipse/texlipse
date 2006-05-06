@@ -163,6 +163,7 @@ public class TexBuilder extends AbstractBuilder {
             latex.run(resource);
         } catch (BuilderCoreException ex) {
             //Don't stop here, we will ask the user later
+            //TODO: Error managment
             error = true;
         }
         monitor.worked(10);
@@ -182,11 +183,11 @@ public class TexBuilder extends AbstractBuilder {
         
         if (bibs != null && bibs.length > 0 && (runBib != null || bibChange != null)) {
             
-            if (error) {
+/*            if (error) {
                 if (askUserForContinue(project) == false) {
                     throw new BuilderCoreException(TexlipsePlugin.stat("Errors during build. See the problems dialog."));
                 }
-            }
+            }*/
             
             bibtex.run(resource);
             if (stopped)
@@ -216,8 +217,8 @@ public class TexBuilder extends AbstractBuilder {
             try {
                 latex.run(resource);
             } catch (BuilderCoreException ex) {
-                if (!error)
-                    throw ex;
+                //if (!error)
+                //    throw ex;
             }
             if (stopped)
                 return;
@@ -225,8 +226,8 @@ public class TexBuilder extends AbstractBuilder {
             try {
                 latex.run(resource);
             } catch (BuilderCoreException ex) {
-                if (!error)
-                    throw ex;
+                //if (!error)
+                //    throw ex;
             }
             if (stopped)
                 return;
@@ -234,11 +235,11 @@ public class TexBuilder extends AbstractBuilder {
             
         } else if (rerun != null || runIdx != null || runNomencl != null) {
 
-            if (error) {
+/*            if (error) {
                 if (askUserForContinue(project) == false) {
                     throw new BuilderCoreException(TexlipsePlugin.stat("Errors during build. See the problems dialog."));
                 }
-            }
+            }*/
             
             if (runIdx != null) {
                 makeIndex.run(resource);
@@ -260,8 +261,8 @@ public class TexBuilder extends AbstractBuilder {
             try {
                 latex.run(resource);
             } catch (BuilderCoreException ex) {
-                if (!error)
-                    throw ex;
+                //if (!error)
+                    //throw ex;
             }
             if (stopped)
                 return;

@@ -291,7 +291,7 @@ public class TexSourceViewerConfiguration extends SourceViewerConfiguration {
                 case '{':
                     // if we get \foo\{ or \{, then a group doesn't start
                     if (cstart >= 0 && infoText.charAt(i-1) != '\\') {
-                        boldRange(cstart, i - cstart + 1, presentation, false);
+                        boldRange(cstart, i - cstart, presentation, false);
                         cstart = -1;
                         gstart = i;
                     } else if (cstart < 0) {
@@ -301,10 +301,10 @@ public class TexSourceViewerConfiguration extends SourceViewerConfiguration {
                 case '}':
                     // if we get \} then it doesn't mean that a group ends
                     if (cstart >= 0 && infoText.charAt(i-1) != '\\') {
-                        boldRange(cstart, i - cstart + 1, presentation, true);
+                        boldRange(cstart, i - cstart, presentation, true);
                         cstart = -1;
                         if (gstart >= 0) {
-                            italicizeRange(gstart, cstart - gstart, presentation);
+                            italicizeRange(gstart, cstart - gstart + 1, presentation);
                             gstart = -1;
                         }
                     } else if (gstart >= 0) {
@@ -324,10 +324,10 @@ public class TexSourceViewerConfiguration extends SourceViewerConfiguration {
                     if (cstart >= 0) {
                         if (gstart >= 0) {
                             italicizeRange(gstart, cstart - gstart, presentation);
-                            boldRange(cstart, i - cstart + 1, presentation, true);
+                            boldRange(cstart, i - cstart, presentation, true);
                             gstart = i;
                         } else {
-                            boldRange(cstart, i - cstart + 1, presentation, false);
+                            boldRange(cstart, i - cstart, presentation, false);
                         }
                         cstart = -1;
                     }
@@ -344,16 +344,16 @@ public class TexSourceViewerConfiguration extends SourceViewerConfiguration {
             // Return the information text
             return infoText;
         }
-        private void boldRange(int start, int end, TextPresentation presentation, boolean doItalic) {
+        private void boldRange(int start, int length, TextPresentation presentation, boolean doItalic) {
             // We have found a tag and create a new style range
             int fontStyle = doItalic ? (SWT.BOLD | SWT.ITALIC) : SWT.BOLD;
-            StyleRange range = new StyleRange(start, end, null, null, fontStyle);
+            StyleRange range = new StyleRange(start, length, null, null, fontStyle);
             
             // Add this style range to the presentation
             presentation.addStyleRange(range);
         }
-        private void italicizeRange(int start, int end, TextPresentation presentation) {
-            StyleRange range = new StyleRange(start, end, null, null, SWT.ITALIC);
+        private void italicizeRange(int start, int length, TextPresentation presentation) {
+            StyleRange range = new StyleRange(start, length, null, null, SWT.ITALIC);
             presentation.addStyleRange(range);
         }
         

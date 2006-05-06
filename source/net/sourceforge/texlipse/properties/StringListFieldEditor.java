@@ -32,7 +32,7 @@ public class StringListFieldEditor extends ListEditor implements IInputValidator
     public static final String SEPARATOR = ",";
 
     // list of invalid characters that can't be in a keyword
-    private static final String INVALID_CHARS = " ,*()[]{}<>|\\?+/&#%$¤£#@\"!§½";
+    private static final String INVALID_CHARS = " ,()[]{}<>|\\?+/&#%$¤£#@\"!§½";
     
     /**
      * Creates a new string list field editor.

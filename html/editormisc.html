@@ -109,5 +109,20 @@ everything else is not considered. If the selection contains commented lines,
 the words on those lines are not counted.
 </p>
 
+<h2><a name="excluding"></a>Excluding parts of the document from the parser</h2>
+
+<p>
+Sometimes one might one to mark a section to be excluded from parsing, e.g.
+to support a custom-verbatim environment. To do that, simply surround
+the are to be excluded by %### -comments, e.g.
+<pre>
+%###
+\begin{myverbatim}
+write whatever you want here
+\end{myverbatim}
+%###
+</pre>
+</p>
+
 </body>
 </html>

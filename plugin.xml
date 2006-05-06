@@ -74,12 +74,16 @@
    <extension
          point="org.eclipse.ui.newWizards">
       <wizard
+            category="texlipse.category1"
             class="net.sourceforge.texlipse.wizards.TexlipseProjectCreationWizard"
             icon="icons/logo.gif"
-            category="texlipse.category1"
-            project="true"
+            id="texlipse.wizard1"
             name="LaTeX Project"
-            id="texlipse.wizard1"/>
+            project="true">
+         <description>
+            Create a LaTeX project
+         </description>
+      </wizard>
       <category
             name="Texlipse"
             id="texlipse.category1"/>

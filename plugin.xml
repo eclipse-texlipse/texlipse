@@ -78,7 +78,7 @@
             icon="icons/logo.gif"
             category="texlipse.category1"
             project="true"
-            name="New Latex Project"
+            name="LaTeX Project"
             id="texlipse.wizard1"/>
       <category
             name="Texlipse"

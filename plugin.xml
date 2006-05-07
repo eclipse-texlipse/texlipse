@@ -751,22 +751,6 @@ ${cursor}
                menubarPath="net.sourceforge.texlipse.menus.source/latexGroup"               
                style="push"
                tooltip="Comment selection"/>
-          <action
-                class="net.sourceforge.texlipse.actions.TexBold"
-                definitionId="net.sourceforge.texlipse.commands.texBold"
-                id="net.sourceforge.texlipse.actions.texBold"
-                label="(un-)&amp;Bold"
-                menubarPath="net.sourceforge.texlipse.menus.source/latexGroup"
-                style="push"
-                tooltip="Bolds (textbf) selection"/>
-          <action
-                class="net.sourceforge.texlipse.actions.TexSlant"
-                definitionId="net.sourceforge.texlipse.commands.texSlant"
-                id="net.sourceforge.texlipse.actions.texSlant"
-                label="(un-)&amp;Italicize"
-                menubarPath="net.sourceforge.texlipse.menus.source/latexGroup"
-                style="push"
-                tooltip="Italicizes (textsl) selection"/>
          <action
                class="net.sourceforge.texlipse.actions.TexCorrectIndentationAction"
                definitionId="net.sourceforge.texlipse.commands.texCorrectIndentation"
@@ -894,22 +878,6 @@ ${cursor}
                style="push"
                toolbarPath="latexGroup"
                tooltip="Comment selection"/>
-          <action
-                class="net.sourceforge.texlipse.actions.TexBold"
-                definitionId="net.sourceforge.texlipse.commands.texBold"
-                id="net.sourceforge.texlipse.actions.texBold"
-                label="(un-)&amp;Bold"
-                menubarPath="net.sourceforge.texlipse.menus.latex/commentGroup"
-                style="push"
-                tooltip="Bolds (textbf) selection"/>
-          <action
-                class="net.sourceforge.texlipse.actions.TexSlant"
-                definitionId="net.sourceforge.texlipse.commands.texSlant"
-                id="net.sourceforge.texlipse.actions.texSlant"
-                label="(un-)&amp;Italicize"
-                menubarPath="net.sourceforge.texlipse.menus.latex/commentGroup"
-                style="push"
-                tooltip="Italicizes (textsl) selection"/>
          <action
                class="net.sourceforge.texlipse.actions.TexCorrectIndentationAction"
                definitionId="net.sourceforge.texlipse.commands.texCorrectIndentation"
@@ -990,14 +958,6 @@ ${cursor}
             id="net.sourceforge.texlipse.commands.texHardLineWrap"/>
       <command
             categoryId="net.sourceforge.texlipse.latexEditingCategory"
-            name="(un-)Bold"
-            id="net.sourceforge.texlipse.commands.texBold"/>
-      <command
-            categoryId="net.sourceforge.texlipse.latexEditingCategory"
-            name="(un-)Italicize"
-            id="net.sourceforge.texlipse.commands.texSlant"/>
-      <command
-            categoryId="net.sourceforge.texlipse.latexEditingCategory"
             name="Correct Indentation"
             id="net.sourceforge.texlipse.commands.texCorrectIndentation"/>
       <command
@@ -1047,16 +1007,6 @@ ${cursor}
             contextId="org.eclipse.ui.contexts.window"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             sequence="Esc Q"/>
-      <key
-            commandId="net.sourceforge.texlipse.commands.texBold"
-            contextId="org.eclipse.ui.contexts.window"
-            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            sequence="M1+M3+B"/>
-      <key
-            commandId="net.sourceforge.texlipse.commands.texSlant"
-            contextId="org.eclipse.ui.contexts.window"
-            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            sequence="M1+M3+I"/>
       <key
             commandId="net.sourceforge.texlipse.commands.texCorrectIndentation"
             contextId="org.eclipse.ui.contexts.window"

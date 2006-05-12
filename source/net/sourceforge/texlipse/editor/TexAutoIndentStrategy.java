@@ -16,8 +16,9 @@ import net.sourceforge.texlipse.properties.TexlipseProperties;
 import net.sourceforge.texlipse.texparser.LatexParserUtils;
 
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.jface.text.DefaultAutoIndentStrategy;
+import org.eclipse.jface.text.DefaultIndentLineAutoEditStrategy;
 import org.eclipse.jface.text.DocumentCommand;
+import org.eclipse.jface.text.IAutoEditStrategy;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.util.IPropertyChangeListener;
@@ -29,13 +30,15 @@ import org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants;
  * 
  * @author Laura Takkinen
  * @author Antti Pirinen
+ * @author Oskar Ojala
  */
-public class TexAutoIndentStrategy extends DefaultAutoIndentStrategy {
-
+public class TexAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
+//  public class TexAutoIndentStrategy implements IAutoEditStrategy {
+    
     private String indentationString = "";
     private String[] indentationItems;
     private int lineLength;
-    public static boolean hardWrap = false;
+    private static boolean hardWrap = false;
     private boolean indent;
     private int tabWidth;
     private TexEditorTools tools;
@@ -43,7 +46,7 @@ public class TexAutoIndentStrategy extends DefaultAutoIndentStrategy {
     private boolean autoItem = true;
     private boolean itemSetted = false;
     private int itemAtLine = 0;
-
+    
     /**
      * Creates new TexAutoIndentStrategy.
      * 
@@ -51,60 +54,62 @@ public class TexAutoIndentStrategy extends DefaultAutoIndentStrategy {
      */
     public TexAutoIndentStrategy(IPreferenceStore store) {
         TexlipsePlugin.getDefault().getPreferenceStore().addPropertyChangeListener(new
-        	IPropertyChangeListener() {
-           	public void propertyChange(PropertyChangeEvent event) {
-                        int ll, tl;
-                        boolean ai;
-                        String ev = event.getProperty();
-                        if (TexlipseProperties.WORDWRAP_LENGTH.equals(ev)) {
-                            ll = TexlipsePlugin.getDefault()
-                                    .getPreferenceStore().getInt(TexlipseProperties.WORDWRAP_LENGTH);
-                            setLineLength(ll);
-                        }
-                        if (TexlipseProperties.TEX_ITEM_COMLETION.equals(ev)) {
-                            autoItem = TexlipsePlugin.getDefault().getPreferenceStore()
-                                    .getBoolean(TexlipseProperties.TEX_ITEM_COMLETION);
-                        }
-                        if (TexlipseProperties.INDENTATION_LEVEL.equals(ev)
-                                || TexlipseProperties.INDENTATION.equals(ev)
-                                || TexlipseProperties.INDENTATION_ENVS.equals(ev)) {
-                            setIndetationPreferenceInfo(TexlipsePlugin
-                                    .getDefault().getPreferenceStore());
-                        }
-                    };
-                });
+                IPropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent event) {
+                //int ll, tl;
+                //boolean ai;
+                String ev = event.getProperty();
+                if (TexlipseProperties.WORDWRAP_LENGTH.equals(ev)) {
+                    lineLength = TexlipsePlugin.getDefault()
+                    .getPreferenceStore().getInt(TexlipseProperties.WORDWRAP_LENGTH);
+                    //setLineLength(ll);
+                }
+                if (TexlipseProperties.TEX_ITEM_COMLETION.equals(ev)) {
+                    autoItem = TexlipsePlugin.getDefault().getPreferenceStore()
+                    .getBoolean(TexlipseProperties.TEX_ITEM_COMLETION);
+                }
+                if (TexlipseProperties.INDENTATION_LEVEL.equals(ev)
+                        || TexlipseProperties.INDENTATION.equals(ev)
+                        || TexlipseProperties.INDENTATION_ENVS.equals(ev)) {
+                    setIndetationPreferenceInfo(TexlipsePlugin
+                            .getDefault().getPreferenceStore());
+                }
+            };
+        });
         this.tools = new TexEditorTools();
         this.hlw = new HardLineWrap();
         setIndetationPreferenceInfo(store);
     }
-
+    
     /**
      * Initializes indentation information from preferencepage
      */
     private void setIndetationPreferenceInfo(
             IPreferenceStore editorPreferenceStore) {
-        Boolean indentation = new Boolean(TexlipsePlugin
-                .getPreference(TexlipseProperties.INDENTATION));
-        this.indentationItems = TexlipsePlugin
-                .getPreferenceArray(TexlipseProperties.INDENTATION_ENVS);
+//      Boolean indentation = new Boolean(TexlipsePlugin
+//      .getPreference(TexlipseProperties.INDENTATION));
+        indentationItems = TexlipsePlugin
+        .getPreferenceArray(TexlipseProperties.INDENTATION_ENVS);
         int indentationLevel = TexlipsePlugin.getDefault().getPreferenceStore()
-                .getInt(TexlipseProperties.INDENTATION_LEVEL);
-        this.tabWidth = editorPreferenceStore
-                .getInt(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_TAB_WIDTH);
-
-        this.indentationString = "";
+        .getInt(TexlipseProperties.INDENTATION_LEVEL);
+        tabWidth = editorPreferenceStore
+        .getInt(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_TAB_WIDTH);
+        
+        indentationString = "";
         for (int i = 0; i < indentationLevel; i++) {
-            this.indentationString += " ";
+            indentationString += " ";
         }
-
-        Arrays.sort(this.indentationItems);
-        this.indent = indentation.booleanValue();
-        this.lineLength = TexlipsePlugin.getDefault().getPreferenceStore()
-                .getInt(TexlipseProperties.WORDWRAP_LENGTH);
-        this.autoItem = TexlipsePlugin.getDefault().getPreferenceStore()
-                .getBoolean(TexlipseProperties.TEX_ITEM_COMLETION);
+        
+        Arrays.sort(indentationItems);
+        //indent = indentation.booleanValue();
+        indent = Boolean.parseBoolean(TexlipsePlugin
+                .getPreference(TexlipseProperties.INDENTATION));
+        lineLength = TexlipsePlugin.getDefault().getPreferenceStore()
+        .getInt(TexlipseProperties.WORDWRAP_LENGTH);
+        autoItem = TexlipsePlugin.getDefault().getPreferenceStore()
+        .getBoolean(TexlipseProperties.TEX_ITEM_COMLETION);
     }
-
+    
     /*
      * (non-Javadoc) Method declared on IAutoIndentStrategy
      */
@@ -115,44 +120,44 @@ public class TexAutoIndentStrategy extends DefaultAutoIndentStrategy {
                     && this.tools.endsWithNewline(document, command.text)
                     && itemSetted && autoItem) {
                 dropItem(document, command);
-
+                
             } else if (command.length == 0 && command.text != null
                     && this.tools.endsWithNewline(document, command.text)) {
                 smartIndentAfterNewLine(document, command);
-            } else if (command.text.equals("}")) {
-                smartIndentAfterBracket(document, command);
+            } else if ("}".equals(command.text)) {
+                smartIndentAfterBrace(document, command);
             } else {
                 itemSetted = false;
             }
         }
-
-        if (hardWrap) {
+        
+        if (TexAutoIndentStrategy.hardWrap) {
             if (command.length == 0 && command.text != null) {
                 hlw.doWrap(document, command, lineLength);
             }
         }
     }
-
+    
     /**
      * Sets new line length.
      * 
      * @param length
      *            New line length value.
      */
-    public void setLineLength(int length) {
-        this.lineLength = length;
-    }
-
+//  public void setLineLength(int length) {
+//  this.lineLength = length;
+//  }
+    
     /**
      * Sets new tabwidth.
      * 
      * @param length
      *            Number of spaces in tab.
      */
-    public void setTabWidth(int length) {
-        this.tabWidth = length;
-    }
-
+//  public void setTabWidth(int length) {
+//  this.tabWidth = length;
+//  }
+    
     /**
      * Decides if a "\begin{...}" needs a "\end{...}"
      * @param environment	Name of the environment (...)
@@ -183,7 +188,7 @@ public class TexAutoIndentStrategy extends DefaultAutoIndentStrategy {
         }
         return false;
     }
-
+    
     /**
      * Performs indentation after new line is detected.
      * 
@@ -203,7 +208,7 @@ public class TexAutoIndentStrategy extends DefaultAutoIndentStrategy {
                     - lineOffset);
             String endLine = document.get(commandOffset, lineLength
                     + lineOffset - commandOffset);
-
+            
             // test if line contains \begin and search the environment (itemize,
             // table...)
             int beginIndex;
@@ -216,12 +221,12 @@ public class TexAutoIndentStrategy extends DefaultAutoIndentStrategy {
                 // get identation of \begin
                 prevIndentation = this.tools.getIndentation(document, line,
                         "\\begin", this.tabWidth); // NEW
-
+                
                 if (Arrays.binarySearch(this.indentationItems, this.tools
                         .getEnvironment(endText)) >= 0) {
                     buf.append(prevIndentation);
                     buf.append(this.indentationString);
-
+                    
                 }
                 if ((this.tools.getEnvironment(endText).equals("itemize") || this.tools
                         .getEnvironment(endText).equals("enumerate"))
@@ -230,8 +235,8 @@ public class TexAutoIndentStrategy extends DefaultAutoIndentStrategy {
                     itemSetted = true;
                     itemAtLine = document.getLineOfOffset(command.offset);
                 } else if (this.tools.getEnvironment(endText).equals(
-                        "description")
-                        && autoItem) {
+                "description")
+                && autoItem) {
                     buf.append("\\item[]");
                     itemSetted = true;
                     itemAtLine = document.getLineOfOffset(command.offset);
@@ -246,8 +251,8 @@ public class TexAutoIndentStrategy extends DefaultAutoIndentStrategy {
                  * an equivalent \end-statement (respects \begin-indentation)
                  */
                 if (needsEnd(this.tools.getEnvironment(endText), document, lineOffset)){
-                	buf.append("\n" + prevIndentation + "\\end{"
-                        + this.tools.getEnvironment(endText) + "}");
+                    buf.append("\n" + prevIndentation + "\\end{"
+                            + this.tools.getEnvironment(endText) + "}");
                     command.shiftsCaret = false;
                     command.caretOffset = command.offset + buf.length()
                     - prevIndentation.length() - 7
@@ -256,17 +261,17 @@ public class TexAutoIndentStrategy extends DefaultAutoIndentStrategy {
                 if (this.tools.getEnvironment(endText).equals("description")
                         && autoItem) {
                     command.caretOffset = command.offset + buf.length()
-                            - prevIndentation.length() - "\\end{}".length()
-                            - this.tools.getEnvironment(endText).length() - 2;
+                    - prevIndentation.length() - "\\end{}".length()
+                    - this.tools.getEnvironment(endText).length() - 2;
                 }
                 command.text = buf.toString();
-
+                
                 // test if line contains \end and search the environment
                 // (itemize, table...)
             } else if ((endIndex = startLine.indexOf("\\end")) != -1) {
                 String endText = this.tools.getEndLine(startLine
                         .substring(endIndex), "\\end");
-
+                
                 if (Arrays.binarySearch(this.indentationItems, this.tools
                         .getEnvironment(endText)) >= 0) {
                     int matchingBegin = this.tools.findMatchingBeginEquation(
@@ -280,11 +285,11 @@ public class TexAutoIndentStrategy extends DefaultAutoIndentStrategy {
                     buf.append(endLine);
                     command.shiftsCaret = false;
                     command.caretOffset = lineOffset
-                            + this.tools.getIndexAtLine(document, command, true)
-                            - (this.tools.getIndentation(document, command)
-                                    .length() - prevIndentation.length())
+                    + this.tools.getIndexAtLine(document, command, true)
+                    - (this.tools.getIndentation(document, command)
+                            .length() - prevIndentation.length())
                             + this.tools.getLineDelimiter(document, command)
-                                    .length() + prevIndentation.length();
+                            .length() + prevIndentation.length();
                     command.offset = lineOffset;
                     command.length = lineLength;
                     command.text = buf.toString();
@@ -302,7 +307,7 @@ public class TexAutoIndentStrategy extends DefaultAutoIndentStrategy {
             TexlipsePlugin.log("TexAutoIndentStrategy:SmartIndentAfterNewLine", e);
         }
     }
-
+    
     /**
      * Performs indentation after new "}" character is detected.
      * 
@@ -311,7 +316,7 @@ public class TexAutoIndentStrategy extends DefaultAutoIndentStrategy {
      * @param command
      *            Command that represent the change of the document (here command text is "}").
      */
-    private void smartIndentAfterBracket(IDocument document,
+    private void smartIndentAfterBrace(IDocument document,
             DocumentCommand command) {
         try {
             int commandOffset = command.offset;
@@ -322,10 +327,10 @@ public class TexAutoIndentStrategy extends DefaultAutoIndentStrategy {
             String lineText = document.get(lineOffset, lineLength);
             // modified linetext
             String text = lineText.trim().concat(command.text);
-
+            
             if (text.startsWith("\\end")) {
                 String endLine = this.tools.getEndLine(text, "\\end");
-
+                
                 if (Arrays.binarySearch(this.indentationItems, this.tools
                         .getEnvironment(endLine)) >= 0) {
                     int matchingBegin = this.tools.findMatchingBeginEquation(
@@ -345,7 +350,7 @@ public class TexAutoIndentStrategy extends DefaultAutoIndentStrategy {
             TexlipsePlugin.log("TexAutoIndentStrategy:SmartIndentAfterBracket", e);
         }
     }
-
+    
     /**
      * Erases the \item -string from a line
      * 
@@ -370,10 +375,10 @@ public class TexAutoIndentStrategy extends DefaultAutoIndentStrategy {
         }
         itemSetted = false;
     }
-
+    
     /**
      * Insets an \item or an \item[] string Works ONLY it \item is found from
-     * the beginin of the previous line
+     * the beginning of the previous line
      * 
      * @param d
      * @param c
@@ -381,14 +386,14 @@ public class TexAutoIndentStrategy extends DefaultAutoIndentStrategy {
      *         otherwise
      */
     private boolean itemInserted(IDocument d, DocumentCommand c) {
-
+        
         int lines = 0;
         int cnt = 0;
         itemSetted = false;
         String prevLine;
         StringBuffer buf = new StringBuffer(c.text);
         buf.append(tools.getIndentation(d, c));
-
+        
         try {
             lines = d.getLineOfOffset(c.offset);
             while (lines > 1) {
@@ -397,8 +402,8 @@ public class TexAutoIndentStrategy extends DefaultAutoIndentStrategy {
                     buf.append("\\item[]");
                     c.shiftsCaret = false;
                     c.caretOffset = c.offset
-                            + tools.getIndentation(d, c).length() + 6
-                            + c.text.length();
+                    + tools.getIndentation(d, c).length() + 6
+                    + c.text.length();
                     c.text = buf.toString();
                     itemSetted = true;
                     itemAtLine = d.getLineOfOffset(c.offset);
@@ -419,5 +424,12 @@ public class TexAutoIndentStrategy extends DefaultAutoIndentStrategy {
             lines = -1;
         }
         return false;
+    }
+
+    /**
+     * @param hardWrap The hardWrap to set.
+     */
+    public static void setHardWrap(boolean hardWrap) {
+        TexAutoIndentStrategy.hardWrap = hardWrap;
     }
 }

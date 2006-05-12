@@ -156,12 +156,12 @@ public class TexHardLineWrapAction implements IEditorActionDelegate {
 			selectedLine = temp.toString().trim();
 			while(selectedLine.length() > 0) {				
 				/* find the last white space before MAX */  
-				wsLast = tools.getWhiteSpacePosition(selectedLine, 
+				wsLast = tools.getLastWSPosition(selectedLine, 
 						(lineLength - correctIndentation.length()))+1;
 				if (wsLast == 0 ){
 					/* there was no white space before MAX, try if there is 
 					   one after */
-					wsLast = tools.getWhiteSpacePositionA(selectedLine, 
+					wsLast = tools.getFirstWSPosition(selectedLine, 
 							(lineLength - correctIndentation.length()))+1;
 				}
 				if (wsLast == 0 || wsLast > selectedLine.length() || 

@@ -16,6 +16,7 @@ import net.sourceforge.texlipse.editor.scanner.TexScanner;
 import net.sourceforge.texlipse.properties.TexlipseProperties;
 
 import org.eclipse.jface.text.DefaultInformationControl;
+import org.eclipse.jface.text.IAutoEditStrategy;
 import org.eclipse.jface.text.IAutoIndentStrategy;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IInformationControl;
@@ -59,6 +60,7 @@ public class TexSourceViewerConfiguration extends SourceViewerConfiguration {
     private TexAnnotationHover annotationHover;
     private ContentAssistant assistant;
     private TexHover textHover;
+    private TexAutoIndentStrategy indentStrategy;
 
     /**
      * Creates a new source viewer configuration.
@@ -105,9 +107,20 @@ public class TexSourceViewerConfiguration extends SourceViewerConfiguration {
     
     // the deprecated interface must be used as a return value, since the extended class hasn't been
     // updated to reflect the change
-    public IAutoIndentStrategy getAutoIndentStrategy(ISourceViewer sourceViewer, String contentType) {
-        return new TexAutoIndentStrategy(editor.getPreferences());
+//    public IAutoIndentStrategy getAutoIndentStrategy(ISourceViewer sourceViewer, String contentType) {
+//        return new TexAutoIndentStrategy(editor.getPreferences());
+//    }
+    
+    /* (non-Javadoc)
+     * @see org.eclipse.jface.text.source.SourceViewerConfiguration#getAutoEditStrategies(org.eclipse.jface.text.source.ISourceViewer, java.lang.String)
+     */
+    public IAutoEditStrategy[] getAutoEditStrategies(ISourceViewer sourceViewer, String contentType) {
+        if (indentStrategy == null) {
+            indentStrategy = new TexAutoIndentStrategy(editor.getPreferences());
+        }
+        return new IAutoEditStrategy[] {indentStrategy};
     }
+
     /**
      * Returns the configured partitioning for the given source viewer. 
      * The partitioning is used when the querying content types from the 

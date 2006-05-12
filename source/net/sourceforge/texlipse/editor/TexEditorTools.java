@@ -15,7 +15,7 @@ import java.util.regex.Pattern;
 import net.sourceforge.texlipse.TexlipsePlugin;
 
 import org.eclipse.jface.text.BadLocationException;
-import org.eclipse.jface.text.DefaultAutoIndentStrategy;
+import org.eclipse.jface.text.DefaultIndentLineAutoEditStrategy;
 import org.eclipse.jface.text.DocumentCommand;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.TextUtilities;
@@ -25,11 +25,12 @@ import org.eclipse.jface.text.TextUtilities;
  * Offers general tools for different TexEditor features.
  * Tools are used mainly to implement the word wrap and the indentation
  * methods.
+ * 
  * @author Laura Takkinen 
  * @author Antti Pirinen
+ * @author Oskar Ojala
  */
-
-public class TexEditorTools extends DefaultAutoIndentStrategy {
+public class TexEditorTools extends DefaultIndentLineAutoEditStrategy {
 	
     /**
      * Matches some simple LaTeX -commands
@@ -97,7 +98,6 @@ public class TexEditorTools extends DefaultAutoIndentStrategy {
 		}
 		
 		if (array[0] == ' ' || array[0] == '\t'){
-			int beginIndex = 0;
 			int tabs = numberOfTabs(text);		
 			int spaces = numberOfSpaces(text) - tabs + (tabs * tabWidth);
 			if (spaces > 0) {
@@ -148,22 +148,21 @@ public class TexEditorTools extends DefaultAutoIndentStrategy {
 	 */
 	public String getIndentation(IDocument document, DocumentCommand command) {
 		String indentation = "";
-		int line = -1;
-		try {
-			line = document.getLineOfOffset(command.offset);
-			if (line > -1) {
-				int start= document.getLineOffset(line);
-				int end= start + document.getLineLength(line) - 1;
-				int whiteend= findEndOfWhiteSpace(document, start, end);
-				if(whiteend > start)
-					indentation = document.get(start, whiteend - start);
-			}
-		}catch(Exception e){
-			TexlipsePlugin.log("TexAutoIndentStrategy:getIndentation", e);
-		}	
-		return indentation;
-		
-	}
+        int line = -1;
+        try {
+            line = document.getLineOfOffset(command.offset);
+            if (line > -1) {
+                int start = document.getLineOffset(line);
+                int end = start + document.getLineLength(line) - 1;
+                int whiteend = findEndOfWhiteSpace(document, start, end);
+                if (whiteend > start)
+                    indentation = document.get(start, whiteend - start);
+            }
+        } catch (Exception e) {
+            TexlipsePlugin.log("TexAutoIndentStrategy:getIndentation", e);
+        }
+        return indentation;
+    }
 	
 	/**
 	 * Gets substring of the given text by removing the given prexif from the string. 
@@ -286,15 +285,12 @@ public class TexEditorTools extends DefaultAutoIndentStrategy {
 	 */
 	public String getLineDelimiter(IDocument document, DocumentCommand command) {
 		String delimiter = "\n";
-		try{
-			delimiter = document.getLineDelimiter(0);
-			if (delimiter == null){
-				delimiter = "\n";
-			}	
-		}catch(BadLocationException e){
-			TexlipsePlugin.log("TexEditorTools.getLineDelimiter: ",e);
-		}
-		return delimiter;
+        try {
+            delimiter = document.getLineDelimiter(0);
+        } catch (BadLocationException e) {
+            TexlipsePlugin.log("TexEditorTools.getLineDelimiter: ", e);
+        }
+        return delimiter == null ? "\n" : delimiter;
 	}
 
 	/**
@@ -304,12 +300,12 @@ public class TexEditorTools extends DefaultAutoIndentStrategy {
 	 * 					<code>false</code> otherwise
 	 */
 	public boolean isWhiteSpace(DocumentCommand command) {
-		char[] array = command.text.toCharArray();
-		if (array[0] == ' '  || array[0] == '\t'){
-			return true;
-		}else {
-			return false;
-		}
+	    char[] array = command.text.toCharArray();
+	    if (array[0] == ' ' || array[0] == '\t') {
+	        return true;
+	    } else {
+	        return false;
+	    }
 	}
 	
 	/**
@@ -402,7 +398,7 @@ public class TexEditorTools extends DefaultAutoIndentStrategy {
 
 	/**
 	 * Returns the location of last white space character.
-	 * The fisrt character at a row is 0 and last is <code>lineText.length - 1</code>
+	 * The first character at a row is 0 and last is <code>lineText.length - 1</code>
 	 * If <code>command.text</code> is a white space, it is NOT counted.
 	 * @param document 	IDocument that contains the command.
 	 * @param command 	DocumentCommand that determines the row.
@@ -438,24 +434,25 @@ public class TexEditorTools extends DefaultAutoIndentStrategy {
 	public String getStringAt(IDocument document, 
 			DocumentCommand command, boolean delim, int lineDif) {
 		String line = "";
-		int lineBegin, lineLength, docLength;
-		try{
-			if (delim){
-				lineLength = getLineLength(document, command,true,lineDif);
-			}else{
-				lineLength = getLineLength(document, command,false,lineDif);
-			}
-			if (lineLength > 0){
-				lineBegin = document.getLineOffset(document.
-									getLineOfOffset(command.offset)+lineDif);
-				line = document.get(lineBegin, lineLength);
-			}
-		}catch(BadLocationException e){
-			TexlipsePlugin.log("TexEditorTools.getStringAt", e);
-		}
-		return line;
+        int lineBegin, lineLength;
+        try {
+            if (delim) {
+                lineLength = getLineLength(document, command, true, lineDif);
+            } else {
+                lineLength = getLineLength(document, command, false, lineDif);
+            }
+            if (lineLength > 0) {
+                lineBegin = document.getLineOffset(document
+                        .getLineOfOffset(command.offset) + lineDif);
+                line = document.get(lineBegin, lineLength);
+            }
+        } catch (BadLocationException e) {
+            TexlipsePlugin.log("TexEditorTools.getStringAt", e);
+        }
+        return line;
 	}
-	/**
+
+    /**
 	 * Returns a text String of the line. 
 	 * @param d IDocument that contains the line.
 	 * @param c DocumentCommand that determines the line.
@@ -468,49 +465,50 @@ public class TexEditorTools extends DefaultAutoIndentStrategy {
 	
 	/**
 	 * Detects the position of the first white space character
-	 * smaler than the limit.
-	 * The fisrt character at a row is 0 and last is lineText.length-1
+	 * smaller than the limit.
+	 * The first character at a row is 0 and last is lineText.length-1
 	 * @param text 		to search
 	 * @param limit		the detected white space must be before this
 	 * @return 			index of last white space character, 
 	 * 					returns -1 if not found.
 	 */
-	public int getWhiteSpacePosition(String text, int limit) {
+	public int getLastWSPosition(String text, int limit) {
 		int index = -1;
-		if (text.length() > limit && limit > -1){
-			String temp = text.substring(0,limit);
-			int firstSpace = temp.lastIndexOf(' ');
-			int firstTab   = temp.lastIndexOf('\t');
-			index = (firstSpace > firstTab ? firstSpace : firstTab);
-		}
-		return index;
+        if (text.length() > limit && limit > -1) {
+            String temp = text.substring(0, limit); // TODO limit+1?
+            int lastSpace = temp.lastIndexOf(' ');
+            int lastTab = temp.lastIndexOf('\t');
+            index = (lastSpace > lastTab ? lastSpace : lastTab);
+        }
+        return index;
 	}
-	/**
+
+    /**
 	 * Detects the position of the first white space character
-	 * bigger than the limit.
-	 * The fisrt character at a row is 0 and last is lineText.length-1
+	 * larger than the limit.
+	 * The first character at a row is 0 and last is lineText.length-1
 	 * @param text	 	to search
 	 * @param limit		the detected white space is the first white space 
 	 * 					after this
 	 * @return 			index of first white space character, 
 	 * 					returns -1 if not found.
 	 */	
-	public int getWhiteSpacePositionA(String text, int limit) {
+	public int getFirstWSPosition(String text, int limit) {
 		int index = -1;
-		if (text.length() > limit && limit > -1){
-			String temp = text.substring(limit+1);
-			int firstSpace = temp.indexOf(' ');
-			int firstTab   = temp.indexOf('\t');
-		
-			if (firstSpace == -1 && firstTab != -1) {
-				index = limit + firstTab + 1;
-			} else if (firstSpace != -1 && firstTab == -1){
-				index = limit + firstSpace + 1;
-			} else if (firstSpace > -1 && firstTab > -1){
-				index = (firstSpace < firstTab ? firstSpace : firstTab);
-			}
-		} 	
-		return index;
+        if (text.length() > limit && limit > -1) {
+            String temp = text.substring(limit + 1);
+            int firstSpace = temp.indexOf(' ');
+            int firstTab = temp.indexOf('\t');
+
+            if (firstSpace == -1 && firstTab != -1) {
+                index = firstTab + limit + 1;
+            } else if (firstSpace != -1 && firstTab == -1) {
+                index = firstSpace + limit + 1;
+            } else if (firstSpace > -1 && firstTab > -1) {
+                index = (firstSpace < firstTab ? firstSpace : firstTab) + limit + 1;
+            }
+        }
+        return index;
 	}
 	
 	
@@ -551,11 +549,11 @@ public class TexEditorTools extends DefaultAutoIndentStrategy {
 	 * 				<code>false</code> otherwise
 	 */
 	public boolean isLineCommandLine(IDocument d, DocumentCommand c, int line) {
-		boolean rv = false;
-		String lineTxt = getStringAt(d,c,true,line);
+		String lineTxt = getStringAt(d, c, true, line);
 		return isLineCommandLine(lineTxt);
 	}
-	/**
+
+    /**
 	 * Checks if the target text begins with latex-command word. 
 	 * @param text 	source string
 	 * @return		<code>true</code> if the line contains the latex command word, 

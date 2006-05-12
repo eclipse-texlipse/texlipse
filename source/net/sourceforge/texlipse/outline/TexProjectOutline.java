@@ -220,7 +220,7 @@ public class TexProjectOutline {
         if (lastNode.getType() == level) {
             return lastNode;
         } else if (lastNode.getType() > level) {
-            return null;
+            return level == OutlineNode.TYPE_DOCUMENT ? lastNode.getParent() : null;
         }
         // reverse iteration
         /*
@@ -257,7 +257,6 @@ public class TexProjectOutline {
      */
     private IFile resolveFile(String name, IFile referringFile, int lineNumber) {
         MarkerHandler marker = MarkerHandler.getInstance();
-        marker.clearProblemMarkers(referringFile);
         
         IFile newTexFile = fileParser.findIFile(name, referringFile);
         if (newTexFile == null) {
@@ -266,6 +265,8 @@ public class TexProjectOutline {
                     lineNumber);
             return null;
         }
+        // TODO check that this doesn't get messed up if the same file is included sevral times
+        marker.clearProblemMarkers(newTexFile);
         return newTexFile;
     }
     

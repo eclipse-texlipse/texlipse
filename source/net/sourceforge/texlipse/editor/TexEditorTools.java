@@ -474,7 +474,7 @@ public class TexEditorTools extends DefaultIndentLineAutoEditStrategy {
 	 */
 	public int getLastWSPosition(String text, int limit) {
 		int index = -1;
-        if (text.length() > limit && limit > -1) {
+        if (text.length() >= limit && limit > -1) {
             String temp = text.substring(0, limit); // TODO limit+1?
             int lastSpace = temp.lastIndexOf(' ');
             int lastTab = temp.lastIndexOf('\t');
@@ -554,19 +554,18 @@ public class TexEditorTools extends DefaultIndentLineAutoEditStrategy {
 	}
 
     /**
-	 * Checks if the target text begins with latex-command word. 
+	 * Checks if the target text begins with a LaTeX command. 
 	 * @param text 	source string
 	 * @return		<code>true</code> if the line contains the latex command word, 
 	 * 				<code>false</code> otherwise
 	 */
 	public boolean isLineCommandLine(String text) {
-	    boolean rv = false;
 	    String txt = text.trim();
-	    
 	    Matcher m = simpleCommandPattern.matcher(txt);
-	    if (m.matches())
-	        rv = true;
-	    return rv;
+	    if (m.matches()) {
+	        return true;
+        }
+	    return false;
 	}
 	
 	/**
@@ -579,7 +578,7 @@ public class TexEditorTools extends DefaultIndentLineAutoEditStrategy {
 	 */
 	public boolean isLineCommentLine(IDocument d, DocumentCommand c, int line) {
 		String lineTxt = getStringAt(d,c,true,line);
-		return isLineCommandLine(lineTxt);
+		return isLineCommentLine(lineTxt);
 	}
 	
 	/**
@@ -589,11 +588,7 @@ public class TexEditorTools extends DefaultIndentLineAutoEditStrategy {
 	 * 				<code>false</code> otherwise
 	 */
 	public boolean isLineCommentLine(String text) {
-		boolean rv = false;
-		String lineTxt = text.trim();
-		if (lineTxt.startsWith("%"))
-			rv = true;		
-		return rv;
+        return text.trim().startsWith("%");
 	}
 	
 	/**
@@ -610,12 +605,44 @@ public class TexEditorTools extends DefaultIndentLineAutoEditStrategy {
 		return isLineItemLine(lineTxt);
 	}
 	/**
-	 * Checks is the line begins with \item key word
-	 * @param txt	string to test
+	 * Checks is the line begins with \item keyword
+	 * @param text	string to test
 	 * @return 		<code>true</code> if the line contains the item key word, 
 	 * 				<code>false</code> otherwise
 	 */
-	public boolean isLineItemLine(String txt){
-		return txt.trim().startsWith("\\item");		
+	public boolean isLineItemLine(String text){
+		return text.trim().startsWith("\\item");		
 	}
+    
+    
+    // Oskar's additions
+    
+    /**
+     * Returns the indentation of the given string taking
+     * into account if the string starts with a comment.
+     * The comment character is included in the output.
+     * 
+     * @param text      source where to find the indentation
+     * @return          The indentation of the line including the comment
+     */
+    public String getIndentationWithComment(String text) {
+        StringBuffer indentation = new StringBuffer();
+        char[] array = text.toCharArray();
+        
+        if (array.length == 0) {
+            return indentation.toString();
+        }
+        
+        int i = 0;
+        while (i < array.length
+                && (array[i] == ' ' || array[i] == '\t')) {
+            indentation.append(array[i]);
+            i++;
+        }
+        if (array[i] == '%') {
+            indentation.append("% ");
+        }
+        
+        return indentation.toString();
+    }
 }

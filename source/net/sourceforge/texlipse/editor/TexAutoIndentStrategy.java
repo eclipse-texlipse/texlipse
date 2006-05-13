@@ -133,7 +133,7 @@ public class TexAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
         
         if (TexAutoIndentStrategy.hardWrap) {
             if (command.length == 0 && command.text != null) {
-                hlw.doWrap(document, command, lineLength);
+                hlw.doWrapB(document, command, lineLength);
             }
         }
     }

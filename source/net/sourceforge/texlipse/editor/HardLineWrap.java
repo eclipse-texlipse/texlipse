@@ -135,70 +135,99 @@ public class HardLineWrap {
 
     public void doWrapB(IDocument d, DocumentCommand c, int MAX_LENGTH) {
         try {
-            // gets the line of the command excluding delimiter
+            // Get the line of the command excluding delimiter
             IRegion commandRegion = d.getLineInformationOfOffset(c.offset);
             String line = d.get(commandRegion.getOffset(), commandRegion.getLength());
                         
             // TODO check whitespace -> just len == 1 && char == ' ' should do
-            if (line.length() < MAX_LENGTH || !Character.isWhitespace(c.text.charAt(0))) {
+            //if (line.length() < MAX_LENGTH || !Character.isWhitespace(c.text.charAt(0))) {
+            if (line.length() < MAX_LENGTH || !(" ".equals(c.text) || "\t".equals(c.text))) {
                 return;
             }
             
             String delim = tools.getLineDelimiter(d, c);
-            String indent = tools.getIndentation(d, c); // TODO check if inside comment
+            //String indent = tools.getIndentation(d, c); // TODO check if inside comment
+            String indent = tools.getIndentationWithComment(line);
             int breakpos = tools.getLastWSPosition(line, MAX_LENGTH);
-            String nextline = tools.getStringAt(d, c, true, 1).trim();
+            String nextline = tools.getStringAt(d, c, false, 1).trim();
             
             StringBuffer buf = new StringBuffer();
-            
+
+            // Check if the cursor is not at the end of the line
             boolean caretMidLine = false;
-            if (c.offset != (commandRegion.getOffset() + commandRegion.getLength())) {
-                // We're in the middle of the line, not at the end, possibly middle of a word
+            int cursorOnLine = c.offset - commandRegion.getOffset();
+            if (cursorOnLine != commandRegion.getLength()) {
                 caretMidLine = true;
-                if (c.offset < breakpos) {
+                if (cursorOnLine <= breakpos) {
+                    // We put more text to the buffer and change c.offset, nothing more
                     buf.append(c.text);
-                    breakpos += c.text.length(); // TODO can cause line overflow
-                    buf.append(line.substring(c.offset, breakpos));
+                    buf.append(line.substring(cursorOnLine, breakpos)); // trim?
                 } else {
-                    int midpoint = c.offset - commandRegion.getOffset();
-                    String startLine = line.substring(0, midpoint);
-                    line = startLine + c.text + line.substring(midpoint);
+                    // We modify the line and everything is handled automatically
+                    String startLine = line.substring(0, cursorOnLine);
+                    line = startLine + c.text + line.substring(cursorOnLine);
                 }
             }
-            
+
+            // Break the line
             if (breakpos < indent.length()) {
-                // TODO check if the line can be broken after limit
                 buf.append(delim);
                 buf.append(indent);
+                breakpos = tools.getLastWSPosition(line, line.length());
+                // Check if the line can be broken after limit
+                if (breakpos >= indent.length()) {
+                    buf.append(line.substring(breakpos + 1).trim()); // TODO trim?
+                }
             } else {
                 buf.append(delim);
                 buf.append(indent);
-                buf.append(line.substring(breakpos + 1)); // TODO trim?
+                buf.append(line.substring(breakpos + 1).trim()); // TODO trim?
                 //buf.append(" ");
             }
             
+            // If the cursor was at the end of the line, add the typed text
             if (!caretMidLine) {
                 buf.append(c.text);
             }
+
+            int indentLengthCorrection = 0;
             
-            // TODO better command detection
-            if (nextline.length() > 0 && !nextline.startsWith("\\")) {
-                //buf.append(c.text); // TODO need this? doesn't work if we're in the middle of a word
+            // Append next line or insert newline
+            if (nextline.length() > 0
+                    && !tools.isLineCommandLine(nextline)
+                    && !tools.isLineCommentLine(nextline)
+                    && !tools.isLineItemLine(nextline)
+                    && indent.indexOf('%') == -1) {
                 if (caretMidLine) {
                     buf.append(" ");
                 }
                 buf.append(nextline);
             } else {
                 buf.append(delim);
+                indentLengthCorrection = indent.length();
             }
             
+            // Modify the document command so that the wrap is inserted
+            // No exceptions can occur here, so if everything went smoothly,
+            // Then all of the below will be executed
             c.shiftsCaret = false;
-            c.caretOffset = c.offset + delim.length() + indent.length();
+            //c.caretOffset = c.offset + delim.length() + indent.length();
 
             //c.offset = d.getLineOffset(d.getLineOfOffset(c.offset)) + breakpos;
-            c.offset = commandRegion.getOffset() + breakpos;
+            if (cursorOnLine > breakpos) {
+                c.caretOffset = c.offset + delim.length() + indent.length();
+                if (breakpos > indent.length()) {
+                    c.offset = commandRegion.getOffset() + breakpos;
+                } else {
+                    //right size if newline is inserted, too short is next line is appended
+                    indentLengthCorrection += delim.length();
+                }
+            } else {
+                c.caretOffset = c.offset + delim.length();
+            }
             
-            c.length = buf.length() - 1 - indent.length();
+            //c.length = buf.length() - 1 - indent.length();
+            c.length = buf.length() - delim.length() - indentLengthCorrection;
             //c.caretOffset = newCaretOffset;
             c.text = buf.toString();
             

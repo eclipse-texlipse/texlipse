@@ -26,9 +26,10 @@ import org.eclipse.ui.IEditorPart;
 
 
 /**
- * Listens word wrap actions.
+ * Listens for word wrap toggle -actions, toggling wrap on or off.
  * 
  * @author Laura Takkinen
+ * @author Oskar Ojala
  */
 public class TexWordWrapAction implements IEditorActionDelegate, IActionDelegate2 {
     private IEditorPart targetEditor;
@@ -44,7 +45,7 @@ public class TexWordWrapAction implements IEditorActionDelegate, IActionDelegate
      * 
      * @author Laura Takkinen
      */
-    class WrapPropertyChangeListener implements IPropertyChangeListener {
+    private class WrapPropertyChangeListener implements IPropertyChangeListener {
         
         /**
          * Changes between wrap types (soft <-> hard) if wrap toggle 
@@ -66,7 +67,7 @@ public class TexWordWrapAction implements IEditorActionDelegate, IActionDelegate
     public void init(IAction action) {
         action.setChecked(!off);
     }
-    
+        
     /* (non-Javadoc)
      * @see org.eclipse.ui.IEditorActionDelegate#setActiveEditor(org.eclipse.jface.action.IAction, org.eclipse.ui.IEditorPart)
      */
@@ -129,16 +130,18 @@ public class TexWordWrapAction implements IEditorActionDelegate, IActionDelegate
      */
     public void selectionChanged(IAction action, ISelection selection) {		
     }
-    
+
     /* (non-Javadoc)
      * @see org.eclipse.ui.IActionDelegate2#dispose()
      */
     public void dispose() {
     }
-    
+
     /* (non-Javadoc)
      * @see org.eclipse.ui.IActionDelegate2#runWithEvent(org.eclipse.jface.action.IAction, org.eclipse.swt.widgets.Event)
      */
     public void runWithEvent(IAction action, Event event) {
+        run(action);
     }
+    
 }

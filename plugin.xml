@@ -854,7 +854,7 @@ ${cursor}
                icon="icons/wrap.gif"
                id="net.sourceforge.texlipse.actions.texWordWrap"
                label="W&amp;rap text"
-               menubarPath="net.sourceforge.texlipse.menus.latex/commentGroup"
+               menubarPath="net.sourceforge.texlipse.menus.latex/latexGroup"
                style="toggle"
                toolbarPath="latexGroup"
                tooltip="Use word wrap"/>

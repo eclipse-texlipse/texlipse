@@ -95,13 +95,13 @@ public class TexParser {
     private void extractPreamble(String input) {
         // TODO still testing this
 
-        // (?:\r|\n|^)(?:(?:\\%|[^%])*(?:\\%|[^\\%]))?\\document(?:class|style)(?:\W|$)
-        Pattern docclass = Pattern.compile("(?:\\r|\\n|^)(?:(?:\\\\%|[^%])*(?:\\\\%|[^\\\\%]))?\\\\document(?:class|style)(?:\\W|$)");
+        // (?:\r|\n|^)(?:(?:\\%|[^%\r\n])*?(?:\\%|[^\\%]))?\\document(?:class|style)(?:\W|$)
+        Pattern docclass = Pattern.compile("(?:\\r|\\n|^)(?:(?:\\\\%|[^%\\r\\n])*?(?:\\\\%|[^\\\\%]))?\\\\document(?:class|style)(?:\\W|$)");
         Matcher m = docclass.matcher(input);
         if (m.find()) {
             
-            // (?:\r|\n|^)(?:(?:\\%|[^%])*(?:\\%|[^\\%]))?\\begin\s*\{document\}
-            Pattern begindoc = Pattern.compile("(?:\\r|\\n|^)(?:(?:\\\\%|[^%])*(?:\\\\%|[^\\\\%]))?\\\\begin\\s*\\{document\\}");
+            // (?:\r|\n|^)(?:(?:\\%|[^%\r\n])*?(?:\\%|[^\\%]))?\\begin\s*\{document\}
+            Pattern begindoc = Pattern.compile("(?:\\r|\\n|^)(?:(?:\\\\%|[^%\\r\\n])*?(?:\\\\%|[^\\\\%]))?\\\\begin\\s*\\{document\\}");
             Matcher m2 = begindoc.matcher(input);
             if (m2.find(m.end() - 1)) {
                 this.preamble = input.substring(0, m2.end());

@@ -171,13 +171,18 @@ public class LatexParserUtils {
     public final static int LEFT = 1;
 
     /**
-     * Checks whether the index is inside a comment
+     * Checks whether index is inside a comment
      * @param input
      * @param index
      * @return 
      */
     private static boolean isInsideComment(ILatexText input, int index) {
-        int lastLine = input.lastIndexOf('\n', index); // FIXME screws up on Mac breaks
+        int lastCR = input.lastIndexOf('\r', index);
+        int lastLine = input.lastIndexOf('\n', index);
+        if (lastCR > lastLine) {
+            //Mac
+            lastLine = lastCR;
+        }
         int lastComment = input.lastIndexOf('%', index);
         // Check for a comment (>= because of -1)
         if (lastLine >= lastComment)

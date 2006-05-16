@@ -14,6 +14,8 @@ import java.io.PushbackReader;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import net.sourceforge.texlipse.model.OutlineNode;
 import net.sourceforge.texlipse.model.ParseErrorMessage;
@@ -35,21 +37,15 @@ import org.eclipse.jface.text.IRegion;
  */
 public class TexParser {
 
-    protected IDocument inputDoc;
-    protected LatexParser lparser;
+    private IDocument inputDoc;
+    private LatexParser lparser;
 //    private LatexLexer llexer;
     
-    protected ArrayList errors;
-    protected boolean fatalErrors;
+    private ArrayList errors;
+    private boolean fatalErrors;
     
-    protected String preamble;
+    private String preamble;
 
-    /**
-     * Constructor used only by extending classes.
-     */
-    protected TexParser() {
-    }
-    
     /**
      * @param input The string representing the document to parse
      */
@@ -76,7 +72,7 @@ public class TexParser {
      * @param input The document to process
      * @return The document with trailing whitespace removed
      */
-    protected String rmTrailingWhitespace(String input) {
+    private String rmTrailingWhitespace(String input) {
         int lastChar = input.length() - 1;
         while (lastChar >= 0 && Character.isWhitespace(input.charAt(lastChar)))
             lastChar--;
@@ -96,15 +92,33 @@ public class TexParser {
      * 
      * @param input The document
      */
-    protected void extractPreamble(String input) {
-        // actually we should also check the order of these etc.
-        // (?:^|[^\\])\\document(?:class|style)
-        //if (input.indexOf("\\documentclass") == -1) {
-        if (LatexParserUtils.findCommand(input, "\\documentclass", 0) == -1
-                && LatexParserUtils.findCommand(input, "\\documentstyle", 0) == -1) {
-            this.preamble = null;
-            return;
+    private void extractPreamble(String input) {
+        // TODO still testing this
+
+        // (?:\r|\n|^)(?:(?:\\%|[^%])*(?:\\%|[^\\%]))?\\document(?:class|style)(?:\W|$)
+        Pattern docclass = Pattern.compile("(?:\\r|\\n|^)(?:(?:\\\\%|[^%])*(?:\\\\%|[^\\\\%]))?\\\\document(?:class|style)(?:\\W|$)");
+        Matcher m = docclass.matcher(input);
+        if (m.find()) {
+            
+            // (?:\r|\n|^)(?:(?:\\%|[^%])*(?:\\%|[^\\%]))?\\begin\s*\{document\}
+            Pattern begindoc = Pattern.compile("(?:\\r|\\n|^)(?:(?:\\\\%|[^%])*(?:\\\\%|[^\\\\%]))?\\\\begin\\s*\\{document\\}");
+            Matcher m2 = begindoc.matcher(input);
+            if (m2.find(m.end() - 1)) {
+                this.preamble = input.substring(0, m2.end());
+                return;
+            }
         }
+        this.preamble = null;
+        return;
+        
+        //if (input.indexOf("\\documentclass") == -1) {
+//        if (LatexParserUtils.findCommand(input, "\\documentclass", 0) == -1
+//                && LatexParserUtils.findCommand(input, "\\documentstyle", 0) == -1) {
+//            this.preamble = null;
+//            return;
+//        }
+        
+
         
 //        // finds \begin {document} starting index
 //        int startDocIdx = input.indexOf("{document}");
@@ -119,11 +133,11 @@ public class TexParser {
 //        }
 //        this.preamble = input + "\\begin{document}";
         
-        IRegion region = LatexParserUtils.findBeginEnvironment(input, "document", 0);
-        if (region != null) {
-            this.preamble = input.substring(0, region.getOffset() + region.getLength());
-        } else
-            this.preamble = input;
+//        IRegion region = LatexParserUtils.findBeginEnvironment(input, "document", 0);
+//        if (region != null) {
+//            this.preamble = input.substring(0, region.getOffset() + region.getLength());
+//        } else
+//            this.preamble = input;
     }
 
     

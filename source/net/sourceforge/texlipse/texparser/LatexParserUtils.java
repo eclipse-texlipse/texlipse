@@ -28,10 +28,10 @@ public class LatexParserUtils {
     /**
      * This is a short interface which implements all methods
      * which are needed for our textsearch
+     * 
      * @author Boris von Loesch
-     *
      */
-    interface ILatexText {
+    private interface ILatexText {
         int length();
         char charAt (int offset) throws BadLocationException;
         int indexOf (String search, int fromIndex);
@@ -44,7 +44,7 @@ public class LatexParserUtils {
      * Wrapper class for IDocument
      *
      */
-    public static class DocumentLatexText implements ILatexText{
+    private static class DocumentLatexText implements ILatexText{
         IDocument fDocument;
         FindReplaceDocumentAdapter fFindReplace;
         
@@ -129,7 +129,7 @@ public class LatexParserUtils {
      * Wrapper class for String
      *
      */
-    public static class StringLatexText implements ILatexText{
+    private static class StringLatexText implements ILatexText{
         String fString;
         
         StringLatexText(String string) {
@@ -176,8 +176,8 @@ public class LatexParserUtils {
      * @param index
      * @return 
      */
-    public static boolean isInsideComment (ILatexText input, int index) {
-        int lastLine = input.lastIndexOf('\n', index);
+    private static boolean isInsideComment(ILatexText input, int index) {
+        int lastLine = input.lastIndexOf('\n', index); // FIXME screws up on Mac breaks
         int lastComment = input.lastIndexOf('%', index);
         // Check for a comment (>= because of -1)
         if (lastLine >= lastComment)
@@ -199,11 +199,11 @@ public class LatexParserUtils {
         return true;
     }
 
-    public static boolean isInsideComment (String input, int index) {
+    public static boolean isInsideComment(String input, int index) {
         return isInsideComment(new StringLatexText(input), index);
     }
     
-    public static boolean isInsideComment (IDocument input, int index) {
+    public static boolean isInsideComment(IDocument input, int index) {
         return isInsideComment(new DocumentLatexText(input), index);
     }
 
@@ -241,7 +241,7 @@ public class LatexParserUtils {
      * @return The position of the command, or -1 if the command is not
      *         contained in the String
      */
-    public static int findCommand(ILatexText input, String command, int fromIndex) {
+    private static int findCommand(ILatexText input, String command, int fromIndex) {
         int pos = input.indexOf(command, fromIndex);
         while (pos != -1) {
             try {
@@ -274,7 +274,7 @@ public class LatexParserUtils {
      * @return The position of the command, or -1 if the command is not
      *         contained in the String
      */
-    public static int findLastCommand(ILatexText input, String command, int fromIndex) {
+    private static int findLastCommand(ILatexText input, String command, int fromIndex) {
         int pos = input.lastIndexOf(command, fromIndex);
         while (pos != -1) {
             try {
@@ -312,7 +312,8 @@ public class LatexParserUtils {
      * @return index of the matching closing character, or -1 if the search
      *         failed
      */
-    public static int findPeerChar(ILatexText input, int offset, int anchor, char opening, char closing) {
+    private static int findPeerChar(ILatexText input,
+            int offset, int anchor, char opening, char closing) {
         int stack = 1, index;
         index = offset;
         while (stack > 0) {
@@ -357,7 +358,7 @@ public class LatexParserUtils {
      * @return The argument without braces, null if there is no valid argument
      * @throws BadLocationException if index is out of bounds
      */
-    public static IRegion getCommandArgument(ILatexText input, int index) throws BadLocationException{
+    private static IRegion getCommandArgument(ILatexText input, int index) throws BadLocationException{
         int pos = index;
         if (input.charAt(index) == '\\')
             pos++;
@@ -412,7 +413,7 @@ public class LatexParserUtils {
      * @param fromIndex The index from which to start the search
      * @return
      */
-    public static IRegion findBeginEnvironment(ILatexText input, String envName, int fromIndex) {
+    private static IRegion findBeginEnvironment(ILatexText input, String envName, int fromIndex) {
         return getEnvironment(input, envName, "\\begin", fromIndex);
     }
 
@@ -431,7 +432,7 @@ public class LatexParserUtils {
      * @param fromIndex The index from which to start the search
      * @return
      */
-    public static IRegion findEndEnvironment(ILatexText input, String envName, int fromIndex) {
+    private static IRegion findEndEnvironment(ILatexText input, String envName, int fromIndex) {
         return getEnvironment(input, envName, "\\end", fromIndex);
     }
 

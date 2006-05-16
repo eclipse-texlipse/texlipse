@@ -35,7 +35,8 @@ public class TexEditorTools extends DefaultIndentLineAutoEditStrategy {
     /**
      * Matches some simple LaTeX -commands
      */
-    private static Pattern simpleCommandPattern = Pattern.compile("\\\\[a-zA-Z]+\\s*\\{.*?\\}\\s*");
+    private static final Pattern simpleCommandPattern =
+        Pattern.compile("\\\\([a-zA-Z]+)\\s*\\{(.*?)\\}\\s*");
     
     public TexEditorTools() {
     }
@@ -292,7 +293,12 @@ public class TexEditorTools extends DefaultIndentLineAutoEditStrategy {
         }
         return delimiter == null ? "\n" : delimiter;
 	}
-
+    
+    
+    public String getLineDelimiter(IDocument document) {
+        return getLineDelimiter(document, null);
+    }
+    
 	/**
 	 * Checks the first character of command.text is ' ' or '\t'.
 	 * @param command 	DocumentCommand that is checked.
@@ -645,4 +651,52 @@ public class TexEditorTools extends DefaultIndentLineAutoEditStrategy {
         
         return indentation.toString();
     }
+    
+    public String wrapWordString(String input, String indent, int width, String delim) {
+        String[] words = input.split("\\s");
+        if (input.length() == 0 || words.length == 0) {
+            return "";
+        }
+        StringBuffer sbout = new StringBuffer(indent);
+        sbout.append(words[0]);
+        int currLength = indent.length() + words[0].length();
+        for (int j = 1; j < words.length; j++) {
+            if (words[j].length() + currLength <= width) {
+                sbout.append(" ");
+                sbout.append(words[j]);
+                currLength += 1 + words[j].length(); 
+            } else {
+                sbout.append(delim);
+                sbout.append(indent);
+                sbout.append(words[j]);
+                currLength = indent.length() + words[j].length();
+            }
+        }
+        sbout.append(delim);
+        return sbout.toString();
+    }
+
+    public String[] getEnvCommandArg(String text) {
+        String txt = text.trim();
+        Matcher m = simpleCommandPattern.matcher(txt);
+        while (m.find()) {
+            if ("begin".equals(m.group(1)) || "end".equals(m.group(1))) {
+                return new String[] {m.group(1), m.group(2)};
+            }
+        }
+        return new String[] {"", ""};
+    }
+
+    public String getNewlinesAtEnd(String text, String delim) {
+        StringBuffer sb = new StringBuffer();
+        for (int i = text.length() - delim.length(); i >= 0; i -= delim.length()) {
+            if (text.regionMatches(i, delim, 0, delim.length())) {
+                sb.append(delim);
+            } else {
+                break;
+            }
+        }
+        return sb.toString();
+    }
+    
 }

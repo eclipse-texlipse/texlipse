@@ -9,6 +9,9 @@
  */
 package net.sourceforge.texlipse.actions;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import net.sourceforge.texlipse.TexlipsePlugin;
 import net.sourceforge.texlipse.editor.TexEditor;
 import net.sourceforge.texlipse.editor.TexEditorTools;
@@ -38,6 +41,18 @@ public class TexHardLineWrapAction implements IEditorActionDelegate {
     private TexEditorTools tools;
     //private static TexSelections selection;
     
+    private static Set environmentsToProcess = new HashSet();
+    
+    static {
+        environmentsToProcess.add("document");
+    }
+    
+    
+    public TexHardLineWrapAction() {
+        this.tools = new TexEditorTools();
+    }
+
+
     /**
      * From what editot the event will come.
      * @param action 		not used in this method, can also be </code>null</code>
@@ -57,11 +72,10 @@ public class TexHardLineWrapAction implements IEditorActionDelegate {
      */
     public void run(IAction action) {
         this.lineLength = TexlipsePlugin.getDefault().getPreferenceStore().getInt(TexlipseProperties.WORDWRAP_LENGTH);
-        this.tabWidth   = TexlipsePlugin.getDefault().getPreferenceStore().getInt(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_TAB_WIDTH);
+        this.tabWidth = TexlipsePlugin.getDefault().getPreferenceStore().getInt(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_TAB_WIDTH);
         TexSelections selection = new TexSelections(getTexEditor());
-        this.tools = new TexEditorTools();
         try {
-            doWrap(selection);
+            doWrapB(selection);
         } catch(BadLocationException e) {
             TexlipsePlugin.log("TexCorrectIndentationAction.run", e);
         }
@@ -183,12 +197,12 @@ public class TexHardLineWrapAction implements IEditorActionDelegate {
                     buff.append(delimiter);
             }
         }
-        document.replace(selection.getTextSelection().getOffset(),
-                selection.getSelLength(),
-                buff.toString());
-//        document.replace(document.getLineOffset(selection.getStartLineIndex()),
+//        document.replace(selection.getTextSelection().getOffset(),
 //                selection.getSelLength(),
 //                buff.toString());
+        document.replace(document.getLineOffset(selection.getStartLineIndex()),
+                selection.getSelLength(),
+                buff.toString());
     }
     
     /**
@@ -210,4 +224,117 @@ public class TexHardLineWrapAction implements IEditorActionDelegate {
         }
         return rv;
     }
+    
+    // testing
+    
+    private void doWrapB(TexSelections selection) throws BadLocationException {
+        selection.selectParagraph();
+        String delimiter = tools.getLineDelimiter(selection.getDocument());
+        IDocument document = selection.getDocument();
+        // FIXME complete selection just returns the current line
+        //String[] lines = selection.getCompleteSelection().split(delimiter);
+        String[] lines = document.get(document.getLineOffset(selection.getStartLineIndex()), selection.getSelLength()).split(delimiter);
+        if (lines.length == 0) {
+            return;
+        }
+        // FIXME doc.get
+        String endNewlines = tools.getNewlinesAtEnd(document.get(document.getLineOffset(selection.getStartLineIndex()), selection.getSelLength()),
+                delimiter);
+        
+        StringBuffer newText = new StringBuffer();
+        TextWrapper wrapper = new TextWrapper(tools, delimiter);
+        
+        boolean inEnvironment = false;
+        String environment = "";
+        
+        String indentation = "";
+        String newIndentation;
+        
+        for (int index = 0; index < lines.length; index++) {
+            String trimmedLine = lines[index].trim(); 
+
+            if (tools.isLineCommandLine(trimmedLine) || inEnvironment) {
+                // command lines or environments -> don't wrap them
+                
+                newText.append(wrapper.loadWrapped(indentation));
+                newText.append(lines[index]);
+                newText.append(delimiter);
+                
+                // TODO this will not find a match in case begins and ends
+                // are scattered on one line
+                String[] command = tools.getEnvCommandArg(trimmedLine);
+                if (!environmentsToProcess.contains(command[1])) {
+                    if ("begin".equals(command[0]) && !inEnvironment) {
+                        inEnvironment = true;
+                        environment = command[1];
+                    } else if ("end".equals(command[0])
+                            && inEnvironment
+                            && environment.equals(command[0])) {
+                        inEnvironment = false;
+                        environment = "";
+                    }
+                }
+            } else if (trimmedLine.length() == 0
+                    || trimmedLine.endsWith("\\\\")) {
+                // empty lines or forced breaks -> don't wrap them
+                
+                newText.append(wrapper.loadWrapped(indentation));
+                newText.append(lines[index]);
+                newText.append(delimiter);
+            } else {
+                // normal paragraphs -> buffer and wrap
+                
+                if (tools.isLineCommentLine(trimmedLine)) {
+                    newIndentation = tools.getIndentationWithComment(lines[index]);
+                    trimmedLine = trimmedLine.substring(1).trim(); // FIXME remove all % signs
+                } else {
+                    newIndentation = tools.getIndentation(lines[index], tabWidth);
+                }
+                if (!indentation.equals(newIndentation)) {
+                    newText.append(wrapper.loadWrapped(indentation));
+                }
+                indentation = newIndentation;
+                wrapper.storeUnwrapped(trimmedLine);
+            }
+        }
+        // empty the buffer
+        newText.append(wrapper.loadWrapped(indentation));
+
+        // put old delims here
+        newText.deleteCharAt(newText.length() - 1);
+        newText.append(endNewlines);
+        
+//        selection.getDocument().replace(selection.getTextSelection().getOffset(),
+//                selection.getSelLength(),
+//                newText.toString());
+        
+        document.replace(document.getLineOffset(selection.getStartLineIndex()),
+                selection.getSelLength(),
+                newText.toString());
+    }
+    
+    private class TextWrapper {
+    
+        private StringBuffer tempBuf = new StringBuffer();
+        private TexEditorTools tools;
+        private String delimiter;
+        
+        TextWrapper(TexEditorTools tet, String delim) {
+            this.tools = tet;
+            this.delimiter = delim;
+        }
+        
+        private void storeUnwrapped(String s) {
+            tempBuf.append(s);
+            tempBuf.append(" ");
+        }
+        
+        private String loadWrapped(String indentation) {
+            String wrapped = tools.wrapWordString(tempBuf.toString(),
+                    indentation, lineLength, delimiter);
+            tempBuf = new StringBuffer();
+            return wrapped;
+        }
+    }
+    
 }

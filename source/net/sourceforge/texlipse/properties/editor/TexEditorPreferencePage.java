@@ -26,7 +26,7 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
-import org.eclipse.ui.help.WorkbenchHelp;
+import org.eclipse.ui.help.IWorkbenchHelpSystem;
 
 
 /**
@@ -50,6 +50,8 @@ public class TexEditorPreferencePage
     // auto parsing delay limits
     private static final int MAX_AUTO_DELAY = 30000;
     private static final int MIN_AUTO_DELAY = 0;
+    
+    private IWorkbench workbench;
     
     /**
      * Creates the preference page.
@@ -78,18 +80,31 @@ public class TexEditorPreferencePage
         //TexlipsePreferencePage.addSpacer(getFieldEditorParent());
         
         // auto \item completion
-        addField(new BooleanFieldEditor(TexlipseProperties.TEX_ITEM_COMLETION, TexlipsePlugin.getResourceString("preferenceTexItemCompletion"), getFieldEditorParent()));
-        Label itemLabel = new Label(getFieldEditorParent(),SWT.LEFT | SWT.WRAP);
+        addField(new BooleanFieldEditor(TexlipseProperties.TEX_ITEM_COMPLETION,
+                TexlipsePlugin.getResourceString("preferenceTexItemCompletion"),
+                getFieldEditorParent()));
+        Label itemLabel = new Label(getFieldEditorParent(), SWT.LEFT | SWT.WRAP);
         itemLabel.setText(TexlipsePlugin.getResourceString("preferenceTexItemCompletionText"));        
         //TexlipsePreferencePage.addSpacer(getFieldEditorParent());
                 
         // auto parsing
-        addField(new BooleanFieldEditor(TexlipseProperties.AUTO_PARSING, TexlipsePlugin.getResourceString("preferenceAutoParsing"), getFieldEditorParent()));
-        String autoParsingMessage = TexlipsePlugin.getResourceString("preferenceAutoParsingDelay").replaceFirst("%1", "" + MIN_AUTO_DELAY).replaceFirst("%2", "" + MAX_AUTO_DELAY);
-        IntegerFieldEditor autoDelay = new IntegerFieldEditor(TexlipseProperties.AUTO_PARSING_DELAY, autoParsingMessage, getFieldEditorParent());
+        addField(new BooleanFieldEditor(TexlipseProperties.AUTO_PARSING,
+                TexlipsePlugin.getResourceString("preferenceAutoParsing"),
+                getFieldEditorParent()));
+        String autoParsingMessage = TexlipsePlugin.getResourceString(
+                "preferenceAutoParsingDelay").replaceFirst("%1",
+                "" + MIN_AUTO_DELAY).replaceFirst("%2", "" + MAX_AUTO_DELAY);
+        IntegerFieldEditor autoDelay = new IntegerFieldEditor(TexlipseProperties.AUTO_PARSING_DELAY,
+                autoParsingMessage, getFieldEditorParent());
         autoDelay.setValidateStrategy(IntegerFieldEditor.VALIDATE_ON_KEY_STROKE);
         autoDelay.setValidRange(MIN_AUTO_DELAY, MAX_AUTO_DELAY);
         addField(autoDelay);
+        
+        // Check for missing sections
+        addField(new BooleanFieldEditor(TexlipseProperties.SECTION_CHECK,
+                TexlipsePlugin.getResourceString("preferenceSectionCheck"),
+                getFieldEditorParent()));
+
         TexlipsePreferencePage.addSpacer(getFieldEditorParent());
         
         // word wrapping
@@ -111,7 +126,11 @@ public class TexEditorPreferencePage
         wordWrapLength.setValidateStrategy(IntegerFieldEditor.VALIDATE_ON_KEY_STROKE);
         wordWrapLength.setValidRange(MIN_WRAP_LENGTH, MAX_WRAP_LENGTH);
         addField(wordWrapLength);
-        WorkbenchHelp.setHelp(wordWrapLength.getTextControl(wordWrapParent), TexlipseHelpIds.WRAP_LENGTH);
+        
+        IWorkbenchHelpSystem helpsystem = workbench.getHelpSystem();
+        helpsystem.setHelp(wordWrapLength.getTextControl(wordWrapParent), TexlipseHelpIds.WRAP_LENGTH);
+        
+        //WorkbenchHelp.setHelp(wordWrapLength.getTextControl(wordWrapParent), TexlipseHelpIds.WRAP_LENGTH);
         
         TexlipsePreferencePage.addSpacer(wordWrapParent);
         Label label = new Label(wordWrapParent, SWT.LEFT | SWT.WRAP);
@@ -151,6 +170,7 @@ public class TexEditorPreferencePage
      * @param workbench the workbench
      */
 	public void init(IWorkbench workbench) {
+        this.workbench = workbench;
         // nothing to do
 	}
 }

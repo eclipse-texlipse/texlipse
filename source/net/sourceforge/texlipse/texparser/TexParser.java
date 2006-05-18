@@ -146,8 +146,10 @@ public class TexParser {
      * 
      * @throws IOException
      */
-    public void parseDocument(ReferenceContainer labels, ReferenceContainer bibs) throws IOException {
-        parseDocument(labels, bibs, inputDoc.get());
+    public void parseDocument(ReferenceContainer labels,
+            ReferenceContainer bibs,
+            boolean checkForMissingSections) throws IOException {
+        parseDocument(labels, bibs, inputDoc.get(), checkForMissingSections);
     }
     
     /**
@@ -155,7 +157,10 @@ public class TexParser {
      * 
      * @throws IOException
      */
-    public void parseDocument(ReferenceContainer labels, ReferenceContainer bibs, String input) throws IOException {
+    public void parseDocument(ReferenceContainer labels,
+            ReferenceContainer bibs,
+            String input,
+            boolean checkForMissingSections) throws IOException {
         
         // remove trailing ws (this is because a discrepancy in the lexer's 
         // and IDocument's line counting for trailing whitespace)
@@ -171,9 +176,9 @@ public class TexParser {
                 OutlineNode on = new OutlineNode("Preamble",
                         OutlineNode.TYPE_PREAMBLE,
                         1, null);
-                lparser.parse(lexer, labels, bibs, on);
+                lparser.parse(lexer, labels, bibs, on, checkForMissingSections);
             } else {
-                lparser.parse(lexer, labels, bibs);
+                lparser.parse(lexer, labels, bibs, checkForMissingSections);
             }
             this.errors = lparser.getErrors();
             this.fatalErrors = lparser.isFatalErrors();

@@ -64,9 +64,9 @@ public class TexAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
                     .getPreferenceStore().getInt(TexlipseProperties.WORDWRAP_LENGTH);
                     //setLineLength(ll);
                 }
-                if (TexlipseProperties.TEX_ITEM_COMLETION.equals(ev)) {
+                if (TexlipseProperties.TEX_ITEM_COMPLETION.equals(ev)) {
                     autoItem = TexlipsePlugin.getDefault().getPreferenceStore()
-                    .getBoolean(TexlipseProperties.TEX_ITEM_COMLETION);
+                    .getBoolean(TexlipseProperties.TEX_ITEM_COMPLETION);
                 }
                 if (TexlipseProperties.INDENTATION_LEVEL.equals(ev)
                         || TexlipseProperties.INDENTATION.equals(ev)
@@ -107,7 +107,7 @@ public class TexAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
         lineLength = TexlipsePlugin.getDefault().getPreferenceStore()
         .getInt(TexlipseProperties.WORDWRAP_LENGTH);
         autoItem = TexlipsePlugin.getDefault().getPreferenceStore()
-        .getBoolean(TexlipseProperties.TEX_ITEM_COMLETION);
+        .getBoolean(TexlipseProperties.TEX_ITEM_COMPLETION);
     }
     
     /*

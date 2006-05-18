@@ -209,9 +209,10 @@ public class LatexParser {
      */
     public void parse(LatexLexer lex,
             ReferenceContainer definedLabels,
-            ReferenceContainer definedBibs)
+            ReferenceContainer definedBibs,
+            boolean checkForMissingSections)
     throws LexerException, IOException {
-        parse(lex, definedLabels, definedBibs, null);
+        parse(lex, definedLabels, definedBibs, null, checkForMissingSections);
     }
 
     /**
@@ -231,7 +232,8 @@ public class LatexParser {
     public void parse(LatexLexer lexer,
             ReferenceContainer definedLabels,
             ReferenceContainer definedBibs,
-            OutlineNode preamble)
+            OutlineNode preamble,
+            boolean checkForMissingSections)
     throws LexerException, IOException {
         initializeDatastructs();
         StackUnsynch blocks = new StackUnsynch();
@@ -494,7 +496,7 @@ public class LatexParser {
                         if (blocks.empty())
                             outlineTree.add(on);
                         
-                        if (!foundSection) {
+                        if (!foundSection && checkForMissingSections) {
                             errors.add(new ParseErrorMessage(prevToken.getLine(),
                                     prevToken.getPos(),
                                     prevToken.getText().length() + accumulatedLength + t.getText().length(),
@@ -536,7 +538,7 @@ public class LatexParser {
                         if (blocks.empty())
                             outlineTree.add(on);
                         
-                        if (!foundSsection) {
+                        if (!foundSsection && checkForMissingSections) {
                             errors.add(new ParseErrorMessage(prevToken.getLine(),
                                     prevToken.getPos(),
                                     prevToken.getText().length() + accumulatedLength + t.getText().length(),
@@ -581,7 +583,7 @@ public class LatexParser {
                         if (blocks.empty())
                             outlineTree.add(on);
                         
-                        if (!foundSssection) {
+                        if (!foundSssection && checkForMissingSections) {
                             errors.add(new ParseErrorMessage(prevToken.getLine(),
                                     prevToken.getPos(),
                                     prevToken.getText().length() + accumulatedLength + t.getText().length(),

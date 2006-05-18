@@ -77,11 +77,12 @@ public class TexlipseProperties {
     public static final String TEX_COMPLETION = "texCompletion";
     public static final String TEX_COMPLETION_DELAY = "texDelay";
 
-    public static final String TEX_ITEM_COMLETION = "texItemCompletion"; 
-    public static final String TEX_ITEM_COMLETION_VALUE = "true";
-        
+    public static final String TEX_ITEM_COMPLETION = "texItemCompletion"; 
+    
     public static final String AUTO_PARSING = "autoParsing";
     public static final String AUTO_PARSING_DELAY = "autoParsingDelay";
+    
+    public static final String SECTION_CHECK = "sectionCheck";
     
     public static final String BIB_COMPLETION = "bibCompletion";
     public static final String BIB_COMPLETION_DELAY = "bibDelay";

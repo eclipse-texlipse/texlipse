@@ -94,6 +94,7 @@ public class TexlipsePreferenceInitializer extends
         pref.setDefault(TexlipseProperties.TEX_COMPLETION_DELAY, 500);
         pref.setDefault(TexlipseProperties.AUTO_PARSING, true);
         pref.setDefault(TexlipseProperties.AUTO_PARSING_DELAY, 2000);
+        pref.setDefault(TexlipseProperties.SECTION_CHECK, true);
         
         pref.setDefault(TexlipseProperties.BIB_CODE_FOLDING, true);
         pref.setDefault(TexlipseProperties.BIB_FOLD_INITIAL, false);
@@ -118,7 +119,7 @@ public class TexlipsePreferenceInitializer extends
         pref.setDefault(TexlipseProperties.WORDWRAP_LENGTH, 80);
         pref.setDefault(TexlipseProperties.WORDWRAP_TYPE, TexlipseProperties.WORDWRAP_TYPE_HARD);
         pref.setDefault(TexlipseProperties.WORDWRAP_DEFAULT, true);
-        pref.setDefault(TexlipseProperties.TEX_ITEM_COMLETION, true);
+        pref.setDefault(TexlipseProperties.TEX_ITEM_COMPLETION, true);
         
         pref.setDefault(TexlipseProperties.SMART_BACKSPACE, true);
         pref.setDefault(TexlipseProperties.SMART_PARENS, true);

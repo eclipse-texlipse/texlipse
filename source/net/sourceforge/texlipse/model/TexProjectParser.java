@@ -120,7 +120,7 @@ public class TexProjectParser {
         if (this.parser == null) {
             this.parser = new TexParser(null);
         }
-        this.parser.parseDocument(labels, bibs, input);
+        this.parser.parseDocument(labels, bibs, input, false);
     }
 
     /**

@@ -225,6 +225,7 @@ public class TexDocumentModel implements IDocumentListener {
     // preferences
     private int parseDelay;
     private boolean autoParseEnabled;
+    private boolean sectionCheckEnabled;
     
     /**
      * Constructs a new document model.
@@ -242,9 +243,10 @@ public class TexDocumentModel implements IDocumentListener {
         postParseJob.setPriority(Job.DECORATE); 
     
         // get preferences
-        this.autoParseEnabled = TexlipsePlugin.getDefault().getPreferenceStore().getBoolean(TexlipseProperties.AUTO_PARSING);
         this.parseDelay = TexlipsePlugin.getDefault().getPreferenceStore().getInt(TexlipseProperties.AUTO_PARSING_DELAY);
-    
+        this.autoParseEnabled = TexlipsePlugin.getDefault().getPreferenceStore().getBoolean(TexlipseProperties.AUTO_PARSING);
+        this.sectionCheckEnabled = TexlipsePlugin.getDefault().getPreferenceStore().getBoolean(TexlipseProperties.SECTION_CHECK);
+        
         // add preference change listener
 		TexlipsePlugin.getDefault().getPreferenceStore()
                 .addPropertyChangeListener(new IPropertyChangeListener() {
@@ -255,7 +257,9 @@ public class TexDocumentModel implements IDocumentListener {
 		            autoParseEnabled = TexlipsePlugin.getDefault().getPreferenceStore().getBoolean(TexlipseProperties.AUTO_PARSING);
 		        } else if (TexlipseProperties.AUTO_PARSING_DELAY.equals(property)) {
 		            parseDelay = TexlipsePlugin.getDefault().getPreferenceStore().getInt(TexlipseProperties.AUTO_PARSING_DELAY);
-		        }
+		        } else if (TexlipseProperties.SECTION_CHECK.equals(property)) {
+                    sectionCheckEnabled = TexlipsePlugin.getDefault().getPreferenceStore().getBoolean(TexlipseProperties.SECTION_CHECK);
+                }
 		    }	
 		});	
     }
@@ -415,7 +419,7 @@ public class TexDocumentModel implements IDocumentListener {
         }
         
         try {
-            parser.parseDocument(labelContainer, bibContainer);
+            parser.parseDocument(labelContainer, bibContainer, sectionCheckEnabled);
         } catch (IOException e) {
             TexlipsePlugin.log("Can't read file.", e);
             throw new TexDocumentParseException(e);
@@ -429,10 +433,7 @@ public class TexDocumentModel implements IDocumentListener {
         // somewhat inelegantly ensures that errors marked in createProjectDatastructs()
         // aren't removed immediately
         if (!firstRun) {
-            // The full outline already clears these
-            //if (editor.getFullOutline() == null) {
             marker.clearErrorMarkers(editor);
-            //}
             marker.clearTaskMarkers(editor);
         } else {
             firstRun = false;

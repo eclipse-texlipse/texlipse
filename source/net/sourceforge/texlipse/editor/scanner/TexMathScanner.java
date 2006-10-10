@@ -20,8 +20,10 @@ import org.eclipse.jface.text.rules.EndOfLineRule;
 import org.eclipse.jface.text.rules.IRule;
 import org.eclipse.jface.text.rules.IToken;
 import org.eclipse.jface.text.rules.RuleBasedScanner;
+import org.eclipse.jface.text.rules.SingleLineRule;
 import org.eclipse.jface.text.rules.Token;
 import org.eclipse.jface.text.rules.WhitespaceRule;
+import org.eclipse.jface.text.rules.WordRule;
 
 
 /**
@@ -31,6 +33,7 @@ import org.eclipse.jface.text.rules.WhitespaceRule;
  * characters are presented.
  *  @see net.sourceforge.texlipse.editor.TexPartitionScanner
  *  @author Antti Pirinen
+ *  @author Boris von Loesch
  */ 
 public class TexMathScanner extends RuleBasedScanner {
     
@@ -40,18 +43,40 @@ public class TexMathScanner extends RuleBasedScanner {
      * @param editor
      */
     public TexMathScanner(ColorManager manager, TexEditor editor) {
+        IToken defaultToken = new Token(
+                new TextAttribute(
+                        manager.getColor(ColorManager.EQUATION),
+                        null,
+                        manager.getStyle(ColorManager.EQUATION_STYLE)));
+
         IToken commentToken = new Token(
                 new TextAttribute(
                         manager.getColor(ColorManager.COMMENT),
                         null,
                         manager.getStyle(ColorManager.COMMENT_STYLE)));
 
+        //Commands are colored in math color with command styles 
+        IToken commandToken = new Token(
+                new TextAttribute(
+                        manager.getColor(ColorManager.EQUATION),
+                        null,
+                        manager.getStyle(ColorManager.COMMAND_STYLE)));
+        // A token that defines how to color special characters (\_, \&, \~ ...)
+        IToken specialCharToken = new Token(new TextAttribute(manager
+                .getColor(ColorManager.TEX_SPECIAL),
+                null,
+                manager.getStyle(ColorManager.TEX_SPECIAL_STYLE)));
         
         List rules = new ArrayList();
         
         rules.add(new WhitespaceRule(new WhitespaceDetector()));
-        rules.add(new EndOfLineRule("%",commentToken));
+        rules.add(new SingleLineRule("\\%", " ", specialCharToken));
+        rules.add(new EndOfLineRule("%", commentToken));
         rules.add(new TexEnvironmentRule("comment", commentToken));
+        rules.add(new SingleLineRule("\\[", " ", defaultToken));
+        rules.add(new SingleLineRule("\\]", " ", defaultToken));
+        rules.add(new TexSpecialCharRule(specialCharToken));
+        rules.add(new WordRule(new TexWord(), commandToken));
         
         IRule[] result = new IRule[rules.size()];
         rules.toArray(result);

@@ -24,7 +24,8 @@ import org.eclipse.jface.text.rules.SingleLineRule;
 import org.eclipse.jface.text.rules.Token;
 
 /**
- * 
+ * This is the default PartitionScanner which partions the document
+ * into different sections (e.g. normal tex, comments, verbatim, math environment)
  * @author Antti Pirinen
  * @author Boris von Loesch
  */
@@ -68,13 +69,13 @@ public class TexPartitionScanner extends RuleBasedPartitionScanner {
 
         rules.add(new SingleLineRule("\\\\[","]", Token.UNDEFINED));  //no math when using "\\[]" line breaks
 		
-		rules.add(new SingleLineRule("\\$", " ", Token.UNDEFINED)); // not a math equation \$
+        rules.add(new SingleLineRule("\\$", " ", Token.UNDEFINED)); // not a math equation \$
 
         //This bosh rule is necessary to fix a bug in RuleBasedPartitionScanner
 		rules.add(new TexEnvironmentRule("qqfdshfkhsd", false, math));
         rules.add(new MultiLineRule("\\[","\\]", math)); 
-        rules.add(new MultiLineRule("$$", "$$", math));
-        rules.add(new MultiLineRule("$", "$", math));
+        rules.add(new MultiLineRule("$$", "$$", math, '\\'));
+        rules.add(new MultiLineRule("$", "$", math, '\\'));
         rules.add(new TexEnvironmentRule("equation", true, math));
         rules.add(new TexEnvironmentRule("eqnarray", true, math));
         rules.add(new TexEnvironmentRule("math", false, math));

@@ -97,17 +97,18 @@ public class TexPairMatcher implements ICharacterPairMatcher {
             // Check for a backslash then it is no brace but a command
             if (offset > 0 && document.getChar(offset - 1) == '\\')
                 return null;
-
+            
+            String docString = document.get();
             int peerIndex;
             if ((index % 2) == 1) {
                 fAnchor = LatexParserUtils.RIGHT;
-                peerIndex = LatexParserUtils.findPeerChar(document, offset, fAnchor, pairs.charAt(index), 
+                peerIndex = LatexParserUtils.findPeerChar(docString, offset, fAnchor, pairs.charAt(index), 
                         pairs.charAt(index - 1));
                 if (peerIndex != -1)
                     return new Region(peerIndex, offset - peerIndex + 1);
             } else {
                 fAnchor = LatexParserUtils.LEFT;
-                peerIndex = LatexParserUtils.findPeerChar(document, offset, fAnchor, pairs.charAt(index), 
+                peerIndex = LatexParserUtils.findPeerChar(docString, offset, fAnchor, pairs.charAt(index), 
                         pairs.charAt(index + 1));
                 if (peerIndex != -1)
                     return new Region(offset, peerIndex - offset + 1);

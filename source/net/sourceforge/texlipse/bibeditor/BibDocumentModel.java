@@ -190,6 +190,7 @@ public class BibDocumentModel {
             */
             // This hack is needed because Eclipse doesn't allow us to get 
             // the offset of the last line in the document
+            if (entryList.isEmpty()) return;
             int lastLine = document.getNumberOfLines();
             ReferenceEntry rel = (ReferenceEntry) entryList.get(entryList.size() - 1);
             if (rel.endLine == lastLine) {

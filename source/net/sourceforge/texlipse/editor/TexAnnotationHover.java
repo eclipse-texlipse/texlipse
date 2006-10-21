@@ -18,8 +18,8 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.text.source.IAnnotationHover;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
-import org.eclipse.ui.editors.text.TextEditor;
 import org.eclipse.ui.texteditor.MarkerUtilities;
 
 /**
@@ -31,13 +31,13 @@ import org.eclipse.ui.texteditor.MarkerUtilities;
  */
 public class TexAnnotationHover implements IAnnotationHover {
     
-    private TextEditor editor;
+    private IEditorPart editor;
     
     /**
      * Create a new hover text provider.
      * @param edi the editor of the file
      */
-    public TexAnnotationHover(TextEditor edi) {
+    public TexAnnotationHover(IEditorPart edi) {
         editor = edi;
     }
 

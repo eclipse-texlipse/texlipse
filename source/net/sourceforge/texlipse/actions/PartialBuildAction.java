@@ -32,6 +32,7 @@ import org.eclipse.ui.part.FileEditorInput;
  * on the current project.
  * 
  * @author Kimmo Karlsson
+ * @author Boris von Loesch
  */
 public class PartialBuildAction implements IWorkbenchWindowActionDelegate, IEditorActionDelegate {
     
@@ -112,7 +113,11 @@ public class PartialBuildAction implements IWorkbenchWindowActionDelegate, IEdit
         editor = targetEditor;
         action.setEnabled(editor instanceof TexEditor);
         if (action.isEnabled()) {
-            IProject project = ((FileEditorInput)editor.getEditorInput()).getFile().getProject();
+            IProject project = ((TexEditor) editor).getProject();
+            if (project == null) {
+                action.setEnabled(false);
+                return;
+            }
             //System.out.println("partial-build-running-from");
             action.setChecked(TexlipseProperties.getProjectProperty(project, TexlipseProperties.PARTIAL_BUILD_PROPERTY) != null);
             run(action);

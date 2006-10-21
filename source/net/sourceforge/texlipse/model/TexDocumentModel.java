@@ -46,6 +46,7 @@ import org.eclipse.jface.text.IDocumentListener;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
+import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.progress.WorkbenchJob;
 
@@ -241,7 +242,6 @@ public class TexDocumentModel implements IDocumentListener {
         postParseJob = new PostParseJob("Updating");
         parseJob.setPriority(Job.DECORATE); 
         postParseJob.setPriority(Job.DECORATE); 
-    
         // get preferences
         this.parseDelay = TexlipsePlugin.getDefault().getPreferenceStore().getInt(TexlipseProperties.AUTO_PARSING_DELAY);
         this.autoParseEnabled = TexlipsePlugin.getDefault().getPreferenceStore().getBoolean(TexlipseProperties.AUTO_PARSING);
@@ -312,6 +312,7 @@ public class TexDocumentModel implements IDocumentListener {
      */
     public ReferenceManager getRefMana() {
         if (refMana == null) {
+            if (bibContainer == null) createReferenceContainers();
             refMana = new ReferenceManager(bibContainer,
                     labelContainer,
                     commandContainer);
@@ -389,6 +390,7 @@ public class TexDocumentModel implements IDocumentListener {
      */
     private void createProjectOutline() {
         IProject project = getCurrentProject();
+        if (project == null) return;
         Object projectSessionOutLine = TexlipseProperties.getSessionProperty(project,
                 TexlipseProperties.SESSION_PROJECT_FULLOUTLINE);
         if (projectSessionOutLine != null)
@@ -439,7 +441,7 @@ public class TexDocumentModel implements IDocumentListener {
             firstRun = false;
         }
 
-        if (editor.getFullOutline() != null) {
+        if (editor.getProject() != null && editor.getFullOutline() != null) {
             IResource res = (IResource) editor.getEditorInput().getAdapter(IResource.class);
             String fileName = res.getProjectRelativePath().toString();
             projectOutline.addOutline(parser.getOutlineTree(), fileName);
@@ -581,6 +583,8 @@ public class TexDocumentModel implements IDocumentListener {
     private void updateReferences(IProgressMonitor monitor) {
         this.updateLabels(parser.getLabels());
         this.updateCommands(parser.getCommands());
+        IProject project = getCurrentProject();
+        if (project == null) return;
         
         pollCancel(monitor);
         
@@ -592,7 +596,6 @@ public class TexDocumentModel implements IDocumentListener {
         
         pollCancel(monitor);
         
-        IProject project = getCurrentProject();
         IFile cFile = ((FileEditorInput) editor.getEditorInput()).getFile();
         //Only update Preamble, Bibstyle if main Document
         if (cFile.equals(TexlipseProperties.getProjectSourceFile(project))) {
@@ -629,7 +632,7 @@ public class TexDocumentModel implements IDocumentListener {
      */
     private void updateBibs(String[] bibNames, IResource resource) {        
         IProject project = getCurrentProject();
-        
+        if (project == null) return;
         for (int i=0; i < bibNames.length; i++)
             bibNames[i] += ".bib";
         
@@ -674,7 +677,8 @@ public class TexDocumentModel implements IDocumentListener {
      * @param labels
      */
     private void updateLabels(ArrayList labels) {
-        IResource resource = ((FileEditorInput)editor.getEditorInput()).getFile();
+        IResource resource = getFile();
+        if (resource == null) return;
         labelContainer.addRefSource(resource.getProjectRelativePath().toString(), labels);
         labelContainer.organize();
     }
@@ -684,7 +688,8 @@ public class TexDocumentModel implements IDocumentListener {
      * @param commands
      */
     private void updateCommands(ArrayList commands) {
-        IResource resource = ((FileEditorInput) editor.getEditorInput()).getFile();
+        IResource resource = getFile();
+        if (resource == null) return;
         if (commandContainer.addRefSource(resource.getProjectRelativePath().toString(), commands))
             commandContainer.organize();
     }
@@ -696,6 +701,12 @@ public class TexDocumentModel implements IDocumentListener {
     private void createReferenceContainers() {
         boolean parseAll = false;
         IProject project = getCurrentProject();
+        if (project == null) {
+            if (bibContainer == null) bibContainer = new ReferenceContainer();
+            if (labelContainer == null) labelContainer = new ReferenceContainer();
+            if (commandContainer == null) commandContainer = new TexCommandContainer();
+            return;
+        }
         ReferenceContainer bibCon = (ReferenceContainer) TexlipseProperties.getSessionProperty(project,
                 TexlipseProperties.BIBCONTAINER_PROPERTY);
         if (bibCon == null) {
@@ -803,10 +814,23 @@ public class TexDocumentModel implements IDocumentListener {
     }
     
     /**
-     * @return the current project
+     * @return the current file or null if the input is no file
+     * (e.g. repository entry)
+     */
+    
+    public IFile getFile(){
+        if (editor.getEditorInput() instanceof IFileEditorInput) {
+            return ((IFileEditorInput) editor.getEditorInput()).getFile();
+        }
+        return null;
+    }
+    
+    /**
+     * @return the current project or null if this file belongs to
+     * no project
      */
     private IProject getCurrentProject() {
-        return ((FileEditorInput)editor.getEditorInput()).getFile().getProject();
+        return editor.getProject();
     }
 
     /**

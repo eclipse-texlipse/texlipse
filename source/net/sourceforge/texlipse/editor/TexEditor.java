@@ -17,6 +17,8 @@ import net.sourceforge.texlipse.outline.TexOutlinePage;
 import net.sourceforge.texlipse.properties.TexlipseProperties;
 import net.sourceforge.texlipse.treeview.views.TexOutlineTreeView;
 
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -269,9 +271,9 @@ public class TexEditor extends TextEditor {
         }
         else if (view.getEditor().getEditorInput() instanceof IFileEditorInput) {
             IFileEditorInput oldInput = (IFileEditorInput) view.getEditor().getEditorInput();
-            IFileEditorInput newInput = (IFileEditorInput) this.getEditorInput();
+            IProject newProject = getProject();
             // Check whether the project changes
-            if (!oldInput.getFile().getProject().equals(newInput.getFile().getProject()))
+            if (!oldInput.getFile().getProject().equals(newProject))
                 projectChange = true;
         } else
             projectChange = true;
@@ -296,10 +298,18 @@ public class TexEditor extends TextEditor {
     
     public IDocument getTexDocument(){
         return this.getDocumentProvider().getDocument(getEditorInput());
-        
     } 
     
 //  E----------------------------------- mmaus
     
+    /**
+     * @return The project that belongs to the current file
+     * or null if it does not belong to any project
+     */
+    public IProject getProject() {
+        IResource res = (IResource) getEditorInput().getAdapter(IResource.class);
+        if (res == null) return null;
+        else return res.getProject();
+    }
 }
 

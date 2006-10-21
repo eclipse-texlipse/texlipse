@@ -20,8 +20,10 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.ui.editors.text.ForwardingDocumentProvider;
 import org.eclipse.ui.editors.text.TextFileDocumentProvider;
 import org.eclipse.ui.part.FileEditorInput;
+import org.eclipse.ui.texteditor.IDocumentProvider;
 
 
 /**
@@ -31,6 +33,7 @@ import org.eclipse.ui.part.FileEditorInput;
  * that contains latex files.
  * 
  * @author Kimmo Karlsson
+ * @author Boris von Loesch
  */
 public class TexDocumentProvider extends TextFileDocumentProvider {
 
@@ -38,7 +41,10 @@ public class TexDocumentProvider extends TextFileDocumentProvider {
      * 
      */
     public TexDocumentProvider() {
-        super();
+        IDocumentProvider provider= new TextFileDocumentProvider();
+        provider= new ForwardingDocumentProvider(TexEditor.TEX_PARTITIONING, 
+                new TexDocumentSetupParticipant(), provider);
+        setParentDocumentProvider(provider);    
     }
     
     /**

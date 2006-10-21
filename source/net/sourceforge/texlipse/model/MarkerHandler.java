@@ -21,9 +21,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
-import org.eclipse.ui.IEditorInput;
-import org.eclipse.ui.editors.text.TextEditor;
-import org.eclipse.ui.part.FileEditorInput;
+import org.eclipse.ui.texteditor.ITextEditor;
 import org.eclipse.ui.texteditor.MarkerUtilities;
 
 
@@ -57,7 +55,7 @@ public class MarkerHandler {
      * @param editor The editor to add the errors to
      * @param errors The errors to add as instances of <code>ParseErrorMessage</code>
      */
-    public void createErrorMarkers(TextEditor editor, List errors) {
+    public void createErrorMarkers(ITextEditor editor, List errors) {
         createMarkers(editor, errors, IMarker.PROBLEM);
     }
 
@@ -67,7 +65,7 @@ public class MarkerHandler {
      * @param editor The editor to add the errors to
      * @param tasks The tasks to add as instances of <code>ParseErrorMessage</code>
      */
-    public void createTaskMarkers(TextEditor editor, List tasks) {
+    public void createTaskMarkers(ITextEditor editor, List tasks) {
         createMarkers(editor, tasks, IMarker.TASK);
     }
     
@@ -78,8 +76,10 @@ public class MarkerHandler {
      * @param markers The markers to add as instances of <code>ParseErrorMessage</code>
      * @param markerType The type of the markers as <code>IMarker</code> types
      */
-    private void createMarkers(TextEditor editor, List markers, final String markerType) {
-        IResource resource = ((FileEditorInput)editor.getEditorInput()).getFile();
+    private void createMarkers(ITextEditor editor, List markers, final String markerType) {
+        IResource resource = (IResource) editor.getEditorInput().getAdapter(IResource.class);
+        if (resource == null) return;
+        //IResource resource = ((FileEditorInput)editor.getEditorInput()).getFile();
         IDocument document = editor.getDocumentProvider().getDocument(editor.getEditorInput());
         
         for (Iterator iter = markers.iterator(); iter.hasNext();) {
@@ -112,9 +112,10 @@ public class MarkerHandler {
      * @param editor The editor to add the errors to
      * @param errors The errors to add as instances of <code>DocumentReference</code>
      */
-    public void createReferencingErrorMarkers(TextEditor editor, ArrayList errors) {
+    public void createReferencingErrorMarkers(ITextEditor editor, ArrayList errors) {
         
-        IResource resource = ((FileEditorInput)editor.getEditorInput()).getFile();
+        IResource resource = (IResource) editor.getEditorInput().getAdapter(IResource.class);
+        if (resource == null) return;
         IDocument document = editor.getDocumentProvider().getDocument(editor.getEditorInput());
         
         for (Iterator iter = errors.iterator(); iter.hasNext();) {
@@ -144,8 +145,9 @@ public class MarkerHandler {
      * @param editor The editor to add the errors to
      * @param error The error message 
      */
-    public void addFatalError(TextEditor editor, String error) {
-        IResource resource = ((FileEditorInput)editor.getEditorInput()).getFile();
+    public void addFatalError(ITextEditor editor, String error) {
+        IResource resource = (IResource) editor.getEditorInput().getAdapter(IResource.class);
+        if (resource == null) return;
         //IDocument document = editor.getDocumentProvider().getDocument(editor.getEditorInput());
         try {
             HashMap map = new HashMap();
@@ -163,17 +165,12 @@ public class MarkerHandler {
      * 
      * @param editor The editor to clear the markers from
      */
-    public void clearErrorMarkers(TextEditor editor) {
+    public void clearErrorMarkers(ITextEditor editor) {
     	// talk about ugly code...
         // TODO if this case occurs, then the user has probably not correctly created a project
         // -> we should somehow inform the user
-    	IEditorInput ei = editor.getEditorInput();
-    	if (!(ei instanceof FileEditorInput))
-    		return;
-
-    	IResource resource = ((FileEditorInput) ei).getFile();
-        if (resource == null)
-            return;
+        IResource resource = (IResource) editor.getEditorInput().getAdapter(IResource.class);
+        if (resource == null) return;
 
         try {
             // TODO what should we clear and when?
@@ -205,11 +202,9 @@ public class MarkerHandler {
      * 
      * @param editor The editor to clear the markers from
      */
-    public void clearTaskMarkers(TextEditor editor) {
-        IResource resource = ((FileEditorInput)editor.getEditorInput()).getFile();
-        if (resource == null) {
-            return;
-        }
+    public void clearTaskMarkers(ITextEditor editor) {
+        IResource resource = (IResource) editor.getEditorInput().getAdapter(IResource.class);
+        if (resource == null) return;
         try {
             resource.deleteMarkers(IMarker.TASK, false, IResource.DEPTH_INFINITE);
         } catch (CoreException e) {

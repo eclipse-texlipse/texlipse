@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import net.sourceforge.texlipse.TexlipsePlugin;
 import net.sourceforge.texlipse.model.DocumentReference;
 import net.sourceforge.texlipse.model.OutlineNode;
 import net.sourceforge.texlipse.model.ParseErrorMessage;
@@ -43,7 +44,9 @@ import net.sourceforge.texlipse.texparser.node.TCsection;
 import net.sourceforge.texlipse.texparser.node.TCssection;
 import net.sourceforge.texlipse.texparser.node.TCsssection;
 import net.sourceforge.texlipse.texparser.node.TCword;
+import net.sourceforge.texlipse.texparser.node.TLBrace;
 import net.sourceforge.texlipse.texparser.node.TOptargument;
+import net.sourceforge.texlipse.texparser.node.TRBrace;
 import net.sourceforge.texlipse.texparser.node.TStar;
 import net.sourceforge.texlipse.texparser.node.TTaskcomment;
 import net.sourceforge.texlipse.texparser.node.TVtext;
@@ -237,6 +240,7 @@ public class LatexParser {
     throws LexerException, IOException {
         initializeDatastructs();
         StackUnsynch blocks = new StackUnsynch();
+        StackUnsynch braces = new StackUnsynch();
         
         boolean expectArg = false;
         boolean expectArg2 = false;
@@ -790,9 +794,27 @@ public class LatexParser {
                     } else {
                         outlineTree.add(on);
                     }
-
+                } else if (t instanceof TLBrace) {
+                    braces.push(t);
+                } else if (t instanceof TRBrace) {
+                    if (braces.empty()) {
+                        //There is an opening brace missing
+                        errors.add(new ParseErrorMessage(t.getLine(), t.getPos()-1, 1, 
+                                TexlipsePlugin.getResourceString("parseErrorMissingLBrace"),
+                                IMarker.SEVERITY_ERROR));
+                    }
+                    else {
+                        braces.pop();
+                    }
                 }
             }
+        }
+        //Check for missing closing braces
+        while (!braces.empty()) {
+            Token mt = (Token) braces.pop();
+            errors.add(new ParseErrorMessage(mt.getLine(), mt.getPos() - 1, 1, 
+                    TexlipsePlugin.getResourceString("parseErrorMissingRBrace"),
+                    IMarker.SEVERITY_ERROR));
         }
 
         int endLine = t.getLine() + 1; //endline is exclusive

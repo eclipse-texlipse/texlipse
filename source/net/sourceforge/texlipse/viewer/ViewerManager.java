@@ -168,7 +168,7 @@ public class ViewerManager {
 	    for (int i = 0; i < launches.length; i++) {
 	    	ILaunch l = launches[i];
 	    	ILaunchConfiguration configuration = l.getLaunchConfiguration();
-	    	if (configuration.exists() && configuration.getType().getIdentifier().equals(
+	    	if (configuration != null && configuration.exists() && configuration.getType().getIdentifier().equals(
 	    			TexLaunchConfigurationDelegate.CONFIGURATION_ID)) {
 	    		Map regMap = configuration.getAttributes();
 		        registry.setValues(regMap);

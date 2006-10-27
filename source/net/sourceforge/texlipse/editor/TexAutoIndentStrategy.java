@@ -18,7 +18,6 @@ import net.sourceforge.texlipse.texparser.LatexParserUtils;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.DefaultIndentLineAutoEditStrategy;
 import org.eclipse.jface.text.DocumentCommand;
-import org.eclipse.jface.text.IAutoEditStrategy;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.util.IPropertyChangeListener;
@@ -169,12 +168,13 @@ public class TexAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
     private boolean needsEnd(String environment, IDocument document, int coffset) {
         int counter = 1;
         int offset = coffset;
+        String docString = document.get();
         while (counter > 0) {
-            IRegion end = LatexParserUtils.findEndEnvironment(document, environment, offset + 5);
+            IRegion end = LatexParserUtils.findEndEnvironment(docString, environment, offset + 5);
             if (end == null) {
                 return true;
             }
-            IRegion start = LatexParserUtils.findBeginEnvironment(document, environment, offset + 7);
+            IRegion start = LatexParserUtils.findBeginEnvironment(docString, environment, offset + 7);
             if (start == null) {
                 counter--;
                 offset = end.getOffset();
@@ -213,7 +213,7 @@ public class TexAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
             // table...)
             int beginIndex;
             int endIndex;
-            if ((beginIndex = startLine.indexOf("\\begin")) != -1) {
+            if ((beginIndex = LatexParserUtils.findCommand(startLine, "\\begin", 0)) != -1) {
                 String endText = this.tools.getEndLine(startLine
                         .substring(beginIndex), "\\begin");
                 StringBuffer buf = new StringBuffer(command.text);
@@ -268,7 +268,7 @@ public class TexAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
                 
                 // test if line contains \end and search the environment
                 // (itemize, table...)
-            } else if ((endIndex = startLine.indexOf("\\end")) != -1) {
+            } else if ((endIndex = LatexParserUtils.findCommand(startLine, "\\end", 0)) != -1) {
                 String endText = this.tools.getEndLine(startLine
                         .substring(endIndex), "\\end");
                 

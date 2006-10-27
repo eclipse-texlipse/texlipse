@@ -9,6 +9,8 @@
  */
 package net.sourceforge.texlipse.model;
 
+import org.eclipse.jface.text.Position;
+
 /**
  * A superclass for the different types of entries that can occur
  * in LaTeX file, eg. command definitions or reference declarations.
@@ -28,6 +30,14 @@ public abstract class AbstractEntry implements Comparable {
      * The line where the entry is declared
      */
     public int startLine;
+    /**
+     * The document position of the reference declaration (used for BibTeX editing)
+     */
+    public Position position;
+    /**
+     * The filename where the reference lives in
+     */
+    public String fileName;
 
     /* (non-Javadoc)
      * @see java.lang.Comparable#compareTo(java.lang.Object)
@@ -38,5 +48,15 @@ public abstract class AbstractEntry implements Comparable {
     
     public boolean equals(AbstractEntry ae) {
     	return (key.equals(ae.key));
+    }
+
+    /**
+     * Sets the document position of this entry.
+     * 
+     * @param docOffset Offset from the document start
+     * @param length Length of the position
+     */
+    public void setPosition(int docOffset, int length) {
+        this.position = new Position(docOffset, length);
     }
 }

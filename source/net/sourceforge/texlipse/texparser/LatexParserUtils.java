@@ -16,6 +16,7 @@ import org.eclipse.jface.text.FindReplaceDocumentAdapter;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.Region;
+import org.eclipse.jface.text.source.ICharacterPairMatcher;
 
 /**
  * This class has some static functions which are often needed when parsing
@@ -166,9 +167,9 @@ public class LatexParserUtils {
     }
     
     // Indicate the anchor value "right"
-    public final static int RIGHT = 0;
+    public final static int RIGHT = ICharacterPairMatcher.RIGHT;
     // Indicate the anchor value "left"
-    public final static int LEFT = 1;
+    public final static int LEFT = ICharacterPairMatcher.LEFT;
 
     /**
      * Checks whether index is inside a comment
@@ -385,6 +386,38 @@ public class LatexParserUtils {
     public static IRegion getCommandArgument(IDocument input, int index) throws BadLocationException {
         return getCommandArgument(new DocumentLatexText(input), index);
     }
+    
+    /**
+     * Gets the command at the specified index. It returns the command if the index position is either
+     * inside the command string or inside the first mandatory argument
+     * @param input
+     * @param index
+     * @return
+     * @throws BadLocationException
+     */
+    public static IRegion getCommand (String input, int index){
+        int pos = index;
+        if (isInsideComment(input, index)) return null;
+        boolean whiteSpace = false;
+        while (!((pos == 0 || input.charAt(pos) == '\\' || input.charAt(pos) == '{' || input.charAt(pos) == '}' || input.charAt(pos) == '%') 
+                && (pos == 0 || input.charAt(pos-1) != '\\'))) {
+            if (Character.isWhitespace(input.charAt(pos))) whiteSpace = true;
+            pos--;
+        }
+        if (input.charAt(pos) == '\\' && whiteSpace == false) {
+            int l = 1;
+            while (pos + l < input.length() && Character.isLetter(input.charAt(pos + l)))
+                l++;
+            return new Region(pos, l);
+        }
+        if (input.charAt(pos) == '{') {
+            int l = -1;
+            while (pos + l >= 0 && (Character.isWhitespace(input.charAt(pos + l)) || Character.isLetter(input.charAt(pos + l)))) 
+                l--;
+            if (input.charAt(pos + l) == '\\') return new Region(pos + l, -l);
+        }
+        return null; 
+    }
 
     private static IRegion getEnvironment(ILatexText input, String envName, String command, int fromIndex) {
         int pos = input.indexOf("{" + envName + "}", fromIndex + command.length());
@@ -449,4 +482,34 @@ public class LatexParserUtils {
     public static IRegion findEndEnvironment(IDocument input, String envName, int fromIndex) {
         return findEndEnvironment(new DocumentLatexText(input), envName, fromIndex);
     }
+    
+    public static void main (String[] args) {
+        //Tests
+    }
+/*        String test1 ="\\test{arg}";
+        System.out.println(test1);
+        for (int i=0; i < test1.length(); i++){
+            if (getCommand(test1, i) != null) 
+                System.out.println(test1.substring(getCommand(test1, i).getOffset(), getCommand(test1, i).getOffset() + getCommand(test1, i).getLength()));
+            else System.out.println("Not found");
+        }
+        test1 =" \\test \\{arg}";
+        System.out.println(test1);
+        for (int i=0; i < test1.length(); i++){
+            if (getCommand(test1, i) != null) {
+                System.out.print(getCommand(test1, i).getOffset() + " L:" + getCommand(test1, i).getLength());
+                System.out.println(" "+test1.substring(getCommand(test1, i).getOffset(), getCommand(test1, i).getOffset() + getCommand(test1, i).getLength()));
+            }
+            else System.out.println("Not found");
+        }
+        test1 =" \\test bla \\\\bla";
+        System.out.println(test1);
+        for (int i=0; i < test1.length(); i++){
+            if (getCommand(test1, i) != null) {
+                System.out.print(getCommand(test1, i).getOffset() + " L:" + getCommand(test1, i).getLength());
+                System.out.println(" "+test1.substring(getCommand(test1, i).getOffset(), getCommand(test1, i).getOffset() + getCommand(test1, i).getLength()));
+            }
+            else System.out.println("Not found");
+        }
+    }*/
 }

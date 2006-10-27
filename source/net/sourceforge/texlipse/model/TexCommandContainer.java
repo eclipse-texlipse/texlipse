@@ -446,6 +446,11 @@ public class TexCommandContainer {
      * @return true if the container needs a reorganize
      */
     public boolean addRefSource(String key, ArrayList refs) {
+        //Add filenames to the entries
+        for (Iterator iter = refs.iterator(); iter.hasNext();) {
+            AbstractEntry r = (AbstractEntry) iter.next();
+            r.fileName = key;
+        }
         size += refs.size();
         ArrayList al = (ArrayList) commandHash.put(key, refs);
         if (al != null)

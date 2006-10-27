@@ -11,7 +11,6 @@ package net.sourceforge.texlipse.model;
 
 import java.io.File;
 
-import org.eclipse.jface.text.Position;
 
 /**
  * A class for containing LaTeX references (\label and BibTeX)
@@ -28,11 +27,6 @@ public final class ReferenceEntry extends AbstractEntry {
      * The end line of the reference declaration (used for BibTeX editing)
      */
     public int endLine;
-    /**
-     * The document position of the reference declaration (used for BibTeX editing)
-     */
-    public Position position;
-
     // FIXME
     public String author;
     public String journal;
@@ -42,11 +36,6 @@ public final class ReferenceEntry extends AbstractEntry {
      * The document of the reference declaration (used for BibTeX viewing)
      */
     public File refFile;
-    
-    /**
-     * The filename where the reference lives in
-     */
-    public String fileName;
     
     /**
      * Constructs a new entry with the given key (reference key/name)
@@ -71,21 +60,11 @@ public final class ReferenceEntry extends AbstractEntry {
     }
         
     /**
-     * Sets the document position of this entry.
-     * 
-     * @param docOffset Offset from the document start
-     * @param length Length of the position
-     */
-    public void setPosition(int docOffset, int length) {
-        this.position = new Position(docOffset, length);
-    }
-    
-    /**
      * Returns a shallow copy of this reference
      * 
      * @return A copy of this reference
      */
-    public ReferenceEntry copy() {
+    public AbstractEntry copy() {
         ReferenceEntry re = new ReferenceEntry(key, info);
         re.startLine = startLine;
         re.endLine = endLine;

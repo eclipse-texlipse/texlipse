@@ -3,7 +3,7 @@
 <plugin
    id="net.sourceforge.texlipse"
    name="TeXlipse Plug-in"
-   version="1.1.0"
+   version="1.1.1"
    provider-name="TeXlapse Team"
    class="net.sourceforge.texlipse.TexlipsePlugin">
 
@@ -37,7 +37,7 @@
             contributorClass="net.sourceforge.texlipse.editor.TexEditorActionContributor"
             name="Latex Editor"
             id="net.sourceforge.texlipse.TexEditor"
-            extensions="tex,ltx,sty"/>
+            extensions="tex,ltx,sty,cls"/>
       <editor
             class="net.sourceforge.texlipse.bibeditor.BibEditor"
             icon="icons/bibfile.gif"
@@ -710,7 +710,7 @@ ${cursor}
    <extension
          point="org.eclipse.ui.popupMenus">
       <viewerContribution
-            targetID="#TextEditorContext"
+            targetID="net.sourceforge.texlipse.texEditorScope"
             id="net.sourceforge.texlipse.editor.viewerContribution">
          <menu
                label="Source"
@@ -780,11 +780,11 @@ ${cursor}
                menubarPath="net.sourceforge.texlipse.menus.source/latexGroup"
                style="push"/>
          <action
-         	   class="net.sourceforge.texlipse.actions.TexJump2Label"
-               definitionId="net.sourceforge.texlipse.commands.jumpToLabel"
-               id="action.Jump2Label"
-               label="&amp;Jump to Label"               
-               menubarPath="net.sourceforge.texlipse.menus.source/latexGroup"
+               class="net.sourceforge.texlipse.actions.OpenDeclarationAction"
+               definitionId="net.sourceforge.texlipse.commands.openDeclaration"
+               id="net.sourceforge.texlipse.actions.openDeclaration"
+               label="&amp;Open Declaration"
+               menubarPath="group.open"
                style="push"/>
       </viewerContribution>
    </extension>
@@ -920,7 +920,28 @@ ${cursor}
                label="Uncolla&amp;pse"
                menubarPath="net.sourceforge.texlipse.menus.latex/commentGroup"
                style="push"/>
+         <action
+               class="net.sourceforge.texlipse.actions.GoToMatchingBracketAction"
+               definitionId="net.sourceforge.texlipse.commands.GotoMatchingBracket"
+               id="net.sourceforge.texlipse.actions.goToBracket"
+               label="Matching Bracket"
+               menubarPath="navigate/goTo/additions2"
+               style="push"/>
+         <action
+               class="net.sourceforge.texlipse.actions.OpenDeclarationAction"
+               definitionId="net.sourceforge.texlipse.commands.openDeclaration"
+               id="net.sourceforge.texlipse.actions.openDeclaration"
+               label="&amp;Open Declaration"
+               menubarPath="navigate/open.ext"
+               style="push"/>
       </editorContribution>
+   </extension>
+   <extension
+         point="org.eclipse.ui.contexts">
+      <context
+            id="net.sourceforge.texlipse.texEditorScope"
+            name="Editing Latex Source"
+            parentId="org.eclipse.ui.textEditorScope"/>
    </extension>
    <extension
          point="org.eclipse.ui.commands">
@@ -986,67 +1007,76 @@ ${cursor}
             id="net.sourceforge.texlipse.commands.texUncollapse"/>
       <command
             categoryId="net.sourceforge.texlipse.latexEditingCategory"
-            name="Jump to label"
-            id="net.sourceforge.texlipse.commands.jumpToLabel"/>
+            name="Open Declaration"
+            id="net.sourceforge.texlipse.commands.openDeclaration"/>
+      <command
+            categoryId="net.sourceforge.texlipse.latexEditingCategory"
+            id="net.sourceforge.texlipse.commands.GotoMatchingBracket"
+            name="Go to matching bracket"/>
    </extension>
    <!-- Keys: M1=Ctrl M2=Shift M3=Alt-->
    <extension
          point="org.eclipse.ui.bindings">
       <key
             commandId="net.sourceforge.texlipse.commands.texComment"
-            contextId="org.eclipse.ui.contexts.window"
+            contextId="net.sourceforge.texlipse.texEditorScope"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             sequence="M1+5"/>
       <key
             commandId="net.sourceforge.texlipse.commands.texUncomment"
-            contextId="org.eclipse.ui.contexts.window"
+            contextId="net.sourceforge.texlipse.texEditorScope"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             sequence="Esc M1+5"/>
       <key
             commandId="net.sourceforge.texlipse.commands.texHardLineWrap"
-            contextId="org.eclipse.ui.contexts.window"
+            contextId="net.sourceforge.texlipse.texEditorScope"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             sequence="Esc Q"/>
       <key
             commandId="net.sourceforge.texlipse.commands.texCorrectIndentation"
-            contextId="org.eclipse.ui.contexts.window"
+            contextId="net.sourceforge.texlipse.texEditorScope"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             sequence="M1+I"/>
       <key
             commandId="net.sourceforge.texlipse.commands.wordCount"
-            contextId="org.eclipse.ui.contexts.window"
+            contextId="net.sourceforge.texlipse.texEditorScope"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             sequence="M1+3"/>
       <key
             commandId="net.sourceforge.texlipse.commands.preview"
-            contextId="org.eclipse.ui.contexts.window"
+            contextId="net.sourceforge.texlipse.texEditorScope"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             sequence="M1+4"/>
       <key
             commandId="net.sourceforge.texlipse.commands.spellCheck"
-            contextId="org.eclipse.ui.contexts.window"
+            contextId="net.sourceforge.texlipse.texEditorScope"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             sequence="M1+M2+6"/>
       <key
             commandId="net.sourceforge.texlipse.commands.spellUncheck"
-            contextId="org.eclipse.ui.contexts.window"
+            contextId="net.sourceforge.texlipse.texEditorScope"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             sequence="M1+M2+7"/>
       <key
             commandId="net.sourceforge.texlipse.commands.texCollapse"
-            contextId="org.eclipse.ui.contexts.window"
+            contextId="net.sourceforge.texlipse.texEditorScope"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             sequence="M3+C"/>            
       <key
             commandId="net.sourceforge.texlipse.commands.texUncollapse"
-            contextId="org.eclipse.ui.contexts.window"
+            contextId="net.sourceforge.texlipse.texEditorScope"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             sequence="M3+X"/>            
       <key
-            commandId="net.sourceforge.texlipse.commands.jumpToLabel"
-            contextId="org.eclipse.ui.contexts.window"
+            commandId="net.sourceforge.texlipse.commands.openDeclaration"
+            contextId="net.sourceforge.texlipse.texEditorScope"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            sequence="M3+J"/>            
+            sequence="F3"/>
+      <key
+            commandId="net.sourceforge.texlipse.commands.GotoMatchingBracket"
+            contextId="net.sourceforge.texlipse.texEditorScope"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+M2+P"/>            
     </extension>
    <extension
          id="builderproblem"

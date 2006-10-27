@@ -66,6 +66,10 @@ public class TexEditorActionContributor extends TextEditorActionContributor {
      * @see org.eclipse.ui.part.EditorActionBarContributor#contributeToMenu(org.eclipse.jface.action.IMenuManager)
      */
     public void contributeToMenu(IMenuManager menuManager) {
+        //Add a new group to the navigation/goto menu
+        IMenuManager gotoMenu = menuManager.findMenuUsingPath(IWorkbenchActionConstants.M_NAVIGATE+"/"+IWorkbenchActionConstants.GO_TO);
+        gotoMenu.add(new Separator("additions2"));
+        
         IMenuManager editMenu = menuManager.findMenuUsingPath(IWorkbenchActionConstants.M_WINDOW);
         MenuManager manager = new MenuManager("Latex Symbols");
         if (editMenu != null) {

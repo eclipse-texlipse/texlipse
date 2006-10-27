@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 import net.sourceforge.texlipse.TexlipsePlugin;
+import net.sourceforge.texlipse.model.AbstractEntry;
 import net.sourceforge.texlipse.model.DocumentReference;
 import net.sourceforge.texlipse.model.OutlineNode;
 import net.sourceforge.texlipse.model.ParseErrorMessage;
@@ -637,6 +638,7 @@ public class LatexParser {
                     } else if (prevToken instanceof TCnew) {
                         //currentCommand = new CommandEntry(t.getText().substring(1));
                         currentCommand = new TexCommandEntry(t.getText().substring(1), "", 0);
+                        currentCommand.startLine = t.getLine();
                         lexer.registerCommand(currentCommand.key);
                         expectArg2 = true;
                     }
@@ -650,6 +652,7 @@ public class LatexParser {
                     // this handles the \newcommand\comx{...} -format
                     //currentCommand = new CommandEntry(t.getText().substring(1));
                     currentCommand = new TexCommandEntry(t.getText().substring(1), "", 0);
+                    currentCommand.startLine = t.getLine();
                     lexer.registerCommand(currentCommand.key);
                     expectArg2 = true;
                     accumulatedLength = 0;

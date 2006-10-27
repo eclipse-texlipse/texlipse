@@ -124,6 +124,7 @@ public class LatexRefExtractingParser {
                         } else if (prevToken instanceof TCnew) {
                             //currentCommand = new CommandEntry(t.getText().substring(1));
                             currentCommand = new TexCommandEntry(t.getText().substring(1), "", 0);
+                            currentCommand.startLine = t.getLine();
                             expectArg2 = true;
                         }
                         prevToken = null;

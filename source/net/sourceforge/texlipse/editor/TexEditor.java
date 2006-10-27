@@ -28,6 +28,8 @@ import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.IVerticalRuler;
 import org.eclipse.jface.text.source.projection.ProjectionSupport;
 import org.eclipse.jface.text.source.projection.ProjectionViewer;
+import org.eclipse.swt.custom.VerifyKeyListener;
+import org.eclipse.swt.events.VerifyEvent;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.editors.text.TextEditor;
@@ -98,6 +100,12 @@ public class TexEditor extends TextEditor {
             if (fBracketInserter == null)
                 fBracketInserter = new BracketInserter(getSourceViewer(), this);
             ((ITextViewerExtension) sourceViewer).prependVerifyKeyListener(fBracketInserter);
+            ((ITextViewerExtension) sourceViewer).prependVerifyKeyListener(new VerifyKeyListener(){
+                //Delete all StatuslineErrors after a keystroke
+                public void verifyKey(VerifyEvent event) {
+                    documentModel.removeStatusLineErrorMessage();
+                }
+            });
         }
     }
 
@@ -109,6 +117,7 @@ public class TexEditor extends TextEditor {
      */
     protected void initializeEditor() {
         super.initializeEditor();
+        setEditorContextMenuId("net.sourceforge.texlipse.texEditorScope");
         this.documentModel = new TexDocumentModel(this);
         setSourceViewerConfiguration(new TexSourceViewerConfiguration(this));
         // register a document provider to get latex support even in non-latex projects
@@ -311,5 +320,11 @@ public class TexEditor extends TextEditor {
         if (res == null) return null;
         else return res.getProject();
     }
-}
+    
+    /**
+     * Initializes the key binding scopes of this editor.
+     */
+    protected void initializeKeyBindingScopes() {
+        setKeyBindingScopes(new String[] { "org.eclipse.ui.textEditorScope", "net.sourceforge.texlipse.texEditorScope" });  //$NON-NLS-1$
+    }}
 

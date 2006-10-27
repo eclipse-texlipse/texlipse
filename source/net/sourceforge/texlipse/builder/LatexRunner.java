@@ -185,13 +185,13 @@ public class LatexRunner extends AbstractProgramRunner {
                     linenr = -1;
                     hasProblem = false;
                 }
-                if (line.indexOf("Label(s) may have changed.") > 0) {
+                if (line.indexOf("Label(s) may have changed.") > -1) {
                     // prepare to re-run latex
                     TexlipseProperties.setSessionProperty(resource.getProject(),
                             TexlipseProperties.SESSION_LATEX_RERUN, "true");
                     continue;
                 }
-                else if (line.indexOf("There were undefined references.") > 0) {
+                else if (line.indexOf("There were undefined") > -1) {
                     if (citeNotfound) {
                         // prepare to run bibtex
                         TexlipseProperties.setSessionProperty(resource.getProject(),
@@ -202,9 +202,9 @@ public class LatexRunner extends AbstractProgramRunner {
 
                 // Ignore undefined references or citations because they are
                 // found by the parser
-                if (line.startsWith("LaTeX Warning: Reference `"))
+                if (line.indexOf("Warning: Reference `") > -1)
                     continue;
-                if (line.startsWith("LaTeX Warning: Citation `")) {
+                if (line.indexOf("Warning: Citation `") > -1) {
                     citeNotfound = true;
                     continue;
                 }

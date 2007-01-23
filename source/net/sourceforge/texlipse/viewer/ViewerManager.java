@@ -9,10 +9,13 @@
  */
 package net.sourceforge.texlipse.viewer;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
@@ -329,8 +332,11 @@ public class ViewerManager {
                 TexlipseProperties.SESSION_ATTRIBUTE_VIEWER);
         
         if (o != null) {
-            if (o instanceof Process) {
-                Process p = (Process) o;     
+            if (o instanceof HashMap) {
+            	HashMap viewerInfo = (HashMap) o;
+            	
+                Process p = (Process) viewerInfo.get("process");
+                String cmd = (String) viewerInfo.get("command"); 
 
                 int code = -1;
                 try {
@@ -342,6 +348,23 @@ public class ViewerManager {
                 if (code == -1 && !registry.getForward()) {
                     // ... so don't launch another viewer window
                     return p;
+                } else if (cmd.toLowerCase().indexOf("acrobat") > -1 && code == 1) {
+                	// This is a fix for Acrobat Professional returning 1 even 
+                	// though it's still running. Probably because it's using a
+                	// launcher process of some kind which spawns the real acrobat.
+                	if (Platform.getOS().equals(Platform.OS_WIN32)) {
+	                	try {
+	                		String s = "";
+	                		Runtime Rt = Runtime.getRuntime();
+	                		InputStream ip = Rt.exec("tasklist").getInputStream();
+	                		BufferedReader in = new BufferedReader(new InputStreamReader(ip));
+	                		while ((s = in.readLine()) != null) {
+	                			if (s.toLowerCase().indexOf("acrobat") > -1)
+	                				return p;
+	                		}
+	                	} catch (IOException e) {
+	                	}
+                	}
                 }
             }
             
@@ -573,10 +596,15 @@ public class ViewerManager {
         // start viewer process
         Runtime runtime = Runtime.getRuntime();
         Process process = runtime.exec((String[]) list.toArray(new String[0]), envp, dir);
-        
+  
         // save attribute
+        HashMap viewerInfo = new HashMap();
+        viewerInfo.put("process", process);
+        viewerInfo.put("command", command);
+        viewerInfo.put("arguments", args);
+        
         TexlipseProperties.setSessionProperty(project,
-                TexlipseProperties.SESSION_ATTRIBUTE_VIEWER, process);
+                TexlipseProperties.SESSION_ATTRIBUTE_VIEWER, viewerInfo );
         
         // start viewer listener
         startOutputListener(process.getInputStream(), registry.getInverse());

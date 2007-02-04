@@ -45,6 +45,8 @@ import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchManager;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.text.ITextSelection;
+import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchPage;
@@ -529,28 +531,28 @@ public class ViewerManager {
      * @return the current line number of the current page
      */
     private int getCurrentLineNumber() {
-
+        //Fix for Bug: 1637560
         int lineNumber = 0;
-        /* Commented this out, because the selection-code did not work
-         * with launch configurations. IWorkbenchPage.getSelection() needs
-         * to run in a UI thread and ILaunchConfigurationDelegate is not one of those.
-         *  - Kimmo Karlsson
-         * 
-        IWorkbenchPage currentWorkbenchPage = TexlipsePlugin.getCurrentWorkbenchPage();
+        final IWorkbenchPage currentWorkbenchPage = TexlipsePlugin.getCurrentWorkbenchPage();
         if (currentWorkbenchPage != null) {
-            
-            ISelection selection = currentWorkbenchPage.getSelection();
-            if (selection != null) {
-                if (selection instanceof ITextSelection) {
-                    ITextSelection textSelection = (ITextSelection) selection;
-                    // The "srcltx" package's line numbers seem to start from 1
-                    // it is also the case with latex's --source-specials option
-                    lineNumber = textSelection.getStartLine() + 1;
-                }
+            final int[] buf = new int[1];
+            //This must run in UI thread
+            Display.getDefault().syncExec(
+                    new Runnable() {
+                      public void run(){
+                          ISelection selection = currentWorkbenchPage.getSelection();
+                          if (selection != null && selection instanceof ITextSelection) {                                  
+                              ITextSelection textSelection = (ITextSelection) selection;
+                              // The "srcltx" package's line numbers seem to start from 1
+                              // it is also the case with latex's --source-specials option
+                              buf[0] = textSelection.getStartLine() + 1;
+                          }
+                      }
+                    });
+            lineNumber = buf[0];
             }
-        }
-        */
-        lineNumber = SelectedResourceManager.getDefault().getSelectedLine();
+        
+//        lineNumber = SelectedResourceManager.getDefault().getSelectedLine();
         if (lineNumber <= 0) {
             lineNumber = 1;
         }

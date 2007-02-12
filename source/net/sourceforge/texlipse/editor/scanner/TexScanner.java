@@ -81,9 +81,9 @@ public class TexScanner extends RuleBasedScanner {
         rules.add(new TexSpecialCharRule(specialCharToken));
         rules.add(new WordRule(new TexWord(), commandToken));
         rules.add(new NumberRule(numberToken));
-        rules.add(new MultiLineRule("{","}", braketToken));
-        rules.add(new MultiLineRule("[","]", squareToken));
-        rules.add(new EndOfLineRule("%", commentToken));
+        rules.add(new MultiLineRule("{", "}", braketToken, '\\'));
+        rules.add(new MultiLineRule("[", "]", squareToken, '\\'));
+        rules.add(new EndOfLineRule("%", commentToken, '\\'));
         rules.add(new WhitespaceRule(new WhitespaceDetector()));
         
         IRule[] result = new IRule[rules.size()];

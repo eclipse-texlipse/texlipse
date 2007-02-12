@@ -51,14 +51,16 @@ public class TexPartitionScanner extends RuleBasedPartitionScanner {
 		IToken math 			= new Token(TEX_MATH);
 		IToken texComment 		= new Token(TEX_COMMENT);
         IToken texVerbatim      = new Token(TEX_VERBATIM);
+        IToken texDefault       = new Token(TEX_DEFAULT);
 		//IToken curly_bracket 	= new Token(TEX_CURLY_BRACKETS);
 		//IToken square_bracket	= new Token(TEX_SQUARE_BRACKETS);
 		
 		List rules = new ArrayList();
 				
 		//TODO: mark \\ Token.Undefined
-		rules.add(new SingleLineRule("\\%"," ", Token.UNDEFINED)); //no comment when using "\%" in LaTeX 
-		rules.add(new EndOfLineRule("%", texComment));
+        //TODO Some ugly cases (e.g. "$ test % comment $ wrong")
+		rules.add(new SingleLineRule("\\%", " ", texDefault)); //no comment when using "\%" in LaTeX 
+		rules.add(new EndOfLineRule("%", texComment, '\\'));
         rules.add(new TexEnvironmentRule("comment", texComment));
 
         //verbatim style environments (is not 100% correct because of \end {verbatim} is not valid)
@@ -67,9 +69,9 @@ public class TexPartitionScanner extends RuleBasedPartitionScanner {
         rules.add(new TexEnvironmentRule("lstlisting", false, texVerbatim));
         rules.add(new SingleLineRule("\\verb+", "+", texVerbatim));
 
-        rules.add(new SingleLineRule("\\\\[","]", Token.UNDEFINED));  //no math when using "\\[]" line breaks
+        rules.add(new SingleLineRule("\\\\[","]", texDefault));  //no math when using "\\[]" line breaks
 		
-        rules.add(new SingleLineRule("\\$", " ", Token.UNDEFINED)); // not a math equation \$
+        rules.add(new SingleLineRule("\\$", " ", texDefault)); // not a math equation \$
 
         //This bosh rule is necessary to fix a bug in RuleBasedPartitionScanner
 		rules.add(new TexEnvironmentRule("qqfdshfkhsd", false, math));

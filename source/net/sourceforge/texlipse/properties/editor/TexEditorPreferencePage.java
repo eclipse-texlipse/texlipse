@@ -105,6 +105,11 @@ public class TexEditorPreferencePage
                 TexlipsePlugin.getResourceString("preferenceSectionCheck"),
                 getFieldEditorParent()));
 
+        // Mark occurences (references and environments)
+        addField(new BooleanFieldEditor(TexlipseProperties.TEX_EDITOR_ANNOTATATIONS,
+                TexlipsePlugin.getResourceString("preferencesEditorHighlighting"),
+                getFieldEditorParent()));
+        
         TexlipsePreferencePage.addSpacer(getFieldEditorParent());
         
         // word wrapping

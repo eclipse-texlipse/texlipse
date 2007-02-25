@@ -28,6 +28,9 @@ import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.IVerticalRuler;
 import org.eclipse.jface.text.source.projection.ProjectionSupport;
 import org.eclipse.jface.text.source.projection.ProjectionViewer;
+import org.eclipse.jface.viewers.IPostSelectionProvider;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.swt.custom.VerifyKeyListener;
 import org.eclipse.swt.events.VerifyEvent;
 import org.eclipse.swt.widgets.Composite;
@@ -59,6 +62,7 @@ public class TexEditor extends TextEditor {
     private TexCodeFolder folder;
     private ProjectionSupport fProjectionSupport;
     private BracketInserter fBracketInserter;
+    private TexlipseAnnotationUpdater fAnnotationUpdater;
     
     
     /**
@@ -89,6 +93,16 @@ public class TexEditor extends TextEditor {
         	projectionViewer.doOperation(ProjectionViewer.TOGGLE);
         }
         
+        fAnnotationUpdater = new TexlipseAnnotationUpdater(this);
+        
+        ((IPostSelectionProvider) getSelectionProvider()).addPostSelectionChangedListener(
+                new ISelectionChangedListener(){
+                    public void selectionChanged(SelectionChangedEvent event) {
+                        //Delete all StatuslineErrors after selection changes
+                        documentModel.removeStatusLineErrorMessage();
+                    }
+                });
+
         // register documentModel as documentListener
         // in initializeEditor this would cause NPE
         this.getDocumentProvider().getDocument(getEditorInput()).addDocumentListener(this.documentModel);
@@ -100,12 +114,6 @@ public class TexEditor extends TextEditor {
             if (fBracketInserter == null)
                 fBracketInserter = new BracketInserter(getSourceViewer(), this);
             ((ITextViewerExtension) sourceViewer).prependVerifyKeyListener(fBracketInserter);
-            ((ITextViewerExtension) sourceViewer).prependVerifyKeyListener(new VerifyKeyListener(){
-                //Delete all StatuslineErrors after a keystroke
-                public void verifyKey(VerifyEvent event) {
-                    documentModel.removeStatusLineErrorMessage();
-                }
-            });
         }
     }
 

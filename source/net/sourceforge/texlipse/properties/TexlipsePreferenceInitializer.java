@@ -129,6 +129,7 @@ public class TexlipsePreferenceInitializer extends
         //pref.setDefault(TexlipseProperties.SMART_KEY_SETTINGS, "ll=list,en=enumerate,iz=itemize");
         pref.setDefault(TexlipseProperties.STYLE_COMPLETION_SETTINGS, "bold=\\textbf{,italic=\\textit{,roman=\\textrm{,sans serif=\\textsf{,small caps=\\textsc{,slanted=\\textsl{,teletype=\\texttt{,emphasize=\\emph{");
 //      E----------------------------------- mmaus
+        pref.setDefault(TexlipseProperties.TEX_EDITOR_ANNOTATATIONS, true);
         
         pref.setDefault(TexlipseProperties.OUTLINE_PREAMBLE, true);
         pref.setDefault(TexlipseProperties.OUTLINE_PART, true);

@@ -9,6 +9,8 @@
  */
 package net.sourceforge.texlipse.texparser;
 
+import java.util.regex.Pattern;
+
 import net.sourceforge.texlipse.TexlipsePlugin;
 
 import org.eclipse.jface.text.BadLocationException;
@@ -26,6 +28,7 @@ import org.eclipse.jface.text.source.ICharacterPairMatcher;
  */
 public class LatexParserUtils {
 
+    Pattern ENVIRONMENT_PATTERN = Pattern.compile("^((?:[^%\\n\\r]*[^\\\\%])|(?:))\\\\((?:begin)|(?:end))\\s*\\{([^\\}]+)\\}");
     /**
      * This is a short interface which implements all methods
      * which are needed for our textsearch
@@ -397,10 +400,12 @@ public class LatexParserUtils {
      */
     public static IRegion getCommand (String input, int index){
         int pos = index;
+        while (pos >= input.length()) pos--;
         if (isInsideComment(input, index)) return null;
         boolean whiteSpace = false;
-        while (!((pos == 0 || input.charAt(pos) == '\\' || input.charAt(pos) == '{' || input.charAt(pos) == '}' || input.charAt(pos) == '%') 
-                && (pos == 0 || input.charAt(pos-1) != '\\'))) {
+        if (pos > 0 && input.charAt(pos) == '}') pos--;
+        while (!((pos <= 0 || input.charAt(pos) == '\\' || input.charAt(pos) == '{' || input.charAt(pos) == '}' || input.charAt(pos) == '%') 
+                && (pos <= 1 || input.charAt(pos-1) != '\\'))) {
             if (Character.isWhitespace(input.charAt(pos))) whiteSpace = true;
             pos--;
         }
@@ -414,7 +419,7 @@ public class LatexParserUtils {
             int l = -1;
             while (pos + l >= 0 && (Character.isWhitespace(input.charAt(pos + l)) || Character.isLetter(input.charAt(pos + l)))) 
                 l--;
-            if (input.charAt(pos + l) == '\\') return new Region(pos + l, -l);
+            if (pos + l >= 0 && input.charAt(pos + l) == '\\') return new Region(pos + l, -l);
         }
         return null; 
     }
@@ -481,6 +486,28 @@ public class LatexParserUtils {
 
     public static IRegion findEndEnvironment(IDocument input, String envName, int fromIndex) {
         return findEndEnvironment(new DocumentLatexText(input), envName, fromIndex);
+    }
+    
+    public static IRegion findMatchingEndEnvironment(String input, String envName, int beginIndex) {
+        int pos = beginIndex;
+        IRegion nextEnd, nextBegin;
+        int level = 0;
+        
+        do {
+            nextEnd = findEndEnvironment(input, envName, pos);
+            nextBegin = findBeginEnvironment(input, envName, pos + envName.length() + 8);
+            if (nextEnd == null) return null;
+            if (nextBegin == null) {
+                level--;
+                pos = nextEnd.getOffset() + envName.length() + 6;
+            } else {
+                if (nextBegin.getOffset() > nextEnd.getOffset()) level--;
+                else level++;
+                pos = nextBegin.getOffset();
+            }
+        } while (level >= 0);
+        return nextEnd;
+//        return null;
     }
     
     public static void main (String[] args) {

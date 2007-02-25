@@ -1090,7 +1090,7 @@ ${cursor}
          name="Texlipse Spelling Error"
          point="org.eclipse.core.resources.markers">
       <super type="org.eclipse.core.resources.problemmarker"/>
-      <persistent value="true"/>
+      <persistent value="false"/>
    </extension>
    <extension
          id="layoutproblem"
@@ -1162,5 +1162,28 @@ ${cursor}
 		configTypeID="net.sourceforge.texlipse.viewer.launchConfigurationType"
 		icon="icons/preview.gif">
 	</launchConfigurationTypeImage>	
+   </extension>
+   <extension
+         point="org.eclipse.ui.editors.markerAnnotationSpecification">
+      <specification
+            annotationType="net.sourceforge.texlipse.defAnnotation"
+            colorPreferenceKey="highlight.color"
+            colorPreferenceValue="180,207,205"
+            contributesToHeader="false"
+            highlightPreferenceKey="highlight.background"
+            highlightPreferenceValue="true"
+            includeOnPreferencePage="true"
+            isGoToNextNavigationTarget="false"
+            isGoToPreviousNavigationTarget="false"
+            label="Texlipse Occurence"
+            overviewRulerPreferenceKey="highlight.rulers.overview"
+            overviewRulerPreferenceValue="true"
+            presentationLayer="4"
+            textPreferenceKey="highlight.text"
+            textPreferenceValue="false"
+            textStylePreferenceKey="highlight.text.style"
+            textStylePreferenceValue="IBEAM"
+            verticalRulerPreferenceKey="highlight.rulers.vertical"
+            verticalRulerPreferenceValue="false"/>
    </extension>
 </plugin>

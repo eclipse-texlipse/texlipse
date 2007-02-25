@@ -117,7 +117,8 @@ public class TexlipseProperties {
     
     public static final String SMART_QUOTES = "texReplaceQuotes";
     public static final String TEX_REPLACE_QUOTES_VALUE = "true";
-
+    
+    public static final String TEX_EDITOR_ANNOTATATIONS = "textEditorAnnotations";
     
     public static final String CODE_FOLDING = "codeFolding";
     public static final String CODE_FOLDING_PREAMBLE = "codeFoldingPreamble";

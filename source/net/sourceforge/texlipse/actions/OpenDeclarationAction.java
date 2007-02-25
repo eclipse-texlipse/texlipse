@@ -9,14 +9,19 @@
  */
 package net.sourceforge.texlipse.actions;
 
+import java.text.MessageFormat;
+
 import net.sourceforge.texlipse.TexlipsePlugin;
 import net.sourceforge.texlipse.editor.TexEditor;
 import net.sourceforge.texlipse.model.AbstractEntry;
 import net.sourceforge.texlipse.model.TexCommandEntry;
+import net.sourceforge.texlipse.properties.TexlipseProperties;
 import net.sourceforge.texlipse.texparser.LatexParserUtils;
 
+import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.SubStatusLineManager;
 import org.eclipse.jface.text.BadLocationException;
@@ -24,7 +29,6 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.text.TextSelection;
-import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.IEditorActionDelegate;
 import org.eclipse.ui.IEditorPart;
@@ -36,7 +40,9 @@ import org.eclipse.ui.ide.IDE;
  * This action opens the declaration of
  * <ul><li>References</li>
  * <li>Citations</li>
- * <li>Custom commands (/newcommand)</li></ul>
+ * <li>Custom commands (/newcommand)</li>
+ * <li>include and input</li>
+ * </ul>
  * 
  * @author Boris von Loesch
  */
@@ -57,7 +63,25 @@ public class OpenDeclarationAction implements IEditorActionDelegate {
 		this.targetEditor = targetEditor;
 	}
 	
-	/*
+	/**
+     * Prints an error message on the status line and make a beep.
+     * @param message   The error message
+	 */
+    private void createStatusLineErrorMessage(String message) {
+        TexEditor editor;
+        if (targetEditor instanceof TexEditor) {
+            editor = (TexEditor) targetEditor;
+
+            SubStatusLineManager slm = 
+                (SubStatusLineManager) targetEditor.getEditorSite().getActionBars().getStatusLineManager();
+            slm.setErrorMessage(message);
+            slm.setVisible(true);
+
+            editor.getViewer().getTextWidget().getDisplay().beep();
+        }
+    }
+    
+    /*
      *  (non-Javadoc)
      * @see org.eclipse.ui.IActionDelegate#run(org.eclipse.jface.action.IAction)
 	 */
@@ -72,55 +96,51 @@ public class OpenDeclarationAction implements IEditorActionDelegate {
         if (project == null) 
             return;
 
-        ISourceViewer sourceViewer = editor.getViewer();
         ITextSelection selection = (ITextSelection) editor.getSelectionProvider().getSelection();
         IDocument doc = editor.getDocumentProvider().getDocument(editor.getEditorInput());
         String docString = doc.get();
         
-        SubStatusLineManager slm = 
-            (SubStatusLineManager) targetEditor.getEditorSite().getActionBars().getStatusLineManager();
-
         //Get command under cursor
         IRegion comRegion = LatexParserUtils.getCommand(docString, selection.getOffset());
         if (comRegion == null) {
-            slm.setErrorMessage(TexlipsePlugin.getResourceString("gotoDeclarationNoCommandFound"));
-            slm.setVisible(true);
-            sourceViewer.getTextWidget().getDisplay().beep();
+            createStatusLineErrorMessage(TexlipsePlugin.getResourceString("gotoDeclarationNoCommandFound"));
             return;
         }        
         String command = docString.substring(comRegion.getOffset(), comRegion.getOffset() + comRegion.getLength());
         
         AbstractEntry refEntry = null;
         if (selection.getOffset() < comRegion.getOffset() + comRegion.getLength()) {
-            //Cursor is over the command, not the argument, so we try to find the command first
+            //Cursor is over a command, not the argument, we first try to find the command in the user defined commands
             AbstractEntry[] entries = editor.getDocumentModel().getRefMana().getCompletionsCom(command.substring(1), TexCommandEntry.NORMAL_CONTEXT); 
-            if (entries != null && entries.length > 0 && entries[0].fileName != null) 
+            if (entries != null && entries.length > 0 && entries[0].fileName != null) {
+                //the command is defined by the user
                 refEntry = entries[0];
+            }
         }
-        if (refEntry == null && (command.indexOf("ref") >= 0 || command.indexOf("cite") >=0)) {
+        
+        if (refEntry == null && (command.indexOf("ref") >= 0 || command.indexOf("cite") >=0 || 
+                command.equals("\\input") || command.equals("\\include"))) {
             //We need the argument
             IRegion region = null;
             try {
                 region = LatexParserUtils.getCommandArgument(docString, comRegion.getOffset());
             } catch (BadLocationException e1) { }
             if (region == null) {
-                slm.setErrorMessage(TexlipsePlugin.getResourceString("gotoDeclarationNoArgumentFound"));
-                slm.setVisible(true);                
-                sourceViewer.getTextWidget().getDisplay().beep();
+                createStatusLineErrorMessage(TexlipsePlugin.getResourceString("gotoDeclarationNoArgumentFound"));
                 return;
             }
             String ref = docString.substring(region.getOffset(), region.getOffset() + region.getLength());
         
-            if (command.indexOf("ref")>=0) 
+            if (command.indexOf("ref") >= 0) {
+                //Find the matching label
                 refEntry = editor.getDocumentModel().getRefMana().getLabel(ref);
+            }
             else if (command.indexOf("cite")>=0) {
                 //There could be more than one reference (e.g. cite1,cite2)
                 if (ref.indexOf(',') > 0) {
                     int cIndex = selection.getOffset() - region.getOffset();
                     if (cIndex < 0) {
-                        slm.setErrorMessage(TexlipsePlugin.getResourceString("gotoDeclarationNoArgumentFound"));
-                        slm.setVisible(true);                
-                        sourceViewer.getTextWidget().getDisplay().beep();
+                        createStatusLineErrorMessage(TexlipsePlugin.getResourceString("gotoDeclarationNoArgumentFound"));
                         return;
                     }
                     if (ref.charAt(cIndex) == ',') cIndex--;
@@ -134,11 +154,33 @@ public class OpenDeclarationAction implements IEditorActionDelegate {
                 }
                 refEntry = editor.getDocumentModel().getRefMana().getBib(ref.trim());
             }
+            else if (command.equals("\\include") || command.equals("\\input")) {
+                IContainer dir;
+                IFile refFile = editor.getDocumentModel().getFile();
+                if (refFile == null) {
+                    //Fallback strategie, try to determine the source path
+                    dir = TexlipseProperties.getProjectSourceDir(project);
+                }
+                else {
+                    dir = refFile.getParent();
+                }
+                IResource file = dir.findMember(ref + ".tex");
+                if (file == null){
+                    createStatusLineErrorMessage(MessageFormat.format(TexlipsePlugin.getResourceString("gotoDeclarationNoFileFound"), 
+                            new Object[]{ref+".tex"}));
+                    return;
+                }
+                try {
+                    IDE.openEditor(editor.getEditorSite().getPage(), (IFile)file.getAdapter(IFile.class));
+                } catch (PartInitException e) {
+                    TexlipsePlugin.log("Open declaration:", e);
+                }
+                return;
+            }
         }
+        
         if (refEntry == null || refEntry.fileName == null) {
-            slm.setErrorMessage(TexlipsePlugin.getResourceString("gotoDeclarationNoDeclarationFound"));
-            slm.setVisible(true);
-            sourceViewer.getTextWidget().getDisplay().beep();
+            createStatusLineErrorMessage(TexlipsePlugin.getResourceString("gotoDeclarationNoDeclarationFound"));
             return;
         }
 
@@ -149,8 +191,9 @@ public class OpenDeclarationAction implements IEditorActionDelegate {
             IDocument doc2 = part.getDocumentProvider().getDocument(part.getEditorInput());
             int lineOffset = doc2.getLineOffset(refEntry.startLine - 1);
             int offset = 0;
-            if (command.indexOf("ref")>=0 && refEntry.position != null)
+            if (command.indexOf("ref") >= 0 && refEntry.position != null) {
                 offset = refEntry.position.offset;
+            }
             part.getEditorSite().getSelectionProvider().setSelection(
                     new TextSelection(lineOffset + offset, 0));
         } catch (PartInitException e) {

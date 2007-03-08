@@ -409,6 +409,7 @@ public class LatexParserUtils {
             if (Character.isWhitespace(input.charAt(pos))) whiteSpace = true;
             pos--;
         }
+        if (pos < 0) return null;
         if (input.charAt(pos) == '\\' && whiteSpace == false) {
             int l = 1;
             while (pos + l < input.length() && Character.isLetter(input.charAt(pos + l)))

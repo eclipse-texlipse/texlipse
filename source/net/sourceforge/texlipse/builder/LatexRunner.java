@@ -95,8 +95,8 @@ public class LatexRunner extends AbstractProgramRunner {
         if (causingSourceFile != null)
             extResource = sourceDir.findMember(causingSourceFile);
         if (extResource == null)
-            createMarker(resource, null, error + " (Occurance: "
-                    + causingSourceFile + ")", severity);
+            createMarker(resource, null, error + (causingSourceFile != null ? " (Occurance: "
+                    + causingSourceFile + ")" : ""), severity);
         else {
             if (linenr >= 0) {
                 if (layout)
@@ -128,7 +128,7 @@ public class LatexRunner extends AbstractProgramRunner {
         final Pattern LATEXERROR = Pattern.compile("^! LaTeX Error: (.*)$");
         final Pattern TEXERROR = Pattern.compile("^!\\s+(.*)$");
         final Pattern FULLBOX = Pattern.compile("^(?:Over|Under)full \\\\[hv]box .* at lines? (\\d+)-?-?(\\d+)?");
-        final Pattern WARNING = Pattern.compile("^.+Warning.*: (.*)$");
+        final Pattern WARNING = Pattern.compile("^.+[Ww]arning.*: (.*)$");
         final Pattern ATLINE =  Pattern.compile("^l\\.(\\d+)(.*)$");
         final Pattern ATLINE2 =  Pattern.compile(".* line (\\d+).*");
         
@@ -141,8 +141,9 @@ public class LatexRunner extends AbstractProgramRunner {
         
         while (st.hasMoreTokens()) {
             line = st.nextToken();
+            line = line.replaceAll(" {2,}", " ").trim();
             Matcher m = TEXERROR.matcher(line);
-            if (m.matches()) {
+            if (m.matches() && line.toLowerCase().indexOf("warning") == -1) {
                 if (hasProblem) {
                     // We have a not reported problem
                     addProblemMarker(error, occurance, linenr, severity, resource, false);
@@ -211,20 +212,20 @@ public class LatexRunner extends AbstractProgramRunner {
                 severity = IMarker.SEVERITY_WARNING;
                 occurance = determineSourceFile();
                 hasProblem = true;
-                if (line.startsWith("LaTeX Warning: ")) {
-                    error = line.substring(15);
+                if (line.startsWith("LaTeX Warning: ") || line.indexOf("pdfTeX warning") != -1) {
+                    error = m.group(1);
                     //Try to get the line number
                     Matcher pM = ATLINE2.matcher(line);
                     if (pM.matches()) {
                         linenr = Integer.parseInt(pM.group(1));
                     }
-                    String nextLine = st.nextToken();
+                    String nextLine = st.nextToken().replaceAll(" {2,}", " ");
                     pM = ATLINE2.matcher(nextLine);
                     if (pM.matches()) {
                         linenr = Integer.parseInt(pM.group(1));
                     }
                     updateParsedFile(nextLine);
-                    error += " " + nextLine;
+                    error += nextLine;
                     if (linenr != -1) {
                         addProblemMarker(line, occurance, linenr, severity,
                                 resource, false);
@@ -233,7 +234,7 @@ public class LatexRunner extends AbstractProgramRunner {
                     }
                     continue;
                 } else {
-                    error = line;
+                    error = m.group(1);
                     //Try to get the line number
                     Matcher pM = ATLINE2.matcher(line);
                     if (pM.matches()) {
@@ -266,13 +267,15 @@ public class LatexRunner extends AbstractProgramRunner {
                 linenr = Integer.parseInt(m.group(1));
                 String part2 = st.nextToken();
                 int index = line.indexOf(' ');
-                error += " " + line.substring(index).trim() + " (followed by: "
-                        + part2.trim() + ")";
-                addProblemMarker(error, occurance, linenr, severity, resource,
-                        false);
-                linenr = -1;
-                hasProblem = false;
-                continue;
+                if (index > -1) {
+	                error += " " + line.substring(index).trim() + " (followed by: "
+	                        + part2.trim() + ")";
+	                addProblemMarker(error, occurance, linenr, severity, resource,
+	                        false);
+	                linenr = -1;
+	                hasProblem = false;
+	                continue;
+                }
             }
             m = ATLINE2.matcher(line);
             if (hasProblem && m.matches()) {

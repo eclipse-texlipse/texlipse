@@ -350,7 +350,7 @@ public class ViewerManager {
                 if (code == -1 && !registry.getForward()) {
                     // ... so don't launch another viewer window
                     return p;
-                } else if (cmd.toLowerCase().indexOf("acrobat") > -1 && code == 1) {
+                } else if (cmd.toLowerCase().indexOf("acrobat.exe") > -1 && code == 1) {
                 	// This is a fix for Acrobat Professional returning 1 even 
                 	// though it's still running. Probably because it's using a
                 	// launcher process of some kind which spawns the real acrobat.
@@ -361,7 +361,7 @@ public class ViewerManager {
 	                		InputStream ip = Rt.exec("tasklist").getInputStream();
 	                		BufferedReader in = new BufferedReader(new InputStreamReader(ip));
 	                		while ((s = in.readLine()) != null) {
-	                			if (s.toLowerCase().indexOf("acrobat") > -1)
+	                			if (s.toLowerCase().indexOf("acrobat.exe") > -1)
 	                				return p;
 	                		}
 	                	} catch (IOException e) {
@@ -700,4 +700,3 @@ public class ViewerManager {
         }
     }
 }
-

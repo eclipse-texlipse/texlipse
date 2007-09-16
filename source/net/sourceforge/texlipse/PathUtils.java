@@ -285,6 +285,7 @@ public class PathUtils {
 	            PathUtils.loadEscaping(envVars, p.getInputStream());
 	        } else if ((os.indexOf("windows nt") > -1)
 	                || (os.indexOf("windows 20") > -1)
+                    || (os.indexOf("windows vi") > -1)
 	                || (os.indexOf("windows xp") > -1)) {
 	            p = r.exec("cmd.exe /c set");
 	            PathUtils.loadEscaping(envVars, p.getInputStream());

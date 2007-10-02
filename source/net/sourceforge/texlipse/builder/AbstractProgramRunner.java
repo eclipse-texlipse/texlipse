@@ -289,7 +289,12 @@ public abstract class AbstractProgramRunner implements ProgramRunner {
         File src = outputFile.getLocation().toFile();
         File dir = sourceDir.getLocation().toFile();
         
-        boolean success = src.renameTo(new File(dir, preferredOutputFileName));
+        File targetFile = new File(dir, preferredOutputFileName);
+        if (targetFile.exists()) {
+            targetFile.delete();
+        }
+        boolean success = src.renameTo(targetFile);
+        //boolean success = src.renameTo(new File(dir, preferredOutputFileName));
     }
 
     /**

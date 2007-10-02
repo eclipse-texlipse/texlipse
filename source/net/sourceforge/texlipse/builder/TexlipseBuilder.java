@@ -27,6 +27,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
@@ -715,12 +716,12 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
      * @param monitor progress monitor
      * @throws CoreException if an error occurs
      */
-    private void moveTempFiles(IProject project, IProgressMonitor monitor) throws CoreException {
+    private void moveTempFiles(final IProject project, IProgressMonitor monitor) throws CoreException {
         
-        IFolder tempDir = TexlipseProperties.getProjectTempDir(project);
+        final IFolder tempDir = TexlipseProperties.getProjectTempDir(project);
         if (tempDir != null) {
             
-            IContainer sourceDir = TexlipseProperties.getProjectSourceDir(project);
+            final IContainer sourceDir = TexlipseProperties.getProjectSourceDir(project);
             if (!sourceDir.exists()) {
                 return;
             }
@@ -729,38 +730,39 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
                 return;
             }
             
-            String tempExts = TexlipsePlugin.getPreference(TexlipseProperties.TEMP_FILE_EXTS);
+            final String tempExts = TexlipsePlugin.getPreference(TexlipseProperties.TEMP_FILE_EXTS);
             if (tempExts == null || tempExts.length() == 0) {
                 return;
             }
-            String[] ext = tempExts.split(",");
+            project.getWorkspace().run(new IWorkspaceRunnable() {
+                public void run(IProgressMonitor monitor) throws CoreException{
+                    IResource[] res = sourceDir.members();
+                    String[] ext = tempExts.split(",");
+                    String format = TexlipseProperties.getProjectProperty(project, TexlipseProperties.OUTPUT_FORMAT);
+                    for (int i = 0; i < res.length; i++) {
 
-            String format = TexlipseProperties.getProjectProperty(project, TexlipseProperties.OUTPUT_FORMAT);
-            
-            IResource[] res = sourceDir.members();
-            for (int i = 0; i < res.length; i++) {
-                
-                String name = res[i].getName();
-                if (isLatexTempFile(name, ext, format) && res[i].exists()) {
-                    if (!tempDir.exists()) {
-                        tempDir.create(true, true, null);
+                        String name = res[i].getName();
+                        if (isLatexTempFile(name, ext, format) && res[i].exists()) {
+                            if (!tempDir.exists()) {
+                                tempDir.create(true, true, null);
+                            }
+
+                            IResource dest = tempDir.getFile(name);
+                            if (dest != null && dest.exists()) {
+                                dest.delete(true, monitor);
+                            }
+
+                            res[i].move(dest.getFullPath(), true, monitor);
+                            monitor.worked(1);
+                        }
                     }
-                    
-                    IResource dest = tempDir.getFile(name);
-                    if (dest != null && dest.exists()) {
-                        dest.delete(true, monitor);
-                    }
-                    
-                    res[i].move(dest.getFullPath(), true, monitor);
-                    monitor.worked(1);
                 }
-            }
-            
+            }, monitor);
             // refresh to reflect the changes of the temp moves
-            sourceDir.refreshLocal(IProject.DEPTH_ONE, monitor);
+/*            sourceDir.refreshLocal(IProject.DEPTH_ONE, monitor);
             monitor.worked(1);
             tempDir.refreshLocal(IProject.DEPTH_ONE, monitor);
-            monitor.worked(1);
+            monitor.worked(1);*/
         }
     }
 
@@ -771,12 +773,12 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
      * @param monitor progress monitor
      * @throws CoreException if an error occurs
      */
-    private void moveBackTempFiles(IProject project, IProgressMonitor monitor) throws CoreException {
+    private void moveBackTempFiles(final IProject project, IProgressMonitor monitor) throws CoreException {
         
-        IFolder tempDir = TexlipseProperties.getProjectTempDir(project);
+        final IFolder tempDir = TexlipseProperties.getProjectTempDir(project);
         if (tempDir != null && tempDir.exists()) {
             
-            IContainer sourceDir = TexlipseProperties.getProjectSourceDir(project);
+            final IContainer sourceDir = TexlipseProperties.getProjectSourceDir(project);
             if (!sourceDir.exists()) {
                 return;
             }
@@ -785,28 +787,32 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
                 return;
             }
             
-            String[] ext = TexlipsePlugin.getPreferenceArray(TexlipseProperties.TEMP_FILE_EXTS);
+            final String[] ext = TexlipsePlugin.getPreferenceArray(TexlipseProperties.TEMP_FILE_EXTS);
             if (ext == null || ext.length == 0) {
                 return;
             }
 
-            String format = TexlipseProperties.getProjectProperty(project, TexlipseProperties.OUTPUT_FORMAT);
-            IResource[] res = tempDir.members();
-            for (int i = 0; i < res.length; i++) {
-                
-                String name = res[i].getName();
-                if (isLatexTempFile(name, ext, format) && res[i].exists()) {
-                    IPath path = res[i].getProjectRelativePath();
-                    path = path.removeFirstSegments(path.segmentCount()-1);
-                    IResource dest = sourceDir.getFile(path);
-                    if (dest != null && dest.exists()) {
-                        dest.delete(true, monitor);
+            project.getWorkspace().run(new IWorkspaceRunnable() {
+                public void run(IProgressMonitor monitor) throws CoreException{
+                    String format = TexlipseProperties.getProjectProperty(project, TexlipseProperties.OUTPUT_FORMAT);
+                    IResource[] res = tempDir.members();
+                    for (int i = 0; i < res.length; i++) {
+
+                        String name = res[i].getName();
+                        if (isLatexTempFile(name, ext, format) && res[i].exists()) {
+                            IPath path = res[i].getProjectRelativePath();
+                            path = path.removeFirstSegments(path.segmentCount()-1);
+                            IResource dest = sourceDir.getFile(path);
+                            if (dest != null && dest.exists()) {
+                                dest.delete(true, monitor);
+                            }
+
+                            res[i].move(dest.getFullPath(), true, monitor);
+                        }
+                        monitor.worked(1);
                     }
-                    
-                    res[i].move(dest.getFullPath(), true, monitor);
                 }
-                monitor.worked(1);
-            }
+            }, monitor);
 
             // no need to refresh, because Eclipse API is not going to read these temp files
         }
@@ -857,11 +863,7 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
      * @throws CoreException
      */
     protected void deleteMarkers (IProject project) throws CoreException{
-        //IResource[] ress = TexlipseProperties.getAllProjectFiles(project);
-        IResource[] ress = project.members();
-        for (int i = 0; i < ress.length; i++) {
-            ress[i].deleteMarkers(MARKER_TYPE, false, IResource.DEPTH_INFINITE);
-            ress[i].deleteMarkers(LAYOUT_WARNING_TYPE, false, IResource.DEPTH_INFINITE);
-        }
+        project.deleteMarkers(MARKER_TYPE, false, IResource.DEPTH_INFINITE);
+        project.deleteMarkers(LAYOUT_WARNING_TYPE, false, IResource.DEPTH_INFINITE);
     }
 }

@@ -127,7 +127,8 @@ public class BibEditor extends TextEditor {
         a.setActionDefinitionId(ITextEditorActionDefinitionIds.CONTENT_ASSIST_PROPOSALS);
         setAction("ContentAssistProposal", a);
         
-        getDocumentProvider().getDocument(this.getEditorInput()).addDocumentListener(new BibStringCompleter(this));
+        //This feature was removed because it causes errors
+        //getDocumentProvider().getDocument(this.getEditorInput()).addDocumentListener(new BibStringCompleter(this));
     }
     
     /* (non-Javadoc)

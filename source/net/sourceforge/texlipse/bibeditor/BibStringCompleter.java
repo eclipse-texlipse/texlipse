@@ -24,6 +24,8 @@ import org.eclipse.ui.texteditor.ITextEditor;
  * the corresponding closing string mark after the cursor position.
  * 
  * @author Oskar Ojala
+ * 
+ * TODO This feature must be reimplemented, cmp. Bracketinserter 
  */
 public class BibStringCompleter implements IDocumentListener {
 
@@ -59,7 +61,7 @@ public class BibStringCompleter implements IDocumentListener {
 	 * @see org.eclipse.jface.text.IDocumentListener#documentChanged(org.eclipse.jface.text.DocumentEvent)
 	 */
 	public void documentChanged(DocumentEvent event) {
-		if (TexlipsePlugin.getDefault().getPreferenceStore().getBoolean(
+	    if (TexlipsePlugin.getDefault().getPreferenceStore().getBoolean(
 				TexlipseProperties.BIB_STRING)) {
 
 			if ("{".equals(event.getText())) {

@@ -131,6 +131,8 @@ public class LatexRunner extends AbstractProgramRunner {
         final Pattern WARNING = Pattern.compile("^.+[Ww]arning.*: (.*)$");
         final Pattern ATLINE =  Pattern.compile("^l\\.(\\d+)(.*)$");
         final Pattern ATLINE2 =  Pattern.compile(".* line (\\d+).*");
+        final Pattern NOBIBFILE = Pattern.compile("^No file .+\\.bbl\\.$");
+        final Pattern NOTOCFILE = Pattern.compile("^No file .+\\.toc\\.$");
         
         String line;
         boolean hasProblem = false;
@@ -260,6 +262,20 @@ public class LatexRunner extends AbstractProgramRunner {
                         true);
                 hasProblem = false;
                 linenr = -1;
+                continue;
+            }
+            m = NOBIBFILE.matcher(line);
+            if (m.matches()){
+                // prepare to run bibtex
+                TexlipseProperties.setSessionProperty(resource.getProject(),
+                        TexlipseProperties.SESSION_BIBTEX_RERUN, "true");
+                continue;
+            }
+            m = NOTOCFILE.matcher(line);
+            if (m.matches()){
+                // prepare to re-run latex
+                TexlipseProperties.setSessionProperty(resource.getProject(),
+                        TexlipseProperties.SESSION_LATEX_RERUN, "true");
                 continue;
             }
             m = ATLINE.matcher(line);

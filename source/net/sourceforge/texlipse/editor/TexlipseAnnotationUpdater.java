@@ -190,6 +190,9 @@ public class TexlipseAnnotationUpdater implements ISelectionChangedListener {
                     } catch (BadLocationException e) {
                         //does not happen
                         return Status.CANCEL_STATUS;
+                    } catch (IndexOutOfBoundsException e) {
+                        //can happen in some rare cases, when the document is changed too much while this job runs
+                        return Status.CANCEL_STATUS;
                     }
                 }
         };
@@ -273,6 +276,9 @@ public class TexlipseAnnotationUpdater implements ISelectionChangedListener {
                         return Status.OK_STATUS;
                     } catch (BadLocationException e) {
                         //does not happen
+                        return Status.CANCEL_STATUS;
+                    } catch (IndexOutOfBoundsException e) {
+                        //can happen in some rare cases, when the document is changed too much while this job runs
                         return Status.CANCEL_STATUS;
                     }
                 }

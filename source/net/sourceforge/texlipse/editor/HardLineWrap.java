@@ -9,6 +9,11 @@
  */
 package net.sourceforge.texlipse.editor;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import net.sourceforge.texlipse.TexlipsePlugin;
+
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.DocumentCommand;
 import org.eclipse.jface.text.IDocument;
@@ -25,7 +30,9 @@ import org.eclipse.jface.text.IRegion;
 public class HardLineWrap {
     
     private TexEditorTools tools;
-    
+    private static final Pattern simpleCommandPattern =
+        Pattern.compile("\\\\(\\w+|\\\\)\\s*(\\[.*?\\]\\s*)*(\\{.*?\\}\\s*)*");
+
     public HardLineWrap(){
         this.tools = new TexEditorTools();
     }
@@ -171,6 +178,30 @@ public class HardLineWrap {
     }
 
     /**
+     * This method checks, whether <i>line</i> should stay alone on one line.<br />
+     * Examples:
+     * <ul>
+     * <li>\begin{env}</li>
+     * <li>% Comments</li>
+     * <li>\command[...]{...}{...}</li>
+     * <li>(empty line)</li>
+     * <li>\\[2em]</li>
+     * </ul>
+     * 
+     * @param line
+     * @return
+     */
+    private static boolean isSingleLine(String line) {
+        if (line.length() == 0) return true;
+        if (line.startsWith("%")) return true;
+        if ((line.startsWith("\\") && line.length() == 2)) return true; // e.g. \\ or \[
+        if (line.startsWith("\\item")) return true;
+        Matcher m = simpleCommandPattern.matcher(line);
+        if (m.matches()) return true;
+        return false;
+    }
+    
+    /**
      * New line wrapping strategy.    
      * The actual wrapping method. Based on the <code>IDocument d</code>
      * and <code>DocumentCommand c</code> the method determines how the
@@ -182,7 +213,6 @@ public class HardLineWrap {
      * method finds the first white space after <code> MAX_LENGTH</code>.
      * Normally it adds the rest of the currentline to the next line. 
      * Exceptions are empty lines, commandlines, commentlines, and special lines like \\ or \[.
-     * TODO Make the length of c as small as possible, because otherwise this can delete markers.
      * 
      * @param d             IDocument
      * @param c             DocumentCommand
@@ -198,8 +228,24 @@ public class HardLineWrap {
                     c.text.indexOf("\n") >= 0 || c.text.indexOf("\r") >= 0) return;
             
             String line = d.get(commandRegion.getOffset(), commandRegion.getLength());
+            if (line.indexOf(' ') == -1) {
+                //There is no whitespace
+                return;
+            }
+
             int lineNr = d.getLineOfOffset(c.offset);
             String delim = d.getLineDelimiter(lineNr);
+            boolean isLastLine = false;
+            if (delim == null) {
+                //This is the last line in the document
+                isLastLine = true;
+                if (lineNr > 0) delim = d.getLineDelimiter(lineNr - 1);
+                else {
+                    //Last chance
+                    String delims[] = d.getLegalLineDelimiters();
+                    delim = delims[0];
+                }
+            }
             //String indent = tools.getIndentation(d, c); // TODO check if inside comment
             String indent = tools.getIndentationWithComment(line);
             String nextline = tools.getStringAt(d, c, false, 1);
@@ -213,32 +259,31 @@ public class HardLineWrap {
             newLineBuf.append (c.text);
             newLineBuf.append(trimEnd(line.substring(cursorOnLine)));
             String nextTrimLine = nextline.trim(); 
-            
-            if (nextTrimLine.length() > 0
-                    && !tools.isLineCommandLine(nextTrimLine)
-                    && !tools.isLineCommentLine(nextTrimLine)
-                    && !tools.isLineItemLine(nextTrimLine)
-                    && !((nextTrimLine.startsWith("\\") && nextTrimLine.length() == 2)) // e.g. \\ or \[
-                    && indent.indexOf('%') == -1) {
+            boolean isWithNextline = false;
+            if (!isSingleLine(nextTrimLine) && indent.indexOf('%') == -1) {
                 //Add the whole next line
                 newLineBuf.append(' ');
                 newLineBuf.append(trimBegin(nextline));
                 length += nextline.length();
+                isWithNextline = true;
             } else {
                 newLineBuf.append(delim);
             }
-            length += delim.length(); //delim.length();
+            if (!isLastLine) length += delim.length(); //delim.length();
             String newLine = newLineBuf.toString();
 
             c.length = length;
             
             int breakpos = tools.getLastWSPosition(newLine, MAX_LENGTH);
+            if (breakpos == -1) {
+                breakpos = tools.getFirstWSPosition(newLine, MAX_LENGTH);
+            }
             c.shiftsCaret = false;
             c.caretOffset = c.offset + c.text.length() + indent.length();
             if (breakpos > cursorOnLine){ 
                 c.caretOffset -= indent.length();
             }
-            if (breakpos < cursorOnLine){
+            if (breakpos <= cursorOnLine){
                 //Line delimiter - one white space
                 c.caretOffset += delim.length() - 1;
             }
@@ -251,10 +296,28 @@ public class HardLineWrap {
             buf.append(indent);
             buf.append(trimBegin(newLine.substring(breakpos)));
             
+            //Remove unnecessary characters from buf
+            int i=0;
+            while (line.charAt(i) == buf.charAt(i)) {
+                i++;
+            }
+            buf.delete(0, i);
+            c.offset += i;
+            c.length -= i;
+            if (isWithNextline) {
+                i=0;
+                while (i < nextline.length() && 
+                        nextline.charAt(nextline.length()-i-1) == buf.charAt(buf.length()-i-1)) {
+                    i++;
+                }
+                buf.delete(buf.length()-i, buf.length());
+                c.length -= i;
+            }
+            
             c.text = buf.toString();
             
         } catch(BadLocationException e) {
-            // FIXME
+            TexlipsePlugin.log("Problem with hard line wrap", e);
        }
     }
     

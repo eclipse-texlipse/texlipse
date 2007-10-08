@@ -115,7 +115,7 @@ public class TexCompletionProcessor implements IContentAssistProcessor {
                 } else if (seqStart.length() > 0) {
                     //---------------------spell-checking-code-starts----------------------
                     // spell checking can't help with words not starting with a letter...
-                    proposals = SpellChecker.getSpellingProposal(offset);
+                    proposals = SpellChecker.getSpellingProposal(offset, fviewer);
                     if (proposals != null && proposals.length > 0) {
                         return proposals;
                     }

@@ -395,11 +395,12 @@ public class LatexParserUtils {
      * inside the command string or inside the first mandatory argument
      * @param input
      * @param index
-     * @return
+     * @return null if it could not find any command
      * @throws BadLocationException
      */
     public static IRegion getCommand (String input, int index){
         int pos = index;
+        if ("".equals(input)) return null;
         while (pos >= input.length()) pos--;
         if (isInsideComment(input, index)) return null;
         boolean whiteSpace = false;

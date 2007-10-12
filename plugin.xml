@@ -3,7 +3,7 @@
 <plugin
    id="net.sourceforge.texlipse"
    name="TeXlipse Plug-in"
-   version="1.1.1"
+   version="1.2.0"
    provider-name="TeXlapse Team"
    class="net.sourceforge.texlipse.TexlipsePlugin">
 
@@ -1037,11 +1037,6 @@ ${cursor}
             contextId="net.sourceforge.texlipse.texEditorScope"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             sequence="M1+I"/>
-      <key
-            commandId="net.sourceforge.texlipse.commands.wordCount"
-            contextId="net.sourceforge.texlipse.texEditorScope"
-            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            sequence="M1+3"/>
       <key
             commandId="net.sourceforge.texlipse.commands.preview"
             contextId="net.sourceforge.texlipse.texEditorScope"

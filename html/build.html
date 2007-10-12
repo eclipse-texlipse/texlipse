@@ -50,8 +50,8 @@ the Partial Building -toolbar button can be used to toggle partial building mode
 <p>
 In practice, when in partial building mode, the document that is currently being
 edited is built. The current document means the last LaTeX document that was open
-in the editor. If the current document is not the main file, it does not contain a
-<code>\begin{document}</code> -tag and is therefore not a proper LaTeX document
+in the editor. If the current document is not the main file and does not contain a
+<code>\begin{document}</code> -tag it is not a proper LaTeX document
 on it&#39;s own. That is why a temporary LaTeX file is constructed by prepending the
 preamble-section from the main file to the current file and appending the 
 bibliography-section to the end. This temporary document is saved to a file called
@@ -59,7 +59,11 @@ bibliography-section to the end. This temporary document is saved to a file call
 with the output of the partial build. This enables an easy switching between
 partial and &quot;full&quot; building mode while the viewer application is running.
 </p>
-
+<p>
+If the current document is a self-contained LaTeX document (it contains a 
+<code>\begin{document}</code>) it will be build correctly on save even if it is
+not the main document. No temporary document will be created in this case.
+</p>
 
 <h2><a name="preview"></a> Previewing </h2>
 

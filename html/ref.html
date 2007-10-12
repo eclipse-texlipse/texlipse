@@ -59,7 +59,7 @@ before the actual reference\dots
 \end{table}
 
 and referring to Table~\ref{table:pi} works afterwards
-worsk as well.
+works as well.
 \end{document}
   </pre>
   
@@ -76,21 +76,27 @@ worsk as well.
   down the shown references.) The command <i>\pageref{}</i>
   works in the same way.
   </p>
-  
+  <p>If <i>Highlight selected references and ...</i> is turned on in the preferences, 
+  TeXlipse also highlights the label and all references of the currently
+  selected reference or label in the current file. 
+  </p>
+  <p>But that's not all. If the cursor is on a reference you can use the magic F3 key (or
+  use <i>Open Declaration</i> from the main or context menu) to jump to the correspondig label!
+  How funky is that?</p>
   <h3>But I use <i>\input{file}</i> to separate my document
   into several more easily handled files... does this mess up
   things?</h3>
   
   <p>No worries. All references are searched from the
 	LaTeX -files in the project and they will be available in
-	the content assist menu.
+	the content assist menu and will be found by <i>Open Declaration</i>.
   </p>
 
 <h2>My special \label environment doesn't work...</h2>
 
 <p>Basic label commands and labels in self-defined commands are supported so
 that the first mandatory argument must be the label argument. More complex
-environments might define their own label environments, which are not
+environments (e.g. lstlistings) might define their own label environments, which are not
 currently supported in TeXlipse.</p>
 	
 </body>

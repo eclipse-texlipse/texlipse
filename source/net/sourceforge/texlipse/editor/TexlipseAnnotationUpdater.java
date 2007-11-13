@@ -299,7 +299,7 @@ public class TexlipseAnnotationUpdater implements ISelectionChangedListener {
             for (Iterator iter = fOldAnnotations.iterator(); iter.hasNext();) {
                 Annotation anno = (Annotation) iter.next();
                 Position p = model.getPosition(anno);
-                if (p.offset <= textSelection.getOffset() && p.offset+p.length >= textSelection.getOffset()) { 
+                if (p != null && p.offset <= textSelection.getOffset() && p.offset+p.length >= textSelection.getOffset()) { 
                     return true;
                 }
             }

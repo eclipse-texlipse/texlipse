@@ -293,7 +293,7 @@ public class LatexParserUtils {
                 //never happens
                 TexlipsePlugin.log("Error", e);                
             }
-            pos = input.lastIndexOf(command, pos);
+            pos = input.lastIndexOf(command, pos-1);
         }
         return -1;
     }

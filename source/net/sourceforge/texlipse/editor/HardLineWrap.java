@@ -37,119 +37,6 @@ public class HardLineWrap {
         this.tools = new TexEditorTools();
     }
 
-/*    public void doWrapB(IDocument d, DocumentCommand c, int MAX_LENGTH) {
-        try {
-            // Get the line of the command excluding delimiter
-            IRegion commandRegion = d.getLineInformationOfOffset(c.offset);
-            String line = d.get(commandRegion.getOffset(), commandRegion.getLength());
-                        
-            // TODO check whitespace -> just len == 1 && char == ' ' should do
-            //if (line.length() < MAX_LENGTH || !Character.isWhitespace(c.text.charAt(0))) {
-            if (line.length() < MAX_LENGTH || !(" ".equals(c.text) || "\t".equals(c.text))) {
-                return;
-            }
-            
-            String delim = tools.getLineDelimiter(d, c);
-            //String indent = tools.getIndentation(d, c); // TODO check if inside comment
-            String indent = tools.getIndentationWithComment(line);
-            int breakpos = tools.getLastWSPosition(line, MAX_LENGTH);
-            String nextline = tools.getStringAt(d, c, false, 1).trim();
-            
-            StringBuffer buf = new StringBuffer();
-
-            // Check if the cursor is not at the end of the line
-            boolean caretMidLine = false;
-            int carretCorrection = 0;
-            int cursorOnLine = c.offset - commandRegion.getOffset();
-            if (cursorOnLine != commandRegion.getLength()) {
-                caretMidLine = true;
-                if (cursorOnLine <= breakpos) {
-                    // We put more text to the buffer and change c.offset, nothing more
-                    buf.append(c.text);
-                    buf.append(line.substring(cursorOnLine, breakpos)); // trim?
-                } else {
-                    // We modify the line and everything is handled automatically
-                    String startLine = line.substring(0, cursorOnLine);
-                    carretCorrection += line.length() - cursorOnLine - line.substring(cursorOnLine).trim().length();
-                    line = startLine + c.text + line.substring(cursorOnLine);
-                }
-            }
-            else{
-                line = line + c.text;
-            }
-                
-            int trimCorrection = 0;
-            // Break the line
-            if (breakpos < indent.length()) {
-                buf.append(delim);
-                buf.append(indent);
-                breakpos = tools.getLastWSPosition(line, line.length());
-                // Check if the line can be broken after limit
-                if (breakpos >= indent.length()) {
-                    buf.append(line.substring(breakpos + 1).trim()); // TODO trim?
-                }
-            } else {
-                buf.append(delim);
-                buf.append(indent);
-                String newText = line.substring(breakpos + 1).trim(); // TODO trim?
-                buf.append(newText); 
-                trimCorrection -= line.length() - breakpos - 1 - newText.trim().length();
-                //buf.append(" ");
-            }
-            
-            // If the cursor was at the end of the line, add the typed text
-            carretCorrection += trimCorrection;
-            if (!caretMidLine && (c.text.endsWith(" ") || c.text.endsWith("\t"))) {
-                buf.append(c.text.charAt(c.text.length()-1));
-                carretCorrection++;
-            }
-            
-            int indentLengthCorrection = 0;
-
-            // Append next line or insert newline
-            if (nextline.length() > 0
-                    && !tools.isLineCommandLine(nextline)
-                    && !tools.isLineCommentLine(nextline)
-                    && !tools.isLineItemLine(nextline)
-                    && indent.indexOf('%') == -1) {
-                if (caretMidLine) {
-                    buf.append(" ");
-                    carretCorrection++;
-                }
-                buf.append(nextline);
-            } else {
-                buf.append(delim);
-                indentLengthCorrection = indent.length();
-            }
-            
-            // Modify the document command so that the wrap is inserted
-            // No exceptions can occur here, so if everything went smoothly,
-            // Then all of the below will be executed
-            c.shiftsCaret = false;
-            //c.caretOffset = c.offset + delim.length() + indent.length();
-
-            //c.offset = d.getLineOffset(d.getLineOfOffset(c.offset)) + breakpos;
-            if (cursorOnLine > breakpos) {
-                c.caretOffset = c.offset + delim.length() + indent.length() + carretCorrection;
-                if (breakpos > indent.length()) {
-                    c.offset = commandRegion.getOffset() + breakpos;
-                } else {
-                    //right size if newline is inserted, too short is next line is appended
-                    indentLengthCorrection += delim.length();
-                }
-            } else {
-                c.caretOffset = c.offset + delim.length();
-            }
-            
-            //c.length = buf.length() - 1 - indent.length();
-            c.length = buf.length() - delim.length() - indentLengthCorrection - trimCorrection;
-            //c.caretOffset = newCaretOffset;
-            c.text = buf.toString();
-            
-        } catch(BadLocationException e) {
-            // FIXME
-       }
-    }*/
     
     /**
      * Removes all whitespaces from the beginning of the String
@@ -283,7 +170,7 @@ public class HardLineWrap {
             if (breakpos > cursorOnLine){ 
                 c.caretOffset -= indent.length();
             }
-            if (breakpos <= cursorOnLine){
+            if (breakpos <= cursorOnLine + c.text.length()){
                 //Line delimiter - one white space
                 c.caretOffset += delim.length() - 1;
             }
@@ -298,7 +185,7 @@ public class HardLineWrap {
             
             //Remove unnecessary characters from buf
             int i=0;
-            while (line.charAt(i) == buf.charAt(i)) {
+            while (i < line.length() && line.charAt(i) == buf.charAt(i)) {
                 i++;
             }
             buf.delete(0, i);

@@ -167,7 +167,7 @@ public class HardLineWrap {
             }
             c.shiftsCaret = false;
             c.caretOffset = c.offset + c.text.length() + indent.length();
-            if (breakpos > cursorOnLine){ 
+            if (breakpos > cursorOnLine + c.text.length()){ 
                 c.caretOffset -= indent.length();
             }
             if (breakpos <= cursorOnLine + c.text.length()){

@@ -645,7 +645,7 @@ public class TexEditorTools extends DefaultIndentLineAutoEditStrategy {
             indentation.append(array[i]);
             i++;
         }
-        if (array[i] == '%') {
+        if (i < array.length && array[i] == '%') {
             indentation.append("% ");
         }
         

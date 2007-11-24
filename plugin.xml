@@ -3,7 +3,7 @@
 <plugin
    id="net.sourceforge.texlipse"
    name="TeXlipse Plug-in"
-   version="1.2.0"
+   version="1.2.1"
    provider-name="TeXlapse Team"
    class="net.sourceforge.texlipse.TexlipsePlugin">
 

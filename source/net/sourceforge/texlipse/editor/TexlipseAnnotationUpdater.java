@@ -170,7 +170,8 @@ public class TexlipseAnnotationUpdater implements ISelectionChangedListener {
                 public IStatus run(IProgressMonitor monitor) {
                     String refNameRegExp = refName.replaceAll("\\*", "\\\\*");
                     //This finds a line whith refs or labels (no comment) 
-                    final String refRegExp = "(?:^|\\n|\\r)(?:[^%\\n\\r]|\\\\%)*(?<!\\\\)\\\\(?:[a-zA-Z]*ref|label)\\s*\\{("+refNameRegExp+")\\}";
+                    //final String refRegExp = "(?:^|\\n|\\r)(?:[^%\\n\\r]|\\\\%)*(?<!\\\\)\\\\(?:[a-zA-Z]*ref|label)\\s*\\{("+refNameRegExp+")\\}";
+                    final String refRegExp = "(?:^|\\n|\\r)(?:[^%\\n\\r]?(?:\\\\%)?)*(?<!\\\\)\\\\(?:[a-zA-Z]*ref|label)\\s*\\{("+refNameRegExp+")\\}";
                     final Pattern p = Pattern.compile("(?<!\\\\)\\\\(?:[a-zA-Z]*ref|label)\\s*\\{("+refNameRegExp+")\\}");
                     FindReplaceDocumentAdapter docFinder = new FindReplaceDocumentAdapter(document);
                     IRegion match;
@@ -214,7 +215,8 @@ public class TexlipseAnnotationUpdater implements ISelectionChangedListener {
                 public IStatus run(IProgressMonitor monitor) {
                     //This finds a line with begin or end (no comment) ((?:^|\n|\r)(?:[^%\n\r]|\\%)*(?<!\\)\\(begin|end)\s*\{([^\}\{]+)\})
                     String refNameRegExp = envName.replaceAll("\\*", "\\\\*");
-                    final String refRegExp = "(?:^|\\n|\\r)(?:[^%\\n\\r]|\\\\%)*(?<!\\\\)\\\\(begin|end)\\s*\\{("+refNameRegExp+")\\}";
+                    //final String refRegExp = "(?:^|\\n|\\r)(?:[^%\\n\\r]|\\\\%)*(?<!\\\\)\\\\(begin|end)\\s*\\{("+refNameRegExp+")\\}";
+                    final String refRegExp = "(?:^|\\n|\\r)(?:[^%\\n\\r]?(?:\\\\%)?)*(?<!\\\\)\\\\(begin|end)\\s*\\{("+refNameRegExp+")\\}";
                     final Pattern p = Pattern.compile("(?<!\\\\)\\\\(begin|end)\\s*\\{("+refNameRegExp+")\\}");
                     FindReplaceDocumentAdapter docFinder = new FindReplaceDocumentAdapter(document);
 

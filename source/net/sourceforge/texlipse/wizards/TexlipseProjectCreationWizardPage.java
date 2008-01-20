@@ -176,11 +176,11 @@ public class TexlipseProjectCreationWizardPage extends TexlipseWizardPage {
             public void widgetSelected(SelectionEvent event) {
                 //Only execute if this field becomes selected
                 if (!createLocalProjectButton.getSelection()) return;
-                projectLocationField.setText(workspacePath + projectNameField.getText());
                 Control[] c = projectLocationField.getParent().getChildren();
                 for (int i = 0; i < c.length; i++) {
                     c[i].setEnabled(false);
                 }
+                projectLocationField.setText(workspacePath + projectNameField.getText());
                 attributes.setProjectLocation(null);
                 updateStatus(createStatus(IStatus.OK, ""), projectLocationField);
             }});
@@ -195,6 +195,7 @@ public class TexlipseProjectCreationWizardPage extends TexlipseWizardPage {
                 for (int i = 0; i < c.length; i++) {
                     c[i].setEnabled(true);
                 }
+                projectLocationField.setFocus();
                 projectLocationField.setText("");
             }});
         
@@ -253,7 +254,10 @@ public class TexlipseProjectCreationWizardPage extends TexlipseWizardPage {
      */
     private void validateProjectLocation(String text) {
         IWorkspace workspace = ResourcesPlugin.getWorkspace();
-        IProject p = workspace.getRoot().getProject(projectNameField.getText());
+        String pName = projectNameField.getText();
+        //Project needs a name, otherwise an exception is thrown. The name is not important for path checking
+        if ("".equals(pName)) pName = "fdslajflj";
+        IProject p = workspace.getRoot().getProject(pName);
         IStatus status = workspace.validateProjectLocation(p, new Path(text));
         if (status.getSeverity() == IStatus.OK) {
             attributes.setProjectLocation(text);

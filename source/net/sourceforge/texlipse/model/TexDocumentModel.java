@@ -659,7 +659,7 @@ public class TexDocumentModel implements IDocumentListener {
                     List bibEntriesList = parser.getEntries();
                     if (bibEntriesList != null && bibEntriesList.size() > 0) {
                         bibContainer.addRefSource(path + name, bibEntriesList);
-                    } else {
+                    } else if (bibEntriesList == null) {
                         MarkerHandler marker = MarkerHandler.getInstance();
                         marker.addFatalError(editor, "The BibTeX file " + res.getFullPath() + " contains fatal errors, parsing aborted.");
                         continue;

@@ -1,43 +1,57 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?eclipse version="3.0"?>
-<plugin
-   id="net.sourceforge.texlipse"
-   name="TeXlipse Plug-in"
-   version="1.2.1"
-   provider-name="TeXlapse Team"
-   class="net.sourceforge.texlipse.TexlipsePlugin">
+<?eclipse version="3.2"?>
+<!--
+ ###############################################################################
+ #
+ # Copyright (c) 2005-2008 by the TeXlipse Project.
+ # All rights reserved. This program and the accompanying materials
+ # are made available under the terms of the Eclipse Public License v1.0
+ # which accompanies this distribution, and is available at
+ # http://www.eclipse.org/legal/epl-v10.html
+ #
+ ###############################################################################
+-->
 
-   <runtime>
-      <library name="texlipse.jar">
-         <export name="*"/>
-      </library>
-   </runtime>
+<plugin>
+   <extension
+         point="org.eclipse.core.runtime.contentTypes">
+      <content-type
+            base-type="org.eclipse.core.runtime.text"
+            default-charset="ISO-8859-1"
+            file-extensions="tex,ltx,sty,cls"
+            id="net.sourceforge.texlipse.contentTypes.Latex"
+            name="LaTeX File"
+            priority="normal">
+      </content-type>
+   </extension>
 
-   <requires>
-      <import plugin="org.eclipse.ui"/>
-      <import plugin="org.eclipse.core.runtime"/>
-      <import plugin="org.eclipse.ui.editors"/>
-      <import plugin="org.eclipse.ui.workbench.texteditor"/>
-      <import plugin="org.eclipse.core.resources"/>
-      <import plugin="org.eclipse.ui.views"/>
-      <import plugin="org.eclipse.jface.text"/>
-      <import plugin="org.eclipse.ui.ide"/>
-      <import plugin="org.eclipse.ui.forms"/>
-      <import plugin="org.eclipse.help"/>
-      <import plugin="org.eclipse.debug.core"/>
-      <import plugin="org.eclipse.debug.ui"/>
-      <import plugin="org.eclipse.ui.console"/>
-   </requires>
+   <extension
+	     point="org.eclipse.core.filebuffers.documentSetup">
+	  <participant
+		    extensions="bib"
+		    class="net.sourceforge.texlipse.bibeditor.BibSetupParticipant">
+	  </participant>
+   </extension>
+   <extension
+	     point="org.eclipse.core.filebuffers.documentSetup">
+	   <participant
+	         class="net.sourceforge.texlipse.editor.TexDocumentSetupParticipant"
+	         contentTypeId="net.sourceforge.texlipse.contentTypes.Latex"/>
+   </extension>
+
    <extension
          point="org.eclipse.ui.editors">
       <editor
             class="net.sourceforge.texlipse.editor.TexEditor"
-            icon="icons/texfile.gif"
-            default="true"
             contributorClass="net.sourceforge.texlipse.editor.TexEditorActionContributor"
-            name="Latex Editor"
+            default="true"
+            icon="icons/texfile.gif"
             id="net.sourceforge.texlipse.TexEditor"
-            extensions="tex,ltx,sty,cls"/>
+            name="LaTeX Editor">
+         <contentTypeBinding
+               contentTypeId="net.sourceforge.texlipse.contentTypes.Latex">
+         </contentTypeBinding>
+      </editor>
       <editor
             class="net.sourceforge.texlipse.bibeditor.BibEditor"
             icon="icons/bibfile.gif"
@@ -47,7 +61,7 @@
             extensions="bib"/>
    </extension>
    <extension
-         id="builder.TexlipseBuilder"
+         id="net.sourceforge.texlipse.builder.TexlipseBuilder"
          name="Latex Builder"
          point="org.eclipse.core.resources.builders">
       <builder >
@@ -62,6 +76,7 @@
          <run class="net.sourceforge.texlipse.builder.TexlipseNature"/>
       </runtime>
    </extension>
+<!-- Icon is missing 
    <extension
          id="properties.projectNatureImage1"
          name="Latex Nature"
@@ -71,6 +86,7 @@
             icon="icons/texnature.gif"
             id="net.sourceforge.texlipse.ui.projectNatureImage"/>
    </extension>
+-->
    <extension
          point="org.eclipse.ui.newWizards">
       <wizard
@@ -121,16 +137,7 @@
             name="Full Latex Outline"
             id="Texlipse.view2"/>
    </extension>
-   <extension
-         point="org.eclipse.ui.perspectiveExtensions">
-      <perspectiveExtension targetID="Texlipse.perspectiveExtension1">
-         <view
-               ratio="0.5"
-               relationship="right"
-               relative="Texlipse.view1"
-               id="Texlipse.view1"/>
-      </perspectiveExtension>
-   </extension>
+
    <extension
          point="org.eclipse.ui.preferencePages">
       <page
@@ -237,19 +244,6 @@
          point="org.eclipse.core.runtime.preferences">
       <initializer class="net.sourceforge.texlipse.properties.TexlipsePreferenceInitializer"/>
    </extension>
-
-   <extension
-	     id="BibDocumentSetupParticipant"
-         name="%documentSetupParticipantName"
-	     point="org.eclipse.core.filebuffers.documentSetup">
-	  <participant
-		    extensions="bib"
-		    class="net.sourceforge.texlipse.bibeditor.BibSetupParticipant">
-	  </participant>
-   <participant
-         class="net.sourceforge.texlipse.editor.TexDocumentSetupParticipant"
-         extensions="tex,ltx,sty"/>
-   </extension>
    <extension
          point="org.eclipse.help.toc">
       <toc
@@ -257,19 +251,8 @@
             file="toc.xml"/>
    </extension>
    <extension
-         point="org.eclipse.debug.core.launchConfigurationTypes">
-      <launchConfigurationType
-            delegate="net.sourceforge.texlipse.viewer.TexLaunchConfigurationDelegate"
-            name="View Latex Document"
-            modes="run"
-            id="net.sourceforge.texlipse.viewer.launchConfigurationType"/>
-   </extension>
-   <extension
-         point="org.eclipse.debug.ui.launchConfigurationTabGroups">
-      <launchConfigurationTabGroup
-            type="net.sourceforge.texlipse.viewer.launchConfigurationType"
-            class="net.sourceforge.texlipse.viewer.TexLaunchConfigurationTabGroup"
-            id="net.sourceforge.texlipse.viewer.launchConfigurationTabGroup"/>
+         point="org.eclipse.help.contexts">
+      <contexts file="contexts.xml"/>
    </extension>
    <extension
          point="org.eclipse.ui.editors.templates">
@@ -1095,10 +1078,6 @@ ${cursor}
       <persistent value="true"/>
    </extension>
    <extension
-         point="org.eclipse.help.contexts">
-      <contexts file="contexts.xml"/>
-   </extension>
-   <extension
          point="org.eclipse.ui.ide.markerResolution">
       <markerResolutionGenerator
             class="net.sourceforge.texlipse.spelling.SpellingResolutionGenerator"
@@ -1151,6 +1130,24 @@ ${cursor}
             pattern="*.lof">
       </filter>
    </extension>
+   <extension
+         point="org.eclipse.debug.core.launchConfigurationTypes">
+      <launchConfigurationType
+            category="org.eclipse.ui.externaltools"
+            delegate="net.sourceforge.texlipse.viewer.TexLaunchConfigurationDelegate"
+            id="net.sourceforge.texlipse.viewer.launchConfigurationType"
+            modes="run"
+            name="View Latex Document"
+            public="true"/>
+   </extension>
+   <extension
+         point="org.eclipse.debug.ui.launchConfigurationTabGroups">
+      <launchConfigurationTabGroup
+            type="net.sourceforge.texlipse.viewer.launchConfigurationType"
+            class="net.sourceforge.texlipse.viewer.TexLaunchConfigurationTabGroup"
+            id="net.sourceforge.texlipse.viewer.launchConfigurationTabGroup"/>
+   </extension>
+   <!-- Keys: M1=Ctrl M2=Shift M3=Alt-->
    <extension point="org.eclipse.debug.ui.launchConfigurationTypeImages">
 	<launchConfigurationTypeImage
 		id="net.sourceforge.texlipse.viewer.launchConfigurationTypeImage"
@@ -1180,5 +1177,24 @@ ${cursor}
             textStylePreferenceValue="IBEAM"
             verticalRulerPreferenceKey="highlight.rulers.vertical"
             verticalRulerPreferenceValue="false"/>
+   </extension>
+   <extension
+         point="org.eclipse.team.core.fileTypes">
+      <fileTypes
+            extension="tex"
+            type="text">
+      </fileTypes>
+      <fileTypes
+            extension="ltx"
+            type="text">
+      </fileTypes>
+      <fileTypes
+            extension="sty"
+            type="text">
+      </fileTypes>
+      <fileTypes
+            extension="cls"
+            type="text">
+      </fileTypes>
    </extension>
 </plugin>

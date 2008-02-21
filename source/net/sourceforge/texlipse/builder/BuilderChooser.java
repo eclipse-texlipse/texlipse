@@ -25,6 +25,8 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Link;
+import org.eclipse.ui.dialogs.PreferencesUtil;
 
 
 /**
@@ -48,20 +50,20 @@ public class BuilderChooser {
     private String[][] mapping;
     
     // mapping of sequences to builder ids
-    private HashMap idMap;
+    private HashMap<String, Integer> idMap;
 
     // list of (format-) selection listeners
-    private ArrayList selectionListeners;
+    private ArrayList<SelectionListener> selectionListeners;
 
     /**
      * 
      */
     public BuilderChooser(Composite parent) {
         
-        selectionListeners = new ArrayList();
+        selectionListeners = new ArrayList<SelectionListener>();
         createMappings();
         
-        formatGroup = new Group(parent, SWT.SHADOW_ETCHED_IN);
+        formatGroup = new Group(parent, SWT.NONE);
         GridLayout gl = new GridLayout();
         gl.numColumns = 4;
         formatGroup.setLayout(gl);
@@ -79,6 +81,7 @@ public class BuilderChooser {
         formatChooser.setItems(new String[] { TexlipseProperties.OUTPUT_FORMAT_DVI, TexlipseProperties.OUTPUT_FORMAT_PS, TexlipseProperties.OUTPUT_FORMAT_PDF });
         formatChooser.select(0);
         formatChooser.addSelectionListener(new SelectionAdapter() {
+            @Override
             public void widgetSelected(SelectionEvent event) {
                 int index = formatChooser.getSelectionIndex();
                 if (index >= 0) {
@@ -86,7 +89,8 @@ public class BuilderChooser {
                     sequenceChooser.select(0);
                     fireSelectionEvent(event);
                 }
-            }});
+            }
+        });
         
         // descriptive label
         Label slabel = new Label(formatGroup, SWT.LEFT);
@@ -100,19 +104,34 @@ public class BuilderChooser {
         sequenceChooser.setItems(mapping[0]);
         sequenceChooser.select(0);
         sequenceChooser.addSelectionListener(new SelectionAdapter() {
+            @Override
             public void widgetSelected(SelectionEvent event) {
                 int index = sequenceChooser.getSelectionIndex();
                 if (index >= 0) {
                     fireSelectionEvent(event);
                 }
-            }});
+            }
+        });
+		
+		final Link prefLink = new Link(formatGroup, SWT.NONE);
+		prefLink.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 4, 1));
+		prefLink.setText(TexlipsePlugin.getResourceString("propertiesOutputLinkToPrefs"));
+		prefLink.addSelectionListener(new SelectionAdapter() {
+            @Override
+			public void widgetSelected(SelectionEvent e) {
+				PreferencesUtil.createPreferenceDialogOn(formatGroup.getShell(), "TexlipseBuilderPreferencePage", new String[] {
+						"TexlipseBuilderPreferencePage",
+						"net.sourceforge.texlipse.properties.BuilderEnvPreferencePage"
+				}, null).open();
+			}
+		});
     }
     
     /**
-     * Creates the 
+     * Creates the Sequence to Id mappings
      */
     private void createMappings() {
-        idMap = new HashMap();
+        idMap = new HashMap<String, Integer>();
         
         Builder[] dvis = BuilderRegistry.getAll(TexlipseProperties.OUTPUT_FORMAT_DVI);
         Builder[] pses = BuilderRegistry.getAll(TexlipseProperties.OUTPUT_FORMAT_PS);
@@ -210,12 +229,12 @@ public class BuilderChooser {
             sequenceChooser.select(index);
         }
     }
-
-    /**
-     * Sets the layout data for this component.
-     * @param gd new layout data for this component
-     */
-    public void setLayoutData(GridData gd) {
-        formatGroup.setLayoutData(gd);
-    }
+	
+	/**
+	 * Access to the SWT control to set layout data, disable group etc.
+	 */
+	public Composite getControl() {
+		return formatGroup;
+	}
+	
 }

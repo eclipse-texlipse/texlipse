@@ -13,9 +13,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
@@ -45,12 +45,17 @@ public class PathUtils {
      */
     public static String[] mergeEnvFromPrefs(Properties envProp, String prefName) {
         
-        HashMap environment = new HashMap();
-        environment.putAll(envProp);
-        Map prefsMap = getPreferenceMap(prefName);
-        String[] keys = (String[]) prefsMap.keySet().toArray(new String[0]);
+        HashMap<String, String> environment = new HashMap<String, String>();
+        Enumeration<Object> e = envProp.keys();
+        while (e.hasMoreElements()){
+           String key = (String)e.nextElement();
+           String v = envProp.getProperty(key);
+           environment.put(key, v);
+        }
+        Map<String, String> prefsMap = getPreferenceMap(prefName);
+        String[] keys = prefsMap.keySet().toArray(new String[0]);
         for (int i = 0; i < keys.length; i++) {
-            String value = (String) prefsMap.get(keys[i]);
+            String value = prefsMap.get(keys[i]);
             value = replaceVar(envProp, value);
             environment.put(keys[i], value);
         }
@@ -75,13 +80,13 @@ public class PathUtils {
      * @param map key/value mappings as a Map
      * @return array of "key=value" Strings
      */
-    public static String[] getStrings(Map map) {
+    public static String[] getStrings(Map<String, String> map) {
         
         String[] array = new String[map.size()];
-        String[] keys = (String[]) map.keySet().toArray(new String[0]);
+        String[] keys = map.keySet().toArray(new String[0]);
         
         for (int i = 0; i < keys.length; i++) {
-            array[i] = keys[i] + '=' + (String) map.get(keys[i]);
+            array[i] = keys[i] + '=' + map.get(keys[i]);
         }
         
         return array;
@@ -95,8 +100,8 @@ public class PathUtils {
      * @param name preference name
      * @return always non-null Map of String to String -mappings
      */
-    public static Map getPreferenceMap(String name) {
-        Map map = new HashMap();
+    public static Map<String, String> getPreferenceMap(String name) {
+        Map<String, String> map = new HashMap<String, String>();
         
         String str = TexlipsePlugin.getPreference(name);
         if (str == null) {
@@ -133,7 +138,7 @@ public class PathUtils {
 	    String[] env = new String[prop.size()];
 	    int i = 0;
 	    
-	    Enumeration enumeration = prop.keys();
+	    Enumeration<Object> enumeration = prop.keys();
 	    while (enumeration.hasMoreElements()) {
 	        String key = (String) enumeration.nextElement();
 	        env[i++] = key + '=' + prop.getProperty(key);
@@ -154,11 +159,14 @@ public class PathUtils {
 	 * @param list tokens will be added to the end of this list
 	 *             in the order they are extracted
 	 */
-	public static void tokenizeEscapedString(String args, ArrayList list) {
+	public static void tokenizeEscapedString(String args, List<String> list) {
 	    StringTokenizer st = new StringTokenizer(args, " ");
 	    while (st.hasMoreTokens()) {
 	        String token = st.nextToken();
-	        if (token.charAt(0) == '"') {
+	        if (token.charAt(0) == '"' && token.charAt(token.length() - 1) == '"') {
+	            list.add(token.substring(1, token.length() - 1));
+	        }
+	        else if (token.charAt(0) == '"') {
 	            StringBuffer sb = new StringBuffer();
 	            sb.append(token.substring(1));
 	            token = st.nextToken();
@@ -283,10 +291,7 @@ public class PathUtils {
 	        if (os.indexOf("windows 9") > -1) {
 	            p = r.exec("command.com /c set");
 	            PathUtils.loadEscaping(envVars, p.getInputStream());
-	        } else if ((os.indexOf("windows nt") > -1)
-	                || (os.indexOf("windows 20") > -1)
-                    || (os.indexOf("windows vi") > -1)
-	                || (os.indexOf("windows xp") > -1)) {
+	        } else if ((os.indexOf("windows") > -1)) {
 	            p = r.exec("cmd.exe /c set");
 	            PathUtils.loadEscaping(envVars, p.getInputStream());
 	        } else {
@@ -344,7 +349,7 @@ public class PathUtils {
 	 * @return the key of path environment variable
 	 */
 	public static String findPathKey(Properties prop) {
-	    Enumeration enumeration = prop.keys();
+	    Enumeration<Object> enumeration = prop.keys();
 	    while (enumeration.hasMoreElements()) {
 	        String key = (String) enumeration.nextElement();
 	        if (key.toLowerCase().equals("path")) {

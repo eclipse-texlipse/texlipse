@@ -76,7 +76,7 @@ public class ViewerAttributeRegistry implements Cloneable {
     
     
     // viewer attributes
-    private HashMap registry;
+    private HashMap<String, String> registry;
     
     // active viewer. This variable is not in the registry, because it is needed all the time.
     private String activeViewer;
@@ -90,7 +90,7 @@ public class ViewerAttributeRegistry implements Cloneable {
      */
     public ViewerAttributeRegistry() {
         
-        registry = new HashMap();
+        registry = new HashMap<String, String>();
         
         load(TexlipsePlugin.getDefault().getPreferenceStore());
     }
@@ -131,7 +131,7 @@ public class ViewerAttributeRegistry implements Cloneable {
         prefs.setDefault(VIEWER_CURRENT, def);
         
         // list the viewers
-        ArrayList vlist = new ArrayList();
+        ArrayList<String> vlist = new ArrayList<String>();
         vlist.add(VIEWER_NONE);
         vlist.add(VIEWER_XDVI);
         vlist.add(VIEWER_YAP);
@@ -143,7 +143,7 @@ public class ViewerAttributeRegistry implements Cloneable {
         StringBuffer sb = new StringBuffer(def); // put default on front
         for (int i = 0; i < vlist.size(); i++) {
             sb.append(',');
-            sb.append((String) vlist.get(i));
+            sb.append(vlist.get(i));
         }
         prefs.setDefault(VIEWER_NAMES, sb.toString());
         
@@ -272,7 +272,7 @@ public class ViewerAttributeRegistry implements Cloneable {
         // because that is not in sync
         for (int i = 0; i < viewers.length; i++) {
             
-            String name = (String) viewers[i];
+            String name = viewers[i];
             String cmdKey = name + ATTRIBUTE_COMMAND;
             String argKey = name + ATTRIBUTE_ARGUMENTS;
             String ddeViewCommandKey = name + ATTRIBUTE_DDE_VIEW_COMMAND;            
@@ -285,17 +285,17 @@ public class ViewerAttributeRegistry implements Cloneable {
             String invKey = name + ATTRIBUTE_INVERSE_SEARCH;
             String frwKey = name + ATTRIBUTE_FORWARD_SEARCH;
             
-            pref.setValue(cmdKey, (String) registry.get(cmdKey));
-            pref.setValue(argKey, (String) registry.get(argKey));
-            pref.setValue(ddeViewCommandKey, (String) registry.get(ddeViewCommandKey));
-            pref.setValue(ddeViewServerKey, (String) registry.get(ddeViewServerKey));
-            pref.setValue(ddeViewTopicKey, (String) registry.get(ddeViewTopicKey));
-            pref.setValue(ddeCloseCommandKey, (String) registry.get(ddeCloseCommandKey));
-            pref.setValue(ddeCloseServerKey, (String) registry.get(ddeCloseServerKey));
-            pref.setValue(ddeCloseTopicKey, (String) registry.get(ddeCloseTopicKey));
-            pref.setValue(formatKey, (String) registry.get(formatKey));
-            pref.setValue(invKey, (String) registry.get(invKey));
-            pref.setValue(frwKey, (String) registry.get(frwKey));
+            pref.setValue(cmdKey, registry.get(cmdKey));
+            pref.setValue(argKey, registry.get(argKey));
+            pref.setValue(ddeViewCommandKey, registry.get(ddeViewCommandKey));
+            pref.setValue(ddeViewServerKey, registry.get(ddeViewServerKey));
+            pref.setValue(ddeViewTopicKey, registry.get(ddeViewTopicKey));
+            pref.setValue(ddeCloseCommandKey, registry.get(ddeCloseCommandKey));
+            pref.setValue(ddeCloseServerKey, registry.get(ddeCloseServerKey));
+            pref.setValue(ddeCloseTopicKey, registry.get(ddeCloseTopicKey));
+            pref.setValue(formatKey, registry.get(formatKey));
+            pref.setValue(invKey, registry.get(invKey));
+            pref.setValue(frwKey, registry.get(frwKey));
             
             sb.append(name);
             sb.append(',');
@@ -312,8 +312,7 @@ public class ViewerAttributeRegistry implements Cloneable {
      * 
      * @param reg The registry to merge with
      */
-    public void mergeWith(ViewerAttributeRegistry reg)
-	    {
+    public void mergeWith(ViewerAttributeRegistry reg) {
 	    	registry.putAll(reg.asMap());
     }
     
@@ -322,16 +321,16 @@ public class ViewerAttributeRegistry implements Cloneable {
      * @return list of viewer names
      */
     public String[] getViewerList() {
-        ArrayList list = new ArrayList();
-        Iterator iter = registry.keySet().iterator();
+        ArrayList<String> list = new ArrayList<String>();
+        Iterator<String> iter = registry.keySet().iterator();
         while (iter.hasNext()) {
-            String key = (String) iter.next();
+            String key = iter.next();
             if (key.endsWith(ATTRIBUTE_COMMAND)) {
                 String name = key.substring(0, key.indexOf(ATTRIBUTE_COMMAND));
                 list.add(name);
             }
         }
-        String[] arr = (String[]) list.toArray(new String[0]);
+        String[] arr = list.toArray(new String[0]);
         Arrays.sort(arr);
         return arr;
     }
@@ -357,7 +356,7 @@ public class ViewerAttributeRegistry implements Cloneable {
     public String getPreferredViewer(String format) {
         // Find first match
         for (int i = 0; i < allViewers.length; i++) {
-            String viewerOutputFormat = (String) registry.get(allViewers[i] + ATTRIBUTE_FORMAT);           
+            String viewerOutputFormat = registry.get(allViewers[i] + ATTRIBUTE_FORMAT);           
             if (viewerOutputFormat.equals(format)) {
                 return allViewers[i];
             }
@@ -384,7 +383,7 @@ public class ViewerAttributeRegistry implements Cloneable {
      * @return the current viewer's program location
      */
     public String getCommand() {
-        String value = (String) registry.get(activeViewer + ATTRIBUTE_COMMAND);
+        String value = registry.get(activeViewer + ATTRIBUTE_COMMAND);
         if (value == null) {
             value = "";
         }
@@ -403,7 +402,7 @@ public class ViewerAttributeRegistry implements Cloneable {
      * @return the current viewer's command line arguments
      */
     public String getArguments() {
-        String value = (String) registry.get(activeViewer + ATTRIBUTE_ARGUMENTS);
+        String value = registry.get(activeViewer + ATTRIBUTE_ARGUMENTS);
         if (value == null) {
             value = "";
         }
@@ -422,7 +421,7 @@ public class ViewerAttributeRegistry implements Cloneable {
      * @return the current viewer's dde view command
      */
     public String getDDEViewCommand() {
-        String value = (String) registry.get(activeViewer + ATTRIBUTE_DDE_VIEW_COMMAND);
+        String value = registry.get(activeViewer + ATTRIBUTE_DDE_VIEW_COMMAND);
         if (value == null) {
         	value = "";
         }
@@ -441,7 +440,7 @@ public class ViewerAttributeRegistry implements Cloneable {
      * @return the current viewer's dde view server
      */
     public String getDDEViewServer() {
-        String value = (String) registry.get(activeViewer + ATTRIBUTE_DDE_VIEW_SERVER);
+        String value = registry.get(activeViewer + ATTRIBUTE_DDE_VIEW_SERVER);
         if (value == null) {
         	value = "";
         }
@@ -460,7 +459,7 @@ public class ViewerAttributeRegistry implements Cloneable {
      * @return the current viewer's dde view topic
      */
     public String getDDEViewTopic() {
-        String value = (String) registry.get(activeViewer + ATTRIBUTE_DDE_VIEW_TOPIC);
+        String value = registry.get(activeViewer + ATTRIBUTE_DDE_VIEW_TOPIC);
         if (value == null) {
         	value = "";
         }
@@ -480,7 +479,7 @@ public class ViewerAttributeRegistry implements Cloneable {
      * @return the current viewer's dde Close command
      */
     public String getDDECloseCommand() {
-        String value = (String) registry.get(activeViewer + ATTRIBUTE_DDE_CLOSE_COMMAND);
+        String value = registry.get(activeViewer + ATTRIBUTE_DDE_CLOSE_COMMAND);
         if (value == null) {
         	value = "";
         }
@@ -499,7 +498,7 @@ public class ViewerAttributeRegistry implements Cloneable {
      * @return the current viewer's dde close server
      */
     public String getDDECloseServer() {
-        String value = (String) registry.get(activeViewer + ATTRIBUTE_DDE_CLOSE_SERVER);
+        String value = registry.get(activeViewer + ATTRIBUTE_DDE_CLOSE_SERVER);
         if (value == null) {
         	value = "";
         }
@@ -518,7 +517,7 @@ public class ViewerAttributeRegistry implements Cloneable {
      * @return the current viewer's dde close topic
      */
     public String getDDECloseTopic() {
-        String value = (String) registry.get(activeViewer + ATTRIBUTE_DDE_CLOSE_TOPIC);
+        String value = registry.get(activeViewer + ATTRIBUTE_DDE_CLOSE_TOPIC);
         if (value == null) {
         	value = "";
         }
@@ -538,7 +537,7 @@ public class ViewerAttributeRegistry implements Cloneable {
      * @return the current viewer's input file format
      */
     public String getFormat() {
-        String value = (String) registry.get(activeViewer + ATTRIBUTE_FORMAT);
+        String value = registry.get(activeViewer + ATTRIBUTE_FORMAT);
         if (value == null) {
             value = "";
         }
@@ -557,7 +556,7 @@ public class ViewerAttributeRegistry implements Cloneable {
      * @return the current viewer's inverse search support
      */
     public String getInverse() {
-        String value = (String) registry.get(activeViewer + ATTRIBUTE_INVERSE_SEARCH);
+        String value = registry.get(activeViewer + ATTRIBUTE_INVERSE_SEARCH);
         if (value == null) {
             value = "";
         }
@@ -576,7 +575,7 @@ public class ViewerAttributeRegistry implements Cloneable {
      * @return the current viewer's forward search support
      */
     public boolean getForward() {
-        String value = (String) registry.get(activeViewer + ATTRIBUTE_FORWARD_SEARCH);
+        String value = registry.get(activeViewer + ATTRIBUTE_FORWARD_SEARCH);
         if (value == null) {
             return false;
         }
@@ -611,8 +610,8 @@ public class ViewerAttributeRegistry implements Cloneable {
     /**
      * @return a copy of the attributes of this registry
      */
-    public Map asMap() {
-        HashMap map = new HashMap();
+    public Map<String, String> asMap() {
+        HashMap<String, String> map = new HashMap<String, String>();
         map.putAll(registry);
         map.put(VIEWER_CURRENT, activeViewer);
         return map;
@@ -624,7 +623,7 @@ public class ViewerAttributeRegistry implements Cloneable {
      */
     public Object clone() {
         ViewerAttributeRegistry reg = new ViewerAttributeRegistry();
-        reg.registry = new HashMap();
+        reg.registry = new HashMap<String, String>();
         reg.setValues(asMap());
         return reg;
     }

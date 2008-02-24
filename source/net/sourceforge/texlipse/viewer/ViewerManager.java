@@ -570,7 +570,7 @@ public class ViewerManager {
     private Process execute(File dir) throws IOException, CoreException {
 
         // argument list
-        ArrayList list = new ArrayList();
+        ArrayList<String> list = new ArrayList<String>();
         
         // add command as arg0
         String command = registry.getCommand();
@@ -634,7 +634,10 @@ public class ViewerManager {
             String outFileName = outputRes.getName();
             outFileName = resolveRelativePath(sourceDir.getFullPath(), outputRes.getFullPath());
             outFileName = outFileName.substring(0, outFileName.length() - 1);
-
+            if (outFileName.indexOf(' ') >= 0) {
+                //Quote filenames with spaces
+                outFileName = "\"" + outFileName +"\"";
+            }
             input = input.replaceAll(FILENAME_PATTERN, escapeBackslashes(outFileName));
         }
     	

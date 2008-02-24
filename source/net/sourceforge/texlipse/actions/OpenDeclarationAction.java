@@ -164,10 +164,15 @@ public class OpenDeclarationAction implements IEditorActionDelegate {
                 else {
                     dir = refFile.getParent();
                 }
-                IResource file = dir.findMember(ref + ".tex");
+                
+                if (!ref.toLowerCase().endsWith(".tex")) {
+                    ref = ref + ".tex";
+                }
+                
+                IResource file = dir.findMember(ref);
                 if (file == null){
                     createStatusLineErrorMessage(MessageFormat.format(TexlipsePlugin.getResourceString("gotoDeclarationNoFileFound"), 
-                            new Object[]{ref+".tex"}));
+                            new Object[]{ref}));
                     return;
                 }
                 try {

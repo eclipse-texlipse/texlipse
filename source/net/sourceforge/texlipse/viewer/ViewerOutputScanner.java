@@ -26,9 +26,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.texteditor.MarkerUtilities;
 
@@ -121,6 +119,10 @@ public class ViewerOutputScanner implements Runnable {
         }
         
         IResource resource = null;
+        //Patch for wrong directory seperators used by Yap
+        if (File.separatorChar == '\\') {
+            file = file.replace('/', '\\');
+        }
         
         // path may contain project path
         String projDir = project.getLocation().addTrailingSeparator().toOSString();

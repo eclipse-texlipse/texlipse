@@ -112,6 +112,9 @@ public class FileLocationClient {
             } else if (args[i].equals("-l")) {
                 lineNum = args[i + 1];
                 i += 2;
+            } else {
+                System.out.println("Unknown argument "+args[i]);
+                i++;
             }
         }
         
@@ -149,6 +152,6 @@ public class FileLocationClient {
     public static void main(String[] args) {
 
         FileLocationClient client = parseCommandLine(args);
-        client.writeToSocket();
+        if (client != null) client.writeToSocket();
     }
 }

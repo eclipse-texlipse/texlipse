@@ -69,7 +69,7 @@
       </builder>
    </extension>
    <extension
-         id="builder.TexlipseNature"
+         id="net.sourceforge.texlipse.builder.TexlipseNature"
          name="Latex Nature"
          point="org.eclipse.core.resources.natures">
       <runtime>

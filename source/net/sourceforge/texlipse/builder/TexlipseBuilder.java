@@ -283,15 +283,26 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
         String name = ViewerManager.resolveRelativePath(TexlipseProperties.getProjectSourceDir(project).getProjectRelativePath(), 
                 file.getProjectRelativePath());
         name = name.substring(0, name.lastIndexOf('.') + 1);
+        boolean ws = false;
+        if (name.indexOf(' ') >= 0) {
+            sb.append('"');
+            ws = true;
+        }
         //In windows convert the bs to slashes
         for (int i=0; i<name.length() - 1; i++){
             char c = name.charAt(i);
             if (c == File.separatorChar)
                 sb.append('/');
+            if (c == ' ') {
+                sb.append("\\space ");
+            }
             else
                 sb.append(c);
         }
         //sb.append(name.substring(0, name.length() - file.getFileExtension().length() - 1));
+        if (ws) {
+            sb.append('"');
+        }
         sb.append("}\n");
         if (bibsty != null) {
             sb.append("\\bibliographystyle{");

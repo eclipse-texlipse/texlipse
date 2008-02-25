@@ -6,6 +6,7 @@ Bundle-SymbolicName: net.sourceforge.texlipse;singleton:=true
 Bundle-Version: 1.2.1
 Bundle-Activator: net.sourceforge.texlipse.TexlipsePlugin
 Bundle-RequiredExecutionEnvironment: J2SE-1.5
+Bundle-ClassPath: texlipse.jar
 Eclipse-LazyStart: true
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.resources,

@@ -793,6 +793,8 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
             if (!sourceDir.exists()) {
                 return;
             }
+            tempDir.refreshLocal(IResource.DEPTH_ONE, monitor);
+            sourceDir.refreshLocal(IResource.DEPTH_ONE, monitor);
             
             if (tempDir.getFullPath().equals(sourceDir.getFullPath())) {
                 return;

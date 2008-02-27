@@ -67,7 +67,7 @@ public class TexMathScanner extends RuleBasedScanner {
                 null,
                 manager.getStyle(ColorManager.TEX_SPECIAL_STYLE)));
         
-        List rules = new ArrayList();
+        List<IRule> rules = new ArrayList<IRule>();
         
         rules.add(new WhitespaceRule(new WhitespaceDetector()));
         rules.add(new SingleLineRule("\\%", " ", specialCharToken));
@@ -75,6 +75,8 @@ public class TexMathScanner extends RuleBasedScanner {
         rules.add(new TexEnvironmentRule("comment", commentToken));
         rules.add(new SingleLineRule("\\[", " ", defaultToken));
         rules.add(new SingleLineRule("\\]", " ", defaultToken));
+        rules.add(new SingleLineRule("\\(", " ", defaultToken));
+        rules.add(new SingleLineRule("\\)", " ", defaultToken));
         rules.add(new TexSpecialCharRule(specialCharToken));
         rules.add(new WordRule(new TexWord(), commandToken));
         

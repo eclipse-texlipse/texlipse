@@ -55,7 +55,7 @@ public class TexPartitionScanner extends RuleBasedPartitionScanner {
 		//IToken curly_bracket 	= new Token(TEX_CURLY_BRACKETS);
 		//IToken square_bracket	= new Token(TEX_SQUARE_BRACKETS);
 		
-		List rules = new ArrayList();
+		List<IPredicateRule> rules = new ArrayList<IPredicateRule>();
 				
 		//TODO: mark \\ Token.Undefined
         //TODO Some ugly cases (e.g. "$ test % comment $ wrong")
@@ -76,6 +76,7 @@ public class TexPartitionScanner extends RuleBasedPartitionScanner {
         //This bosh rule is necessary to fix a bug in RuleBasedPartitionScanner
 		rules.add(new TexEnvironmentRule("qqfdshfkhsd", false, math));
         rules.add(new MultiLineRule("\\[","\\]", math)); 
+        rules.add(new MultiLineRule("\\(","\\)", math)); 
         rules.add(new MultiLineRule("$$", "$$", math, '\\'));
         rules.add(new MultiLineRule("$", "$", math, '\\'));
         rules.add(new TexEnvironmentRule("equation", true, math));

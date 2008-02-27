@@ -60,7 +60,7 @@ public class TexCompletionProcessor implements IContentAssistProcessor {
     /**
      * A regexp pattern for resolving the command used for referencing (in the 1st group)
      */
-    private static final Pattern comCapt = Pattern.compile("([a-z]+)\\s*(?:\\[.*?\\]\\s*)?");
+    private static final Pattern comCapt = Pattern.compile("([a-zA-Z]+)\\s*(?:\\[.*?\\]\\s*)?");
 
     /**
      * Receives the document model from the editor (one model/editor view)
@@ -112,6 +112,13 @@ public class TexCompletionProcessor implements IContentAssistProcessor {
                     proposals = computeCommandCompletions(offset, replacement.length(), replacement);
                 } else if (seqStart.startsWith("{")) {
                     proposals = resolveReferenceCompletions(lineStart, offset, seqStart);
+                    if (proposals == null) {
+                        //Maybe there is a wrong spelled word here (e.g. \section{Wroang ...})
+                        proposals = SpellChecker.getSpellingProposal(offset, fviewer);
+                        if (proposals != null && proposals.length > 0) {
+                            return proposals;
+                        }
+                    }
                 } else if (seqStart.length() > 0) {
                     //---------------------spell-checking-code-starts----------------------
                     // spell checking can't help with words not starting with a letter...
@@ -202,7 +209,7 @@ public class TexCompletionProcessor implements IContentAssistProcessor {
     private int resolveCompletionStart(String doc, int offset) {
         while (offset > 0) {
             if (Character.isWhitespace(doc.charAt(offset))
-                    || doc.charAt(offset) == '{' || doc.charAt(offset) == '\\')
+                    || doc.charAt(offset) == '}' || doc.charAt(offset) == '{' || doc.charAt(offset) == '\\')
                 break;
             offset--;
         }

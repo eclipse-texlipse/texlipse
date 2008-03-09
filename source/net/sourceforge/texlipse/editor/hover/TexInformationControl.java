@@ -139,7 +139,7 @@ public class TexInformationControl implements IInformationControl,
         StyleRange bold = new StyleRange();
         bold.fontStyle = SWT.BOLD;
         int endLine = text.indexOf('\n');
-        int endBold = endLine >= 0 ? endLine : text.length() - 1;
+        int endBold = endLine >= 0 ? endLine : text.length();
         hoverText.append(text.substring(0, endBold));
         bold.start = 0;
         bold.length = endBold;

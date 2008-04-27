@@ -126,6 +126,9 @@ public abstract class AbstractBuilder implements Runnable, Builder {
 	        try {
 	            buildThread.join();
 	        } catch (InterruptedException e) {
+	            Thread.interrupted();
+	            monitor.setCanceled(true);
+	            stopBuild();
 	        }
         }
     }

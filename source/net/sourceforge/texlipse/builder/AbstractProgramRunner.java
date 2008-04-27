@@ -254,8 +254,8 @@ public abstract class AbstractProgramRunner implements ProgramRunner {
     private void renameOutputFile(IResource resource) {
         
         IProject project = resource.getProject();
-        String format = TexlipseProperties.getProjectProperty(project, TexlipseProperties.OUTPUT_FORMAT);
-        if (!format.equals(getOutputFormat())) {
+        final String format = TexlipseProperties.getProjectProperty(project, TexlipseProperties.OUTPUT_FORMAT);
+        if (format == null || !format.equals(getOutputFormat())) {
             return;
         }
         

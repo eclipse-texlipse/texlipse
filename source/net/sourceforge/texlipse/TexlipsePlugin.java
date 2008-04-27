@@ -48,7 +48,7 @@ import org.osgi.framework.BundleContext;
  * @author Esa Seuranen
  * @author Taavi Hupponen
  * @author Oskar Ojala
- * @author Tor Arne VestbÃ¸
+ * @author Tor Arne Vestbø
  */
 public class TexlipsePlugin extends AbstractUIPlugin {
     

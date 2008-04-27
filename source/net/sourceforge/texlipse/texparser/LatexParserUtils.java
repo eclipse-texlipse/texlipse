@@ -29,6 +29,7 @@ import org.eclipse.jface.text.source.ICharacterPairMatcher;
 public class LatexParserUtils {
 
     Pattern ENVIRONMENT_PATTERN = Pattern.compile("^((?:[^%\\n\\r]*[^\\\\%])|(?:))\\\\((?:begin)|(?:end))\\s*\\{([^\\}]+)\\}");
+    
     /**
      * This is a short interface which implements all methods
      * which are needed for our textsearch
@@ -174,45 +175,57 @@ public class LatexParserUtils {
     // Indicate the anchor value "left"
     public final static int LEFT = ICharacterPairMatcher.LEFT;
 
+    
     /**
-     * Checks whether index is inside a comment
+     * Returns the index of the first character of the line
+     * where <code>index</code> is located. Legal line delimeters are
+     * \n, \r, \r\n. 
      * @param input
      * @param index
-     * @return 
+     * @return
      */
-    private static boolean isInsideComment(ILatexText input, int index) {
+    private static int getStartofLine(ILatexText input, int index) {
         int lastCR = input.lastIndexOf('\r', index);
         int lastLine = input.lastIndexOf('\n', index);
         if (lastCR > lastLine) {
             //Mac
             lastLine = lastCR;
         }
-        int lastComment = input.lastIndexOf('%', index);
-        // Check for a comment (>= because of -1)
-        if (lastLine >= lastComment)
-            return false;
-        else {
-            try{
-                // rare case % could be \%
-                while (lastLine < lastComment && lastComment > 0 && 
-                        input.charAt(lastComment - 1) == '\\') {
-                    lastComment = input.lastIndexOf('%', lastComment - 1);
+        return lastLine + 1;
+    }
+    
+    public static int getStartofLine(String input, int index) {
+        return getStartofLine(new StringLatexText(input), index);
+    }
+    
+    /**
+     * Checks whether index is inside a comment
+     * @param input
+     * @param index
+     * @return 
+     * @throws BadLocationException if index is out of bounds
+     */
+    private static boolean isInsideComment(ILatexText input, int index) throws BadLocationException{
+        int lastLine = getStartofLine(input, index);
+        int p = lastLine;
+            while (p < index) {
+                if (input.charAt(p) == '%') {
+                    return true;
+                } else if (input.charAt(p) == '\\') {
+                    //Ignore next character
+                    p += 2;
+                } else {
+                    p++;
                 }
-                if (lastLine >= lastComment)
-                    return false;
-            } catch (BadLocationException e) {
-                //never happens...
-                TexlipsePlugin.log("Error", e);
             }
-        }
-        return true;
+        return false;
     }
 
-    public static boolean isInsideComment(String input, int index) {
+    public static boolean isInsideComment(String input, int index) throws BadLocationException {
         return isInsideComment(new StringLatexText(input), index);
     }
     
-    public static boolean isInsideComment(IDocument input, int index) {
+    public static boolean isInsideComment(IDocument input, int index) throws BadLocationException {
         return isInsideComment(new DocumentLatexText(input), index);
     }
 
@@ -246,7 +259,7 @@ public class LatexParserUtils {
      * 
      * @param input
      * @param command The Latex command starting with a backslash (\)
-     * @param fromIndex The index from which to start the search
+     * @param fromIndex The index from where to start the search
      * @return The position of the command, or -1 if the command is not
      *         contained in the String
      */
@@ -315,7 +328,7 @@ public class LatexParserUtils {
      * 
      * @param input
      * @param offset
-     * @param anchor
+     * @param anchor Must be either <code>LEFT</code> or <code>RIGHT</code>
      * @param opening
      * @param closing matching character for opening
      * @return index of the matching closing character, or -1 if the search
@@ -362,7 +375,7 @@ public class LatexParserUtils {
      * Returns the first mandatory argument of the command
      * 
      * @param input
-     * @param index The index after the beginning of the command and before the
+     * @param index The index at or after the beginning of the command and before the
      *            argument
      * @return The argument without braces, null if there is no valid argument
      * @throws BadLocationException if index is out of bounds
@@ -371,8 +384,11 @@ public class LatexParserUtils {
         int pos = index;
         if (input.charAt(index) == '\\')
             pos++;
-        while (Character.isLetter(input.charAt(pos)) || Character.isWhitespace(input.charAt(pos)))
+        while (pos < input.length() && Character.isLetter(input.charAt(pos)))
             pos++;
+        while (pos < input.length() && Character.isWhitespace(input.charAt(pos)))
+            pos++;
+        if (pos == input.length()) return null;
         if (input.charAt(pos) == '{') {
             int end = findPeerChar(input, pos + 1, LEFT, '{', '}');
             if (end == -1)
@@ -402,11 +418,16 @@ public class LatexParserUtils {
         int pos = index;
         if ("".equals(input)) return null;
         while (pos >= input.length()) pos--;
-        if (isInsideComment(input, index)) return null;
+        try {
+            if (isInsideComment(input, pos)) return null;
+        } catch (BadLocationException ex) {
+            //Does not happen
+            TexlipsePlugin.log("Error", ex);
+        }
         boolean whiteSpace = false;
         if (pos > 0 && input.charAt(pos) == '}') pos--;
         while (!((pos <= 0 || input.charAt(pos) == '\\' || input.charAt(pos) == '{' || input.charAt(pos) == '}' || input.charAt(pos) == '%') 
-                && (pos <= 1 || input.charAt(pos-1) != '\\'))) {
+                && (pos == 0 || input.charAt(pos-1) != '\\'))) {
             if (Character.isWhitespace(input.charAt(pos))) whiteSpace = true;
             pos--;
         }
@@ -415,18 +436,25 @@ public class LatexParserUtils {
             int l = 1;
             while (pos + l < input.length() && Character.isLetter(input.charAt(pos + l)))
                 l++;
+            //A command consist of a \ and at least one letter
+            if (l == 1) return null;
             return new Region(pos, l);
         }
         if (input.charAt(pos) == '{') {
             int l = -1;
-            while (pos + l >= 0 && (Character.isWhitespace(input.charAt(pos + l)) || Character.isLetter(input.charAt(pos + l)))) 
+            int ws = 0;
+            while (pos + l >= 0 && Character.isWhitespace(input.charAt(pos + l))) {
+                ws--;
                 l--;
-            if (pos + l >= 0 && input.charAt(pos + l) == '\\') return new Region(pos + l, -l);
+            }
+            while (pos + l >= 0 && Character.isLetter(input.charAt(pos + l)))
+                l--;
+            if (pos + l >= 0 && input.charAt(pos + l) == '\\') return new Region(pos + l, -l+ws);
         }
         return null; 
     }
 
-    private static IRegion getEnvironment(ILatexText input, String envName, String command, int fromIndex) {
+    private static IRegion findEnvironment(ILatexText input, String envName, String command, int fromIndex) {
         int pos = input.indexOf("{" + envName + "}", fromIndex + command.length());
         while (pos != -1) {
             int end = pos + envName.length() + 2;
@@ -450,6 +478,29 @@ public class LatexParserUtils {
         return null;
     }
 
+    private static IRegion findLastEnvironment(ILatexText input, String envName, String command, int fromIndex) {
+        int pos = input.lastIndexOf("{" + envName + "}", fromIndex);
+        while (pos != -1) {
+            int end = pos + envName.length() + 2;
+            // Search for the command
+            int beginStart = findLastCommand(input, command, pos);
+            if (beginStart != -1 && beginStart <= fromIndex) {
+                // Check for whitespaces between \command and {...}
+                try {
+                    while (pos != beginStart + command.length() && Character.isWhitespace(input.charAt(--pos)))
+                        ;
+                } catch (BadLocationException e) {
+                    //never happens
+                    TexlipsePlugin.log("Error", e);
+                }
+                if (pos == beginStart + command.length()) {
+                    return new Region(beginStart, end - beginStart);
+                }
+            }
+            pos = input.lastIndexOf("{" + envName + "}", pos-1);
+        }
+        return null;
+    }
     /**
      * Returns the region (offset & length) of \begin{envName}
      * 
@@ -459,7 +510,7 @@ public class LatexParserUtils {
      * @return
      */
     private static IRegion findBeginEnvironment(ILatexText input, String envName, int fromIndex) {
-        return getEnvironment(input, envName, "\\begin", fromIndex);
+        return findEnvironment(input, envName, "\\begin", fromIndex);
     }
 
     public static IRegion findBeginEnvironment(String input, String envName, int fromIndex) {
@@ -478,7 +529,7 @@ public class LatexParserUtils {
      * @return
      */
     private static IRegion findEndEnvironment(ILatexText input, String envName, int fromIndex) {
-        return getEnvironment(input, envName, "\\end", fromIndex);
+        return findEnvironment(input, envName, "\\end", fromIndex);
     }
 
 
@@ -490,14 +541,21 @@ public class LatexParserUtils {
         return findEndEnvironment(new DocumentLatexText(input), envName, fromIndex);
     }
     
+    /**
+     * Finds for a \begin{env} the matching \end{env}.
+     * @param input
+     * @param envName       Name of the environment, e.g. "itemize"
+     * @param beginIndex    Must be at the start or inside of \begin{env}
+     * @return  The region of the \end{env} command or null if the end was not found
+     */
     public static IRegion findMatchingEndEnvironment(String input, String envName, int beginIndex) {
-        int pos = beginIndex;
+        int pos = beginIndex + 1;
         IRegion nextEnd, nextBegin;
         int level = 0;
         
         do {
             nextEnd = findEndEnvironment(input, envName, pos);
-            nextBegin = findBeginEnvironment(input, envName, pos + envName.length() + 8);
+            nextBegin = findBeginEnvironment(input, envName, pos);
             if (nextEnd == null) return null;
             if (nextBegin == null) {
                 level--;
@@ -505,40 +563,38 @@ public class LatexParserUtils {
             } else {
                 if (nextBegin.getOffset() > nextEnd.getOffset()) level--;
                 else level++;
-                pos = nextBegin.getOffset();
+                pos = nextBegin.getOffset() + envName.length() + 8;
             }
         } while (level >= 0);
         return nextEnd;
-//        return null;
     }
     
-    public static void main (String[] args) {
-        //Tests
+    /**
+     * Finds for an \end{env} the matching \begin{env}.
+     * @param input
+     * @param envName       Name of the environment, e.g. "itemize"
+     * @param beginIndex    Must be at the start of \end{env}
+     * @return  The region of the \begin{env} command or null if the end was not found
+     */
+    public static IRegion findMatchingBeginEnvironment(String input, String envName, int beginIndex) {
+        int pos = beginIndex;
+        IRegion nextEnd, nextBegin;
+        int level = 0;
+        
+        do {
+            nextEnd = findLastEnvironment(new StringLatexText(input), envName, "\\end", pos);
+            nextBegin = findLastEnvironment(new StringLatexText(input), envName, "\\begin", pos);
+            if (nextBegin == null) return null;
+            if (nextEnd == null) {
+                level--;
+                pos = nextBegin.getOffset();
+            } else {
+                if (nextEnd.getOffset() > nextBegin.getOffset()) level++;
+                else level--;
+                pos = nextEnd.getOffset();
+            }
+        } while (level >= 0);
+        return nextBegin;
     }
-/*        String test1 ="\\test{arg}";
-        System.out.println(test1);
-        for (int i=0; i < test1.length(); i++){
-            if (getCommand(test1, i) != null) 
-                System.out.println(test1.substring(getCommand(test1, i).getOffset(), getCommand(test1, i).getOffset() + getCommand(test1, i).getLength()));
-            else System.out.println("Not found");
-        }
-        test1 =" \\test \\{arg}";
-        System.out.println(test1);
-        for (int i=0; i < test1.length(); i++){
-            if (getCommand(test1, i) != null) {
-                System.out.print(getCommand(test1, i).getOffset() + " L:" + getCommand(test1, i).getLength());
-                System.out.println(" "+test1.substring(getCommand(test1, i).getOffset(), getCommand(test1, i).getOffset() + getCommand(test1, i).getLength()));
-            }
-            else System.out.println("Not found");
-        }
-        test1 =" \\test bla \\\\bla";
-        System.out.println(test1);
-        for (int i=0; i < test1.length(); i++){
-            if (getCommand(test1, i) != null) {
-                System.out.print(getCommand(test1, i).getOffset() + " L:" + getCommand(test1, i).getLength());
-                System.out.println(" "+test1.substring(getCommand(test1, i).getOffset(), getCommand(test1, i).getOffset() + getCommand(test1, i).getLength()));
-            }
-            else System.out.println("Not found");
-        }
-    }*/
+
 }

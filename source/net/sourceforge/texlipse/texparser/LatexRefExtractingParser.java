@@ -39,8 +39,8 @@ import net.sourceforge.texlipse.texparser.node.Token;
  */
 public class LatexRefExtractingParser {
     
-    private ArrayList labels;
-    private ArrayList commands; //type: TexCommandEntry
+    private ArrayList<ReferenceEntry> labels;
+    private ArrayList<TexCommandEntry> commands; //type: TexCommandEntry
     private String[] bibs;
     private String bibstyle;
     private boolean index;
@@ -59,27 +59,13 @@ public class LatexRefExtractingParser {
      * @param input The document
      */
     private void extractPreamble(String input) {
-        if (input.indexOf("\\documentclass") == -1) {
-            return;
-        }
-        // finds \begin {document} starting index
-        int startDocIdx = input.indexOf("{document}");
-        if (startDocIdx != -1) {
-            int beginIdx = input.lastIndexOf("\\begin", startDocIdx);
-            if (beginIdx != -1) {
-                if (input.substring(beginIdx + 6, startDocIdx).matches("\\s*")) {
-                    this.preamble = input.substring(0, startDocIdx + 10);
-                    return;
-                }
-            }
-        }
-        this.preamble = input + "\\begin{document}";
+        this.preamble = TexParser.extractLaTeXPreamble(input);
     }
 
     private void initializeDatastructs() {
         //reserve enough space
-        this.labels = new ArrayList(100);
-        this.commands = new ArrayList();
+        this.labels = new ArrayList<ReferenceEntry>(100);
+        this.commands = new ArrayList<TexCommandEntry>();
         this.index = false;
     }
     
@@ -192,13 +178,13 @@ public class LatexRefExtractingParser {
     /**
      * @return Returns the labels.
      */
-    public ArrayList getLabels() {
+    public ArrayList<ReferenceEntry> getLabels() {
         return labels;
     }
     /**
      * @return Returns the commands.
      */
-    public ArrayList getCommands() {
+    public ArrayList<TexCommandEntry> getCommands() {
         return commands;
     }
     /**

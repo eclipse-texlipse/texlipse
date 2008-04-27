@@ -14,8 +14,6 @@ import java.io.PushbackReader;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import net.sourceforge.texlipse.model.OutlineNode;
 import net.sourceforge.texlipse.model.ParseErrorMessage;
@@ -41,7 +39,7 @@ public class TexParser {
     private LatexParser lparser;
 //    private LatexLexer llexer;
     
-    private ArrayList errors;
+    private ArrayList<ParseErrorMessage> errors;
     private boolean fatalErrors;
     
     private String preamble;
@@ -71,6 +69,8 @@ public class TexParser {
      * 
      * @param input The document to process
      * @return The document with trailing whitespace removed
+     * 
+     * @see Character.isWhitespace
      */
     private String rmTrailingWhitespace(String input) {
         int lastChar = input.length() - 1;
@@ -82,18 +82,33 @@ public class TexParser {
         return input;
     }
     
+    static String extractLaTeXPreamble(String input) {
+        if (LatexParserUtils.findCommand(input, "\\documentclass", 0) == -1
+                && LatexParserUtils.findCommand(input, "\\documentstyle", 0) == -1) {
+            return null;
+        }
+        
+        IRegion region = LatexParserUtils.findBeginEnvironment(input, "document", 0);
+        if (region != null) {
+            return input.substring(0, region.getOffset() + region.getLength());
+        } else {
+            return null;
+        }
+    }
+    
     /**
      * Extracts the preamble (if there is any) and stores a copy of it
      * in the field <code>preamble</code>. The preamble is assumed to
      * exist if the string contain the \documentclass command and it ends
      * where the document-environment begins or at the end of file.
      * 
-     * The preamble stored will include the \beign{document} -command.
+     * The preamble stored will include the \begin{document} -command.
      * 
      * @param input The document
      */
     private void extractPreamble(String input) {
-        // TODO still testing this
+/*
+        // These regexps lead to stack overflows in the regexp parser in some occasions.
 
         // (?:\r|\n|^)(?:(?:\\%|[^%\r\n])*?(?:\\%|[^\\%]))?\\document(?:class|style)(?:\W|$)
         Pattern docclass = Pattern.compile("(?:\\r|\\n|^)(?:(?:\\\\%|[^%\\r\\n])*?(?:\\\\%|[^\\\\%]))?\\\\document(?:class|style)(?:\\W|$)");
@@ -109,35 +124,9 @@ public class TexParser {
             }
         }
         this.preamble = null;
-        return;
+        return;*/
         
-        //if (input.indexOf("\\documentclass") == -1) {
-//        if (LatexParserUtils.findCommand(input, "\\documentclass", 0) == -1
-//                && LatexParserUtils.findCommand(input, "\\documentstyle", 0) == -1) {
-//            this.preamble = null;
-//            return;
-//        }
-        
-
-        
-//        // finds \begin {document} starting index
-//        int startDocIdx = input.indexOf("{document}");
-//        if (startDocIdx != -1) {
-//            int beginIdx = input.lastIndexOf("\\begin", startDocIdx);
-//            if (beginIdx != -1) {
-//                if (input.substring(beginIdx + 6, startDocIdx).matches("\\s*")) {
-//                    this.preamble = input.substring(0, startDocIdx + 10);
-//                    return;
-//                }
-//            }
-//        }
-//        this.preamble = input + "\\begin{document}";
-        
-//        IRegion region = LatexParserUtils.findBeginEnvironment(input, "document", 0);
-//        if (region != null) {
-//            this.preamble = input.substring(0, region.getOffset() + region.getLength());
-//        } else
-//            this.preamble = input;
+        this.preamble = extractLaTeXPreamble(input);
     }
 
     
@@ -189,7 +178,7 @@ public class TexParser {
             int last = msg.indexOf(']');
             String numseq = msg.substring(first + 1, last);
             String[] numbers = numseq.split(",");
-            this.errors = new ArrayList(1);
+            this.errors = new ArrayList<ParseErrorMessage>(1);
             this.errors.add(new ParseErrorMessage(Integer.parseInt(numbers[0]),
                     Integer.parseInt(numbers[1]),
                     2,
@@ -223,7 +212,7 @@ public class TexParser {
     /**
      * @return Returns the errors.
      */
-    public ArrayList getErrors() {
+    public ArrayList<ParseErrorMessage> getErrors() {
         return errors;
     }
     

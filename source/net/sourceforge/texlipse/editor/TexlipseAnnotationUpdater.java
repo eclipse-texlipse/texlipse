@@ -1,9 +1,17 @@
+/*
+ * $Id$
+ *
+ * Copyright (c) 2007-2008 by the TeXlipse team.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ */
 package net.sourceforge.texlipse.editor;
 
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -16,7 +24,6 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.text.BadLocationException;
-import org.eclipse.jface.text.FindReplaceDocumentAdapter;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextSelection;
@@ -47,7 +54,7 @@ import org.eclipse.ui.texteditor.AbstractTextEditor;
  */
 public class TexlipseAnnotationUpdater implements ISelectionChangedListener {
 
-    private final List fOldAnnotations= new LinkedList();
+    private final List<Annotation> fOldAnnotations= new LinkedList<Annotation>();
     private AbstractTextEditor fEditor;
     private Job fUpdateJob;
     private final static String ANNOTATION_TYPE = "net.sourceforge.texlipse.defAnnotation";
@@ -168,33 +175,20 @@ public class TexlipseAnnotationUpdater implements ISelectionChangedListener {
         return
             new Job("Update Annotations") {
                 public IStatus run(IProgressMonitor monitor) {
+                    String text = document.get();
                     String refNameRegExp = refName.replaceAll("\\*", "\\\\*");
-                    //This finds a line whith refs or labels (no comment) 
-                    //final String refRegExp = "(?:^|\\n|\\r)(?:[^%\\n\\r]|\\\\%)*(?<!\\\\)\\\\(?:[a-zA-Z]*ref|label)\\s*\\{("+refNameRegExp+")\\}";
-                    final String refRegExp = "(?:^|\\n|\\r)(?:[^%\\n\\r]?(?:\\\\%)?)*(?<!\\\\)\\\\(?:[a-zA-Z]*ref|label)\\s*\\{("+refNameRegExp+")\\}";
-                    final Pattern p = Pattern.compile("(?<!\\\\)\\\\(?:[a-zA-Z]*ref|label)\\s*\\{("+refNameRegExp+")\\}");
-                    FindReplaceDocumentAdapter docFinder = new FindReplaceDocumentAdapter(document);
-                    IRegion match;
-                    try {
-                        match = docFinder.find(0, refRegExp, true, false, false, true);
-                        while (match != null) {
-                            if (monitor.isCanceled()) return Status.CANCEL_STATUS;
-                            String line2 = document.get(match.getOffset(), match.getLength());
-                            Matcher m = p.matcher(line2);
-                            while (m.find()) {
-                                IRegion fi = new Region(match.getOffset()+m.start(), m.end()-m.start());
-                                createNewAnnotation(fi, "Referenzes", model);
-                            }
-                            match = docFinder.find(match.getOffset()+match.getLength(), refRegExp, true, false, false, true);
+                    final String simpleRefRegExp = "\\\\([a-zA-Z]*ref|label)\\s*\\{" + refNameRegExp + "\\}";
+                    Matcher m = (Pattern.compile(simpleRefRegExp)).matcher(text);
+                    while (m.find()) {
+                        if (monitor.isCanceled()) return Status.CANCEL_STATUS;
+                        IRegion match = LatexParserUtils.getCommand(text, m.start());
+                        //Test if it is a real LaTeX command
+                        if (match != null) {
+                            IRegion fi = new Region(m.start(), m.end()-m.start());
+                            createNewAnnotation(fi, "References", model);
                         }
-                        return Status.OK_STATUS;
-                    } catch (BadLocationException e) {
-                        //does not happen
-                        return Status.CANCEL_STATUS;
-                    } catch (IndexOutOfBoundsException e) {
-                        //can happen in some rare cases, when the document is changed too much while this job runs
-                        return Status.CANCEL_STATUS;
                     }
+                    return Status.OK_STATUS;
                 }
         };
     }
@@ -213,76 +207,23 @@ public class TexlipseAnnotationUpdater implements ISelectionChangedListener {
             final String command, final IRegion startRegion, final String envName) {
         return new Job("Update Annotations") {
                 public IStatus run(IProgressMonitor monitor) {
-                    //This finds a line with begin or end (no comment) ((?:^|\n|\r)(?:[^%\n\r]|\\%)*(?<!\\)\\(begin|end)\s*\{([^\}\{]+)\})
-                    String refNameRegExp = envName.replaceAll("\\*", "\\\\*");
-                    //final String refRegExp = "(?:^|\\n|\\r)(?:[^%\\n\\r]|\\\\%)*(?<!\\\\)\\\\(begin|end)\\s*\\{("+refNameRegExp+")\\}";
-                    final String refRegExp = "(?:^|\\n|\\r)(?:[^%\\n\\r]?(?:\\\\%)?)*(?<!\\\\)\\\\(begin|end)\\s*\\{("+refNameRegExp+")\\}";
-                    final Pattern p = Pattern.compile("(?<!\\\\)\\\\(begin|end)\\s*\\{("+refNameRegExp+")\\}");
-                    FindReplaceDocumentAdapter docFinder = new FindReplaceDocumentAdapter(document);
-
+                    String text = document.get();
                     boolean forward = false;
-                    int level = 1;
-                    if ("\\begin".equals(command)) forward = true;  
-                    try {
-                        int lineNr = document.getLineOfOffset(offset);
-                        int startOffset = document.getLineOffset(lineNr);
-                        if (!forward) {
-                            //Start with the backward search in the next line
-                            startOffset += document.getLineLength(lineNr) + 1;
-                            startOffset = Math.min(startOffset, document.getLength() - 1);
+                    if ("\\begin".equals(command)) forward = true;
+                    if (forward) {
+                        IRegion endRegion = LatexParserUtils.findMatchingEndEnvironment(text, envName, startRegion.getOffset());
+                        if (endRegion != null) {
+                            createNewAnnotation(endRegion, "Environment", model);
+                            createNewAnnotation(startRegion, "Environment", model);
                         }
-                        IRegion match = docFinder.find(startOffset, refRegExp, forward, false, false, true);
-                        while (match != null) {
-                            //We found a line with at least one not commented environment
-                            if (monitor.isCanceled()) return Status.CANCEL_STATUS;
-                            String line2 = document.get(match.getOffset(), match.getLength());
-                            Matcher ma = p.matcher(line2);
-                            //Save every environment of this line in a list
-                            LinkedList l = new LinkedList();
-                            while (ma.find()) {
-                                if (!forward) {
-                                    l.addFirst(ma.toMatchResult());
-                                }
-                                else {
-                                    l.add(ma.toMatchResult());                                   
-                                }
-                            }
-                            for (Iterator iter = l.iterator(); iter.hasNext();) {
-                                MatchResult m = (MatchResult) iter.next();
-                                
-                                if (!forward && match.getOffset() + m.end()-1 >= offset){
-                                    //We have found the selected or a later environment
-                                    continue;
-                                }
-                                if (forward && match.getOffset() + m.start() <= offset){
-                                    //We have found the selected or a prior environment
-                                    continue;
-                                }
-                                if (forward && "begin".equals(m.group(1))) level++;
-                                else if (forward && "end".equals(m.group(1))) level--;
-                                else if (!forward && "end".equals(m.group(1))) level++;
-                                else if (!forward && "begin".equals(m.group(1))) level--;
-                                if (level == 0){
-                                    IRegion fi = new Region(match.getOffset() + m.start(), m.end() - m.start());
-                                    //Highlight the founded entry and the one under the cursor and return
-                                    createNewAnnotation(fi, "Referenzes", model);
-                                    createNewAnnotation(startRegion, "References", model);
-                                    return Status.OK_STATUS;
-                                }
-                            }
-                            if (forward)
-                                match = docFinder.find(match.getOffset() + match.getLength(), refRegExp, forward, false, false, true);
-                            else 
-                                match = docFinder.find(match.getOffset(), refRegExp, forward, false, false, true);
+                    } else {
+                        IRegion endRegion = LatexParserUtils.findMatchingBeginEnvironment(text, envName, startRegion.getOffset());
+                        if (endRegion != null) {
+                            createNewAnnotation(endRegion, "Environment", model);
+                            createNewAnnotation(startRegion, "Environment", model);
                         }
-                        return Status.OK_STATUS;
-                    } catch (BadLocationException e) {
-                        //does not happen
-                        return Status.CANCEL_STATUS;
-                    } catch (IndexOutOfBoundsException e) {
-                        //can happen in some rare cases, when the document is changed too much while this job runs
-                        return Status.CANCEL_STATUS;
                     }
+                    return Status.OK_STATUS;
                 }
         };
     }
@@ -298,8 +239,8 @@ public class TexlipseAnnotationUpdater implements ISelectionChangedListener {
         if (selection instanceof ITextSelection) {
             final ITextSelection textSelection = (ITextSelection) selection;
             //Iterate over all existing annotations
-            for (Iterator iter = fOldAnnotations.iterator(); iter.hasNext();) {
-                Annotation anno = (Annotation) iter.next();
+            for (Iterator<Annotation> iter = fOldAnnotations.iterator(); iter.hasNext();) {
+                Annotation anno = iter.next();
                 Position p = model.getPosition(anno);
                 if (p != null && p.offset <= textSelection.getOffset() && p.offset+p.length >= textSelection.getOffset()) { 
                     return true;
@@ -315,7 +256,7 @@ public class TexlipseAnnotationUpdater implements ISelectionChangedListener {
      */
     private void removeOldAnnotations(IAnnotationModel model) {
 
-        for (Iterator it= fOldAnnotations.iterator(); it.hasNext();) {
+        for (Iterator<Annotation> it= fOldAnnotations.iterator(); it.hasNext();) {
             Annotation annotation= (Annotation) it.next();
             model.removeAnnotation(annotation);
         }

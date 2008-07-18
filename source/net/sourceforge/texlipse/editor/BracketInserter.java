@@ -58,11 +58,11 @@ public class BracketInserter implements VerifyKeyListener, ILinkedModeListener {
         
         final char fExitCharacter;
         final char fEscapeCharacter;
-        final Stack fStack;
+        final Stack<BracketLevel> fStack;
         final int fSize;
         final ISourceViewer sourceViewer;
         
-        public ExitPolicy(char exitCharacter, char escapeCharacter, Stack stack, ISourceViewer viewer) {
+        public ExitPolicy(char exitCharacter, char escapeCharacter, Stack<BracketLevel> stack, ISourceViewer viewer) {
             fExitCharacter= exitCharacter;
             fEscapeCharacter= escapeCharacter;
             fStack= stack;
@@ -204,17 +204,17 @@ public class BracketInserter implements VerifyKeyListener, ILinkedModeListener {
     
     private final String CATEGORY= toString();
     private IPositionUpdater fUpdater= new ExclusivePositionUpdater(CATEGORY);
-    private Stack fBracketLevelStack= new Stack();
+    private Stack<BracketLevel> fBracketLevelStack= new Stack<BracketLevel>();
     private final ISourceViewer sourceViewer;
     private final IEditorPart editor;
-    private static HashMap quotes;
+    private static HashMap<String, String> quotes;
     private static final Pattern SIMPLE_COMMAND_PATTERN = Pattern.compile("\\\\.\\{\\\\?\\w\\}");
 
     public BracketInserter(ISourceViewer viewer, IEditorPart editor) {
         this.sourceViewer = viewer;
         this.editor = editor;
         if (quotes == null) {
-            quotes = new HashMap();
+            quotes = new HashMap<String, String>();
             quotes.put("eno", "``");
             quotes.put("enc", "''");
             quotes.put("fio", "''");
@@ -232,9 +232,8 @@ public class BracketInserter implements VerifyKeyListener, ILinkedModeListener {
      * @param c Chracter to test
      * @return True if <code>c</code> is a bracket or paren, false otherwise
      */
-    private static boolean isBracket(char c){
-        if (c == '$' || c == '{' || c == '(' || c == '[' || c == ')'
-            || c == '}' || c == ']')
+    private static boolean isClosingBracket(char c){
+        if (c == ')' || c == '}' || c == ']')
             return true;
         return false;
     }
@@ -324,8 +323,8 @@ public class BracketInserter implements VerifyKeyListener, ILinkedModeListener {
         IProject project = ((FileEditorInput)editor.getEditorInput()).getFile().getProject();
         String lang = TexlipseProperties.getProjectProperty(project, TexlipseProperties.LANGUAGE_PROPERTY);		
         String postfix = opening ? "o" : "c";
-        replacement = (String) quotes.get(lang + postfix);
-        return (replacement != null ? replacement : (String) quotes.get("en" + postfix));
+        replacement = quotes.get(lang + postfix);
+        return (replacement != null ? replacement : quotes.get("en" + postfix));
     }
     
     /*
@@ -441,7 +440,7 @@ public class BracketInserter implements VerifyKeyListener, ILinkedModeListener {
             if (!TexlipsePlugin.getDefault().getPreferenceStore().getBoolean(TexlipseProperties.SMART_PARENS))
                 return;
             
-            if (Character.isWhitespace(next) || isBracket(next)){
+            if (Character.isWhitespace(next) || isClosingBracket(next)){
                 //For a dollar sign we need a whitespace before and after the letter
                 if (character == '$' && !Character.isWhitespace(last))
                     return;
@@ -519,7 +518,7 @@ public class BracketInserter implements VerifyKeyListener, ILinkedModeListener {
      */
     public void left(LinkedModeModel environment, int flags) {
         
-        final BracketLevel level= (BracketLevel) fBracketLevelStack.pop();
+        final BracketLevel level= fBracketLevelStack.pop();
         
         if (flags != ILinkedModeListener.EXTERNAL_MODIFICATION)
             return;

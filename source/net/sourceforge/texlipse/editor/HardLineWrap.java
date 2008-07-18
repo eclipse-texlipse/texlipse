@@ -115,6 +115,11 @@ public class HardLineWrap {
                     c.text.indexOf("\n") >= 0 || c.text.indexOf("\r") >= 0) return;
             
             String line = d.get(commandRegion.getOffset(), commandRegion.getLength());
+
+            //Special case if there are white spaces at the end of the line
+            if (trimEnd(line).length() + c.text.length() <= MAX_LENGTH) return; 
+
+            
             if (line.indexOf(' ') == -1) {
                 //There is no whitespace
                 return;

@@ -86,7 +86,7 @@ public class TexlipsePreferenceInitializer extends
         
         pref.setDefault(TexlipseProperties.BUILD_ENV_SETTINGS, "");
         pref.setDefault(TexlipseProperties.VIEWER_ENV_SETTINGS, "");
-        pref.setDefault(TexlipseProperties.TEMP_FILE_EXTS, ".aux,.log,.toc,.ind,.ilg,.bbl,.blg,.lot,.lof");
+        pref.setDefault(TexlipseProperties.TEMP_FILE_EXTS, ".aux,.log,.toc,.ind,.ilg,.bbl,.blg,.lot,.lof,.snm,.nav,.out,.vrb");
         
         pref.setDefault(TexlipseProperties.BIB_COMPLETION, true);
         pref.setDefault(TexlipseProperties.BIB_COMPLETION_DELAY, 500);

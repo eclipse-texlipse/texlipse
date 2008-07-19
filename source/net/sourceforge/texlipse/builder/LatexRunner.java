@@ -32,14 +32,14 @@ import org.eclipse.core.resources.IResource;
  */
 public class LatexRunner extends AbstractProgramRunner {
     
-    private Stack parsingStack;
+    private Stack<String> parsingStack;
     
     /**
      * Create a new ProgramRunner.
      */
     public LatexRunner() {
         super();
-        this.parsingStack = new Stack();
+        this.parsingStack = new Stack<String>();
     }
     
     protected String getWindowsProgramName() {
@@ -55,7 +55,7 @@ public class LatexRunner extends AbstractProgramRunner {
     }
     
     public String getDefaultArguments() {
-        return "-interaction=scrollmode --src-specials %input";
+        return "-interaction=nonstopmode --src-specials %input";
     }
     
     public String getInputFormat() {
@@ -357,7 +357,7 @@ public class LatexRunner extends AbstractProgramRunner {
      */
     private String determineSourceFile() {
         if (!parsingStack.empty())
-            return ((String) parsingStack.peek()).substring(1);
+            return parsingStack.peek().substring(1);
         else
             return null;
     }

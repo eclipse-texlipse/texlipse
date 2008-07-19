@@ -41,7 +41,7 @@ import org.eclipse.ui.ide.IDE;
  * <ul><li>References</li>
  * <li>Citations</li>
  * <li>Custom commands (/newcommand)</li>
- * <li>include and input</li>
+ * <li>include, input and bibliography</li>
  * </ul>
  * 
  * @author Boris von Loesch
@@ -119,7 +119,8 @@ public class OpenDeclarationAction implements IEditorActionDelegate {
         }
         
         if (refEntry == null && (command.indexOf("ref") >= 0 || command.indexOf("cite") >=0 || 
-                command.equals("\\input") || command.equals("\\include"))) {
+                command.equals("\\input") || command.equals("\\include")) || 
+                command.equals("\\bibliography")) {
             //We need the argument
             IRegion region = null;
             try {
@@ -154,7 +155,8 @@ public class OpenDeclarationAction implements IEditorActionDelegate {
                 }
                 refEntry = editor.getDocumentModel().getRefMana().getBib(ref.trim());
             }
-            else if (command.equals("\\include") || command.equals("\\input")) {
+            else if (command.equals("\\include") || command.equals("\\input") || 
+                    command.equals("\\bibliography")) {
                 IContainer dir;
                 IFile refFile = editor.getDocumentModel().getFile();
                 if (refFile == null) {
@@ -165,8 +167,15 @@ public class OpenDeclarationAction implements IEditorActionDelegate {
                     dir = refFile.getParent();
                 }
                 
-                if (!ref.toLowerCase().endsWith(".tex")) {
-                    ref = ref + ".tex";
+                if (command.equals("\\bibliography")) {
+                    if (!ref.toLowerCase().endsWith(".bib")) {
+                        ref = ref + ".bib";
+                    }                    
+                }
+                else {
+                    if (!ref.toLowerCase().endsWith(".tex")) {
+                        ref = ref + ".tex";
+                    }
                 }
                 
                 IResource file = dir.findMember(ref);

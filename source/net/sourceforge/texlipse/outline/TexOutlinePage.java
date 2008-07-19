@@ -11,8 +11,8 @@ package net.sourceforge.texlipse.outline;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 
 import net.sourceforge.texlipse.TexlipsePlugin;
 import net.sourceforge.texlipse.editor.TexEditor;
@@ -73,8 +73,8 @@ public class TexOutlinePage extends ContentOutlinePage {
     private TexOutlineFilter filter;
     private Clipboard clipboard;
     private int expandLevel;
-    private HashMap outlineActions;
-    private HashSet outlineProperties;
+    private Map<String, IAction> outlineActions;
+    //private Set outlineProperties;
     
     /**
      * The constructor.
@@ -85,7 +85,7 @@ public class TexOutlinePage extends ContentOutlinePage {
         super();
         this.editor = texEditor;
         expandLevel = 1;
-        this.outlineActions = new HashMap();
+        this.outlineActions = new HashMap<String, IAction>();
                 
         
         TexlipsePlugin.getDefault().getPreferenceStore().addPropertyChangeListener(new  
@@ -248,6 +248,7 @@ public class TexOutlinePage extends ContentOutlinePage {
             if (position != null) {
                 try {
                     editor.setHighlightRange(position.getOffset(), position.getLength(), true);
+                    editor.getViewer().revealRange(position.getOffset(), position.getLength());
                 } catch (IllegalArgumentException x) {
                     editor.resetHighlightRange();
                 }

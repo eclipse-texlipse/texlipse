@@ -18,6 +18,8 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 import net.sourceforge.texlipse.PathUtils;
 import net.sourceforge.texlipse.SelectedResourceManager;
@@ -25,7 +27,6 @@ import net.sourceforge.texlipse.TexlipsePlugin;
 import net.sourceforge.texlipse.builder.BuilderRegistry;
 import net.sourceforge.texlipse.properties.TexlipseProperties;
 
-import org.eclipse.core.internal.resources.Workspace;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
@@ -125,7 +126,7 @@ public class SpellChecker implements IPropertyChangeListener {
     private String[] envp;
     
     // map of proposals so far
-    private HashMap proposalMap;
+    private Map<IMarker, String[]> proposalMap;
     
     // the current language
     private String language;
@@ -134,7 +135,7 @@ public class SpellChecker implements IPropertyChangeListener {
      * Private constructor, because we want to keep this singleton.
      */
     private SpellChecker() {
-        proposalMap = new HashMap();
+        proposalMap = new HashMap<IMarker, String[]>();
         language = "en";
         // these two must be initialized in the constructor, otherwise the resource bundle may not be initialized
         SPELL_CHECKER_ADD = TexlipsePlugin.getResourceString(SPELL_CHECKER_ADD);
@@ -465,14 +466,14 @@ public class SpellChecker implements IPropertyChangeListener {
             // TODO The problem: if ASpell found a error in the word with \"... command
             // a marker will set wrong.
             // This is ISO-8859-1
-            lineToPost = lineToPost.replaceAll("\\\"a", "ä");
-            lineToPost = lineToPost.replaceAll("\\\"u", "ü");
-            lineToPost = lineToPost.replaceAll("\\\"o", "ö");
-            lineToPost = lineToPost.replaceAll("\\\"A", "Ä");
-            lineToPost = lineToPost.replaceAll("\\\"U", "Ü");
-            lineToPost = lineToPost.replaceAll("\\\"O", "Ö");
-            lineToPost = lineToPost.replaceAll("\\ss ", "ß");
-            lineToPost = lineToPost.replaceAll("\\ss\\\\", "ß\\");
+            lineToPost = lineToPost.replace("\\\"a", "ä");
+            lineToPost = lineToPost.replace("\\\"u", "ü");
+            lineToPost = lineToPost.replace("\\\"o", "ö");
+            lineToPost = lineToPost.replace("\\\"A", "Ä");
+            lineToPost = lineToPost.replace("\\\"U", "Ü");
+            lineToPost = lineToPost.replace("\\\"O", "Ö");
+            lineToPost = lineToPost.replace("\\ss ", "ß");
+            lineToPost = lineToPost.replace("\\ss\\\\", "ß\\");
             //lineToPost = lineToPost.replaceAll("\\ss[^a-zA-Z]", "ß");
         }
         
@@ -487,7 +488,7 @@ public class SpellChecker implements IPropertyChangeListener {
         output.println("^" + lineToPost);
         output.flush();
         // wait until there is input
-        ArrayList lines = new ArrayList();
+        List<String> lines = new ArrayList<String>();
         try {
             String result = input.readLine();
             while ((!"".equals(result)) && (result != null)) {
@@ -510,7 +511,7 @@ public class SpellChecker implements IPropertyChangeListener {
         
         // loop through the output lines (they contain only errors)
         for (int i = 0; i < lines.size(); i++) {
-            String[] tmp = ((String) lines.get(i)).split(":");
+            String[] tmp = (lines.get(i)).split(":");
             String[] error = tmp[0].split(" ");
             String word = error[1].trim();
             // column, where the word starts in the line of text
@@ -559,7 +560,7 @@ public class SpellChecker implements IPropertyChangeListener {
      */
     private void createMarker(IResource file, String[] proposals, int charBegin, String word, int lineNumber) {
         
-        HashMap attributes = new HashMap();
+        Map attributes = new HashMap();
         attributes.put(IMarker.CHAR_START, new Integer(charBegin));
         attributes.put(IMarker.CHAR_END, new Integer(charBegin+word.length()));
         attributes.put(IMarker.LINE_NUMBER, new Integer(lineNumber));
@@ -595,7 +596,7 @@ public class SpellChecker implements IPropertyChangeListener {
     private void deleteOldProposals(IResource res) {
         
         // delete all markers with proposals, because there might be something in the other files
-        Iterator iter = proposalMap.keySet().iterator();
+        Iterator<IMarker> iter = proposalMap.keySet().iterator();
         while (iter.hasNext()) {
             IMarker marker = (IMarker) iter.next();
             try {
@@ -623,7 +624,7 @@ public class SpellChecker implements IPropertyChangeListener {
      * @return correction proposals
      */
     public static String[] getProposals(IMarker marker) {
-        return (String[]) instance.proposalMap.get(marker);
+        return instance.proposalMap.get(marker);
     }
 
     /**

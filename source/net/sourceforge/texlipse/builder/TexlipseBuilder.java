@@ -372,9 +372,9 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
         IContainer sourceDir = resource.getParent();
         sourceDir.refreshLocal(IProject.DEPTH_ONE, monitor);
 
-        // mark temp files as derived
-        markTempFiles(project, sourceDir);
-        
+        // mark temp and output files as derived
+        markTempandOutFiles(project, sourceDir);
+                
         // move the output file to correct place
         moveOutput(project, sourceDir, monitor);
         moveTempFiles(project, monitor);
@@ -577,9 +577,8 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
         IContainer sourceDir = TexlipseProperties.getProjectSourceDir(project);
         sourceDir.refreshLocal(IProject.DEPTH_ONE, monitor);
         
-        // mark temp files as derived
-        markTempFiles(project, sourceDir);
-        
+        // mark temp and output files as derived
+        markTempandOutFiles(project, sourceDir);
         
         try { // possibly move output & temp files away from the source dir
             moveOutput(project, sourceDir, monitor);
@@ -613,7 +612,7 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
     }
 
     /**
-     * Mark temporary files used by Latex program as "derived" to hide them from
+     * Mark temporary and output files used by Latex program as "derived" to hide them from
      * version control systems. 
      * 
      * @param project the current project
@@ -621,7 +620,7 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
      * @param monitor progress monitor
      * @throws CoreException if an error occurs
      */
-    private void markTempFiles(IProject project, IContainer sourceDir) throws CoreException {
+    private void markTempandOutFiles(IProject project, IContainer sourceDir) throws CoreException {
         
         String mark = TexlipseProperties.getProjectProperty(project, TexlipseProperties.MARK_DERIVED_PROPERTY);
         if (!"true".equals(mark)) {
@@ -634,13 +633,19 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
         }
         
         String[] exts = TexlipsePlugin.getPreferenceArray(TexlipseProperties.TEMP_FILE_EXTS);
-        for (int i = 0; i < files.length; i++) {
+        String outputFileName = TexlipseProperties.getOutputFileName(project);
+
+        for (IResource file : files) {
             
-            String fileName = files[i].getName();
-            for (int j = 0; j < exts.length; j++) {
-                
-                if (fileName.endsWith(exts[j])) {
-                    files[i].setDerived(true);
+            String fileName = file.getName();
+            if (fileName.equals(outputFileName)) {
+                file.setDerived(true);
+            }
+            else {
+                for (String ext : exts) {
+                    if (fileName.endsWith(ext)) {
+                        file.setDerived(true);
+                    }
                 }
             }
         }
@@ -672,20 +677,7 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
             return;
         }
         
-        String outputFileName = TexlipseProperties.getProjectProperty(project, 
-                TexlipseProperties.OUTPUTFILE_PROPERTY);
-        //Check for partial build
-        Object s = TexlipseProperties.getProjectProperty(project, TexlipseProperties.PARTIAL_BUILD_PROPERTY);
-        if (s != null) {
-            IFile tmpFile = (IFile)TexlipseProperties.getSessionProperty(project, TexlipseProperties.PARTIAL_BUILD_FILE);
-            if (tmpFile != null){
-                String fmtProp = TexlipseProperties.getProjectProperty(project,
-                        TexlipseProperties.OUTPUT_FORMAT);
-                String name = tmpFile.getName();
-                name = name.substring(0, name.lastIndexOf('.')) + "." + fmtProp;
-                outputFileName = name;
-            }
-        }
+        String outputFileName = TexlipseProperties.getOutputFileName(project);
         IResource outputFile = sourceDir.findMember(outputFileName);
         if (outputFile != null && outputFile.exists()) {
             

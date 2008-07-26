@@ -486,20 +486,7 @@ public class ViewerManager {
      */
     public static IResource getOuputResource(IProject project) throws CoreException { 
     	
-    	String outFileName = TexlipseProperties.getProjectProperty(project,
-                TexlipseProperties.OUTPUTFILE_PROPERTY);
-        //Check for partial build
-        Object s = TexlipseProperties.getProjectProperty(project, TexlipseProperties.PARTIAL_BUILD_PROPERTY);
-        if (s != null) {
-            IFile tmpFile = (IFile)TexlipseProperties.getSessionProperty(project, TexlipseProperties.PARTIAL_BUILD_FILE);
-            if (tmpFile != null){
-                String fmtProp = TexlipseProperties.getProjectProperty(project,
-                        TexlipseProperties.OUTPUT_FORMAT);
-                String name = tmpFile.getName();
-                name = name.substring(0, name.lastIndexOf('.')) + "." + fmtProp;
-                outFileName = name;
-            }
-        }
+    	String outFileName = TexlipseProperties.getOutputFileName(project);
         if (outFileName == null || outFileName.length() == 0) {
             throw new CoreException(TexlipsePlugin.stat("Empty output file name."));
         }

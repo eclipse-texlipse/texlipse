@@ -279,6 +279,28 @@ public class TexlipseProperties {
     }
     
     /**
+     * Returns the name of the output file, if partial building is turned on, the name of
+     * the partial build file will be returned.
+     * @param project
+     * @return Name of the output file without path
+     */
+    public static String getOutputFileName (IProject project) {
+        String outputFileName = getProjectProperty(project, TexlipseProperties.OUTPUTFILE_PROPERTY);
+        //Check for partial build
+        Object s = getProjectProperty(project, TexlipseProperties.PARTIAL_BUILD_PROPERTY);
+        if (s != null) {
+            IFile tmpFile = (IFile)getSessionProperty(project, TexlipseProperties.PARTIAL_BUILD_FILE);
+            if (tmpFile != null){
+                String fmtProp = getProjectProperty(project, TexlipseProperties.OUTPUT_FORMAT);
+                String name = tmpFile.getName();
+                name = name.substring(0, name.lastIndexOf('.')) + "." + fmtProp;
+                outputFileName = name;
+            }
+        }
+        return outputFileName;
+    }
+    
+    /**
      * Find the project's main source file. The file may or may not exist.
      * @param project the current project
      * @return a handle to the project's main source file, or null if main file not set
@@ -307,7 +329,8 @@ public class TexlipseProperties {
     }
     
     /**
-     * Find the project's output file. The file may or may not exist.
+     * Find the project's output file. The file may or may not exist. This is independent
+     * of partial build turned on or off.
      * @param project the current project
      * @return a handle to the project's output file or null if output file not set
      */

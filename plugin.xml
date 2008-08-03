@@ -17,7 +17,6 @@
          point="org.eclipse.core.runtime.contentTypes">
       <content-type
             base-type="org.eclipse.core.runtime.text"
-            default-charset="ISO-8859-1"
             file-extensions="tex,ltx,sty,cls"
             id="net.sourceforge.texlipse.contentTypes.Latex"
             name="LaTeX File"

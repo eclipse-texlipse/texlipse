@@ -11,7 +11,6 @@ package net.sourceforge.texlipse.bibeditor;
 
 import java.io.IOException;
 import java.io.StringReader;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -21,6 +20,7 @@ import net.sourceforge.texlipse.bibparser.BibOutlineContainer;
 import net.sourceforge.texlipse.bibparser.BibParser;
 import net.sourceforge.texlipse.editor.TexDocumentParseException;
 import net.sourceforge.texlipse.model.MarkerHandler;
+import net.sourceforge.texlipse.model.ParseErrorMessage;
 import net.sourceforge.texlipse.model.ReferenceContainer;
 import net.sourceforge.texlipse.model.ReferenceEntry;
 import net.sourceforge.texlipse.properties.TexlipseProperties;
@@ -42,7 +42,7 @@ public class BibDocumentModel {
     
     private BibEditor editor;
     private List entryList;    
-    private ArrayList abbrevs;
+    private List abbrevs;
     private AbbrevManager abbrManager;
     
     private ReferenceContainer bibContainer;
@@ -74,12 +74,11 @@ public class BibDocumentModel {
      */
     private void doParse() throws TexDocumentParseException {
         try {
-            IProject project = ((FileEditorInput)editor.getEditorInput()).getFile().getProject();
-            BibParser parser = new BibParser(new StringReader(this.editor.getDocumentProvider().getDocument(this.editor.getEditorInput()).get()),project);
+            BibParser parser = new BibParser(new StringReader(this.editor.getDocumentProvider().getDocument(this.editor.getEditorInput()).get()));
             
             this.entryList = parser.getEntries();
             
-            ArrayList parseErrors = parser.getErrors();
+            List<ParseErrorMessage> parseErrors = parser.getErrors();
             List parseWarnings = parser.getWarnings();
             List tasks = parser.getTasks();
             
@@ -117,8 +116,10 @@ public class BibDocumentModel {
      * Updates the BibTeX -data in the BibTeX-container.
      */
     private void updateBibContainer() {
+    	IProject project = editor.getProject();
+    	if (project == null) return;
+    	
         IResource resource = ((FileEditorInput)editor.getEditorInput()).getFile();
-        IProject project = resource.getProject();
         if (bibContainer == null) {
             ReferenceContainer refCon = (ReferenceContainer) TexlipseProperties.getSessionProperty(project,
                     TexlipseProperties.BIBCONTAINER_PROPERTY);

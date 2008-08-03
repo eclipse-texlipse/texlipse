@@ -24,7 +24,6 @@ import net.sourceforge.texlipse.bibparser.parser.ParserException;
 import net.sourceforge.texlipse.model.ParseErrorMessage;
 
 import org.eclipse.core.resources.IMarker;
-import org.eclipse.core.resources.IProject;
 
 
 /**
@@ -36,11 +35,10 @@ import org.eclipse.core.resources.IProject;
  */
 public class BibParser {
     
-    private IProject project;
     private String filename;
     private Reader reader;
     
-    private ArrayList errors;
+    private List<ParseErrorMessage> errors;
     private List warnings;
     private List tasks;
     private Start ast;
@@ -50,10 +48,9 @@ public class BibParser {
      * 
      * @param filename The file to parse
      */
-    public BibParser(String filename, IProject project) {
+    public BibParser(String filename) {
         this.filename = filename;
-        this.project = project;
-        this.errors = new ArrayList();
+        this.errors = new ArrayList<ParseErrorMessage>();
         this.warnings = new ArrayList();
     }
     
@@ -62,8 +59,7 @@ public class BibParser {
      * 
      * @param r A reader to the BibTeX-data to parse
      */
-    public BibParser(Reader r, IProject project) {
-        this.project = project;
+    public BibParser(Reader r) {
         this.reader = r;
         this.errors = new ArrayList();
         this.warnings = new ArrayList();
@@ -127,7 +123,7 @@ public class BibParser {
     /**
      * @return Returns the abbreviations (<code>ReferenceEntry</code>)
      */
-    public ArrayList getAbbrevs() {
+    public List getAbbrevs() {
         if (ast != null) {
             AbbrevRetriever ar = new AbbrevRetriever();
             ast.apply(ar);
@@ -139,7 +135,7 @@ public class BibParser {
     /**
      * @return Returns the errors.
      */
-    public ArrayList getErrors() {
+    public List<ParseErrorMessage> getErrors() {
         return errors;
     }    
     

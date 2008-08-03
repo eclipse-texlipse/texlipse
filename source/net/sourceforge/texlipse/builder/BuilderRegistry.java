@@ -10,6 +10,7 @@
 package net.sourceforge.texlipse.builder;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import net.sourceforge.texlipse.TexlipsePlugin;
 import net.sourceforge.texlipse.properties.TexlipseProperties;
@@ -169,7 +170,8 @@ public class BuilderRegistry {
                 new DvipsRunner(),
                 new DvipdfRunner(),
                 new Ps2pdfRunner(),
-                new MakeindexNomenclRunner()
+                new MakeindexNomenclRunner(),
+                new KpsewhichRunner()
         };
     }
 
@@ -227,7 +229,7 @@ public class BuilderRegistry {
      */
     protected Builder[] getAllBuilders(String format) {
 
-        ArrayList list = new ArrayList();
+        List<Builder> list = new ArrayList<Builder>();
 
         for (int i = 0; i < builderList.length; i++) {
             if (builderList[i] != null
@@ -236,7 +238,7 @@ public class BuilderRegistry {
             }
         }
 
-        return (Builder[]) list.toArray(new Builder[0]);
+        return list.toArray(new Builder[0]);
     }
     
     /**

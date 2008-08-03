@@ -206,6 +206,10 @@ public class BibtexRunner extends AbstractProgramRunner {
                 
                 String bibName = line.substring(line.indexOf(':')+2);
                 bibResource = sourceDir.findMember(bibName);
+                if (bibResource == null) {
+                	//Could happen if bibName is not part of project (kpathsea)
+                	bibResource = origResource;
+                }
 
             } else if (line.startsWith("I couldn't open database file ")) {
                 

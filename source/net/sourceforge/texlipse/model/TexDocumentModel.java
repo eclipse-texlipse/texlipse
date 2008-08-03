@@ -12,7 +12,6 @@ package net.sourceforge.texlipse.model;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 
 import net.sourceforge.texlipse.TexlipsePlugin;
@@ -25,10 +24,12 @@ import net.sourceforge.texlipse.properties.TexlipseProperties;
 import net.sourceforge.texlipse.texparser.LatexRefExtractingParser;
 import net.sourceforge.texlipse.texparser.TexParser;
 import net.sourceforge.texlipse.treeview.views.TexOutlineTreeView;
+import net.sourceforge.texlipse.builder.KpsewhichRunner;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -217,7 +218,7 @@ public class TexDocumentModel implements IDocumentListener {
     private boolean firstRun = true;
 
     // used to synchronize ParseJob rescheduling
-    private static ILock lock = Platform.getJobManager().newLock();
+    private static ILock lock = Job.getJobManager().newLock();
     private boolean isDirty;
     
     private ParseJob parseJob;
@@ -428,7 +429,7 @@ public class TexDocumentModel implements IDocumentListener {
         }
         pollCancel(monitor);
 
-        List errors = parser.getErrors();
+        List<ParseErrorMessage> errors = parser.getErrors();
         List tasks = parser.getTasks();
         MarkerHandler marker = MarkerHandler.getInstance();
 
@@ -644,30 +645,40 @@ public class TexDocumentModel implements IDocumentListener {
                 TexlipseProperties.BIBFILE_PROPERTY,
                 bibNames);
         
-        LinkedList newBibs = bibContainer.updateBibHash(bibNames);
+        List<String> newBibs = bibContainer.updateBibHash(bibNames);
 
         IPath path = resource.getFullPath().removeFirstSegments(1).removeLastSegments(1);        
         if (!path.isEmpty())
             path = path.addTrailingSeparator();
         
-        for (Iterator iter = newBibs.iterator(); iter.hasNext();) {
-            String name = (String) iter.next();
-            IResource res = project.findMember(path + name);
-            if (res != null) {
-                BibParser parser = new BibParser(res.getLocation().toOSString(), project);
-                try {
-                    List bibEntriesList = parser.getEntries();
-                    if (bibEntriesList != null && bibEntriesList.size() > 0) {
-                        bibContainer.addRefSource(path + name, bibEntriesList);
-                    } else if (bibEntriesList == null) {
-                        MarkerHandler marker = MarkerHandler.getInstance();
-                        marker.addFatalError(editor, "The BibTeX file " + res.getFullPath() + " contains fatal errors, parsing aborted.");
-                        continue;
-                    }
-                } catch (IOException ioe) {
-                    TexlipsePlugin.log("Can't read BibTeX file " + res.getFullPath(), ioe);
-                }
-            }
+        KpsewhichRunner filesearch = new KpsewhichRunner();
+                
+        for (Iterator<String> iter = newBibs.iterator(); iter.hasNext();) {
+        	String name = iter.next();
+        	try {
+        		String filepath = filesearch.getFile(resource, name, "bibtex");
+        		if (!filepath.isEmpty()) {
+        			BibParser parser = new BibParser(filepath);
+        			try {
+        				List<ReferenceEntry> bibEntriesList = parser.getEntries();
+        				if (bibEntriesList != null && bibEntriesList.size() > 0) {
+        					bibContainer.addRefSource(path + name, bibEntriesList);
+        				} else if (bibEntriesList == null) {
+        					MarkerHandler marker = MarkerHandler.getInstance();
+        					marker.addFatalError(editor, "The BibTeX file " + filepath + " contains fatal errors, parsing aborted.");
+        					continue;
+        				}
+        			} catch (IOException ioe) {
+        				TexlipsePlugin.log("Can't read BibTeX file " + filepath, ioe);
+        			}
+        		} else {
+        			MarkerHandler marker = MarkerHandler.getInstance();
+        			marker.addFatalError(editor, "The BibTeX file " +name+ " not found.");
+        		}
+
+        	} catch (CoreException ce) {
+        		TexlipsePlugin.log("Can't run Kpathsea", ce);
+        	}
         }
         bibContainer.organize();
     }
@@ -676,7 +687,7 @@ public class TexDocumentModel implements IDocumentListener {
      * Updates the labels.
      * @param labels
      */
-    private void updateLabels(ArrayList labels) {
+    private void updateLabels(List<ReferenceEntry> labels) {
         IResource resource = getFile();
         if (resource == null) return;
         labelContainer.addRefSource(resource.getProjectRelativePath().toString(), labels);
@@ -775,7 +786,7 @@ public class TexDocumentModel implements IDocumentListener {
                             marker.addFatalError(editor, "The file " + files[i].getFullPath() + " contains fatal errors, parsing aborted.");
                             continue;
                         }
-                        ArrayList labels = lrep.getLabels();
+                        List<ReferenceEntry> labels = lrep.getLabels();
                         if (labels.size() > 0) {
                             labelContainer.addRefSource(files[i].getProjectRelativePath().toString(), labels);
                         }

@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Container for referencing data (BibTeX and labels.) Holds the reference
@@ -22,10 +23,11 @@ import java.util.List;
  * not all files need to be reparsed when the data changes.
  * 
  * @author Oskar Ojala
+ * @author Boris von Loesch
  */
 public class ReferenceContainer {
 
-    private HashMap referenceHash;
+    private Map<String, List<ReferenceEntry>> referenceHash;
     private ReferenceEntry[] sortedReferences;
     private int size;
     
@@ -33,7 +35,7 @@ public class ReferenceContainer {
      * Creates a new reference container and initializes its datastructures.
      */
     public ReferenceContainer() {
-        referenceHash = new HashMap(4);
+        referenceHash = new HashMap<String, List<ReferenceEntry>>(4);
         sortedReferences = null;
         size = 0;
     }
@@ -46,16 +48,14 @@ public class ReferenceContainer {
      * @param key The key associated with these references in the internal set
      * @param refs The references to store
      */
-    public void addRefSource(String key, List refs) {
-        //ArrayList<ReferenceEntry> refs
+    public void addRefSource(String key, List<ReferenceEntry> refs) {
         // Add filename to all references
-        for (Iterator iter = refs.iterator(); iter.hasNext();) {
-            ReferenceEntry r = (ReferenceEntry) iter.next();
+    	for (ReferenceEntry r : refs) {
             r.fileName = key;
         }
         
         size += refs.size();
-        ArrayList al = (ArrayList) referenceHash.put(key, refs);
+        List<ReferenceEntry> al = referenceHash.put(key, refs);
         if (al != null)
             size -= al.size();
     }
@@ -73,7 +73,7 @@ public class ReferenceContainer {
      * @param refs The reference source
      * @return True if the internal set was changed
      */
-    public boolean updateRefSource(String key, List refs) {
+    public boolean updateRefSource(String key, List<ReferenceEntry> refs) {
         if (referenceHash.containsKey(key)) {
             this.addRefSource(key, refs);
             this.organize();
@@ -87,17 +87,19 @@ public class ReferenceContainer {
      * <code>sortedReferences</code>.
      */
     public void organize() {
-        if (referenceHash.size() == 0)
-            return;
-        ArrayList allRefs = new ArrayList(size);
+        if (referenceHash.size() == 0) {
+            sortedReferences = new ReferenceEntry[0];
+        	return;        	
+        }
+        List<ReferenceEntry> allRefs = new ArrayList<ReferenceEntry>(size);
         if (referenceHash.size() > 1) {
-            for (Iterator iter = referenceHash.values().iterator(); iter.hasNext();) {
-                ArrayList refList = (ArrayList) iter.next();
+            for (Iterator<List<ReferenceEntry>> iter = referenceHash.values().iterator(); iter.hasNext();) {
+                List<ReferenceEntry> refList = iter.next();
                 allRefs.addAll(refList);
             }
         } else if (referenceHash.size() == 1) {
-            Iterator iter = referenceHash.values().iterator();
-            allRefs = (ArrayList) iter.next();
+            Iterator<List<ReferenceEntry>> iter = referenceHash.values().iterator();
+            allRefs = iter.next();
         }
         sortedReferences = new ReferenceEntry[allRefs.size()];
         allRefs.toArray(sortedReferences);
@@ -120,18 +122,18 @@ public class ReferenceContainer {
      * @return An empty list if there were no new keys, otherwise a list containing
      * the names of the new keys
      */
-    public LinkedList updateBibHash(String[] newBibs) {
-        LinkedList toParse = new LinkedList();
-        HashMap newHash = new HashMap(newBibs.length);
+    public List<String> updateBibHash(String[] newBibs) {
+        List<String> toParse = new LinkedList<String>();
+        Map<String, List<ReferenceEntry>> newHash = new HashMap<String, List<ReferenceEntry>>(newBibs.length);
         int newSize = 0;
         
-        for (int i=0; i < newBibs.length; i++) {
-            ArrayList al = (ArrayList) referenceHash.get(newBibs[i]);
+        for (String bib : newBibs) {
+            List<ReferenceEntry> al = referenceHash.get(bib);
             if (al != null) {
-                newHash.put(newBibs[i], al);
+                newHash.put(bib, al);
                 newSize += al.size();
             } else {
-                toParse.add(newBibs[i]);
+                toParse.add(bib);
             }
         }
         referenceHash = newHash;
@@ -152,10 +154,10 @@ public class ReferenceContainer {
         if (newBibs.length != referenceHash.size())
             return false;
         
-        for (int i=0; i < newBibs.length; i++)
-            if (!referenceHash.containsKey(newBibs[i]))
+        for (String bib : newBibs) {
+            if (!referenceHash.containsKey(bib))
                 return false;
-        
+        }
         return true;
     }
     
@@ -198,7 +200,7 @@ public class ReferenceContainer {
      * 
      * @param errors A list of errors in the form of <code>DocumentReference</code>
      */
-    public void removeFalseEntries(ArrayList errors) {
+    public void removeFalseEntries(List errors) {
         for (Iterator iter = errors.iterator(); iter.hasNext();) {
             DocumentReference docRef = (DocumentReference) iter.next();
             if (binTest(docRef.getKey())) {

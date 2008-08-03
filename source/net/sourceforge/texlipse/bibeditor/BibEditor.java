@@ -15,6 +15,8 @@ import net.sourceforge.texlipse.TexlipsePlugin;
 import net.sourceforge.texlipse.editor.TexPairMatcher;
 import net.sourceforge.texlipse.properties.TexlipseProperties;
 
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.text.source.ISourceViewer;
@@ -41,7 +43,9 @@ public class BibEditor extends TextEditor {
      * the BibTeX document.
      */
     public final static String BIB_PARTITIONING = "__bibtex_partitioning";
-
+    
+    public final static String ID = "net.sourceforge.texlipse.bibeditor.BibEditor";
+    
     /** The editor's bracket matcher */
     private TexPairMatcher fBracketMatcher = new TexPairMatcher("{}[]()");
 
@@ -192,5 +196,15 @@ public class BibEditor extends TextEditor {
      */
     public BibDocumentModel getDocumentModel() {
         return documentModel;
+    }
+    
+    /**
+     * @return The project that belongs to the current file
+     * or null if it does not belong to any project
+     */
+    public IProject getProject() {
+        IResource res = (IResource) getEditorInput().getAdapter(IResource.class);
+        if (res == null) return null;
+        else return res.getProject();
     }
 }

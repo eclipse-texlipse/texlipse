@@ -656,7 +656,16 @@ public class TexDocumentModel implements IDocumentListener {
         for (Iterator<String> iter = newBibs.iterator(); iter.hasNext();) {
         	String name = iter.next();
         	try {
-        		String filepath = filesearch.getFile(resource, name, "bibtex");
+        	    String filepath = "";
+        	    //First try local search
+        	    IResource res = project.findMember(path + name);
+        	    if (res != null) {
+        	        filepath = res.getLocation().toOSString();
+        	    }
+        	    else {
+        	        //Try Kpsewhich
+        	        filepath = filesearch.getFile(resource, name, "bibtex");
+        	    }
         		if (!filepath.isEmpty()) {
         			BibParser parser = new BibParser(filepath);
         			try {

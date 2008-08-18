@@ -16,7 +16,6 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 import net.sourceforge.texlipse.TexlipsePlugin;
-import net.sourceforge.texlipse.model.AbstractEntry;
 import net.sourceforge.texlipse.model.DocumentReference;
 import net.sourceforge.texlipse.model.OutlineNode;
 import net.sourceforge.texlipse.model.ParseErrorMessage;
@@ -195,6 +194,7 @@ public class LatexParser {
         this.outlineTree = new ArrayList();
         this.errors = new ArrayList();
         
+        this.bibs = null;
         this.index = false;
         this.fatalErrors = false;
     }

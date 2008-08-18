@@ -9,6 +9,7 @@
  */
 package net.sourceforge.texlipse.model;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -590,9 +591,7 @@ public class TexDocumentModel implements IDocumentListener {
         pollCancel(monitor);
         
         String[] bibs = parser.getBibs();
-        if (bibs != null) {
-            this.updateBibs(bibs, ((FileEditorInput)editor.getEditorInput()).getFile());
-        }
+        this.updateBibs(bibs, ((FileEditorInput)editor.getEditorInput()).getFile());
         // After here we just store those fun properties...
         
         pollCancel(monitor);
@@ -634,6 +633,9 @@ public class TexDocumentModel implements IDocumentListener {
     private void updateBibs(String[] bibNames, IResource resource) {        
         IProject project = getCurrentProject();
         if (project == null) return;
+        if (bibNames == null) {
+            bibNames = new String[0];
+        }
         for (int i=0; i < bibNames.length; i++)
             bibNames[i] += ".bib";
         
@@ -665,6 +667,16 @@ public class TexDocumentModel implements IDocumentListener {
         	    else {
         	        //Try Kpsewhich
         	        filepath = filesearch.getFile(resource, name, "bibtex");
+        	        if (!filepath.isEmpty() && !(new File(filepath).isAbsolute())) {
+        	            //filepath is only a local path
+        	            res = project.findMember(path + filepath);
+        	            if (res != null) {
+        	                filepath = res.getLocation().toOSString();
+        	            }
+        	            else {
+        	                filepath = "";
+        	            }
+        	        }
         	    }
         		if (!filepath.isEmpty()) {
         			BibParser parser = new BibParser(filepath);
@@ -806,8 +818,7 @@ public class TexDocumentModel implements IDocumentListener {
                         //Only update Preamble, Bibstyle if main Document
                         if (files[i].equals(mainFile)) {
                             String[] bibs = lrep.getBibs();
-                            if (bibs != null)
-                                this.updateBibs(bibs, files[i]);
+                            this.updateBibs(bibs, files[i]);
 
                             String preamble = lrep.getPreamble();
                             if (preamble != null) {

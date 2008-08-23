@@ -9,9 +9,12 @@
  */
 package net.sourceforge.texlipse.builder;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -680,8 +683,11 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
         String outputFileName = TexlipseProperties.getOutputFileName(project);
         IResource outputFile = sourceDir.findMember(outputFileName);
         if (outputFile != null && outputFile.exists()) {
-            
-            // delete the old file
+            //Check if the output dir exists, if not create it
+            if (outputDir != null && !outputDir.exists()) {
+                outputDir.create(true, true, null);
+            }
+
             IResource dest = null;
             if (outputDir != null) {
                 dest = outputDir.getFile(outputFileName);
@@ -689,16 +695,35 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
                 dest = project.getFile(outputFileName);
             }
             if (dest != null && dest.exists()) {
-                dest.delete(true, monitor);
+                File outFile = new File(outputFile.getLocationURI());
+                File destFile = new File(dest.getLocationURI());
+                try {
+                    //Try to move the content instead of deleting the old file
+                    //and replace it by the new one. This is better for some viewers like Sumatrapdf
+                    FileOutputStream out = new FileOutputStream(destFile);
+                    out.getChannel().tryLock();
+                    BufferedInputStream in = new BufferedInputStream(new FileInputStream(outFile));
+
+                    byte[] buf = new byte[4096];
+                    int l;
+                    while ((l = in.read(buf)) != -1) {
+                        out.write(buf, 0, l);
+                    }
+                    in.close();
+                    out.close();
+                    outputFile.delete(true, monitor);
+                } catch (IOException e) {
+                    // try to delete and move the file
+                    dest.delete(true, monitor);
+                    outputFile.move(dest.getFullPath(), true, monitor);
+                }
             }
-            
-            //Check if the output dir exists, if not create it
-            if (outputDir != null && !outputDir.exists()) {
-                outputDir.create(true, true, null);
+            else {
+                // move the file
+                outputFile.move(dest.getFullPath(), true, monitor);
             }
-            // move the file
-            outputFile.move(dest.getFullPath(), true, monitor);
             monitor.worked(1);
+            
             
             // refresh the directories whose contents changed
             sourceDir.refreshLocal(IProject.DEPTH_ONE, monitor);

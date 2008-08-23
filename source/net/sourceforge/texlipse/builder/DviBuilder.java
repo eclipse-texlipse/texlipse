@@ -49,7 +49,7 @@ public class DviBuilder extends AbstractBuilder {
             dvi = BuilderRegistry.get(null, TexlipseProperties.OUTPUT_FORMAT_DVI);
         }
         if (ps == null || !ps.isValid()) {
-            ps = BuilderRegistry.getRunner(TexlipseProperties.OUTPUT_FORMAT_DVI, output);
+            ps = BuilderRegistry.getRunner(TexlipseProperties.OUTPUT_FORMAT_DVI, output, 0);
         }
         return dvi != null && dvi.isValid() && ps != null && ps.isValid();
     }

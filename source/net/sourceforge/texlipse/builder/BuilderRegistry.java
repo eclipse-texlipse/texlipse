@@ -27,6 +27,7 @@ import org.eclipse.ui.console.MessageConsoleStream;
  * Implemented using the Singleton pattern.
  * 
  * @author Kimmo Karlsson
+ * @author Boris von Loesch
  */
 public class BuilderRegistry {
 
@@ -95,7 +96,7 @@ public class BuilderRegistry {
      * 
      * @return the builder or null if there is no such builder configured
      */
-    public static Builder get(Class clazz, String format) {
+    public static Builder get(Class<? extends Builder> clazz, String format) {
         return instance.getBuilder(clazz, format);
     }
     
@@ -142,11 +143,13 @@ public class BuilderRegistry {
      * 
      * @param in input file format
      * @param out output file format
+     * @param alternative if there are more than one runner, take the <code>alernative</code>'th
+     *         runner
      * @return a program runner capable of converting from the given
      *         input format to the given output format
      */
-    public static ProgramRunner getRunner(String in, String out) {
-        return instance.getProgramRunner(in, out);
+    public static ProgramRunner getRunner(String in, String out, int alternative) {
+        return instance.getProgramRunner(in, out, alternative);
     }
     
     /**
@@ -165,6 +168,7 @@ public class BuilderRegistry {
                 new LatexRunner(),
                 new PslatexRunner(),
                 new PdflatexRunner(),
+                new XelatexRunner(),
                 new BibtexRunner(),
                 new MakeindexRunner(),
                 new DvipsRunner(),
@@ -180,16 +184,17 @@ public class BuilderRegistry {
      * because builders need to use BuilderRegistry to resolve runners.
      */
     protected void initBuilders() {
-        builderList = new Builder[7];
-        builderList[0] = new TexBuilder(0, TexlipseProperties.OUTPUT_FORMAT_DVI);
-        builderList[1] = new TexBuilder(1, TexlipseProperties.OUTPUT_FORMAT_PS);
-        builderList[2] = new TexBuilder(2, TexlipseProperties.OUTPUT_FORMAT_PDF);
+        builderList = new Builder[8];
+        builderList[0] = new TexBuilder(0, TexlipseProperties.OUTPUT_FORMAT_DVI, 0);
+        builderList[1] = new TexBuilder(1, TexlipseProperties.OUTPUT_FORMAT_PS, 0);
+        builderList[2] = new TexBuilder(2, TexlipseProperties.OUTPUT_FORMAT_PDF, 0);
         
         builderList[3] = new DviBuilder(3, TexlipseProperties.OUTPUT_FORMAT_PS);
         builderList[4] = new DviBuilder(4, TexlipseProperties.OUTPUT_FORMAT_PDF);
         
         builderList[5] = new PsBuilder(5, TexBuilder.class);
         builderList[6] = new PsBuilder(6, DviBuilder.class);
+        builderList[7] = new TexBuilder(7, TexlipseProperties.OUTPUT_FORMAT_PDF, 1);
     }
     
     /**
@@ -199,7 +204,7 @@ public class BuilderRegistry {
      * @param outputFormat the output format of the builder
      * @return the builder instance, or null if none found
      */
-    protected Builder getBuilder(Class builderClass, String outputFormat) {
+    protected Builder getBuilder(Class<? extends Builder> builderClass, String outputFormat) {
 
         if (outputFormat == null) {
             return null;
@@ -261,13 +266,15 @@ public class BuilderRegistry {
      * @param out output format of the runner
      * @return the program runner
      */
-    protected ProgramRunner getProgramRunner(String in, String out) {
+    protected ProgramRunner getProgramRunner(String in, String out, int alternative) {
         
         int size = getNumberOfRunners();
         for (int i = 0; i < size; i++) {
             ProgramRunner r = getProgramRunner(i);
-            if (r.getInputFormat().equals(in) && (out == null || r.getOutputFormat().equals(out))) {
-                return r;
+            if (in.equals(r.getInputFormat()) && 
+                    (out == null || r.getOutputFormat().equals(out))) {
+                if (alternative == 0) return r;
+                alternative--;
             }
         }
         

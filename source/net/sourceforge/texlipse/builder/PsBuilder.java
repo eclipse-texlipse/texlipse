@@ -26,10 +26,10 @@ public class PsBuilder extends AbstractBuilder {
 
     private Builder dvi;
     private ProgramRunner pdf;
-    private Class builderClass;
+    private Class<? extends Builder> builderClass;
     private boolean stopped;
 
-    public PsBuilder(int i, Class clazz) {
+    public PsBuilder(int i, Class<? extends Builder> clazz) {
         super(i);
         builderClass = clazz;
         isValid();
@@ -50,7 +50,7 @@ public class PsBuilder extends AbstractBuilder {
             dvi = BuilderRegistry.get(builderClass, TexlipseProperties.OUTPUT_FORMAT_PS);
         }
         if (pdf == null || !pdf.isValid()) {
-            pdf = BuilderRegistry.getRunner(TexlipseProperties.OUTPUT_FORMAT_PS, TexlipseProperties.OUTPUT_FORMAT_PDF);
+            pdf = BuilderRegistry.getRunner(TexlipseProperties.OUTPUT_FORMAT_PS, TexlipseProperties.OUTPUT_FORMAT_PDF, 0);
         }
         return dvi != null && dvi.isValid() && pdf != null && pdf.isValid();
     }

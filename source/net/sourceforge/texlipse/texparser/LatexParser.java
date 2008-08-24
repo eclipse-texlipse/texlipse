@@ -61,6 +61,7 @@ import org.eclipse.core.resources.IMarker;
  * extracts useful data.
  * 
  * @author Oskar Ojala
+ * @author Boris von Loesch
  */
 public class LatexParser {
 
@@ -82,7 +83,7 @@ public class LatexParser {
      * 
      * @author Oskar Ojala
      */
-    private final class StackUnsynch {
+    private final class StackUnsynch<E> {
         
         private static final int initialSize = 10;
         private static final int growthFactor = 2;
@@ -109,8 +110,9 @@ public class LatexParser {
         /**
          * @return The item at the top of the stack
          */
-        public Object peek() {
-            return stack[size-1];
+        @SuppressWarnings("unchecked")
+        public E peek() {
+            return (E)(stack[size-1]);
         }
         
         /**
@@ -118,9 +120,10 @@ public class LatexParser {
          * 
          * @return The item at the top of the stack
          */
-        public Object pop() {
+        @SuppressWarnings("unchecked")
+        public E pop() {
             size--;
-            Object top = stack[size];
+            E top = (E) stack[size];
             stack[size] = null;
             return top;
         }
@@ -130,7 +133,7 @@ public class LatexParser {
          * 
          * @param item The item to push on the stack
          */
-        public void push(Object item) {
+        public void push(E item) {
             // what if size would be where to put the next item?
             if (size >= capacity) {
                 capacity *= growthFactor;
@@ -153,20 +156,20 @@ public class LatexParser {
         }
     }
 
-    private ArrayList labels; //type: ReferenceEntry
-    private ArrayList cites; //type: DocumentReference
-    private ArrayList refs; //type: DocumentReference
-    private ArrayList commands; //type: TexCommandEntry
-    private List tasks; //type: ParseErrorMessage
+    private ArrayList<ReferenceEntry> labels;
+    private ArrayList<DocumentReference> cites;
+    private ArrayList<DocumentReference> refs;
+    private ArrayList<TexCommandEntry> commands;
+    private List<ParseErrorMessage> tasks;
     
     private String[] bibs;
     private String bibstyle;
     
-    private ArrayList inputs; //type: String
+    private List<OutlineNode> inputs;
     
-    private ArrayList outlineTree; //type: OutlineNode
+    private ArrayList<OutlineNode> outlineTree;
     
-    private ArrayList errors; //type: ParseErrorMessage
+    private ArrayList<ParseErrorMessage> errors;
     
     private OutlineNode documentEnv;
     
@@ -183,16 +186,16 @@ public class LatexParser {
      * Initializes the internal datastructures that are exported after parsing.
      */
     private void initializeDatastructs() {
-        this.labels = new ArrayList();
-        this.cites = new ArrayList();
-        this.refs = new ArrayList();
-        this.commands = new ArrayList();
-        this.tasks = new ArrayList();
+        this.labels = new ArrayList<ReferenceEntry>();
+        this.cites = new ArrayList<DocumentReference>();
+        this.refs = new ArrayList<DocumentReference>();
+        this.commands = new ArrayList<TexCommandEntry>();
+        this.tasks = new ArrayList<ParseErrorMessage>();
         
-        this.inputs = new ArrayList();
+        this.inputs = new ArrayList<OutlineNode>(2);
         
-        this.outlineTree = new ArrayList();
-        this.errors = new ArrayList();
+        this.outlineTree = new ArrayList<OutlineNode>();
+        this.errors = new ArrayList<ParseErrorMessage>();
         
         this.bibs = null;
         this.index = false;
@@ -240,8 +243,8 @@ public class LatexParser {
             boolean checkForMissingSections)
     throws LexerException, IOException {
         initializeDatastructs();
-        StackUnsynch blocks = new StackUnsynch();
-        StackUnsynch braces = new StackUnsynch();
+        StackUnsynch<OutlineNode> blocks = new StackUnsynch<OutlineNode>();
+        StackUnsynch<Token> braces = new StackUnsynch<Token>();
         
         boolean expectArg = false;
         boolean expectArg2 = false;
@@ -249,9 +252,9 @@ public class LatexParser {
         
         TexCommandEntry currentCommand = null;
         int argCount = 0;
-        Integer nodeType;
+        int nodeType;
         
-        HashMap sectioning = new HashMap();
+        HashMap<String, Integer> sectioning = new HashMap<String, Integer> ();
         
         if (preamble != null) {
             outlineTree.add(preamble);
@@ -310,7 +313,7 @@ public class LatexParser {
                             documentEnv = on;
                         } else {
                             if (!blocks.empty()) {
-                                OutlineNode prev = (OutlineNode) blocks.peek();
+                                OutlineNode prev = blocks.peek();
                                 prev.addChild(on);
                                 on.setParent(prev);
                             } else {
@@ -329,7 +332,7 @@ public class LatexParser {
                             
                             // terminate open blocks here; check for errors
                             while (!blocks.empty()) {
-                                prev = (OutlineNode) blocks.pop();
+                                prev = blocks.pop();
                                 prev.setEndLine(endLine);
                                 if (prev.getType() == OutlineNode.TYPE_ENVIRONMENT) {
                                     errors.add(new ParseErrorMessage(prevToken.getLine(),
@@ -345,7 +348,7 @@ public class LatexParser {
                             boolean traversing = true;
                             if (!blocks.empty()) {
                                 while (traversing && !blocks.empty()) {
-                                    prev = (OutlineNode) blocks.peek();
+                                    prev = blocks.peek();
                                     switch (prev.getType()) {
                                     case OutlineNode.TYPE_ENVIRONMENT:
                                         prev.setEndLine(endLine + 1);
@@ -389,7 +392,7 @@ public class LatexParser {
                         if (!blocks.empty()) {
                             boolean traversing = true;
                             while (traversing && !blocks.empty()) {
-                                OutlineNode prev = (OutlineNode) blocks.peek();
+                                OutlineNode prev = blocks.peek();
                                 switch (prev.getType()) {
                                 case OutlineNode.TYPE_ENVIRONMENT:
                                     prev.addChild(on);
@@ -417,7 +420,7 @@ public class LatexParser {
                         if (!blocks.empty()) {
                             boolean traversing = true;
                             while (traversing && !blocks.empty()) {
-                                OutlineNode prev = (OutlineNode) blocks.peek();
+                                OutlineNode prev = blocks.peek();
                                 switch (prev.getType()) {
                                 case OutlineNode.TYPE_PART:
                                 case OutlineNode.TYPE_ENVIRONMENT:
@@ -447,7 +450,7 @@ public class LatexParser {
                         if (!blocks.empty()) {
                             boolean traversing = true;
                             while (traversing && !blocks.empty()) {
-                                OutlineNode prev = (OutlineNode) blocks.peek();
+                                OutlineNode prev = blocks.peek();
                                 switch (prev.getType()) {
                                 case OutlineNode.TYPE_PART:
                                 case OutlineNode.TYPE_CHAPTER:
@@ -479,7 +482,7 @@ public class LatexParser {
                         if (!blocks.empty()) {
                             boolean traversing = true;
                             while (traversing && !blocks.empty()) {
-                                OutlineNode prev = (OutlineNode) blocks.peek();
+                                OutlineNode prev = blocks.peek();
                                 switch (prev.getType()) {
                                 case OutlineNode.TYPE_ENVIRONMENT:
                                 case OutlineNode.TYPE_SECTION:
@@ -520,7 +523,7 @@ public class LatexParser {
                         if (!blocks.empty()) {
                             boolean traversing = true;
                             while (traversing && !blocks.empty()) {
-                                OutlineNode prev = (OutlineNode) blocks.peek();
+                                OutlineNode prev = blocks.peek();
                                 switch (prev.getType()) {
                                 case OutlineNode.TYPE_ENVIRONMENT:
                                 case OutlineNode.TYPE_SUBSECTION:
@@ -564,7 +567,7 @@ public class LatexParser {
                         if (!blocks.empty()) {
                             boolean traversing = true;
                             while (traversing && !blocks.empty()) {
-                                OutlineNode prev = (OutlineNode) blocks.peek();
+                                OutlineNode prev = blocks.peek();
                                 switch (prev.getType()) {
                                 case OutlineNode.TYPE_ENVIRONMENT:
                                 case OutlineNode.TYPE_SUBSUBSECTION:
@@ -601,7 +604,7 @@ public class LatexParser {
                         bibs = t.getText().split(",");
                         int startLine = prevToken.getLine();
                         while (!blocks.empty()) {
-                            OutlineNode prev = (OutlineNode) blocks.pop();
+                            OutlineNode prev = blocks.pop();
                             if (prev.getType() == OutlineNode.TYPE_ENVIRONMENT) { // this is an error...
                                 blocks.push(prev);
                                 break;
@@ -612,7 +615,7 @@ public class LatexParser {
                         this.bibstyle = t.getText();
                         int startLine = prevToken.getLine();
                         while (!blocks.empty()) {
-                            OutlineNode prev = (OutlineNode) blocks.pop();
+                            OutlineNode prev = blocks.pop();
                             if (prev.getType() == OutlineNode.TYPE_ENVIRONMENT) { // this is an error...
                                 blocks.push(prev);
                                 break;
@@ -623,7 +626,7 @@ public class LatexParser {
                             || prevToken instanceof TCinclude) {
                         //inputs.add(t.getText());
                         if (!blocks.empty()) {
-                            OutlineNode prev = (OutlineNode) blocks.peek();
+                            OutlineNode prev = blocks.peek();
                             OutlineNode on = new OutlineNode(t.getText(), OutlineNode.TYPE_INPUT, t.getLine(), prev);
                             on.setEndLine(t.getLine());
                             prev.addChild(on);
@@ -634,6 +637,7 @@ public class LatexParser {
                             outlineTree.add(on);
                             inputs.add(on);
                         }
+                        
                     
                     } else if (prevToken instanceof TCnew) {
                         //currentCommand = new CommandEntry(t.getText().substring(1));
@@ -684,25 +688,25 @@ public class LatexParser {
                     currentCommand.info = t.getText();
                     commands.add(currentCommand);
                     if (partRe.matcher(currentCommand.info).find())
-                        sectioning.put("\\" + currentCommand.key, new Integer(OutlineNode.TYPE_PART));
+                        sectioning.put("\\" + currentCommand.key, OutlineNode.TYPE_PART);
                     //else if (currentCommand.info.indexOf("\\chapter") != -1)
                     else if (chapterRe.matcher(currentCommand.info).find())
-                        sectioning.put("\\" + currentCommand.key, new Integer(OutlineNode.TYPE_CHAPTER));
+                        sectioning.put("\\" + currentCommand.key, OutlineNode.TYPE_CHAPTER);
                     //else if (currentCommand.info.indexOf("\\section") != -1)
                     else if (sectionRe.matcher(currentCommand.info).find())
-                        sectioning.put("\\" + currentCommand.key, new Integer(OutlineNode.TYPE_SECTION));
+                        sectioning.put("\\" + currentCommand.key, OutlineNode.TYPE_SECTION);
                     //else if (currentCommand.info.indexOf("\\subsection") != -1)
                     else if (ssectionRe.matcher(currentCommand.info).find())
-                        sectioning.put("\\" + currentCommand.key, new Integer(OutlineNode.TYPE_SUBSECTION));
+                        sectioning.put("\\" + currentCommand.key, OutlineNode.TYPE_SUBSECTION);
                     //else if (currentCommand.info.indexOf("\\subsubsection") != -1)
                     else if (sssectionRe.matcher(currentCommand.info).find())
-                        sectioning.put("\\" + currentCommand.key, new Integer(OutlineNode.TYPE_SUBSUBSECTION));
+                        sectioning.put("\\" + currentCommand.key, OutlineNode.TYPE_SUBSUBSECTION);
                     //else if (currentCommand.info.indexOf("\\paragraph") != -1)
                     else if (paragraphRe.matcher(currentCommand.info).find())
-                        sectioning.put("\\" + currentCommand.key, new Integer(OutlineNode.TYPE_PARAGRAPH));
+                        sectioning.put("\\" + currentCommand.key, OutlineNode.TYPE_PARAGRAPH);
                     //else if (currentCommand.info.indexOf("\\label") != -1)
                     else if (labelRe.matcher(currentCommand.info).find())  
-                        sectioning.put("\\" + currentCommand.key, new Integer(LatexParser.TYPE_LABEL));
+                        sectioning.put("\\" + currentCommand.key, LatexParser.TYPE_LABEL);
 
                     argCount = 0;
                     expectArg2 = false;
@@ -743,8 +747,9 @@ public class LatexParser {
                 } else if (t instanceof TCword) {
                     // macros (\newcommand) show up as TCword when used, so we need
                     // to check (for each word!) whether it happens to be a command
-                    if ((nodeType = (Integer) sectioning.get(t.getText())) != null) {
-                        switch (nodeType.intValue()) {
+                    if (sectioning.containsKey(t.getText())) {
+                        nodeType = sectioning.get(t.getText());
+                        switch (nodeType) {
                         case OutlineNode.TYPE_PART:
                             prevToken = new TCpart(t.getLine(), t.getPos());
                             break;
@@ -791,7 +796,7 @@ public class LatexParser {
                     on.setEndLine(t.getLine() + lines.length);
                     
                     if (!blocks.empty()) {
-                        OutlineNode prev = (OutlineNode) blocks.peek();
+                        OutlineNode prev = blocks.peek();
                         prev.addChild(on);
                         on.setParent(prev);
                     } else {
@@ -822,7 +827,7 @@ public class LatexParser {
 
         int endLine = t.getLine() + 1; //endline is exclusive
         while (!blocks.empty()) {
-            OutlineNode prev = (OutlineNode) blocks.pop();
+            OutlineNode prev = blocks.pop();
             prev.setEndLine(endLine);
             if (prev.getType() == OutlineNode.TYPE_ENVIRONMENT) {
                 fatalErrors = true;
@@ -838,21 +843,21 @@ public class LatexParser {
     /**
      * @return The labels defined in this document
      */
-    public ArrayList getLabels() {
+    public ArrayList<ReferenceEntry> getLabels() {
         return this.labels;
     }
     
     /**
      * @return The BibTeX citations which weren't defined
      */
-    public ArrayList getCites() {
+    public ArrayList<DocumentReference> getCites() {
         return this.cites;
     }
     
     /**
      * @return The refencing commands for which no label was found
      */
-    public ArrayList getRefs() {
+    public ArrayList<DocumentReference> getRefs() {
         return this.refs;
     }
     
@@ -873,21 +878,21 @@ public class LatexParser {
     /**
      * @return The input commands in this document
      */
-    public ArrayList getInputs() {
+    public List<OutlineNode> getInputs() {
         return this.inputs;
     }
     
     /**
      * @return The outline tree of the document (OutlineNode objects).
      */
-    public ArrayList getOutlineTree() {
+    public ArrayList<OutlineNode> getOutlineTree() {
         return this.outlineTree;
     }
     
     /**
      * @return The list of errors (ParseErrorMessage objects) in the document
      */
-    public ArrayList getErrors() {
+    public ArrayList<ParseErrorMessage> getErrors() {
         return this.errors;
     }
     
@@ -915,14 +920,14 @@ public class LatexParser {
     /**
      * @return Returns the commands.
      */
-    public ArrayList getCommands() {
+    public ArrayList<TexCommandEntry> getCommands() {
         return commands;
     }
     
     /**
      * @return Returns the tasks.
      */
-    public List getTasks() {
+    public List<ParseErrorMessage> getTasks() {
         return tasks;
     }
 }

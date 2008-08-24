@@ -11,6 +11,7 @@ package net.sourceforge.texlipse.model;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -35,7 +36,7 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.OperationCanceledException;
-import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.ILock;
 import org.eclipse.core.runtime.jobs.Job;
@@ -48,6 +49,7 @@ import org.eclipse.jface.text.IDocumentListener;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
+import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.progress.WorkbenchJob;
@@ -145,7 +147,7 @@ public class TexDocumentModel implements IDocumentListener {
     private class PostParseJob extends WorkbenchJob {
         
         private ArrayList rootNodes;
-        private List fullOutlineNodes;
+        private List<OutlineNode> fullOutlineNodes;
 
         /**
          * 
@@ -165,7 +167,7 @@ public class TexDocumentModel implements IDocumentListener {
         /**
          * @param rootNodes
          */
-        public void setFONodes(List rootNodes) {
+        public void setFONodes(List<OutlineNode> rootNodes) {
             this.fullOutlineNodes = rootNodes;
         }
 
@@ -413,7 +415,7 @@ public class TexDocumentModel implements IDocumentListener {
      * 
      * @throws TexDocumentParseException
      */
-    private ArrayList doParse(IProgressMonitor monitor) throws TexDocumentParseException {
+    private ArrayList<OutlineNode> doParse(IProgressMonitor monitor) throws TexDocumentParseException {
         
         if (this.parser == null) {
             this.parser = new TexParser(editor.getDocumentProvider().getDocument(editor.getEditorInput()));
@@ -431,9 +433,9 @@ public class TexDocumentModel implements IDocumentListener {
         pollCancel(monitor);
 
         List<ParseErrorMessage> errors = parser.getErrors();
-        List tasks = parser.getTasks();
+        List<ParseErrorMessage> tasks = parser.getTasks();
         MarkerHandler marker = MarkerHandler.getInstance();
-
+        
         // somewhat inelegantly ensures that errors marked in createProjectDatastructs()
         // aren't removed immediately
         if (!firstRun) {
@@ -443,17 +445,20 @@ public class TexDocumentModel implements IDocumentListener {
             firstRun = false;
         }
 
+
         if (editor.getProject() != null && editor.getFullOutline() != null) {
             IResource res = (IResource) editor.getEditorInput().getAdapter(IResource.class);
             String fileName = res.getProjectRelativePath().toString();
             projectOutline.addOutline(parser.getOutlineTree(), fileName);
             
-            List fo = projectOutline.getFullOutline();
+            List<OutlineNode> fo = projectOutline.getFullOutline();
             postParseJob.setFONodes(fo);
         } else {
             postParseJob.setFONodes(null);
         }
         pollCancel(monitor);
+        
+        processIncludes(parser.getInputs(), editor.getEditorInput());
         
         if (errors.size() > 0) {
             marker.createErrorMarkers(editor, errors);
@@ -467,8 +472,8 @@ public class TexDocumentModel implements IDocumentListener {
         
         updateReferences(monitor);
         
-        ArrayList bibErrors = parser.getCites();
-        ArrayList refErrors = parser.getRefs();
+        ArrayList<DocumentReference> bibErrors = parser.getCites();
+        ArrayList<DocumentReference> refErrors = parser.getRefs();
         if (bibErrors.size() > 0) {
             marker.createReferencingErrorMarkers(editor, bibErrors);
         }
@@ -510,8 +515,8 @@ public class TexDocumentModel implements IDocumentListener {
         
         // add new positions for nodes and their children
         int maxDepth = 0;
-        for (Iterator iter = rootNodes.iterator(); iter.hasNext(); ) {
-            OutlineNode node = (OutlineNode) iter.next();
+        for (Iterator<OutlineNode> iter = rootNodes.iterator(); iter.hasNext(); ) {
+            OutlineNode node = iter.next();
             int localDepth = addNodePosition(node, document, 0, newOutlineInput); 
             
             if (localDepth > maxDepth) {
@@ -563,11 +568,11 @@ public class TexDocumentModel implements IDocumentListener {
         newOutlineInput.addNode(node);
         
         // iterate through the children
-        List children = node.getChildren();
+        List<OutlineNode> children = node.getChildren();
         int maxDepth = parentDepth + 1;
         if (children != null) {
-            for (Iterator iter = children.iterator(); iter.hasNext();) {
-                int localDepth = addNodePosition((OutlineNode) iter.next(), document, parentDepth + 1, newOutlineInput);
+            for (Iterator<OutlineNode> iter = children.iterator(); iter.hasNext();) {
+                int localDepth = addNodePosition(iter.next(), document, parentDepth + 1, newOutlineInput);
                 if (localDepth > maxDepth) {
                     maxDepth = localDepth;
                 }
@@ -668,7 +673,7 @@ public class TexDocumentModel implements IDocumentListener {
         	        //Try Kpsewhich
         	        filepath = filesearch.getFile(resource, name, "bibtex");
         	        if (!filepath.isEmpty() && !(new File(filepath).isAbsolute())) {
-        	            //filepath is only a local path
+        	            //filepath is a local path
         	            res = project.findMember(path + filepath);
         	            if (res != null) {
         	                filepath = res.getLocation().toOSString();
@@ -676,6 +681,14 @@ public class TexDocumentModel implements IDocumentListener {
         	            else {
         	                filepath = "";
         	            }
+        	        }
+        	        else if (!filepath.isEmpty()) {
+        	            //Create a link to resource
+                        IPath p = new Path(filepath);
+                        IFile f = project.getFile(path+name);
+                        if (f != null) {
+                            f.createLink(p, IResource.NONE, null);
+                        }
         	        }
         	    }
         		if (!filepath.isEmpty()) {
@@ -719,11 +732,33 @@ public class TexDocumentModel implements IDocumentListener {
      * Updates the commands.
      * @param commands
      */
-    private void updateCommands(ArrayList commands) {
+    private void updateCommands(ArrayList<TexCommandEntry> commands) {
         IResource resource = getFile();
         if (resource == null) return;
         if (commandContainer.addRefSource(resource.getProjectRelativePath().toString(), commands))
             commandContainer.organize();
+    }
+    
+    /**
+     * Checks whether all includes exists, if they are outside of the
+     * project, add a link to the file to the project 
+     * @param includes
+     */
+    private void processIncludes(List<OutlineNode> includes, IEditorInput input) {
+        IProject project = getCurrentProject();
+        if (project == null) return;
+        IFile referFile = (IFile) input.getAdapter(IFile.class);
+        if (referFile == null) return;
+        for (OutlineNode node : includes) {
+            IFile f = TexProjectParser.findIFile(node.getName(), referFile, project);
+            if (f == null) {
+                MarkerHandler marker = MarkerHandler.getInstance();
+                String errorMsg = MessageFormat.format(
+                        TexlipsePlugin.getResourceString("parseErrorIncludeNotFound"),
+                        new Object[] { node.getName() });
+                marker.createErrorMarker(referFile, errorMsg, node.getBeginLine());
+            }
+        }
     }
     
     /**
@@ -811,7 +846,7 @@ public class TexDocumentModel implements IDocumentListener {
                         if (labels.size() > 0) {
                             labelContainer.addRefSource(files[i].getProjectRelativePath().toString(), labels);
                         }
-                        ArrayList commands = lrep.getCommands();
+                        ArrayList<TexCommandEntry> commands = lrep.getCommands();
                         if (commands.size() > 0) {
                             commandContainer.addRefSource(files[i].getProjectRelativePath().toString(), commands);
                         }

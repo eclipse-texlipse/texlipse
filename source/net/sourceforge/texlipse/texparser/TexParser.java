@@ -15,9 +15,12 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.sourceforge.texlipse.model.DocumentReference;
 import net.sourceforge.texlipse.model.OutlineNode;
 import net.sourceforge.texlipse.model.ParseErrorMessage;
 import net.sourceforge.texlipse.model.ReferenceContainer;
+import net.sourceforge.texlipse.model.ReferenceEntry;
+import net.sourceforge.texlipse.model.TexCommandEntry;
 import net.sourceforge.texlipse.texparser.lexer.LexerException;
 
 import org.eclipse.core.resources.IMarker;
@@ -191,21 +194,21 @@ public class TexParser {
     /**
      * @return The outline tree
      */
-    public ArrayList getOutlineTree() {
+    public ArrayList<OutlineNode> getOutlineTree() {
     	return lparser.getOutlineTree();
     }
 
     /**
      * @return The labels <code>ArrayList<ReferenceEntry></code>
      */
-    public ArrayList getLabels() {
+    public ArrayList<ReferenceEntry> getLabels() {
         return lparser.getLabels();
     }
 
     /**
      * @return The cite-references
      */
-    public ArrayList getCites() {
+    public ArrayList<DocumentReference> getCites() {
         return lparser.getCites();
     }
     
@@ -254,21 +257,29 @@ public class TexParser {
     /**
      * @return Get the \ref -references that were invalid
      */
-    public ArrayList getRefs() {
+    public ArrayList<DocumentReference> getRefs() {
         return lparser.getRefs();
     }
     
     /**
      * @return Get user-defined commands
      */
-    public ArrayList getCommands() {
+    public ArrayList<TexCommandEntry> getCommands() {
         return lparser.getCommands();
     }
     
     /**
      * @return The tasks to mark
      */
-    public List getTasks() {
+    public List<ParseErrorMessage> getTasks() {
         return lparser.getTasks();
     }
+    
+    /**
+     * @return The input commands in this document
+     */
+    public List<OutlineNode> getInputs() {
+        return lparser.getInputs();
+    }
+    
 }

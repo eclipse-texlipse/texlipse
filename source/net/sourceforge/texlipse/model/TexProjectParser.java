@@ -14,18 +14,23 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.List;
 
+import net.sourceforge.texlipse.TexlipsePlugin;
+import net.sourceforge.texlipse.builder.KpsewhichRunner;
 import net.sourceforge.texlipse.editor.TexDocumentParseException;
 import net.sourceforge.texlipse.texparser.TexParser;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.Path;
 
 /**
  * A parser interface for finding and parsing files in a LaTeX-project.
  * 
  * @author Oskar Ojala
+ * @author Boris von Loesch
  */
 public class TexProjectParser {
 
@@ -56,13 +61,28 @@ public class TexProjectParser {
 
     /**
      * Finds the given file from the project and returns it or null
-     * if such a file wasn't found.
+     * if such a file wasn't found. If the file was found in a path outside
+     * the project, a link to the file is created.
      * 
      * @param fileName The name of the file to look for
      * @param referringFile The file referring to this file (used for paths)
      * @return The found file or null if it wasn't found
      */
     public IFile findIFile(String fileName, IFile referringFile) {
+        return findIFile(fileName, referringFile, currentProject);
+    }
+    
+    /**
+     * Finds the given file from the project and returns it or null
+     * if such a file wasn't found. If the file was found in a path outside
+     * the project, a link to the file is created.
+     * 
+     * @param fileName The name of the file to look for
+     * @param referringFile The file referring to this file (used for paths)
+     * @param currentProject
+     * @return The found file or null if it wasn't found
+     */
+    public static IFile findIFile(String fileName, IFile referringFile, IProject currentProject) {
 
         // Append default ending
         if (fileName.indexOf('.') == -1
@@ -71,8 +91,21 @@ public class TexProjectParser {
         }
         IPath path = referringFile.getFullPath();
         path = path.removeFirstSegments(1).removeLastSegments(1).append(fileName);
-        file = currentProject.getFile(path);
-
+        IFile file = currentProject.getFile(path);
+        if (!file.exists()) {
+            //Try Kpsewhich
+            KpsewhichRunner filesearch = new KpsewhichRunner();
+            try {
+                String fName = filesearch.getFile(currentProject, fileName, "latex");
+                if (!fName.isEmpty()) {
+                    //Create a link
+                    IPath p = new Path(fName);
+                    file.createLink(p, IResource.NONE, null);
+                }
+            } catch (CoreException e) {
+                TexlipsePlugin.log("Can't run Kpathsea", e);
+            }
+        }
         return file.exists() ? file : null;
     }
     
@@ -84,7 +117,7 @@ public class TexProjectParser {
      * @throws IOException if the file was not readable
      * @throws TexDocumentParseException if the parsing ended in fatal errors
      */
-    public List parseFile(IFile file) throws IOException {
+    public List<OutlineNode> parseFile(IFile file) throws IOException {
         this.file = file;
         return this.parseFile();
     }
@@ -99,7 +132,7 @@ public class TexProjectParser {
      * @throws IOException if the file was not readable
      * @throws TexDocumentParseException if the parsing ended in fatal errors
      */
-    public List parseFile() throws IOException {
+    private List<OutlineNode> parseFile() throws IOException {
         String inputContent = readFile(file);
         parseDocument(inputContent);
         if (parser.isFatalErrors()) {
@@ -131,7 +164,7 @@ public class TexProjectParser {
      * @throws IOException
      */
     private String readFile(IFile file) throws IOException {
-        StringBuffer inputContent = new StringBuffer("");
+        StringBuilder inputContent = new StringBuilder("");
         try {
             BufferedReader buf = new BufferedReader(
                     new InputStreamReader(file.getContents()));

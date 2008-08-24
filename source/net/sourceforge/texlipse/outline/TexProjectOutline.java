@@ -36,11 +36,11 @@ import org.eclipse.core.resources.IProject;
 public class TexProjectOutline {
 
     private IProject currentProject;
-    private List topLevelNodes;
+    private List<OutlineNode> topLevelNodes;
     private OutlineNode virtualTopNode;
     private TexProjectParser fileParser;
-    private Map outlines = new HashMap();
-    private Set included = new HashSet();
+    private Map<String, List<OutlineNode>> outlines = new HashMap<String, List<OutlineNode>>();
+    private Set<String> included = new HashSet<String>();
     
     /**
      * Creates a new project outline
@@ -62,7 +62,7 @@ public class TexProjectOutline {
      * @param fileName The path of the source file relative to the
      *                 project's base directory
      */
-    public void addOutline(List nodes, String fileName) {
+    public void addOutline(List<OutlineNode> nodes, String fileName) {
         outlines.put(fileName, nodes);
         
         IFile mainFile = TexlipseProperties.getProjectSourceFile(currentProject);
@@ -83,7 +83,7 @@ public class TexProjectOutline {
      * 
      * @return List containing <code>outlineNode</code>s
      */
-    public List getFullOutline() {
+    public List<OutlineNode> getFullOutline() {
         included.clear();
         virtualTopNode = new OutlineNode("Entire document", OutlineNode.TYPE_DOCUMENT, 0, null);
         
@@ -97,15 +97,15 @@ public class TexProjectOutline {
                 outlines.put(fullName, topLevelNodes);
             } catch (IOException ioe) {
                 TexlipsePlugin.log("Unable to create full document outline; main file is not parsable", ioe);
-                return new ArrayList();
+                return new ArrayList<OutlineNode>();
             }
         }
         included.add(fullName);
         addChildren(virtualTopNode, topLevelNodes, currentTexFile);
 
-        List outlineTop = virtualTopNode.getChildren();
-        for (Iterator iter = outlineTop.iterator(); iter.hasNext();) {
-            OutlineNode node = (OutlineNode) iter.next();
+        List<OutlineNode> outlineTop = virtualTopNode.getChildren();
+        for (Iterator<OutlineNode> iter = outlineTop.iterator(); iter.hasNext();) {
+            OutlineNode node = iter.next();
             node.setParent(null);
         }
         return outlineTop;
@@ -118,21 +118,21 @@ public class TexProjectOutline {
      * @param insertList The top level nodes of the outline to insert
      * @param texFile The file that contains the nodes in <code>insertList</code>
      */
-    private void replaceInput(OutlineNode parent, List insertList, IFile texFile) {
+    private void replaceInput(OutlineNode parent, List<OutlineNode> insertList, IFile texFile) {
         // An input node should never have any children
         // We need to raise the level depending on the type of the 1st node in the new outline
         
         if (insertList.size() == 0) {
             return;
         }
-        for (Iterator iter2 = insertList.iterator(); iter2.hasNext();) {
-            OutlineNode oldNode2 = (OutlineNode) iter2.next();
+        for (Iterator<OutlineNode> iter2 = insertList.iterator(); iter2.hasNext();) {
+            OutlineNode oldNode2 = iter2.next();
             
             if (oldNode2.getType() == OutlineNode.TYPE_INPUT) {
                 // replace node with tree
                 IFile includedFile = resolveFile(oldNode2.getName(), texFile, oldNode2.getBeginLine());
                 if (includedFile != null) {
-                    List nodes = loadInput(includedFile, texFile, oldNode2.getBeginLine());
+                    List<OutlineNode> nodes = loadInput(includedFile, texFile, oldNode2.getBeginLine());
                     replaceInput(parent, nodes, includedFile);
                     included.remove(getProjectRelativeName(includedFile));
                 }
@@ -146,7 +146,7 @@ public class TexProjectOutline {
                 parent.addChild(newNode);
                 newNode.setParent(parent);
                 
-                List oldChildren = oldNode2.getChildren();
+                List<OutlineNode> oldChildren = oldNode2.getChildren();
                 if (oldChildren != null) {
                     // TODO do we need to check parent level?
                     addChildren(newNode, oldChildren, texFile);
@@ -164,10 +164,10 @@ public class TexProjectOutline {
      * @param children The child nodes to add to the parent node
      * @param texFile The file that contains the nodes in <code>insertList</code>
      */
-    private boolean addChildren(OutlineNode main, List children, IFile texFile) {
+    private boolean addChildren(OutlineNode main, List<OutlineNode> children, IFile texFile) {
         boolean insert = false;
-        for (Iterator iter = children.iterator(); iter.hasNext();) {
-            OutlineNode node = (OutlineNode) iter.next();
+        for (Iterator<OutlineNode> iter = children.iterator(); iter.hasNext();) {
+            OutlineNode node = iter.next();
 
             // The tree shape might have changed...
             if (insert) {
@@ -180,7 +180,7 @@ public class TexProjectOutline {
                 // replace node with tree
                 IFile includedFile = resolveFile(node.getName(), texFile, node.getBeginLine());
                 if (includedFile != null) {
-                    List nodes = loadInput(includedFile, texFile, node.getBeginLine());
+                    List<OutlineNode> nodes = loadInput(includedFile, texFile, node.getBeginLine());
                     replaceInput(main, nodes, includedFile);
                     included.remove(getProjectRelativeName(includedFile));
                     insert = true;
@@ -189,7 +189,7 @@ public class TexProjectOutline {
                 OutlineNode newNode = node.copy(texFile);
                 main.addChild(newNode);
                 newNode.setParent(main);
-                List oldChildren = node.getChildren();
+                List<OutlineNode> oldChildren = node.getChildren();
                 if (oldChildren != null) {
                     if (addChildren(newNode, oldChildren, texFile)) {
                         main = getParentLevel(virtualTopNode.getChildren(), main.getType());
@@ -212,7 +212,7 @@ public class TexProjectOutline {
      * @return Last node of the given level or the highest level that is
      *         lower than the given level
      */
-    private OutlineNode getParentLevel(List children, int level) {
+    private OutlineNode getParentLevel(List<OutlineNode> children, int level) {
         if (children.size() == 0) {
             return null;
         }
@@ -235,7 +235,7 @@ public class TexProjectOutline {
           
             }
         }*/
-        List nodeChildren = lastNode.getChildren();
+        List<OutlineNode> nodeChildren = lastNode.getChildren();
         if (nodeChildren != null) {
             OutlineNode found = getParentLevel(nodeChildren, level);
             if (found != null) {
@@ -260,9 +260,9 @@ public class TexProjectOutline {
         
         IFile newTexFile = fileParser.findIFile(name, referringFile);
         if (newTexFile == null) {
-            marker.createErrorMarker(referringFile,
+/*            marker.createErrorMarker(referringFile,
                     "Could not find file " + name,
-                    lineNumber);
+                    lineNumber);*/
             return null;
         }
         // TODO check that this doesn't get messed up if the same file is included sevral times
@@ -279,27 +279,27 @@ public class TexProjectOutline {
      * @return The top level nodes of the parsed file or an empty list if parsing
      * failed
      */
-    private List loadInput(IFile newTexFile, IFile referringFile, int lineNumber) {
+    private List<OutlineNode> loadInput(IFile newTexFile, IFile referringFile, int lineNumber) {
         MarkerHandler marker = MarkerHandler.getInstance();
         
         String fullName = getProjectRelativeName(newTexFile);         
-        List nodes = (List) outlines.get(fullName);
+        List<OutlineNode> nodes = outlines.get(fullName);
         if (nodes == null) {
             try {
-                nodes = fileParser.parseFile();
+                nodes = fileParser.parseFile(newTexFile);
                 outlines.put(fullName, nodes);
             } catch (IOException ioe) {
                 marker.createErrorMarker(referringFile,
                         "Could not parse file " + fullName + ", reason: " + ioe.getMessage(),
                         lineNumber);
-                return new ArrayList();
+                return new ArrayList<OutlineNode>();
             }
         }
         if (!included.add(fullName)) {
             marker.createErrorMarker(referringFile,
                     "Circular include of " + fullName,
                     lineNumber);
-            return new ArrayList();            
+            return new ArrayList<OutlineNode>();            
         }
         return nodes;
     }

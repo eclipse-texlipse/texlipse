@@ -314,7 +314,7 @@ public class TexInformationControl implements IInformationControl,
             shell.layout();
         } else {
             // if there's just text, then it's a bibtex-entry
-            setBibHover(information);
+            setBibHover(information.trim());
         }
     }
 

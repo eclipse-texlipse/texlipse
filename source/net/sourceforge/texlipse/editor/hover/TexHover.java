@@ -9,10 +9,8 @@
  */
 package net.sourceforge.texlipse.editor.hover;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import net.sourceforge.texlipse.editor.TexEditor;
+import net.sourceforge.texlipse.texparser.LatexParserUtils;
 
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IInformationControlCreator;
@@ -23,19 +21,13 @@ import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.Region;
 
 /**
- * Objects of this class determines the Hoverregion and returns
+ * Objects of this class determines the hover region and returns
  * the text of the hover.
  * 
  * @author Boris von Loesch
  * @author Oskar Ojala
  */
 public class TexHover implements ITextHover, ITextHoverExtension {
-
-    /**
-     * Pattern for recognizing a LaTeX command
-     */
-    // TODO only one optional argument?
-    private static final Pattern recognizeCommand = Pattern.compile("\\\\(\\w+)\\s*(?:\\[.*?\\]\\s*)?\\{.+?\\}");
     
     TexEditor editor;
     TexHoverControlCreator creator;
@@ -69,68 +61,29 @@ public class TexHover implements ITextHover, ITextHoverExtension {
             String line = textViewer.getDocument().get(lOffset, textViewer.getDocument().getLineLength(lineNr));
             int start = offset - lOffset;
 
-            int cStart = line.lastIndexOf('\\', start);
-            int oBrace = line.lastIndexOf('{', start);
-            int cEnd = line.indexOf('}', start);
-            if (cStart >= 0 && cEnd >= 0 && cStart < oBrace) {
-                String fullCommand = line.substring(cStart, cEnd + 1);
-                Matcher m = recognizeCommand.matcher(fullCommand);
-                if (m.matches()) {
-                    String command = m.group(1);
-                    if (command.indexOf("cite") >= 0) {
-                        int regionStart = line.lastIndexOf(',', start) < line.lastIndexOf('{', start) ?
-                                line.lastIndexOf('{', start) + 1 : line.lastIndexOf(',', start) + 1;
-                        int lastComma = line.indexOf(',', start);
-                        if (lastComma >= 0 && lastComma < cEnd) {
-                            return new Region(lOffset + regionStart, lastComma - regionStart);
-                        } else {
-                            return new Region(lOffset + regionStart, cEnd - regionStart);
-                        }
-                    } else {
-                        return new Region(lOffset + cStart, (cEnd - cStart) + 1);
-                    }
+            IRegion r = LatexParserUtils.getCommand(line, start);
+            if (r == null) return new Region(offset, 0);
+
+            IRegion rArg = LatexParserUtils.getCommandArgument(line, r.getOffset());
+            if (rArg == null) return new Region(lOffset + r.getOffset(), r.getLength());
+            
+            String command = line.substring(r.getOffset()+1, r.getOffset() + r.getLength());
+            if (command.indexOf("cite") >= 0 && start > r.getOffset() + r.getLength()) {
+                //Return only the citation entry, not the full command string
+                int cEnd = rArg.getOffset() + rArg.getLength();
+                int regionStart = line.lastIndexOf(',', start) < line.lastIndexOf('{', start) ?
+                        line.lastIndexOf('{', start) + 1 : line.lastIndexOf(',', start) + 1;
+                int lastComma = line.indexOf(',', start);
+                if (lastComma >= 0 && lastComma < cEnd) {
+                    return new Region(lOffset + regionStart, lastComma - regionStart);
+                } else {
+                    return new Region(lOffset + regionStart, cEnd - regionStart);
                 }
-            } else if (cStart >= 0) {
-                // The command might not have an argument
-                for (int i = start; i < line.length(); i++) {
-                    if (!Character.isLetter(line.charAt(i))) {
-                        cEnd = i;
-                        break;
-                    }
-                }
-                return new Region(lOffset + cStart, (cEnd - cStart));
             }
-            
-            
-            /*
-            // first closing brace
-            int cbr = line.indexOf('}', start);
-            // last opening brace
-            int obr = line.lastIndexOf('{', start);
-            int insBack = line.lastIndexOf('\\', start);
-            if (obr != -1 && cbr != -1 && obr > line.lastIndexOf('}', start)
-                    && (line.indexOf('{', start) == -1 || cbr < line.indexOf('{', start))
-                    && obr > insBack) {
-                // seems we are inside {...}
-                // now search for the command
-                obr = line.lastIndexOf('\\', obr);
-                if (obr != -1)
-                    return new Region(lOffset + obr, (cbr - obr) + 1);
-            }*/
-            
-            
-            // else extract current word
-            int dLength = line.length();
-            while ((start > 0) && !isIgnoreChar(line.charAt(start)))
-                start--;
-            int finish = start;
-            while ((finish < dLength) && !isIgnoreChar(line.charAt(finish)))
-                finish++;
-            // special case \command we want the backslash if not \\command
-            if (line.charAt(start) == '\\' && (start == 0 || (start > 0 && line.charAt(start - 1) != '\\')))
-                start--;
-            Region r = new Region(lOffset + start + 1, (finish - start) - 1);
-            return r;
+
+            int length = rArg.getOffset() - r.getOffset() + rArg.getLength() + 1;
+            return new Region(lOffset + r.getOffset(), length);
+
         } catch (BadLocationException ex) {
             return new Region(offset, 0);
         }
@@ -146,18 +99,6 @@ public class TexHover implements ITextHover, ITextHoverExtension {
             creator = new TexHoverControlCreator(editor);
         }
         return creator;
-    }
-
-    /**
-     * Returns whether this character should be ignored
-     * 
-     * @param c
-     * @return
-     */
-    private boolean isIgnoreChar(char c) {
-        if (Character.isLetterOrDigit(c))
-            return false;
-        return true;
     }
 
 }

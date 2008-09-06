@@ -232,8 +232,8 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
             TexlipseProperties.setSessionProperty(project, TexlipseProperties.PARTIAL_BUILD_FILE, null);
         	fullBuild(monitor);
         	return;
-        } else if (LatexParserUtils.findCommand(doc, "\\documentclass", 0) != -1
-                || LatexParserUtils.findCommand(doc, "\\documentstyle", 0) != -1) {
+        } else if (LatexParserUtils.findCommand(doc.get(), "\\documentclass", 0) != -1
+                || LatexParserUtils.findCommand(doc.get(), "\\documentstyle", 0) != -1) {
             // A complete tex file (just build it)
             TexlipseProperties.setSessionProperty(project, TexlipseProperties.PARTIAL_BUILD_FILE, file);
             buildPartialFile(file, monitor);

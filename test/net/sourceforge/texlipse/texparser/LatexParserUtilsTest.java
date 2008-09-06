@@ -12,12 +12,26 @@ package net.sourceforge.texlipse.texparser;
 import static org.junit.Assert.*;
 import static net.sourceforge.texlipse.texparser.LatexParserUtils.*;
 
-import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.Region;
 import org.junit.Test;
 
 public class LatexParserUtilsTest {
+
+    @Test
+    public void testisEscaped() {
+        assertFalse(isEscaped("%", 0));
+        assertFalse(isEscaped("  %", 2));
+        assertTrue(isEscaped("\\%", 1));
+        assertTrue(isEscaped(" \\%", 2));
+        assertFalse(isEscaped("\\\\%", 2));
+        assertFalse(isEscaped(" \\\\%", 3));
+        assertTrue(isEscaped("\\\\\\%", 3));
+        assertTrue(isEscaped(" \\\\\\%", 4));
+        
+        assertFalse(isEscaped("test \\begin", 5));
+        assertTrue(isEscaped("test \\\\begin", 6));
+    }
 
     @Test
     public void testgetStartofLineStringInt() {
@@ -33,53 +47,41 @@ public class LatexParserUtilsTest {
         String testString4 = "prev \r\ntest";
         assertTrue(getStartofLine(testString4, 8) == 7);
     }
-    
+
     @Test
     public void testIsInsideCommentStringInt() {
-        try { 
-            String testString1 = "% Comment %";
-            assertFalse(isInsideComment(testString1, 0));
-            for (int i=1; i<testString1.length(); i++) {
-                assertTrue(isInsideComment(testString1, i));
-            }
-
-            String testString2 = "No % Comment ";
-            for (int i=0; i < 4; i++) {
-                assertFalse(isInsideComment(testString2, 1));
-            }
-            for (int i=4; i<testString2.length(); i++) {
-                assertTrue(isInsideComment(testString2, i));
-            }
-
-            String testString3 = "No %\n Comment ";
-            for (int i=5; i<testString3.length(); i++) {
-                assertFalse(isInsideComment(testString3, i));
-            }
-
-            String testString4 = "\\% No Comment";
-            for (int i=0; i < 4; i++) {
-                assertFalse(isInsideComment(testString4, i));
-            }
-
-            String testString5 = "\\%% Comment";
-            for (int i=3; i < 6; i++) {
-                assertTrue(isInsideComment(testString5, i));
-            }
-
-            String testString6 = "\\\\% Comment";
-            for (int i=3; i < 5; i++) {
-                assertTrue(isInsideComment(testString6, i));
-            }
-        } catch (BadLocationException ex) {
-            //Fehler
-            assertTrue(false);
+        String testString1 = "% Comment %";
+        assertFalse(isInsideComment(testString1, 0));
+        for (int i=1; i<testString1.length(); i++) {
+            assertTrue(isInsideComment(testString1, i));
         }
-        try {
-            String testString1 = "test";
-            isInsideComment(testString1, 5);
-            assertTrue(false);
-        } catch (BadLocationException e) {
-            assertTrue(true);
+
+        String testString2 = "No % Comment ";
+        for (int i=0; i < 4; i++) {
+            assertFalse(isInsideComment(testString2, 1));
+        }
+        for (int i=4; i<testString2.length(); i++) {
+            assertTrue(isInsideComment(testString2, i));
+        }
+
+        String testString3 = "No %\n Comment ";
+        for (int i=5; i<testString3.length(); i++) {
+            assertFalse(isInsideComment(testString3, i));
+        }
+
+        String testString4 = "\\% No Comment";
+        for (int i=0; i < 4; i++) {
+            assertFalse(isInsideComment(testString4, i));
+        }
+
+        String testString5 = "\\%% Comment";
+        for (int i=3; i < 6; i++) {
+            assertTrue(isInsideComment(testString5, i));
+        }
+
+        String testString6 = "\\\\% Comment";
+        for (int i=3; i < 5; i++) {
+            assertTrue(isInsideComment(testString6, i));
         }
     }
 
@@ -128,60 +130,62 @@ public class LatexParserUtilsTest {
 
     @Test
     public void testGetCommandArgumentStringInt() {
-        try {
-            String testString1 = "\\test";
-            assertNull(getCommandArgument(testString1, 1));
+        String testString1 = "\\test";
+        assertNull(getCommandArgument(testString1, 1));
 
-            String testString2 = "\\test{arg}";
-            IRegion r1 = new Region(6, 3);
-            assertEquals(r1, getCommandArgument(testString2, 1));
+        String testString2 = "\\test{arg}";
+        IRegion r1 = new Region(6, 3);
+        assertEquals(r1, getCommandArgument(testString2, 1));
 
-            String testString3 = "\\test  {arg}";
-            IRegion r2 = new Region(8, 3);
-            assertEquals(r2, getCommandArgument(testString3, 1));
+        String testString3 = "\\test  {arg}";
+        IRegion r2 = new Region(8, 3);
+        assertEquals(r2, getCommandArgument(testString3, 1));
 
-            String testString4 = "\\test  a{arg}";
-            assertNull(getCommandArgument(testString4, 1));
-        } catch (BadLocationException ex) {
-            assertTrue(false);
-        }
+        String testString4 = "\\test  a{arg}";
+        assertNull(getCommandArgument(testString4, 1));
     }
     
     @Test
     public void testGetCommand() {
-        String testString1 = "\\test{arg}";
+        String testString = "\\test{arg}";
         IRegion r = new Region(0, 5);
-        assertEquals(r, getCommand(testString1, 0));
-        assertEquals(r, getCommand(testString1, 5));
-        assertEquals(r, getCommand(testString1, 6));
-        assertEquals(r, getCommand(testString1, 102));
+        assertEquals(r, getCommand(testString, 0));
+        assertEquals(r, getCommand(testString, 5));
+        assertEquals(r, getCommand(testString, 6));
+        assertEquals(r, getCommand(testString, 102));
 
-        String testString2 = " \\test{arg} ";
+        testString = " \\test{arg} ";
         IRegion r2 = new Region(1, 5);
-        assertNull(getCommand(testString2, 0));
-        assertEquals(r2, getCommand(testString2, 5));
-        assertEquals(r2, getCommand(testString2, 6));
-        assertNull(getCommand(testString2, 102));
+        assertNull(getCommand(testString, 0));
+        assertEquals(r2, getCommand(testString, 5));
+        assertEquals(r2, getCommand(testString, 6));
+        assertNull(getCommand(testString, 102));
 
-        String testString3 = "\\test  \r   {arg}";
-        assertEquals(r, getCommand(testString3, 0));
-        assertEquals(r, getCommand(testString3, 13));
+        testString = "\\test  \r   {arg}";
+        assertEquals(r, getCommand(testString, 0));
+        assertEquals(r, getCommand(testString, 13));
 
-        String testString4 = "\\test  u   {arg}";
-        assertNull(getCommand(testString4, 12));
+        testString = "\\test  u   {arg}";
+        assertNull(getCommand(testString, 12));
         
-        String testString5 = "\\test{arg1}{arg2}";
-        assertNull(getCommand(testString5, 12));
+        testString = "\\test{arg1}{arg2}";
+        assertNull(getCommand(testString, 12));
         
-        String testString6 = "\\test a";
-        assertNull(getCommand(testString6, 6));
+        testString = "\\test a";
+        assertNull(getCommand(testString, 6));
         
-        String testString7 = "% \\test";
-        assertNull(getCommand(testString7, 4));
+        testString = "% \\test";
+        assertNull(getCommand(testString, 4));
 
-        String testString8 = "\\\\test";
-        assertNull(getCommand(testString8, 4));
+        testString = "\\\\test";
+        assertNull(getCommand(testString, 4));
 
+        testString = "test";
+        assertNull(getCommand(testString, 3));
+
+        testString = "\\\\test{arg}";
+        assertNull(getCommand(testString, 8));
+        assertNull(getCommand("{test}", 3));
     }
 
     @Test
@@ -206,5 +210,4 @@ public class LatexParserUtilsTest {
         String testString4 = "\\begin{a}\\end{b}{a}";
         assertNull(findMatchingEndEnvironment(testString4, "a", 0));
     }
-
 }

@@ -92,8 +92,12 @@ public class LatexRunner extends AbstractProgramRunner {
         IContainer sourceDir = TexlipseProperties.getProjectSourceDir(project);
 
         IResource extResource = null;
-        if (causingSourceFile != null)
+        if (causingSourceFile != null) {
             extResource = sourceDir.findMember(causingSourceFile);
+            if (extResource == null) {
+                extResource = resource.getParent().findMember(causingSourceFile);
+            }
+        }
         if (extResource == null)
             createMarker(resource, null, error + (causingSourceFile != null ? " (Occurance: "
                     + causingSourceFile + ")" : ""), severity);
@@ -350,15 +354,27 @@ public class LatexRunner extends AbstractProgramRunner {
             return true;
     }
         
+    private static boolean isValidName(String name) {
+        //File must have a file ending
+        int p = name.lastIndexOf('.');
+        if (p < 0) return false;
+        //File ending must be shorter than 9 characters
+        if (name.length()-p > 10) return false;
+        return true;
+    }
+    
     /**
      * Determines the source file we are currently parsing.
      * 
      * @return The filename or null if no file could be determined
      */
     private String determineSourceFile() {
-        if (!parsingStack.empty())
-            return parsingStack.peek().substring(1);
-        else
-            return null;
+        int i = parsingStack.size()-1;
+        while (i >= 0) {
+            String fileName = parsingStack.get(i).substring(1);
+            if (isValidName(fileName)) return fileName;
+            i--;
+        }
+        return null;
     }
 }

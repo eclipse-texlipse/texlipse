@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id
  *
  * Copyright (c) 2006 by the TeXlipse team.
  * All rights reserved. This program and the accompanying materials
@@ -257,12 +257,12 @@ public class LatexParserUtils {
             int l = -1;
             int ws = 0;
             c = input.charAt(pos + l);
-            while (pos + l >= 0 && Character.isWhitespace(c)) {
+            while (pos + l > 0 && Character.isWhitespace(c)) {
                 ws--;
                 l--;
                 c = input.charAt(pos + l);
             }
-            while (pos + l >= 0 && Character.isLetter(c)) {
+            while (pos + l > 0 && Character.isLetter(c)) {
                 l--;
                 c = input.charAt(pos + l);
             }

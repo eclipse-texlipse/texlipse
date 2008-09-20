@@ -186,6 +186,9 @@ public class LatexParserUtilsTest {
         testString = "\\\\test{arg}";
         assertNull(getCommand(testString, 8));
         assertNull(getCommand("{test}", 3));
+        
+        assertNull(getCommand("test{arg}", 6));
+        assertNull(getCommand("test  {arg}", 8));
     }
 
     @Test

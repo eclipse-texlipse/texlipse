@@ -4,6 +4,7 @@ package net.sourceforge.texlipse.texparser.node;
 
 import net.sourceforge.texlipse.texparser.analysis.*;
 
+@SuppressWarnings("nls")
 public final class TCnew extends Token
 {
     public TCnew(String text)
@@ -18,6 +19,7 @@ public final class TCnew extends Token
         setPos(pos);
     }
 
+    @Override
     public Object clone()
     {
       return new TCnew(getText(), getLine(), getPos());

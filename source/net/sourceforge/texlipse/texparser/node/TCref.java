@@ -4,6 +4,7 @@ package net.sourceforge.texlipse.texparser.node;
 
 import net.sourceforge.texlipse.texparser.analysis.*;
 
+@SuppressWarnings("nls")
 public final class TCref extends Token
 {
     public TCref(String text)
@@ -18,6 +19,7 @@ public final class TCref extends Token
         setPos(pos);
     }
 
+    @Override
     public Object clone()
     {
       return new TCref(getText(), getLine(), getPos());

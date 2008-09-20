@@ -4,6 +4,7 @@ package net.sourceforge.texlipse.texparser.node;
 
 import net.sourceforge.texlipse.texparser.analysis.*;
 
+@SuppressWarnings("nls")
 public final class TCommentline extends Token
 {
     public TCommentline(String text)
@@ -18,6 +19,7 @@ public final class TCommentline extends Token
         setPos(pos);
     }
 
+    @Override
     public Object clone()
     {
       return new TCommentline(getText(), getLine(), getPos());

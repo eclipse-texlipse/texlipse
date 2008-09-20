@@ -70,7 +70,9 @@ Tokens
     {normal->comcapt, comcapt} cbibstyle = '\bibliographystyle';
     {normal->comcapt, comcapt} clabel = '\label';
 
-    {normal->comcapt, comcapt} cref = '\ref' | '\pageref';
+//supporting \eqref, \vref, etc.
+    {normal->comcapt, comcapt} cref = '\' letter* 'ref';
+    
 // can be eg. \cite[pages 90--93]{knuth} or \nocite{*}
 // supporting Harvard and JuraBib, eg. '\possessivecite'
     {normal->comcapt, comcapt} ccite = '\cite' letter* | '\' letter+ 'cite' | '\nextcite' letter+;
@@ -132,7 +134,7 @@ Tokens
 	skipped_not_percent* '%'+ '###' [unicode_input_character - [cr + lf]]* line_terminator?;
 
 
-    {normal, comcapt} taskcomment = '%' [sp + ht]* 'TODO' [unicode_input_character - [cr + lf]]* line_terminator?;
+    {normal, comcapt} taskcomment = '%' [sp + ht]* ('TODO' | 'FIXME' | 'XXX') [unicode_input_character - [cr + lf]]* line_terminator?;
 
 // The optional line terminator is needed to handle comments at the end of the file (ie. without a line terminator)
 // Since the longest match is always attempted, this works

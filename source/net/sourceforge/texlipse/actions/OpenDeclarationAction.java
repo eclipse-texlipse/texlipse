@@ -127,9 +127,7 @@ public class OpenDeclarationAction implements IEditorActionDelegate {
                 command.equals("\\bibliography")) {
             //We need the argument
             IRegion region = null;
-            try {
-                region = LatexParserUtils.getCommandArgument(docString, comRegion.getOffset());
-            } catch (BadLocationException e1) { }
+            region = LatexParserUtils.getCommandArgument(docString, comRegion.getOffset());
             if (region == null) {
                 createStatusLineErrorMessage(TexlipsePlugin.getResourceString("gotoDeclarationNoArgumentFound"));
                 return;

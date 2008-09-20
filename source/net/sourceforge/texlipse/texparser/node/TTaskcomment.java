@@ -4,6 +4,7 @@ package net.sourceforge.texlipse.texparser.node;
 
 import net.sourceforge.texlipse.texparser.analysis.*;
 
+@SuppressWarnings("nls")
 public final class TTaskcomment extends Token
 {
     public TTaskcomment(String text)
@@ -18,6 +19,7 @@ public final class TTaskcomment extends Token
         setPos(pos);
     }
 
+    @Override
     public Object clone()
     {
       return new TTaskcomment(getText(), getLine(), getPos());

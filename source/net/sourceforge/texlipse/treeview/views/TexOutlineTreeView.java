@@ -9,9 +9,9 @@
  */
 package net.sourceforge.texlipse.treeview.views;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 import net.sourceforge.texlipse.TexlipsePlugin;
 import net.sourceforge.texlipse.editor.TexEditor;
@@ -23,14 +23,14 @@ import net.sourceforge.texlipse.outline.TexOutlineFilter;
 import net.sourceforge.texlipse.outline.TexOutlineNodeComparer;
 import net.sourceforge.texlipse.properties.TexlipseProperties;
 
-import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.ListenerList;
+import org.eclipse.core.runtime.SafeRunner;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.util.IPropertyChangeListener;
-import org.eclipse.jface.util.ListenerList;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.util.SafeRunnable;
 import org.eclipse.jface.viewers.ISelection;
@@ -65,7 +65,7 @@ public class TexOutlineTreeView extends ViewPart implements  ISelectionChangedLi
     private TexOutlineFilter filter;
     private TexEditor editor;
     
-    private HashMap outlineActions;
+    private Map<String, IAction> outlineActions;
     private int expandLevel;
     
     private ListenerList selectionChangedListeners = new ListenerList();
@@ -85,7 +85,7 @@ public class TexOutlineTreeView extends ViewPart implements  ISelectionChangedLi
      */
     public TexOutlineTreeView() {
         super();
-        this.outlineActions = new HashMap();
+        this.outlineActions = new HashMap<String, IAction>();
         expandLevel = 1;
         
         TexlipsePlugin.getDefault().getPreferenceStore().addPropertyChangeListener(new  
@@ -141,7 +141,7 @@ public class TexOutlineTreeView extends ViewPart implements  ISelectionChangedLi
             treeViewer.setInput(this.input.getRootNodes());
             
             // set update button status and also the context actions
-            ((IAction)outlineActions.get(ACTION_UPDATE)).setEnabled(false);
+            outlineActions.get(ACTION_UPDATE).setEnabled(false);
         }
         
         // add a part listener if the editor isn't available when the view is created.
@@ -190,7 +190,7 @@ public class TexOutlineTreeView extends ViewPart implements  ISelectionChangedLi
                 control.setRedraw(true);
                 
                 // disable the refresh button
-                ((IAction)outlineActions.get(ACTION_UPDATE)).setEnabled(false);
+                outlineActions.get(ACTION_UPDATE).setEnabled(false);
             }
         }
     }
@@ -246,11 +246,11 @@ public class TexOutlineTreeView extends ViewPart implements  ISelectionChangedLi
      *
      */
     private void resetToolbarButtons() {
-        ((Action)outlineActions.get(ACTION_HIDE_SEC)).setChecked(!filter.isTypeVisible(OutlineNode.TYPE_SECTION));
-        ((Action)outlineActions.get(ACTION_HIDE_SUBSEC)).setChecked(!filter.isTypeVisible(OutlineNode.TYPE_SUBSECTION));
-        ((Action)outlineActions.get(ACTION_HIDE_SUBSUBSEC)).setChecked(!filter.isTypeVisible(OutlineNode.TYPE_SUBSUBSECTION));
-        ((Action)outlineActions.get(ACTION_HIDE_PARAGRAPH)).setChecked(!filter.isTypeVisible(OutlineNode.TYPE_PARAGRAPH));
-        ((Action)outlineActions.get(ACTION_HIDE_FLOAT)).setChecked(!filter.isTypeVisible(OutlineNode.TYPE_ENVIRONMENT));
+        outlineActions.get(ACTION_HIDE_SEC).setChecked(!filter.isTypeVisible(OutlineNode.TYPE_SECTION));
+        outlineActions.get(ACTION_HIDE_SUBSEC).setChecked(!filter.isTypeVisible(OutlineNode.TYPE_SUBSECTION));
+        outlineActions.get(ACTION_HIDE_SUBSUBSEC).setChecked(!filter.isTypeVisible(OutlineNode.TYPE_SUBSUBSECTION));
+        outlineActions.get(ACTION_HIDE_PARAGRAPH).setChecked(!filter.isTypeVisible(OutlineNode.TYPE_PARAGRAPH));
+        outlineActions.get(ACTION_HIDE_FLOAT).setChecked(!filter.isTypeVisible(OutlineNode.TYPE_ENVIRONMENT));
     }
     
     /**
@@ -313,7 +313,7 @@ public class TexOutlineTreeView extends ViewPart implements  ISelectionChangedLi
         Object[] listeners = selectionChangedListeners.getListeners();
         for (int i = 0; i < listeners.length; ++i) {
             final ISelectionChangedListener l = (ISelectionChangedListener) listeners[i];
-            Platform.run(new SafeRunnable() {
+            SafeRunner.run(new SafeRunnable() {
                 public void run() {
                     l.selectionChanged(event);
                 }
@@ -473,10 +473,10 @@ public class TexOutlineTreeView extends ViewPart implements  ISelectionChangedLi
      * @param nodeType the type of nodes to be revealed
      */
     private void revealNodes(int nodeType) {
-        ArrayList nodeList = input.getTypeList(nodeType);
+        List<OutlineNode> nodeList = input.getTypeList(nodeType);
         if (nodeList != null) {
-            for (Iterator iter = nodeList.iterator(); iter.hasNext();) {
-                treeViewer.reveal((OutlineNode)iter.next());
+            for (OutlineNode node : nodeList) {
+                treeViewer.reveal(node);
             }
         }
     }
@@ -489,14 +489,14 @@ public class TexOutlineTreeView extends ViewPart implements  ISelectionChangedLi
         
         // add actions to the toolbar
         IToolBarManager toolbarManager = getViewSite().getActionBars().getToolBarManager();
-        toolbarManager.add((IAction)outlineActions.get(ACTION_UPDATE));
-        toolbarManager.add((IAction)outlineActions.get(ACTION_COLLAPSE));
-        toolbarManager.add((IAction)outlineActions.get(ACTION_EXPAND));
-        toolbarManager.add((IAction)outlineActions.get(ACTION_HIDE_SEC));
-        toolbarManager.add((IAction)outlineActions.get(ACTION_HIDE_SUBSEC));
-        toolbarManager.add((IAction)outlineActions.get(ACTION_HIDE_SUBSUBSEC));
-        toolbarManager.add((IAction)outlineActions.get(ACTION_HIDE_PARAGRAPH));
-        toolbarManager.add((IAction)outlineActions.get(ACTION_HIDE_FLOAT));
+        toolbarManager.add(outlineActions.get(ACTION_UPDATE));
+        toolbarManager.add(outlineActions.get(ACTION_COLLAPSE));
+        toolbarManager.add(outlineActions.get(ACTION_EXPAND));
+        toolbarManager.add(outlineActions.get(ACTION_HIDE_SEC));
+        toolbarManager.add(outlineActions.get(ACTION_HIDE_SUBSEC));
+        toolbarManager.add(outlineActions.get(ACTION_HIDE_SUBSUBSEC));
+        toolbarManager.add(outlineActions.get(ACTION_HIDE_PARAGRAPH));
+        toolbarManager.add(outlineActions.get(ACTION_HIDE_FLOAT));
     }	
     
     /**
@@ -504,7 +504,7 @@ public class TexOutlineTreeView extends ViewPart implements  ISelectionChangedLi
      * the update button.
      */
     public void modelGotDirty() {
-        ((IAction)outlineActions.get(ACTION_UPDATE)).setEnabled(true);
+        outlineActions.get(ACTION_UPDATE).setEnabled(true);
     }
     
     /**

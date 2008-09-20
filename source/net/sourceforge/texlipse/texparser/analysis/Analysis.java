@@ -7,9 +7,9 @@ import net.sourceforge.texlipse.texparser.node.*;
 public interface Analysis extends Switch
 {
     Object getIn(Node node);
-    void setIn(Node node, Object in);
+    void setIn(Node node, Object o);
     Object getOut(Node node);
-    void setOut(Node node, Object out);
+    void setOut(Node node, Object o);
 
     void caseTWhitespace(TWhitespace node);
     void caseTCpart(TCpart node);

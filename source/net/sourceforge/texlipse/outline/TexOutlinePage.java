@@ -9,9 +9,8 @@
  */
 package net.sourceforge.texlipse.outline;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import net.sourceforge.texlipse.TexlipsePlugin;
@@ -654,10 +653,10 @@ public class TexOutlinePage extends ContentOutlinePage {
      * @param nodeType the type of nodes to be revealed
      */
     private void revealNodes(int nodeType) {
-        ArrayList nodeList = input.getTypeList(nodeType);
+        List<OutlineNode> nodeList = input.getTypeList(nodeType);
         if (nodeList != null) {
-            for (Iterator iter = nodeList.iterator(); iter.hasNext();) {
-                getTreeViewer().reveal((OutlineNode)iter.next());
+            for(OutlineNode node : nodeList) {
+                getTreeViewer().reveal(node);
             }
         }
     }

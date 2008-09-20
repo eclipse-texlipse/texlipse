@@ -4,6 +4,7 @@ package net.sourceforge.texlipse.texparser.node;
 
 import net.sourceforge.texlipse.texparser.analysis.*;
 
+@SuppressWarnings("nls")
 public final class TCspace extends Token
 {
     public TCspace(String text)
@@ -18,6 +19,7 @@ public final class TCspace extends Token
         setPos(pos);
     }
 
+    @Override
     public Object clone()
     {
       return new TCspace(getText(), getLine(), getPos());

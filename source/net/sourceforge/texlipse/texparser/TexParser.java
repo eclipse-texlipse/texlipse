@@ -42,7 +42,7 @@ public class TexParser {
     private LatexParser lparser;
 //    private LatexLexer llexer;
     
-    private ArrayList<ParseErrorMessage> errors;
+    private List<ParseErrorMessage> errors;
     private boolean fatalErrors;
     
     private String preamble;
@@ -215,7 +215,7 @@ public class TexParser {
     /**
      * @return Returns the errors.
      */
-    public ArrayList<ParseErrorMessage> getErrors() {
+    public List<ParseErrorMessage> getErrors() {
         return errors;
     }
     

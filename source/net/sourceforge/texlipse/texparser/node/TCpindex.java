@@ -4,6 +4,7 @@ package net.sourceforge.texlipse.texparser.node;
 
 import net.sourceforge.texlipse.texparser.analysis.*;
 
+@SuppressWarnings("nls")
 public final class TCpindex extends Token
 {
     public TCpindex()
@@ -18,6 +19,7 @@ public final class TCpindex extends Token
         setPos(pos);
     }
 
+    @Override
     public Object clone()
     {
       return new TCpindex(getLine(), getPos());
@@ -28,7 +30,8 @@ public final class TCpindex extends Token
         ((Analysis) sw).caseTCpindex(this);
     }
 
-    public void setText(String text)
+    @Override
+    public void setText(@SuppressWarnings("unused") String text)
     {
         throw new RuntimeException("Cannot change TCpindex text.");
     }

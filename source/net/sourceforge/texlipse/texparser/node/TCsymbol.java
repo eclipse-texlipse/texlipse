@@ -4,6 +4,7 @@ package net.sourceforge.texlipse.texparser.node;
 
 import net.sourceforge.texlipse.texparser.analysis.*;
 
+@SuppressWarnings("nls")
 public final class TCsymbol extends Token
 {
     public TCsymbol(String text)
@@ -18,6 +19,7 @@ public final class TCsymbol extends Token
         setPos(pos);
     }
 
+    @Override
     public Object clone()
     {
       return new TCsymbol(getText(), getLine(), getPos());

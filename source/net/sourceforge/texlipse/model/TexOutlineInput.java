@@ -11,8 +11,8 @@ package net.sourceforge.texlipse.model;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Container class for outline input stuff. Includes the outline tree
@@ -23,18 +23,18 @@ import java.util.List;
  */
 public class TexOutlineInput {
 
-	private ArrayList rootNodes;
+	private List<OutlineNode> rootNodes;
 	private int treeDepth;
-	private HashMap typeLists;
+	private Map<Integer, List<OutlineNode>> typeLists;
 	
 	/**
      * The constructor.
      * 
 	 * @param rootNodes rootNode list
 	 */
-	public TexOutlineInput(ArrayList rootNodes) {
+	public TexOutlineInput(List<OutlineNode> rootNodes) {
 		this.rootNodes = rootNodes;
-		typeLists = new HashMap();
+		typeLists = new HashMap<Integer, List<OutlineNode>>();
         treeDepth = -1;
 	}
 	
@@ -45,13 +45,12 @@ public class TexOutlineInput {
      */
 	public void addNode(OutlineNode node) {
 		// get list for this type
-		Integer nodeType = new Integer(node.getType());
-		ArrayList typeList = (ArrayList)typeLists.get(nodeType);
+		List<OutlineNode> typeList = typeLists.get(node.getType());
 		
 		// if no list for this type exists yet, create one
 		if (typeList == null) {
-			typeList = new ArrayList();
-			typeLists.put(nodeType, typeList);
+			typeList = new ArrayList<OutlineNode>();
+			typeLists.put(node.getType(), typeList);
 		}
 		
 		// add node to type list
@@ -65,10 +64,9 @@ public class TexOutlineInput {
      * @return The list containing the nodes of given type, null
      * if no nodes of that type exist.
      */
-	public ArrayList getTypeList(int nodeType) {
-		Integer key = new Integer(nodeType);
-		if (typeLists.containsKey(key)) {
-			return (ArrayList) typeLists.get(key);
+	public List<OutlineNode> getTypeList(int nodeType) {
+		if (typeLists.containsKey(nodeType)) {
+			return typeLists.get(nodeType);
 		} else {
 			return null;
 		}
@@ -79,14 +77,14 @@ public class TexOutlineInput {
      * 
      * @return the root nodes
 	 */
-	public ArrayList getRootNodes() {
+	public List<OutlineNode> getRootNodes() {
 		return rootNodes;
 	}
 	
     /**
 	 * @param rootNodes The rootNodes to set.
 	 */
-	public void setRootNodes(ArrayList rootNodes) {
+	public void setRootNodes(List<OutlineNode> rootNodes) {
 		this.rootNodes = rootNodes;
 	}
 
@@ -112,11 +110,10 @@ public class TexOutlineInput {
      */
     public void calculateTreeDepth() {
         treeDepth = 0;
-        for (Iterator iter = rootNodes.iterator(); iter.hasNext();) {
-            OutlineNode node = (OutlineNode) iter.next();
+        for (OutlineNode node : rootNodes) {
             int localDepth = handleNode(node, 0);
             if (localDepth > treeDepth)
-                treeDepth = localDepth;
+                treeDepth = localDepth;            
         }
     }
     
@@ -130,13 +127,14 @@ public class TexOutlineInput {
     private int handleNode(OutlineNode node, int parentDepth) {
 
         // iterate through the children
-        List children = node.getChildren();
+        List<OutlineNode> children = node.getChildren();
         int maxDepth = parentDepth + 1;
         if (children != null) {
-            for (Iterator iter = children.iterator(); iter.hasNext();) {
-                int localDepth = handleNode((OutlineNode) iter.next(), parentDepth + 1);
-                if (localDepth > maxDepth)
+            for (OutlineNode child : children) {
+                int localDepth = handleNode(child, parentDepth + 1);
+                if (localDepth > maxDepth) {
                     maxDepth = localDepth;
+                }
             }
         }
         return maxDepth;

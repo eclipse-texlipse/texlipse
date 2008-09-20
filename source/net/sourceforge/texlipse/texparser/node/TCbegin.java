@@ -4,6 +4,7 @@ package net.sourceforge.texlipse.texparser.node;
 
 import net.sourceforge.texlipse.texparser.analysis.*;
 
+@SuppressWarnings("nls")
 public final class TCbegin extends Token
 {
     public TCbegin()
@@ -18,6 +19,7 @@ public final class TCbegin extends Token
         setPos(pos);
     }
 
+    @Override
     public Object clone()
     {
       return new TCbegin(getLine(), getPos());
@@ -28,7 +30,8 @@ public final class TCbegin extends Token
         ((Analysis) sw).caseTCbegin(this);
     }
 
-    public void setText(String text)
+    @Override
+    public void setText(@SuppressWarnings("unused") String text)
     {
         throw new RuntimeException("Cannot change TCbegin text.");
     }

@@ -246,6 +246,7 @@ public class ViewerAttributeRegistry implements Cloneable {
             }
         } else if (list != null && list.length() > 0) {
             activeViewer = list;
+            allViewers = new String[]{list};
             setCommand(pref.getString(list + ATTRIBUTE_COMMAND));
             setArguments(pref.getString(list + ATTRIBUTE_ARGUMENTS));
             setDDEViewCommand(pref.getString(list + ATTRIBUTE_DDE_VIEW_COMMAND));

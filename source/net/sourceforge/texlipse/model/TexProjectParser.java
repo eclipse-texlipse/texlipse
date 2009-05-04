@@ -97,7 +97,7 @@ public class TexProjectParser {
             KpsewhichRunner filesearch = new KpsewhichRunner();
             try {
                 String fName = filesearch.getFile(currentProject, fileName, "latex");
-                if (!fName.isEmpty()) {
+                if (fName.length() > 0) {
                     //Create a link
                     IPath p = new Path(fName);
                     file.createLink(p, IResource.NONE, null);

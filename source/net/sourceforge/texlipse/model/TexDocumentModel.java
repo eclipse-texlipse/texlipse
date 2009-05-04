@@ -672,7 +672,7 @@ public class TexDocumentModel implements IDocumentListener {
         	    else {
         	        //Try Kpsewhich
         	        filepath = filesearch.getFile(resource, name, "bibtex");
-        	        if (!filepath.isEmpty() && !(new File(filepath).isAbsolute())) {
+        	        if (filepath.length() > 0 && !(new File(filepath).isAbsolute())) {
         	            //filepath is a local path
         	            res = project.findMember(path + filepath);
         	            if (res != null) {
@@ -682,7 +682,7 @@ public class TexDocumentModel implements IDocumentListener {
         	                filepath = "";
         	            }
         	        }
-        	        else if (!filepath.isEmpty()) {
+        	        else if (filepath.length() > 0) {
         	            //Create a link to resource
                         IPath p = new Path(filepath);
                         IFile f = project.getFile(path+name);
@@ -691,7 +691,7 @@ public class TexDocumentModel implements IDocumentListener {
                         }
         	        }
         	    }
-        		if (!filepath.isEmpty()) {
+        		if (filepath.length() > 0) {
         			BibParser parser = new BibParser(filepath);
         			try {
         				List<ReferenceEntry> bibEntriesList = parser.getEntries();

@@ -132,7 +132,7 @@ public class TexStyleCompletionManager implements IPropertyChangeListener{
             String replacement = tag + selectedText + "}";
             
             // Derive cursor position
-            int cursor = tag.length() + 1;
+            int cursor = tag.length() + selectedText.length() + 1;
             
             // Compute a suitable context information
             IContextInformation contextInfo = 

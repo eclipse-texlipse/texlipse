@@ -30,13 +30,26 @@ public class TexEnvironmentRule implements IPredicateRule {
     /** The pattern's end sequence */
     protected char[] fEndSequence;
     /** The name of the environment */
-    protected char[] fEnvName;
+    protected char[][] fEnvName;
     protected boolean fStar;
     protected boolean fLastStar;
+    protected int fLastEnv;
 
     public TexEnvironmentRule(String envName, IToken token) {
         this (envName, false, token);
     }
+    
+    public TexEnvironmentRule(String[] envNames, boolean star, IToken token) {
+        fStartSequence = ("\\begin").toCharArray();
+        fEndSequence = ("\\end").toCharArray();
+        fToken = token;
+        fEnvName = new char[envNames.length][];
+        for (int i = 0; i < envNames.length; i++) {
+            fEnvName[i] = envNames[i].toCharArray();            
+        }
+        fStar = star;
+    }
+    
     /**
      * 
      * @param envName Name of the environment
@@ -47,7 +60,8 @@ public class TexEnvironmentRule implements IPredicateRule {
         fStartSequence = ("\\begin").toCharArray();
         fEndSequence = ("\\end").toCharArray();
         fToken = token;
-        fEnvName = envName.toCharArray();
+        fEnvName = new char[1][];
+        fEnvName[0] = envName.toCharArray();
         fStar = star;
     }
 
@@ -64,9 +78,15 @@ public class TexEnvironmentRule implements IPredicateRule {
      */
     protected IToken doEvaluate(ICharacterScanner scanner, boolean resume) {
         fLastStar = true;
+        fLastEnv = -1;
         if (resume) {
-            if (endSequenceDetected(scanner))
-                return fToken;
+            //HACK, just read all available characters from the scanner. 
+            //This works very good in Eclipse 3.2 - 3.3 but maybe not in other versions. 
+            //Sadly there is no easy workaround that works as good as this
+            int c;
+            while ((c = scanner.read()) != ICharacterScanner.EOF) ;
+/*            if (endSequenceDetected(scanner))
+                return fToken;*/
         } else {
             int c = scanner.read();
             if (c == fStartSequence[0]) {
@@ -75,9 +95,9 @@ public class TexEnvironmentRule implements IPredicateRule {
                         return fToken;
                 }
             }
+            scanner.unread();
         }
 
-        scanner.unread();
         return Token.UNDEFINED;
     }
 
@@ -96,14 +116,16 @@ public class TexEnvironmentRule implements IPredicateRule {
      */
     protected boolean endSequenceDetected(ICharacterScanner scanner) {
         int c;
+        int readChar = 1;
         while ((c = scanner.read()) != ICharacterScanner.EOF) {
+            readChar++;
             if (fEndSequence.length > 0 && c == fEndSequence[0]) {
                 // Check if the specified end sequence has been found.
                 if (sequenceDetected(scanner, fEndSequence))
                     return true;
             }
         }
-        scanner.unread();
+        unReadScanner(scanner, readChar);
         return false;
     }
 
@@ -147,12 +169,38 @@ public class TexEnvironmentRule implements IPredicateRule {
         if (c != '{') {
             return unReadScanner(scanner, readChar);
         }
-        for (int i = 0; i < fEnvName.length; i++) {
-            c = scanner.read();
-            readChar++;
-            if (c != fEnvName[i]) {
+        if (fLastEnv == -1) {
+            //Test if one of the environments fits
+            boolean found = false;
+            for (int j = 0; j < fEnvName.length; j++) {
+                int readChar2 = 0;
+                for (int i = 0; i < fEnvName[j].length; i++) {
+                    c = scanner.read();
+                    readChar2++;
+                    if (c != fEnvName[j][i]) {
+                        unReadScanner(scanner, readChar2);
+                        break;
+                    }
+                    if (i == fEnvName[j].length - 1) found = true;
+                }
+                if (found) {
+                    fLastEnv = j;
+                    readChar += readChar2;
+                    break;
+                }
+            }
+            if (!found) {
                 return unReadScanner(scanner, readChar);
             }
+        } else {
+            //Test for environment fLastEnv
+            for (int i = 0; i < fEnvName[fLastEnv].length; i++) {
+                c = scanner.read();
+                readChar++;
+                if (c != fEnvName[fLastEnv][i]) {
+                    return unReadScanner(scanner, readChar);
+                }
+            }            
         }
         c = scanner.read();
         readChar++;

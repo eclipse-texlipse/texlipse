@@ -9,24 +9,19 @@
  */
 package net.sourceforge.texlipse.editor.scanner;
 
-import java.util.HashMap;
-
 import org.eclipse.jface.text.rules.IWordDetector;
 
 /**
  * A class to find ordinary words. Note that we define a list of special characters
  * that are not allowed to be found from the string. 
  *
- * @author Antti Pirinen 
+ * @author Antti Pirinen
+ * @author Boris von Loesch 
  */
 public class TextWords implements IWordDetector {
 
-	HashMap ignoreChars;
-
 	public TextWords() {
 		super();
-		ignoreChars = new HashMap();
-		makeIgnoreChars();
 	}
 
 	/**
@@ -38,10 +33,8 @@ public class TextWords implements IWordDetector {
 	 * @see org.eclipse.jface.text.rules.IWordDetector#isWordStart(char)
 	 */
 	public boolean isWordStart(char c) {
-		if (ignoreChars.containsKey(new Character(c))) {
-			return false;
-		}
-		return true;
+	    if (Character.isLetter(c)) return true;
+		return false;
 	}
 
 	/**
@@ -53,53 +46,8 @@ public class TextWords implements IWordDetector {
 	 * @see org.eclipse.jface.text.rules.IWordDetector#isWordPart(char)
 	 */
 	public boolean isWordPart(char c) {
-		if (ignoreChars.containsKey(new Character(c))) {
-			return false;
-		}
-		return true;
+	    if (Character.isLetter(c) || c == '-') return true;
+        return false;
 	}
 
-	/**
-	 * A list of charcters that are not allowed to be 
-	 * at normal text
-	 */
-	private void makeIgnoreChars() {
-		ignoreChars = new HashMap();
-		ignoreChars.put(new Character(' '), new Object());
-		ignoreChars.put(new Character('\n'), new Object());
-		ignoreChars.put(new Character('\t'), new Object());
-		ignoreChars.put(new Character('\r'), new Object());
-		ignoreChars.put(new Character('{'), new Object());
-		ignoreChars.put(new Character('}'), new Object());
-		ignoreChars.put(new Character('['), new Object());
-		ignoreChars.put(new Character(']'), new Object());
-		ignoreChars.put(new Character('!'), new Object());
-		ignoreChars.put(new Character('.'), new Object());
-		ignoreChars.put(new Character(','), new Object());
-		ignoreChars.put(new Character('?'), new Object());
-		ignoreChars.put(new Character('"'), new Object());
-		ignoreChars.put(new Character('£'), new Object());
-		ignoreChars.put(new Character('$'), new Object());
-		ignoreChars.put(new Character('%'), new Object());
-		ignoreChars.put(new Character('^'), new Object());
-		ignoreChars.put(new Character('&'), new Object());
-		ignoreChars.put(new Character('*'), new Object());
-		ignoreChars.put(new Character(':'), new Object());
-		ignoreChars.put(new Character(';'), new Object());
-		ignoreChars.put(new Character('@'), new Object());
-		ignoreChars.put(new Character('\''), new Object());
-		ignoreChars.put(new Character('#'), new Object());
-		ignoreChars.put(new Character('~'), new Object());
-		ignoreChars.put(new Character('/'), new Object());
-		//ignoreChars.put(new Character('-'), new Object());
-		ignoreChars.put(new Character('+'), new Object());
-		ignoreChars.put(new Character('|'), new Object());
-		ignoreChars.put(new Character('\\'), new Object());
-		ignoreChars.put(new Character('<'), new Object());
-		ignoreChars.put(new Character('>'), new Object());
-		ignoreChars.put(new Character('('), new Object());
-		ignoreChars.put(new Character(')'), new Object());
-		ignoreChars.put(new Character('='), new Object());
-		ignoreChars.put(new Character(((char)65535)), new Object());		
-	}
 }

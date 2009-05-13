@@ -25,7 +25,7 @@ import org.eclipse.jface.text.rules.WhitespaceRule;
  * It uses predefined rules to detect sequences and it returns the
  * specified token that satisfies the rule. The token defines how the
  * characters are presented.
- * @see net.sourceforge.texlipse.editor.TexPartitionScanner
+ * @see net.sourceforge.texlipse.editor.partitioner.FastLaTeXPartitionScanner
  * @author Antti Pirinen 
  */ 
 public class TexCommentScanner extends RuleBasedScanner {
@@ -35,7 +35,7 @@ public class TexCommentScanner extends RuleBasedScanner {
      * @param editor
      */
     public TexCommentScanner(ColorManager manager, TexEditor editor) {					
-        List rules = new ArrayList();
+        List<IRule> rules = new ArrayList<IRule>();
         rules.add(new WhitespaceRule(new WhitespaceDetector()));		
         IRule[] result = new IRule[rules.size()];
         rules.toArray(result);

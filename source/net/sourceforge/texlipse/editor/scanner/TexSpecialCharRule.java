@@ -9,7 +9,9 @@
  */
 package net.sourceforge.texlipse.editor.scanner;
 
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import org.eclipse.jface.text.rules.ICharacterScanner;
 import org.eclipse.jface.text.rules.IPredicateRule;
@@ -22,11 +24,13 @@ import org.eclipse.jface.text.rules.Token;
  * one character at the target text.
  * 
  * @author Antti Pirinen 
+ * @author Boris von Loesch
  */
 public class TexSpecialCharRule implements IPredicateRule {
 	private IToken successToken;
 	private char startChar = '\\';
-	private HashMap endChars; 
+	private List<Character> endChars;
+	//private HashMap endChars; 
 	
 	
 	public TexSpecialCharRule(IToken token){
@@ -39,45 +43,45 @@ public class TexSpecialCharRule implements IPredicateRule {
 	 * character afrer '\'-character.
 	 */
 	private void initChars(){
-		this.endChars = new HashMap();
-		endChars.put(new Character('\\'), new Object());
-		endChars.put(new Character('_'), new Object());
-		endChars.put(new Character('$'), new Object());
-		endChars.put(new Character(' '), new Object());
-		endChars.put(new Character('\n'), new Object());
-		endChars.put(new Character('\t'), new Object());
-		endChars.put(new Character('\r'), new Object());
-		endChars.put(new Character('{'), new Object());
-		endChars.put(new Character('}'), new Object());
-		endChars.put(new Character('['), new Object());
-		endChars.put(new Character(']'), new Object());
-		endChars.put(new Character('!'), new Object());
-		endChars.put(new Character('.'), new Object());
-		endChars.put(new Character(','), new Object());
-		endChars.put(new Character('?'), new Object());
-		endChars.put(new Character('"'), new Object());
-		endChars.put(new Character('£'), new Object());
-		endChars.put(new Character('%'), new Object());
-		endChars.put(new Character('^'), new Object());
-		endChars.put(new Character('&'), new Object());
-		endChars.put(new Character('*'), new Object());
-		endChars.put(new Character(':'), new Object());
-		endChars.put(new Character(';'), new Object());
-		endChars.put(new Character('@'), new Object());
-		endChars.put(new Character('\''), new Object());
-		endChars.put(new Character('#'), new Object());
-		endChars.put(new Character('~'), new Object());
-		endChars.put(new Character('/'), new Object());
-		//endChars.put(new Character('-'), new Object());
-		endChars.put(new Character('+'), new Object());
-		endChars.put(new Character('|'), new Object());
-		endChars.put(new Character('<'), new Object());
-		endChars.put(new Character('>'), new Object());
-		endChars.put(new Character('('), new Object());
-		endChars.put(new Character(')'), new Object());
-		endChars.put(new Character('='), new Object());
-		endChars.put(new Character(((char)65535)), new Object());
-		
+	    this.endChars = new ArrayList<Character>();
+	    endChars.add('\\');	        
+	    endChars.add('_');
+	    endChars.add('$');
+	    endChars.add(' ');
+	    endChars.add('\n');
+	    endChars.add('\t');
+	    endChars.add('\r');
+	    endChars.add('{');
+	    endChars.add('}');
+	    //endChars.add('[');
+	    //endChars.add(']');
+	    endChars.add('!');
+	    endChars.add('.');
+	    endChars.add(',');
+	    endChars.add('?');
+	    endChars.add('"');
+	    endChars.add('£');
+	    endChars.add('%');
+	    endChars.add('^');
+	    endChars.add('&');
+	    endChars.add('*');
+	    endChars.add(':');
+	    endChars.add(';');
+	    endChars.add('@');
+	    endChars.add('\'');
+	    endChars.add('#');
+	    endChars.add('~');
+	    endChars.add('/');
+	    //endChars.add('-');
+	    endChars.add('+');
+	    endChars.add('|');
+	    endChars.add('<');
+	    endChars.add('>');
+	    //endChars.add('(');
+	    //endChars.add(')');
+	    endChars.add('=');
+	    endChars.add((char)65535);
+	    Collections.sort(endChars);
 	}
 	
 	/**  
@@ -119,9 +123,8 @@ public class TexSpecialCharRule implements IPredicateRule {
 	 */
 	public IToken evaluate(ICharacterScanner scanner) {
 		int c= scanner.read();
-		if(c == startChar){
-			if (evaluateNext(scanner))
-				return successToken;
+		if (c == startChar){
+			if (evaluateNext(scanner)) return successToken;
 		}
 		scanner.unread();
 		return Token.UNDEFINED;
@@ -137,9 +140,9 @@ public class TexSpecialCharRule implements IPredicateRule {
 		int c = scanner.read();
 		
 		if(c != ICharacterScanner.EOF){
-			if(endChars.containsKey(new Character((char)c))){
-				return true;
-			}
+		    if (Collections.binarySearch(endChars, (char)c) >= 0) {
+		        return true;
+		    }
 			else{
 				scanner.unread();
 			}

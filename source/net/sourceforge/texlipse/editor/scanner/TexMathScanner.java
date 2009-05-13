@@ -31,7 +31,7 @@ import org.eclipse.jface.text.rules.WordRule;
  * It uses defined rules to detect sequences and it returns the
  * specified token that satisfies a rule. The token defines how the
  * characters are presented.
- *  @see net.sourceforge.texlipse.editor.TexPartitionScanner
+ *  @see net.sourceforge.texlipse.editor.partitioner.FastLaTeXPartitionScanner
  *  @author Antti Pirinen
  *  @author Boris von Loesch
  */ 
@@ -70,14 +70,14 @@ public class TexMathScanner extends RuleBasedScanner {
         List<IRule> rules = new ArrayList<IRule>();
         
         rules.add(new WhitespaceRule(new WhitespaceDetector()));
-        rules.add(new SingleLineRule("\\%", " ", specialCharToken));
+        rules.add(new TexSpecialCharRule(specialCharToken));
+        //rules.add(new SingleLineRule("\\%", " ", specialCharToken));
         rules.add(new EndOfLineRule("%", commentToken));
-        rules.add(new TexEnvironmentRule("comment", commentToken));
+        /*rules.add(new TexEnvironmentRule("comment", commentToken));
         rules.add(new SingleLineRule("\\[", " ", defaultToken));
         rules.add(new SingleLineRule("\\]", " ", defaultToken));
         rules.add(new SingleLineRule("\\(", " ", defaultToken));
-        rules.add(new SingleLineRule("\\)", " ", defaultToken));
-        rules.add(new TexSpecialCharRule(specialCharToken));
+        rules.add(new SingleLineRule("\\)", " ", defaultToken));*/
         rules.add(new WordRule(new TexWord(), commandToken));
         
         IRule[] result = new IRule[rules.size()];

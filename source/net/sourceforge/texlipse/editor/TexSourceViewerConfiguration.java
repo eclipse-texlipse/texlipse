@@ -10,6 +10,7 @@
 package net.sourceforge.texlipse.editor;
 import net.sourceforge.texlipse.TexlipsePlugin;
 import net.sourceforge.texlipse.editor.hover.TexHover;
+import net.sourceforge.texlipse.editor.partitioner.FastLaTeXPartitionScanner;
 import net.sourceforge.texlipse.editor.scanner.TexCommentScanner;
 import net.sourceforge.texlipse.editor.scanner.TexMathScanner;
 import net.sourceforge.texlipse.editor.scanner.TexScanner;
@@ -168,13 +169,7 @@ public class TexSourceViewerConfiguration extends TextSourceViewerConfiguration 
      * @return 				a new String[] array of content types.
      */
     public String[] getConfiguredContentTypes(ISourceViewer sourceViewer) {
-        return new String[] {
-                IDocument.DEFAULT_CONTENT_TYPE,
-                TexPartitionScanner.TEX_MATH,
-                TexPartitionScanner.TEX_CURLY_BRACKETS,
-                TexPartitionScanner.TEX_SQUARE_BRACKETS,
-                TexPartitionScanner.TEX_COMMENT
-        };
+        return FastLaTeXPartitionScanner.TEX_PARTITION_TYPES;
     }
     
     /* (non-Javadoc)
@@ -195,9 +190,9 @@ public class TexSourceViewerConfiguration extends TextSourceViewerConfiguration 
 
         assistant.setContentAssistProcessor(tcp, IDocument.DEFAULT_CONTENT_TYPE);
         //assistant.setContentAssistProcessor(tcp, TexPartitionScanner.TEX_MATH);
-        assistant.setContentAssistProcessor(tmcp, TexPartitionScanner.TEX_MATH);
-        assistant.setContentAssistProcessor(tcp, TexPartitionScanner.TEX_CURLY_BRACKETS);
-        assistant.setContentAssistProcessor(tcp, TexPartitionScanner.TEX_SQUARE_BRACKETS);
+        assistant.setContentAssistProcessor(tmcp, FastLaTeXPartitionScanner.TEX_MATH);
+        assistant.setContentAssistProcessor(tcp, FastLaTeXPartitionScanner.TEX_CURLY_BRACKETS);
+        assistant.setContentAssistProcessor(tcp, FastLaTeXPartitionScanner.TEX_SQUARE_BRACKETS);
 
         
         assistant.enableAutoActivation(TexlipsePlugin.getDefault().getPreferenceStore().getBoolean(TexlipseProperties.TEX_COMPLETION));
@@ -218,16 +213,16 @@ public class TexSourceViewerConfiguration extends TextSourceViewerConfiguration 
         DefaultDamagerRepairer dr = null;
         
         dr = new DefaultDamagerRepairer(getTexVerbatimScanner());
-        reconciler.setDamager(dr, TexPartitionScanner.TEX_VERBATIM);
-        reconciler.setRepairer(dr, TexPartitionScanner.TEX_VERBATIM);
+        reconciler.setDamager(dr, FastLaTeXPartitionScanner.TEX_VERBATIM);
+        reconciler.setRepairer(dr, FastLaTeXPartitionScanner.TEX_VERBATIM);
 
         dr = new DefaultDamagerRepairer(getTeXMathScanner());
-        reconciler.setDamager(dr, TexPartitionScanner.TEX_MATH);
-        reconciler.setRepairer(dr, TexPartitionScanner.TEX_MATH);
+        reconciler.setDamager(dr, FastLaTeXPartitionScanner.TEX_MATH);
+        reconciler.setRepairer(dr, FastLaTeXPartitionScanner.TEX_MATH);
             
         dr = new DefaultDamagerRepairer(getTexCommentScanner());
-        reconciler.setDamager(dr, TexPartitionScanner.TEX_COMMENT);
-        reconciler.setRepairer(dr, TexPartitionScanner.TEX_COMMENT);
+        reconciler.setDamager(dr, FastLaTeXPartitionScanner.TEX_COMMENT);
+        reconciler.setRepairer(dr, FastLaTeXPartitionScanner.TEX_COMMENT);
         
         dr = new DefaultDamagerRepairer(getTexScanner());
         reconciler.setDamager(dr, IDocument.DEFAULT_CONTENT_TYPE);

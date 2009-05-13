@@ -33,7 +33,7 @@ import org.eclipse.jface.text.rules.WordRule;
  * specified token that satisfies a rule. The token defines how the
  * characters are presented.
  * 
- * @see net.sourceforge.texlipse.editor.TexPartitionScanner
+ * @see net.sourceforge.texlipse.editor.partitioner.FastLaTeXPartitionScanner
  * @author Antti Pirinen
  */
 public class TexScanner extends RuleBasedScanner {
@@ -77,7 +77,7 @@ public class TexScanner extends RuleBasedScanner {
                 null,
                 manager.getStyle(ColorManager.TEX_SPECIAL_STYLE)));
         
-        List rules = new ArrayList();
+        List<IRule> rules = new ArrayList<IRule>();
         rules.add(new TexSpecialCharRule(specialCharToken));
         rules.add(new WordRule(new TexWord(), commandToken));
         rules.add(new NumberRule(numberToken));

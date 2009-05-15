@@ -53,7 +53,7 @@ public class LatexLexer extends Lexer {
     
     private int vline, vpos;
     
-    private HashSet defCommands;
+    private HashSet<String> defCommands;
     private boolean commandDef;
     
     /**
@@ -63,7 +63,7 @@ public class LatexLexer extends Lexer {
      */
     public LatexLexer(PushbackReader in) {
         super(in);
-        defCommands = new HashSet();
+        defCommands = new HashSet<String>();
         commandDef = false;
     }
     
@@ -181,12 +181,6 @@ public class LatexLexer extends Lexer {
                         startChar = '\0';
                         argStart = null;
                     }
-                }
-                token = null;
-            } else if (token instanceof TWhitespace) {
-                if (argStart == null) {
-                    throw new LexerException("[" + token.getLine() + 
-                            "," + token.getPos() + "] Terminator for verb can't be whitespace");
                 }
                 token = null;
             } else if (token instanceof EOF) {

@@ -300,6 +300,11 @@ public class FastLaTeXPartitionScanner implements IPartitionTokenScanner {
         while (true) {
             int ch = fScanner.read();
             offsetEnd++;
+            if (ch == '%') {
+                offsetEnd += ignoreComment();
+                ch = fScanner.read();
+                offsetEnd++;
+            }
             if (ch == '\\') {
                 boolean isEnv = true;
                 for (int i=0; i<END.length(); i++) {

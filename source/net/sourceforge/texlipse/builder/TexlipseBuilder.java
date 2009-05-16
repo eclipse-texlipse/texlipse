@@ -61,6 +61,9 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
 
     // minimum number of characters that a valid latex document can have
     private static final int validDocumentLimit = 10;
+    
+    //Put this in your document to prevent it from building
+    private static final String NO_PARTIAL_BUILD = "%##noBuild";
 
     /**
      * Build the project.
@@ -224,7 +227,12 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
         }
 
         IFile file = project.getFile(res.getProjectRelativePath());
-        if (resourceName.equals(TexlipseProperties.getProjectProperty(project, TexlipseProperties.MAINFILE_PROPERTY))
+        String content = doc.get();
+        if (content.indexOf(NO_PARTIAL_BUILD) >= 0) {
+            //Do not build this file or anything else
+            return;
+        }
+        else if (resourceName.equals(TexlipseProperties.getProjectProperty(project, TexlipseProperties.MAINFILE_PROPERTY))
                 || (!ext.equals("tex") && !ext.equals("ltx"))) {
 
             // main file can't be built partially
@@ -232,8 +240,9 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
             TexlipseProperties.setSessionProperty(project, TexlipseProperties.PARTIAL_BUILD_FILE, null);
         	fullBuild(monitor);
         	return;
-        } else if (LatexParserUtils.findCommand(doc.get(), "\\documentclass", 0) != -1
-                || LatexParserUtils.findCommand(doc.get(), "\\documentstyle", 0) != -1) {
+        } else if (LatexParserUtils.findCommand(content, "\\documentclass", 0) != -1
+                || LatexParserUtils.findCommand(content, "\\documentstyle", 0) != -1
+                || LatexParserUtils.findBeginEnvironment(content, "document", 0) != null) {
             // A complete tex file (just build it)
             TexlipseProperties.setSessionProperty(project, TexlipseProperties.PARTIAL_BUILD_FILE, file);
             buildPartialFile(file, monitor);
@@ -282,7 +291,7 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
 
         // generate the file contents
         //StringBuffer sb = readFile(file.getContents(), monitor);
-        StringBuffer sb = new StringBuffer ("\\include{");
+        StringBuilder sb = new StringBuilder ("\\include{");
         String name = ViewerManager.resolveRelativePath(TexlipseProperties.getProjectSourceDir(project).getProjectRelativePath(), 
                 file.getProjectRelativePath());
         name = name.substring(0, name.lastIndexOf('.') + 1);
@@ -296,7 +305,7 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
             char c = name.charAt(i);
             if (c == File.separatorChar)
                 sb.append('/');
-            if (c == ' ') {
+            else if (c == ' ') {
                 sb.append("\\space ");
             }
             else

@@ -685,8 +685,12 @@ public class TexDocumentModel implements IDocumentListener {
         	        else if (filepath.length() > 0) {
         	            //Create a link to resource
                         IPath p = new Path(filepath);
-                        IFile f = project.getFile(path+name);
-                        if (f != null) {
+                        if (name.indexOf('/') >= 0) {
+                            //Remove path from name
+                            name = name.substring(name.lastIndexOf('/') + 1);
+                        }
+                        IFile f = project.getFile(path + name);
+                        if (f != null && !f.exists()) {
                             f.createLink(p, IResource.NONE, null);
                         }
         	        }

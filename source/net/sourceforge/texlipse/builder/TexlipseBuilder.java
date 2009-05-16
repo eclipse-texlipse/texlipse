@@ -870,11 +870,14 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
 			if (current instanceof IFolder) {
 				// We are moving a directory
 				IFolder srcFolder = (IFolder) current;
-				IPath destinationPath = destination.getFullPath().append(srcFolder.getName());
-				destinationPath = destinationPath.removeFirstSegments(destinationPath.segmentCount() - 1);
-				IFolder destFolder = destination.getFolder(destinationPath);
+				if (!current.equals(destination)) {
+				    //Do not copy tmp folder
+				    IPath destinationPath = destination.getFullPath().append(srcFolder.getName());
+				    destinationPath = destinationPath.removeFirstSegments(destinationPath.segmentCount() - 1);
+				    IFolder destFolder = destination.getFolder(destinationPath);
 
-				recursiveTempMove(srcFolder, destFolder, createFolders, ext, format, monitor);
+				    recursiveTempMove(srcFolder, destFolder, createFolders, ext, format, monitor);
+				}
 			} else {
 				// We are moving a file
 				if (isLatexTempFile(current.getName(), ext, format)) {

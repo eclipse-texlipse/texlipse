@@ -372,6 +372,10 @@ public class LatexRunner extends AbstractProgramRunner {
         int i = parsingStack.size()-1;
         while (i >= 0) {
             String fileName = parsingStack.get(i).substring(1);
+            //Remove "
+            if (fileName.startsWith("\"") && fileName.endsWith("\"")) {
+                fileName = fileName.substring(1, fileName.length() - 1);
+            }
             if (isValidName(fileName)) return fileName;
             i--;
         }

@@ -36,6 +36,7 @@ public class FastLaTeXPartitionScanner implements IPartitionTokenScanner {
     private static final String BEGIN = "begin";
     private static final String END = "end";
     private static final String VERB = "verb";
+    private static final String LSTINLINE = "lstinline";
     
     /** The scanner. */
     private final BufferedDocumentScanner fScanner= new BufferedDocumentScanner(1000);    // faster implementation
@@ -105,7 +106,7 @@ public class FastLaTeXPartitionScanner implements IPartitionTokenScanner {
          switch (ch) {
          case '\\':
              int c1 = fScanner.read();
-             if (c1 != 'b' && c1 != '[' && c1 != '(' && c1 != 'v') {
+             if (c1 != 'b' && c1 != '[' && c1 != '(' && c1 != 'v' && c1 != 'l') {
                  fTokenLength+=2;
                  return fTokens[TEX];
              }
@@ -144,7 +145,7 @@ public class FastLaTeXPartitionScanner implements IPartitionTokenScanner {
              else if (c1 == 'b') {
                  return checkForEnv();
              }
-             else if (c1 == 'v') {
+             else if (c1 == 'v' || c1 == 'l') {
                  return checkForVerb();
              }
              else {
@@ -226,17 +227,28 @@ public class FastLaTeXPartitionScanner implements IPartitionTokenScanner {
         return r;
     }
     
-    private IToken checkForVerb() {
-        for (int i=1; i<VERB.length(); i++) {
+    private int checkForCommand(String command, int start) {
+        for (int i=start; i<command.length(); i++) {
             int ch = fScanner.read();
-            if (VERB.charAt(i) != ch) {
-                unReadScanner(i);
+            if (command.charAt(i) != ch) {
+                unReadScanner(i - start + 1);
+                return 0;
+            }
+        }
+        return command.length() - start;
+    }
+    
+    private IToken checkForVerb() {
+        int o = checkForCommand(VERB, 1);
+        if (o == 0) {
+            o = checkForCommand(LSTINLINE, 1);
+            if (o == 0) {
                 fTokenLength += 2;
                 return fTokens[TEX];
             }
         }
         int offsetEnd = fTokenOffset;
-        offsetEnd += 5;
+        offsetEnd += o + 2;
         //verbch is the termination character
         int verbch = fScanner.read();
         offsetEnd++;
@@ -256,13 +268,10 @@ public class FastLaTeXPartitionScanner implements IPartitionTokenScanner {
     }
     
     private IToken checkForEnv() {
-        for (int i=1; i<BEGIN.length(); i++) {
-            int ch = fScanner.read();
-            if (BEGIN.charAt(i) != ch) {
-                unReadScanner(i);
-                fTokenLength += 2;
-                return fTokens[TEX];
-            }
+        int o = checkForCommand(BEGIN, 1);
+        if (o == 0) {
+            fTokenLength += 2;
+            return fTokens[TEX];
         }
         int offsetEnd = fTokenOffset;
         offsetEnd += 6;

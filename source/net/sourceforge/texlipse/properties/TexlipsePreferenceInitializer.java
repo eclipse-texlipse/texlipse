@@ -139,5 +139,7 @@ public class TexlipsePreferenceInitializer extends
         pref.setDefault(TexlipseProperties.OUTLINE_SUBSUBSECTION, true);
         pref.setDefault(TexlipseProperties.OUTLINE_PARAGRAPH, true);
         pref.setDefault(TexlipseProperties.OUTLINE_ENVS, "list,enumerate,itemize,figure,table,tabular");
+        
+        pref.setDefault(TexlipseProperties.ECLIPSE_BUILDIN_SPELLCHECKER, false);
     }
 }

@@ -165,6 +165,7 @@ public class TexlipseProperties {
     public static final String SESSION_ATTRIBUTE_VIEWER = "active.viewer";
     public static final String SESSION_PROJECT_FULLOUTLINE = "project.fullTexParser";
     
+    public static final String ECLIPSE_BUILDIN_SPELLCHECKER = "eclipseBuildInSpellChecker";
     /**
        * A named preference that controls whether bracket matching highlighting is turned on or off.
        * <p>

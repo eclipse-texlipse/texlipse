@@ -76,6 +76,8 @@ public class TexSourceViewerConfiguration extends TextSourceViewerConfiguration 
     public IReconciler getReconciler(ISourceViewer sourceViewer) {
         if (fPreferenceStore == null || !fPreferenceStore.getBoolean(SpellingService.PREFERENCE_SPELLING_ENABLED))
             return null;
+        if (!TexlipsePlugin.getDefault().getPreferenceStore().getBoolean(TexlipseProperties.ECLIPSE_BUILDIN_SPELLCHECKER))
+            return null;
         
         SpellingService spellingService= EditorsUI.getSpellingService();
         if (spellingService.getActiveSpellingEngineDescriptor(fPreferenceStore) == null)

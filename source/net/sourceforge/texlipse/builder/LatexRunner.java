@@ -33,6 +33,7 @@ import org.eclipse.core.resources.IResource;
 public class LatexRunner extends AbstractProgramRunner {
     
     private Stack<String> parsingStack;
+    private boolean alreadyShowError;
     
     /**
      * Create a new ProgramRunner.
@@ -127,9 +128,11 @@ public class LatexRunner extends AbstractProgramRunner {
         parsingStack.clear();
         boolean errorsFound = false;
         boolean citeNotfound = false;
+        alreadyShowError = false;
         StringTokenizer st = new StringTokenizer(output, "\r\n");
 
         final Pattern LATEXERROR = Pattern.compile("^! LaTeX Error: (.*)$");
+        final Pattern LATEXCERROR = Pattern.compile("^(\\w+?\\.\\w{3}):(\\d+): (.+)$");
         final Pattern TEXERROR = Pattern.compile("^!\\s+(.*)$");
         final Pattern FULLBOX = Pattern.compile("^(?:Over|Under)full \\\\[hv]box .* at lines? (\\d+)-?-?(\\d+)?");
         final Pattern WARNING = Pattern.compile("^.+[Ww]arning.*: (.*)$");
@@ -148,7 +151,18 @@ public class LatexRunner extends AbstractProgramRunner {
         while (st.hasMoreTokens()) {
             line = st.nextToken();
             line = line.replaceAll(" {2,}", " ").trim();
-            Matcher m = TEXERROR.matcher(line);
+            Matcher m = LATEXCERROR.matcher(line);
+            if (m.matches()) {
+                //C-Style LaTeX error
+                addProblemMarker(m.group(3), m.group(1), Integer.parseInt(m.group(2)), IMarker.SEVERITY_ERROR, resource, false);
+                //Maybe parsingStack is empty...
+                if (parsingStack.isEmpty()) {
+                    //Add the file to the stack
+                    parsingStack.push("(" + m.group(1));
+                }
+                continue;
+            }
+            m = TEXERROR.matcher(line);
             if (m.matches() && line.toLowerCase().indexOf("warning") == -1) {
                 if (hasProblem) {
                     // We have a not reported problem
@@ -334,7 +348,8 @@ public class LatexRunner extends AbstractProgramRunner {
                 i = j - 1;
             } else if (logLine.charAt(i) == ')' && !parsingStack.isEmpty()) {
                 parsingStack.pop();
-            } else if (logLine.charAt(i) == ')') {
+            } else if (logLine.charAt(i) == ')' && !alreadyShowError) {
+                alreadyShowError = true;
                 // There was a parsing error, this is very rare
                 TexlipsePlugin.log("Error while parsing the LaTeX output. " +
                         "Please consult the console output", null);

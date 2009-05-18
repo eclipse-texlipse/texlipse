@@ -916,6 +916,14 @@ ${cursor}
                label="&amp;Open Declaration"
                menubarPath="navigate/open.ext"
                style="push"/>
+         <action
+               class="net.sourceforge.texlipse.actions.RunBibTeXOnNextBuildAction"
+               icon="icons/bibfile.gif"
+               id="net.sourceforge.texlipse.action1"
+               label="Run BibTeX on next build"
+               menubarPath="net.sourceforge.texlipse.menus.latex/latexGroup"
+               style="push">
+         </action>
       </editorContribution>
    </extension>
    <extension

@@ -132,7 +132,7 @@ public class LatexRunner extends AbstractProgramRunner {
         StringTokenizer st = new StringTokenizer(output, "\r\n");
 
         final Pattern LATEXERROR = Pattern.compile("^! LaTeX Error: (.*)$");
-        final Pattern LATEXCERROR = Pattern.compile("^(\\w+?\\.\\w{3}):(\\d+): (.+)$");
+        final Pattern LATEXCERROR = Pattern.compile("^(.+?\\.\\w{3}):(\\d+): (.+)$");
         final Pattern TEXERROR = Pattern.compile("^!\\s+(.*)$");
         final Pattern FULLBOX = Pattern.compile("^(?:Over|Under)full \\\\[hv]box .* at lines? (\\d+)-?-?(\\d+)?");
         final Pattern WARNING = Pattern.compile("^.+[Ww]arning.*: (.*)$");

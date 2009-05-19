@@ -155,7 +155,9 @@ public class BibtexRunner extends AbstractProgramRunner {
         if (sourceDir == null) {
             sourceDir = project;
         }
-        IResource bibResource = null;
+        //Initialize bibResource with origResource so that all errors are at least
+        //displayed even if no valid bib file was found
+        IResource bibResource = origResource;
         
         boolean errorsFound = false;
         StringTokenizer st = new StringTokenizer(output, "\r\n");

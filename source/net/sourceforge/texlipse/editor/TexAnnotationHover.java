@@ -10,17 +10,18 @@
 package net.sourceforge.texlipse.editor;
 
 import java.util.Iterator;
-import java.util.Vector;
+import java.util.LinkedList;
+import java.util.List;
 
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
-import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.Position;
+import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.IAnnotationHover;
+import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.ISourceViewer;
-import org.eclipse.ui.IEditorInput;
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IFileEditorInput;
-import org.eclipse.ui.texteditor.MarkerUtilities;
+import org.eclipse.ui.texteditor.MarkerAnnotation;
 
 /**
  * Creates a hovering text for error annotations by reading
@@ -31,30 +32,20 @@ import org.eclipse.ui.texteditor.MarkerUtilities;
  */
 public class TexAnnotationHover implements IAnnotationHover {
     
-    private IEditorPart editor;
-    
     /**
-     * Create a new hover text provider.
-     * @param edi the editor of the file
-     */
-    public TexAnnotationHover(IEditorPart edi) {
-        editor = edi;
-    }
-
-    /**
-     * Creates a message out of the marker Vector
+     * Creates a message out of the marker list
      * @param markers
      * @return
      */
-    private String getMessage(Vector markers) {
+    private String getMessage(List<String> markers) {
         if (markers.size() == 1) {
             return (String) markers.get(0);
         } else {
-            StringBuffer out = new StringBuffer(
+            StringBuilder out = new StringBuilder(
                     "There are several problems at this line:");
-            for (Iterator iter = markers.iterator(); iter.hasNext();) {
-                String element = (String) iter.next();
-                out.append("\n");
+            for (Iterator<String> iter = markers.iterator(); iter.hasNext();) {
+                String element = iter.next();
+                out.append(System.getProperty("line.separator"));
                 out.append(" -");
                 out.append(element);
             }
@@ -70,25 +61,40 @@ public class TexAnnotationHover implements IAnnotationHover {
      * @return the message of the marker of null, if no marker at the specified line
      */
     public String getHoverInfo(ISourceViewer sourceViewer, int lineNumber) {
-        IEditorInput input = editor.getEditorInput();
-        if (input instanceof IFileEditorInput) {
-            IFile file = ((IFileEditorInput)input).getFile();
-            try {
-                // Vector of Strings
-                Vector lineMarkers = null;
-                IMarker[] list = file.findMarkers(IMarker.PROBLEM, true, IFile.DEPTH_ONE);
-                for (int i = 0; i < list.length; i++) {
-                    if (MarkerUtilities.getLineNumber(list[i]) == lineNumber + 1) {
-                        if (lineMarkers == null)
-                            lineMarkers = new Vector(1);
-                        lineMarkers.add(MarkerUtilities.getMessage(list[i]));
-                    }
+        IDocument document= sourceViewer.getDocument();
+        IAnnotationModel model= sourceViewer.getAnnotationModel();
+        
+        if (model == null)
+            return null;
+        
+        List<String> lineMarkers = null;
+
+        Iterator<Annotation> e= model.getAnnotationIterator();
+        while (e.hasNext()) {
+            Annotation o= e.next();
+            if (o instanceof MarkerAnnotation) {
+                MarkerAnnotation a= (MarkerAnnotation) o;
+                if (isRulerLine(model.getPosition(a), document, lineNumber)) {
+                    if (lineMarkers == null)
+                        lineMarkers = new LinkedList<String>();
+                    lineMarkers.add(a.getMarker().getAttribute(IMarker.MESSAGE, null));
                 }
-                if (lineMarkers != null)
-                    return getMessage(lineMarkers);
-            } catch (CoreException e) {
             }
         }
+        if (lineMarkers != null)
+            return getMessage(lineMarkers);
+        
         return null;
     }
+    
+    private boolean isRulerLine(Position position, IDocument document, int line) {
+        if (position.getOffset() > -1 && position.getLength() > -1) {
+            try {
+                return line == document.getLineOfOffset(position.getOffset());
+            } catch (BadLocationException x) {
+            }
+        }
+        return false;
+    }
+
 }

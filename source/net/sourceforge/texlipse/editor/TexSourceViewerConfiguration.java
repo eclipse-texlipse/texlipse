@@ -94,11 +94,11 @@ public class TexSourceViewerConfiguration extends TextSourceViewerConfiguration 
      * 
      * @param te The editor that this configuration is associated to
      */
-    public TexSourceViewerConfiguration(TexEditor te) {        
+    public TexSourceViewerConfiguration(TexEditor editor) {        
         super(EditorsUI.getPreferenceStore());
-        this.editor = te;
+        this.editor = editor;
         this.colorManager = new ColorManager();
-        this.annotationHover = new TexAnnotationHover(editor);
+        this.annotationHover = new TexAnnotationHover();
 
         // Adds a listener for changing content assistant properties if
         // these are changed in the preferences
@@ -132,18 +132,11 @@ public class TexSourceViewerConfiguration extends TextSourceViewerConfiguration 
         return annotationHover;
     }
     
-    // the deprecated interface must be used as a return value, since the extended class hasn't been
-    // updated to reflect the change
-//    public IAutoIndentStrategy getAutoIndentStrategy(ISourceViewer sourceViewer, String contentType) {
-//        return new TexAutoIndentStrategy(editor.getPreferences());
-//    }
-    
     
     /* (non-Javadoc)
      * @see org.eclipse.jface.text.source.SourceViewerConfiguration#getAutoEditStrategies(org.eclipse.jface.text.source.ISourceViewer, java.lang.String)
      */
     public IAutoEditStrategy[] getAutoEditStrategies(ISourceViewer sourceViewer, String contentType) {
-        // TODO Auto-generated method stub
         //return super.getAutoEditStrategies(sourceViewer, contentType);
         if (autoIndentStrategy == null) {
             autoIndentStrategy = new TexAutoIndentStrategy(editor.getPreferences());
@@ -241,7 +234,7 @@ public class TexSourceViewerConfiguration extends TextSourceViewerConfiguration 
      */
     protected TexScanner getTexScanner() {
         if (scanner == null) {
-            scanner = new TexScanner(colorManager, editor);
+            scanner = new TexScanner(colorManager);
             scanner.setDefaultReturnToken(
                     new Token(
                             new TextAttribute(
@@ -259,7 +252,7 @@ public class TexSourceViewerConfiguration extends TextSourceViewerConfiguration 
      */
     protected TexMathScanner getTeXMathScanner() {
         if (mathScanner == null) {
-            mathScanner = new TexMathScanner(colorManager, editor);
+            mathScanner = new TexMathScanner(colorManager);
             mathScanner.setDefaultReturnToken(
                     new Token(
                             new TextAttribute(
@@ -276,7 +269,7 @@ public class TexSourceViewerConfiguration extends TextSourceViewerConfiguration 
      */
     protected TexCommentScanner getTexCommentScanner() {
         if (commentScanner == null) {
-            commentScanner = new TexCommentScanner(colorManager,editor);
+            commentScanner = new TexCommentScanner(colorManager);
             commentScanner.setDefaultReturnToken(
                     new Token(
                             new TextAttribute(

@@ -46,7 +46,7 @@ public class BibSourceViewerConfiguration extends SourceViewerConfiguration {
     public BibSourceViewerConfiguration(BibEditor te) {
         super();
         this.editor = te;
-        this.annotationHover = new TexAnnotationHover(editor);
+        this.annotationHover = new TexAnnotationHover();
         
         // Adds a listener for changing content assistan properties if
         // these are changed in the preferences

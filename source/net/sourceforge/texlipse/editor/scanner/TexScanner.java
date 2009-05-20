@@ -13,7 +13,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.sourceforge.texlipse.editor.ColorManager;
-import net.sourceforge.texlipse.editor.TexEditor;
 
 import org.eclipse.jface.text.TextAttribute;
 import org.eclipse.jface.text.rules.EndOfLineRule;
@@ -41,9 +40,8 @@ public class TexScanner extends RuleBasedScanner {
     /**
      * A default constructor.
      * @param manager
-     * @param editor
      */
-    public TexScanner(ColorManager manager, TexEditor editor) {
+    public TexScanner(ColorManager manager) {
         // A token that defines how to color numbers
         IToken numberToken = new Token(new TextAttribute(manager
                 .getColor(ColorManager.TEX_NUMBER),

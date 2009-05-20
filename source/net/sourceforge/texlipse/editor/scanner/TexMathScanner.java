@@ -13,14 +13,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.sourceforge.texlipse.editor.ColorManager;
-import net.sourceforge.texlipse.editor.TexEditor;
 
 import org.eclipse.jface.text.TextAttribute;
 import org.eclipse.jface.text.rules.EndOfLineRule;
 import org.eclipse.jface.text.rules.IRule;
 import org.eclipse.jface.text.rules.IToken;
 import org.eclipse.jface.text.rules.RuleBasedScanner;
-import org.eclipse.jface.text.rules.SingleLineRule;
 import org.eclipse.jface.text.rules.Token;
 import org.eclipse.jface.text.rules.WhitespaceRule;
 import org.eclipse.jface.text.rules.WordRule;
@@ -40,9 +38,8 @@ public class TexMathScanner extends RuleBasedScanner {
     /**
      * A default constructor. 
      * @param manager
-     * @param editor
      */
-    public TexMathScanner(ColorManager manager, TexEditor editor) {
+    public TexMathScanner(ColorManager manager) {
         IToken defaultToken = new Token(
                 new TextAttribute(
                         manager.getColor(ColorManager.EQUATION),

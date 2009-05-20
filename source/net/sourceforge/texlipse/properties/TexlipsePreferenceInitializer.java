@@ -115,6 +115,7 @@ public class TexlipsePreferenceInitializer extends
         
         pref.setDefault(TexlipseProperties.INDENTATION, true);
         pref.setDefault(TexlipseProperties.INDENTATION_LEVEL, 2);
+        pref.setDefault(TexlipseProperties.INDENTATION_TABS, false);
         pref.setDefault(TexlipseProperties.INDENTATION_ENVS, "list,enumerate,itemize");
         pref.setDefault(TexlipseProperties.WORDWRAP_LENGTH, 80);
         pref.setDefault(TexlipseProperties.WORDWRAP_TYPE, TexlipseProperties.WORDWRAP_TYPE_HARD);

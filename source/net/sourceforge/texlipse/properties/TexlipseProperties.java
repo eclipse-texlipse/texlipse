@@ -16,6 +16,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 import net.sourceforge.texlipse.TexlipsePlugin;
@@ -93,6 +94,7 @@ public class TexlipseProperties {
 
     public static final String INDENTATION = "indent";
     public static final String INDENTATION_LEVEL = "indentLevel";
+    public static final String INDENTATION_TABS = "indentTabs";
     public static final String INDENTATION_ENVS = "indentEnvs";
      
     public static final String WORDWRAP_TYPE = "wrapType";
@@ -250,9 +252,9 @@ public class TexlipseProperties {
      * @return list of IResource objects representing the files under
      *         the given directory and its subdirectories
      */
-    public static ArrayList getAllMemberFiles(IContainer dir, String[] exts) {
+    public static List<IResource> getAllMemberFiles(IContainer dir, String[] exts) {
         
-        ArrayList list = new ArrayList();
+        List<IResource> list = new ArrayList<IResource>();
         
         IResource[] arr = null;
         try {
@@ -394,7 +396,7 @@ public class TexlipseProperties {
             return;
         }
         
-        setSessionProperty(project, SESSION_PROPERTIES_LOAD, new Long(System.currentTimeMillis()));
+        setSessionProperty(project, SESSION_PROPERTIES_LOAD, Long.valueOf(System.currentTimeMillis()));
         setProjectProperty(project, MAINFILE_PROPERTY, prop.getProperty(MAINFILE_PROPERTY, ""));
         setProjectProperty(project, OUTPUTFILE_PROPERTY, prop.getProperty(OUTPUTFILE_PROPERTY, ""));
         setProjectProperty(project, SOURCE_DIR_PROPERTY, prop.getProperty(SOURCE_DIR_PROPERTY, ""));

@@ -7,10 +7,8 @@ import net.sourceforge.texlipse.model.TexCommandEntry;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
-import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchActionConstants;
-import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.editors.text.TextEditorActionContributor;
 
 /**
@@ -65,7 +63,10 @@ public class TexEditorActionContributor extends TextEditorActionContributor {
      * 
      * @see org.eclipse.ui.part.EditorActionBarContributor#contributeToMenu(org.eclipse.jface.action.IMenuManager)
      */
+    @Override
     public void contributeToMenu(IMenuManager menuManager) {
+    	super.contributeToMenu(menuManager);
+    	
         //Add a new group to the navigation/goto menu
         IMenuManager gotoMenu = menuManager.findMenuUsingPath(IWorkbenchActionConstants.M_NAVIGATE+"/"+IWorkbenchActionConstants.GO_TO);
         if (gotoMenu != null) {
@@ -116,8 +117,10 @@ public class TexEditorActionContributor extends TextEditorActionContributor {
      * 
      * @see org.eclipse.ui.IEditorActionBarContributor#setActiveEditor(org.eclipse.ui.IEditorPart)
      */
+    @Override
     public void setActiveEditor(IEditorPart part) {
         super.setActiveEditor(part);
+        
         for (int i = 0; i < greekSmall.length; i++)
             greekSmall[i].setActiveEditor(part);
         for (int i = 0; i < greekCapital.length; i++)
@@ -132,12 +135,5 @@ public class TexEditorActionContributor extends TextEditorActionContributor {
             stdBraces[i].setActiveEditor(part);
         for (int i = 0; i < stdAccents.length; i++)
             stdAccents[i].setActiveEditor(part);
-    }
-
-    /*
-     * @see IEditorActionBarContributor#init(IActionBars, IWorkbenchPage)
-     */
-    public void init(IActionBars bars, IWorkbenchPage page) {
-        super.init(bars, page);
     }
 }

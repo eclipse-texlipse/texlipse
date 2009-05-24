@@ -139,7 +139,7 @@ public class TexSourceViewerConfiguration extends TextSourceViewerConfiguration 
     public IAutoEditStrategy[] getAutoEditStrategies(ISourceViewer sourceViewer, String contentType) {
         //return super.getAutoEditStrategies(sourceViewer, contentType);
         if (autoIndentStrategy == null) {
-            autoIndentStrategy = new TexAutoIndentStrategy(editor.getPreferences());
+            autoIndentStrategy = new TexAutoIndentStrategy();
         }
         return new IAutoEditStrategy[] {autoIndentStrategy};
     }

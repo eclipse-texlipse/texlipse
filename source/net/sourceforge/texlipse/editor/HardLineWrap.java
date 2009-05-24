@@ -89,6 +89,29 @@ public class HardLineWrap {
     }
     
     /**
+     * Finds the best position in the given String to make a line break
+     * @param line
+     * @param MAX_LENGTH
+     * @return
+     */
+    private static int getLineBreakPosition(String line, int MAX_LENGTH) {
+    	int offset = 0;
+    	//Ignore indentation
+    	while (offset < line.length() && (line.charAt(offset) == ' ' || line.charAt(offset) == '\t')) {
+    		offset++;
+    	}
+    	
+    	int breakOffset = -1;
+    	while (offset < line.length()) {
+    		if (offset >= MAX_LENGTH && breakOffset != -1) break;
+    		if (line.charAt(offset) == ' ' || line.charAt(offset) == '\t') {
+    			breakOffset = offset;
+    		}
+    		offset++;
+    	}
+    	return breakOffset;
+    }
+    /**
      * New line wrapping strategy.    
      * The actual wrapping method. Based on the <code>IDocument d</code>
      * and <code>DocumentCommand c</code> the method determines how the
@@ -120,7 +143,7 @@ public class HardLineWrap {
             if (trimEnd(line).length() + c.text.length() <= MAX_LENGTH) return; 
 
             
-            if (line.indexOf(' ') == -1) {
+            if (trimBegin(line).indexOf(' ') == -1) {
                 //There is no whitespace
                 return;
             }
@@ -166,16 +189,14 @@ public class HardLineWrap {
 
             c.length = length;
             
-            int breakpos = tools.getLastWSPosition(newLine, MAX_LENGTH);
-            if (breakpos == -1) {
-                breakpos = tools.getFirstWSPosition(newLine, MAX_LENGTH);
-            }
+            int breakpos = getLineBreakPosition(newLine, MAX_LENGTH);
+
             c.shiftsCaret = false;
             c.caretOffset = c.offset + c.text.length() + indent.length();
-            if (breakpos > cursorOnLine + c.text.length()){ 
+            if (breakpos >= cursorOnLine + c.text.length()){ 
                 c.caretOffset -= indent.length();
             }
-            if (breakpos <= cursorOnLine + c.text.length()){
+            if (breakpos < cursorOnLine + c.text.length()){
                 //Line delimiter - one white space
                 c.caretOffset += delim.length() - 1;
             }

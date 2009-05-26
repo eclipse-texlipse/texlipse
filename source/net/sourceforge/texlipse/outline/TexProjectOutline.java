@@ -21,7 +21,6 @@ import java.util.Set;
 import net.sourceforge.texlipse.TexlipsePlugin;
 import net.sourceforge.texlipse.model.MarkerHandler;
 import net.sourceforge.texlipse.model.OutlineNode;
-import net.sourceforge.texlipse.model.ReferenceContainer;
 import net.sourceforge.texlipse.model.TexProjectParser;
 import net.sourceforge.texlipse.properties.TexlipseProperties;
 
@@ -49,10 +48,9 @@ public class TexProjectOutline {
      * @param labels The labels of the project
      * @param bibs The bibliography of the project
      */
-    public TexProjectOutline(IProject currentProject,
-            ReferenceContainer labels, ReferenceContainer bibs) {
+    public TexProjectOutline(IProject currentProject) {
         this.currentProject = currentProject;
-        this.fileParser = new TexProjectParser(currentProject, labels, bibs);
+        this.fileParser = new TexProjectParser(currentProject);
     }
 
     /**
@@ -213,7 +211,7 @@ public class TexProjectOutline {
      *         lower than the given level
      */
     private OutlineNode getParentLevel(List<OutlineNode> children, int level) {
-        if (children.size() == 0) {
+        if (children == null || children.size() == 0) {
             return null;
         }
         OutlineNode lastNode = (OutlineNode) children.get(children.size() - 1);
@@ -257,8 +255,10 @@ public class TexProjectOutline {
      */
     private IFile resolveFile(String name, IFile referringFile, int lineNumber) {
         MarkerHandler marker = MarkerHandler.getInstance();
+        //Inclusions are always relative to the main file
+        IFile currentTexFile = TexlipseProperties.getProjectSourceFile(currentProject);
         
-        IFile newTexFile = fileParser.findIFile(name, referringFile);
+        IFile newTexFile = fileParser.findIFile(name, currentTexFile);
         if (newTexFile == null) {
 /*            marker.createErrorMarker(referringFile,
                     "Could not find file " + name,

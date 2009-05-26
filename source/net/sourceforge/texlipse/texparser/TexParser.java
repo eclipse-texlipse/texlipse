@@ -18,7 +18,6 @@ import java.util.List;
 import net.sourceforge.texlipse.model.DocumentReference;
 import net.sourceforge.texlipse.model.OutlineNode;
 import net.sourceforge.texlipse.model.ParseErrorMessage;
-import net.sourceforge.texlipse.model.ReferenceContainer;
 import net.sourceforge.texlipse.model.ReferenceEntry;
 import net.sourceforge.texlipse.model.TexCommandEntry;
 import net.sourceforge.texlipse.texparser.lexer.LexerException;
@@ -138,10 +137,8 @@ public class TexParser {
      * 
      * @throws IOException
      */
-    public void parseDocument(ReferenceContainer labels,
-            ReferenceContainer bibs,
-            boolean checkForMissingSections) throws IOException {
-        parseDocument(labels, bibs, inputDoc.get(), checkForMissingSections);
+    public void parseDocument(boolean checkForMissingSections) throws IOException {
+        parseDocument(inputDoc.get(), checkForMissingSections);
     }
     
     /**
@@ -149,10 +146,7 @@ public class TexParser {
      * 
      * @throws IOException
      */
-    public void parseDocument(ReferenceContainer labels,
-            ReferenceContainer bibs,
-            String input,
-            boolean checkForMissingSections) throws IOException {
+    public void parseDocument(String input, boolean checkForMissingSections) throws IOException {
         
         // remove trailing ws (this is because a discrepancy in the lexer's 
         // and IDocument's line counting for trailing whitespace)
@@ -168,9 +162,9 @@ public class TexParser {
                 OutlineNode on = new OutlineNode("Preamble",
                         OutlineNode.TYPE_PREAMBLE,
                         1, null);
-                lparser.parse(lexer, labels, bibs, on, checkForMissingSections);
+                lparser.parse(lexer, on, checkForMissingSections);
             } else {
-                lparser.parse(lexer, labels, bibs, checkForMissingSections);
+                lparser.parse(lexer, checkForMissingSections);
             }
             this.errors = lparser.getErrors();
             this.fatalErrors = lparser.isFatalErrors();
@@ -201,14 +195,14 @@ public class TexParser {
     /**
      * @return The labels <code>ArrayList<ReferenceEntry></code>
      */
-    public ArrayList<ReferenceEntry> getLabels() {
+    public List<ReferenceEntry> getLabels() {
         return lparser.getLabels();
     }
 
     /**
      * @return The cite-references
      */
-    public ArrayList<DocumentReference> getCites() {
+    public List<DocumentReference> getCites() {
         return lparser.getCites();
     }
     
@@ -255,9 +249,9 @@ public class TexParser {
     }
     
     /**
-     * @return Get the \ref -references that were invalid
+     * @return Get all \ref -references
      */
-    public ArrayList<DocumentReference> getRefs() {
+    public List<DocumentReference> getRefs() {
         return lparser.getRefs();
     }
     

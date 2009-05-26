@@ -96,7 +96,7 @@ public class TexDocumentModel implements IDocumentListener {
                 pollCancel(monitor);
                 
                 // parsing
-                ArrayList rootNodes;
+                ArrayList<OutlineNode> rootNodes;
                 try {
                     rootNodes = doParse(monitor);
                 } catch (TexDocumentParseException e1) {
@@ -146,7 +146,7 @@ public class TexDocumentModel implements IDocumentListener {
      */
     private class PostParseJob extends WorkbenchJob {
         
-        private ArrayList rootNodes;
+        private ArrayList<OutlineNode> rootNodes;
         private List<OutlineNode> fullOutlineNodes;
 
         /**
@@ -160,7 +160,7 @@ public class TexDocumentModel implements IDocumentListener {
         /**
          * @param rootNodes 
          */
-        public void setRootNodes(ArrayList rootNodes) {
+        public void setRootNodes(ArrayList<OutlineNode> rootNodes) {
             this.rootNodes = rootNodes;
         }
         
@@ -193,7 +193,7 @@ public class TexDocumentModel implements IDocumentListener {
                     pollCancel(monitor);
                     if (editor.getFullOutline() != null) {
                         //createOutlineInput(fullOutlineNodes, monitor);
-                        editor.getFullOutline().update(new TexOutlineInput(new ArrayList(fullOutlineNodes)));
+                        editor.getFullOutline().update(new TexOutlineInput(new ArrayList<OutlineNode>(fullOutlineNodes)));
                     }
                 }
 
@@ -400,7 +400,7 @@ public class TexDocumentModel implements IDocumentListener {
         if (projectSessionOutLine != null)
             projectOutline = (TexProjectOutline) projectSessionOutLine;
         else {
-            projectOutline = new TexProjectOutline(getCurrentProject(), labelContainer, bibContainer);
+            projectOutline = new TexProjectOutline(getCurrentProject());
             TexlipseProperties.setSessionProperty(project, TexlipseProperties.SESSION_PROJECT_FULLOUTLINE,
                     projectOutline);
         }
@@ -425,7 +425,7 @@ public class TexDocumentModel implements IDocumentListener {
         }
         
         try {
-            parser.parseDocument(labelContainer, bibContainer, sectionCheckEnabled);
+            parser.parseDocument(sectionCheckEnabled);
         } catch (IOException e) {
             TexlipsePlugin.log("Can't read file.", e);
             throw new TexDocumentParseException(e);
@@ -472,14 +472,28 @@ public class TexDocumentModel implements IDocumentListener {
         
         updateReferences(monitor);
         
-        ArrayList<DocumentReference> bibErrors = parser.getCites();
-        ArrayList<DocumentReference> refErrors = parser.getRefs();
-        if (bibErrors.size() > 0) {
-            marker.createReferencingErrorMarkers(editor, bibErrors);
+        List<DocumentReference> cites = parser.getCites();
+        List<DocumentReference> bibErrors = null;
+        for (DocumentReference cite : cites) {
+        	if (!bibContainer.binTest(cite.getKey())) {
+        		if (bibErrors == null) bibErrors = new ArrayList<DocumentReference>();
+        		bibErrors.add(cite);
+        	}
+		}
+        if (bibErrors != null) {
+        	marker.createReferencingErrorMarkers(editor, bibErrors);
         }
-        if (refErrors.size() > 0) {
-            labelContainer.removeFalseEntries(refErrors);
-            marker.createReferencingErrorMarkers(editor, refErrors);
+
+        List<DocumentReference> refs = parser.getRefs();
+        List<DocumentReference> refErrors = null;
+        for (DocumentReference ref : refs) {
+			if (!labelContainer.binTest(ref.getKey())) {
+				if (refErrors == null) refErrors = new ArrayList<DocumentReference>();
+				refErrors.add(ref);
+			}				
+		}
+        if (refErrors != null) {
+        	marker.createReferencingErrorMarkers(editor, refErrors);
         }
         
         return this.parser.getOutlineTree();
@@ -498,7 +512,7 @@ public class TexDocumentModel implements IDocumentListener {
      * @param rootNodes
      * @param monitor monitor for the job calling this method
      */
-    private void updateDocumentPositions(ArrayList rootNodes, IProgressMonitor monitor) {
+    private void updateDocumentPositions(List<OutlineNode> rootNodes, IProgressMonitor monitor) {
         TexOutlineInput newOutlineInput = new TexOutlineInput(rootNodes);
         
         IDocument document = editor.getDocumentProvider().getDocument(editor.getEditorInput());
@@ -639,7 +653,10 @@ public class TexDocumentModel implements IDocumentListener {
         IProject project = getCurrentProject();
         if (project == null) return;
         if (bibNames == null) {
-            bibNames = new String[0];
+        	//No BibTeX reference found, do not update Bibs, because then we lost bibliography
+        	//if we have an include file.
+        	//FIXME: Bib entries are not removed from the documentmodel if \bibliography is deleted
+        	return;
         }
         for (int i=0; i < bibNames.length; i++)
             bibNames[i] += ".bib";
@@ -754,7 +771,16 @@ public class TexDocumentModel implements IDocumentListener {
         IFile referFile = (IFile) input.getAdapter(IFile.class);
         if (referFile == null) return;
         for (OutlineNode node : includes) {
-            IFile f = TexProjectParser.findIFile(node.getName(), referFile, project);
+        	IFile f = null;
+            IFile mainTexFile = TexlipseProperties.getProjectSourceFile(project);
+            if (mainTexFile != null) {
+            	//Includes are always relative to the main file
+            	f = TexProjectParser.findIFile(node.getName(), mainTexFile, project);
+            }
+            if (f == null) {
+            	//Try finding it relative to refering file
+            	f = TexProjectParser.findIFile(node.getName(), referFile, project);
+            }
             if (f == null) {
                 MarkerHandler marker = MarkerHandler.getInstance();
                 String errorMsg = MessageFormat.format(

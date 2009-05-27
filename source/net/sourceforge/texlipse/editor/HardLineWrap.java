@@ -143,11 +143,6 @@ public class HardLineWrap {
             if (trimEnd(line).length() + c.text.length() <= MAX_LENGTH) return; 
 
             
-            if (trimBegin(line).indexOf(' ') == -1) {
-                //There is no whitespace
-                return;
-            }
-
             int lineNr = d.getLineOfOffset(c.offset);
             String delim = d.getLineDelimiter(lineNr);
             boolean isLastLine = false;
@@ -187,10 +182,12 @@ public class HardLineWrap {
             if (!isLastLine) length += delim.length(); //delim.length();
             String newLine = newLineBuf.toString();
 
-            c.length = length;
             
             int breakpos = getLineBreakPosition(newLine, MAX_LENGTH);
+            if (breakpos < 0) return;
 
+            c.length = length;
+            
             c.shiftsCaret = false;
             c.caretOffset = c.offset + c.text.length() + indent.length();
             if (breakpos >= cursorOnLine + c.text.length()){ 

@@ -103,7 +103,7 @@ public class HardLineWrap {
     	
     	int breakOffset = -1;
     	while (offset < line.length()) {
-    		if (offset >= MAX_LENGTH && breakOffset != -1) break;
+    		if (offset > MAX_LENGTH && breakOffset != -1) break;
     		if (line.charAt(offset) == ' ' || line.charAt(offset) == '\t') {
     			breakOffset = offset;
     		}
@@ -138,12 +138,21 @@ public class HardLineWrap {
                     c.text.indexOf("\n") >= 0 || c.text.indexOf("\r") >= 0) return;
             
             String line = d.get(commandRegion.getOffset(), commandRegion.getLength());
-
-            //Special case if there are white spaces at the end of the line
-            if (trimEnd(line).length() + c.text.length() <= MAX_LENGTH) return; 
-
             
             int lineNr = d.getLineOfOffset(c.offset);
+            final int cursorOnLine = c.offset - commandRegion.getOffset();
+            
+            //Create the newLine, we rewrite the whole currentline
+            StringBuffer newLineBuf = new StringBuffer();
+            
+            newLineBuf.append(line.substring(0, cursorOnLine));
+            newLineBuf.append (c.text);
+            newLineBuf.append(trimEnd(line.substring(cursorOnLine)));
+            
+            //Special case if there are white spaces at the end of the line
+            if (trimEnd(newLineBuf.toString()).length() <= MAX_LENGTH) return;
+            
+
             String delim = d.getLineDelimiter(lineNr);
             boolean isLastLine = false;
             if (delim == null) {
@@ -158,16 +167,10 @@ public class HardLineWrap {
             }
             //String indent = tools.getIndentation(d, c); // TODO check if inside comment
             String indent = tools.getIndentationWithComment(line);
-            String nextline = tools.getStringAt(d, c, false, 1);
-            final int cursorOnLine = c.offset - commandRegion.getOffset();
-            
-            //Create the newLine, we rewrite the whole currentline
-            StringBuffer newLineBuf = new StringBuffer();
+
             int length = line.length();
-            
-            newLineBuf.append(line.substring(0, cursorOnLine));
-            newLineBuf.append (c.text);
-            newLineBuf.append(trimEnd(line.substring(cursorOnLine)));
+
+            String nextline = tools.getStringAt(d, c, false, 1);
             String nextTrimLine = nextline.trim(); 
             boolean isWithNextline = false;
             if (!isSingleLine(nextTrimLine) && indent.indexOf('%') == -1) {

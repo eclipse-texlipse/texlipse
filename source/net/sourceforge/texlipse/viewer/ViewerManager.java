@@ -24,7 +24,6 @@ import net.sourceforge.texlipse.PathUtils;
 import net.sourceforge.texlipse.SelectedResourceManager;
 import net.sourceforge.texlipse.TexlipsePlugin;
 import net.sourceforge.texlipse.builder.BuilderRegistry;
-import net.sourceforge.texlipse.builder.TexlipseBuilder;
 import net.sourceforge.texlipse.builder.TexlipseNature;
 import net.sourceforge.texlipse.properties.TexlipseProperties;
 import net.sourceforge.texlipse.viewer.util.FileLocationListener;
@@ -32,19 +31,16 @@ import net.sourceforge.texlipse.viewer.util.FileLocationServer;
 import net.sourceforge.texlipse.viewer.util.ViewerErrorScanner;
 
 import org.eclipse.core.resources.IContainer;
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchManager;
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.swt.widgets.Display;
@@ -102,8 +98,6 @@ public class ViewerManager {
     // the current project
     private IProject project;
     
-    // progress monitor for current view operation
-    private IProgressMonitor monitor;
        
     /**
      * Run the viewer configured in the given viewer attributes.
@@ -118,7 +112,7 @@ public class ViewerManager {
      */
     public static Process preview(ViewerAttributeRegistry reg, Map addEnv, IProgressMonitor monitor) throws CoreException {
            	
-    	ViewerManager mgr = new ViewerManager(reg, addEnv, monitor);
+    	ViewerManager mgr = new ViewerManager(reg, addEnv);
         if (!mgr.initialize()) {
             return null;
         }
@@ -181,7 +175,7 @@ public class ViewerManager {
 	    	}
 		}
 	    
-    	ViewerManager mgr = new ViewerManager(registry, null, null);    	
+    	ViewerManager mgr = new ViewerManager(registry, null);    	
 		
 		 if (!mgr.initialize()) {
 	         return;
@@ -240,7 +234,7 @@ public class ViewerManager {
         // window is in the way and will not allow us to set focus on the editor.
         new Thread(new Runnable() {
             public void run() {
-                  try { Thread.sleep(500); } catch (Exception e) { }
+                  try { Thread.sleep(500); } catch (InterruptedException e) { }
                   Display display = PlatformUI.getWorkbench().getDisplay();
                   if (null != display) {
                       display.asyncExec(new Runnable() {
@@ -265,8 +259,7 @@ public class ViewerManager {
      * @param reg viewer attributes
      * @param addEnv environment variables to add to the current environment
      */
-    protected ViewerManager(ViewerAttributeRegistry reg, Map addEnv, IProgressMonitor monitor) {
-        this.monitor = monitor;
+    protected ViewerManager(ViewerAttributeRegistry reg, Map addEnv) {
     	this.registry = reg;
         this.envSettings = addEnv;
     }
@@ -294,35 +287,6 @@ public class ViewerManager {
         return true;
     }
     
-    /**
-     * Rebuilds the project if there has been any changes since the last build
-     * 
-     * @deprecated Eclipse has it's own rebuild-if-changed mechanism which works
-     * much better. See Preferences->Run->Launching. Besides, the check to see
-     * if a resource had changed is broken, so this method does always build, and
-     * the build is done in the GUI thread, so output is not flushed in realtime.
-     * 				 
-     */
-    protected boolean rebuildIfNeeded() {
-
-    	// rebuild, if needed
-        IPreferenceStore prefs = TexlipsePlugin.getDefault().getPreferenceStore();
-        if (prefs.getBoolean(TexlipseProperties.BUILD_BEFORE_VIEW)) {
-            if (TexlipseBuilder.needsRebuild()) {
-            	try {
-            		project.build(TexlipseBuilder.FULL_BUILD, monitor);
-                } catch (OperationCanceledException e) {
-                    // build failed, so no output file
-                    return false;
-				} catch (CoreException e) {
-					// build failed, so no output file
-                    return false;
-				}
-            }
-        }
-    	
-        return true; // output file is up to date, continue with viewing
-    }
     
     /**
      * Check if viewer already running.

@@ -10,14 +10,11 @@
 package net.sourceforge.texlipse.builder;
 
 import java.io.BufferedInputStream;
-import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.Map;
 
 import net.sourceforge.texlipse.TexlipsePlugin;
@@ -70,17 +67,20 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
      * 
 	 * @see IncrementalProjectBuilder.build
 	 */
+    @Override
 	protected IProject[] build(int kind, Map args, IProgressMonitor monitor)
 			throws CoreException {
         
         BuilderRegistry.clearConsole();
-        
+
+        if (isUpToDate(getProject()))
+            return null;
+
         Object s = TexlipseProperties.getProjectProperty(getProject(), TexlipseProperties.PARTIAL_BUILD_PROPERTY);
 		if (s != null) {
-            
 			partialBuild(monitor);
 		} else {
-			fullBuild(monitor);
+			buildFile(null, monitor);
 		}
         
 		return null;
@@ -91,6 +91,7 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
      * 
      * @see IncrementalProjectBuilder.clean
      */
+    @Override
 	protected void clean(IProgressMonitor monitor) throws CoreException {
         
         IProject project = getProject();
@@ -146,11 +147,7 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
      */
     private void cleanTempDir(IProgressMonitor monitor, IProject project) throws CoreException {
         
-        String tempExts = TexlipsePlugin.getPreference(TexlipseProperties.TEMP_FILE_EXTS);
-        if (tempExts == null || tempExts.length() == 0) {
-            return;
-        }
-        String[] ext = tempExts.split(",");
+        String[] ext = TexlipsePlugin.getPreferenceArray(TexlipseProperties.TEMP_FILE_EXTS);
 
         String format = TexlipseProperties.getProjectProperty(project, TexlipseProperties.OUTPUT_FORMAT);
         
@@ -200,7 +197,7 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
 				}
 			} else {
 				// current is a file; TODO: check for file?
-				if (isLatexTempFile(current.getName(), ext, format)) {
+				if (hasTempFileExtension(current.getName(), ext, format)) {
 					current.delete(true, monitor);
 				}
 			}
@@ -217,7 +214,7 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
      * @param format build output format
      * @return true, if file is a temporary file created by Latex
      */
-    private static boolean isLatexTempFile(String name, String[] ext, String format) {
+    private static boolean hasTempFileExtension(String name, String[] ext, String format) {
         
         for (String e : ext) {
             if (name.endsWith(e)) {
@@ -240,8 +237,7 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
     private void partialBuild(final IProgressMonitor monitor) throws CoreException {
         
         IProject project = getProject();
-        if (isUpToDate(project))
-            return;
+
         IEditorPart part = TexlipsePlugin.getCurrentWorkbenchPage().getActiveEditor();
         ITextEditor editor = null;
         if (part instanceof ITextEditor)
@@ -274,14 +270,14 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
             // main file can't be built partially
             // also, bib file changes need full build
             TexlipseProperties.setSessionProperty(project, TexlipseProperties.PARTIAL_BUILD_FILE, null);
-        	fullBuild(monitor);
+        	buildFile(null, monitor);
         	return;
         } else if (LatexParserUtils.findCommand(content, "\\documentclass", 0) != -1
                 || LatexParserUtils.findCommand(content, "\\documentstyle", 0) != -1
                 || LatexParserUtils.findBeginEnvironment(content, "document", 0) != null) {
             // A complete tex file (just build it)
             TexlipseProperties.setSessionProperty(project, TexlipseProperties.PARTIAL_BUILD_FILE, file);
-            buildPartialFile(file, monitor);
+            buildFile(file, monitor);
             return;
         }
         String tempFileContents = getTempFileContents(file, project, monitor);
@@ -289,7 +285,7 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
         //The temp file should be in the main folder
         IContainer folder = TexlipseProperties.getProjectSourceDir(project);
         
-        IFile tmpFile = createTempFileName(folder);
+        IFile tmpFile = folder.getFile(new Path("tempPartial0000.tex"));
         TexlipseProperties.setSessionProperty(project, TexlipseProperties.PARTIAL_BUILD_FILE, tmpFile);
         if (tmpFile == null) {
             throw new CoreException(TexlipsePlugin.stat("Can't create temp file"));
@@ -305,7 +301,7 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
         tmpFile.setDerived(true);
         
         // build temp file
-        buildPartialFile(tmpFile, monitor);
+        buildFile(tmpFile, monitor);
     }
     
     /**
@@ -382,28 +378,47 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
     }
 
     /**
-     * Build a partial document. This process does not move Latex temporary
-     * files anywhere to save time.
+     * Builds a document 
      * 
-     * @param resource the file
+     * @param resource the file to build, if <code>null</code> build main document
      * @param monitor progress monitor
      * @throws CoreException if an error occurs
      */
-    private void buildPartialFile(IFile resource, IProgressMonitor monitor) throws CoreException {
+    private void buildFile(IFile resource, IProgressMonitor monitor) throws CoreException {
         
-        IProject project = resource.getProject();
-        Builder builder = checkBuilderSettings(project);
+        IProject project = getProject();
 
-        // check changed files
-        if (isUpToDate(project)) {
-            //BuilderRegistry.printToConsole("Project (" + project.getName() + ") already up to date.");
-            return;
+        //load settings, if changed on disk
+        if (TexlipseProperties.isProjectPropertiesFileChanged(project)) {
+            TexlipseProperties.loadProjectProperties(project);
         }
         
-        // number 100 is just some kind of educated guess of how much work there is
-        monitor.beginTask(TexlipsePlugin.getResourceString("builderSubTaskPartialBuild"), 100);
+        Builder builder = null;
+        try {
+            builder = checkBuilderSettings(project);
+        } catch (CoreException e) {
+            // can't get builder, so can't build. error reported to the console
+            return;
+        }
+                
+        if (resource == null) {
+            //Full build
+            try {
+                // check settings
+                resource = (IFile)checkFileSettings(project, monitor);
+            } catch (CoreException e) {}
+            if (resource == null) {
+                // silent fail. the file doesn't contain enough tags yet
+                return; 
+            }
+        }        
+
+        // number 100 is just some kind of guess of how much work there is
+        monitor.beginTask(TexlipsePlugin.getResourceString("builderSubTaskBuild"), 100);
 
         this.deleteMarkers(project);
+        monitor.worked(1);
+
         // reset builder instance to startable state
         builder.reset(monitor);
 
@@ -417,78 +432,27 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
         }
 
         // build finished successfully, so refresh the directory
-        IContainer sourceDir = resource.getParent();
+        IContainer sourceDir = TexlipseProperties.getProjectSourceDir(project);
         sourceDir.refreshLocal(IProject.DEPTH_INFINITE, monitor);
-
-        // mark temp and output files as derived
-        markTempandOutFiles(project, sourceDir);
-                
-        // move the output file to correct place
-        moveOutput(project, sourceDir, monitor);
+        
+        
+        try { // possibly move output & temp files away from the source dir
+            moveOutput(project, sourceDir, monitor);
+        } catch (CoreException e) {
+            throw new BuilderCoreException(TexlipsePlugin.stat("Could not write to output file. Please close the output document in your viewer and rebuild."));
+        }
         moveTempFiles(project, monitor);
+        // mark output files as derived
+        markOutFile(project, sourceDir);
         
         monitor.done();
+//-------------------------        
+
+        // build finished successfully, so refresh the directory
+        //IContainer sourceDir = resource.getParent();
+        //sourceDir.refreshLocal(IProject.DEPTH_INFINITE, monitor);
     }
 
-    /**
-     * Create a temporary file.
-     * @param dir the directory to create the file to
-     * @return a non-existent file
-     */
-    private IFile createTempFileName(IContainer dir) {
-        
-        String base = "tempPartial";
-        String ext = ".tex";
-        StringBuffer sb = new StringBuffer("0000");
-        
-        int n = 0;
-        int lim = 10;
-        while (sb.length() > 0) {
-            
-            while (n < lim) {
-                IFile f = dir.getFile(new Path(base + sb + n + ext));
-//                if (!f.exists()) {
-                    return f;
-//                }
-//                n++;
-            }
-            
-            lim *= 10;
-            sb.delete(sb.length()-1, sb.length());
-        }
-        return null;
-    }
-
-    /**
-     * Read the entire contents of a file to a single StringBuffer.
-     * @param stream input stream to the file
-     * @return the contents of the file
-     */
-    private StringBuffer readFile(InputStream stream, final IProgressMonitor monitor) {
-
-        monitor.subTask(TexlipsePlugin.getResourceString("builderSubTaskReadFile"));
-        BufferedReader br = new BufferedReader(new InputStreamReader(stream));
-
-        String lineFeed = System.getProperty("line.separator");
-        StringBuffer sb = new StringBuffer();
-
-        try {
-            String tmp = null;
-            while ((tmp = br.readLine()) != null) {
-                sb.append(tmp);
-                sb.append(lineFeed);
-                monitor.worked(1);
-            }
-        } catch (IOException e) {
-        }
-
-        try {
-            br.close();
-        } catch (IOException e) {
-        }
-        
-        return sb;
-    }
 
     /**
      * Check that the filename settings are correct.
@@ -518,9 +482,8 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
             BuilderRegistry.printToConsole(TexlipsePlugin.getResourceString("builderErrorMainFileNotFound").replaceAll("%s", project.getName()));
             throw new CoreException(TexlipsePlugin.stat("Main .tex -file not found."));
         }
-        
-        StringBuffer sb = readFile(resource.getContents(), monitor);
-        if (sb.toString().trim().length() < validDocumentLimit) {
+                
+        if (resource.getRawLocation().toFile().length() < validDocumentLimit) {
             return null;
         }
         
@@ -564,79 +527,6 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
         return builder;
     }
     
-	/**
-	 * Perform a full build.
-     * 
-	 * @param monitor progress monitor
-	 * @throws CoreException if an error occurs (e.g. builder not configured)
-	 */
-	protected void fullBuild(final IProgressMonitor monitor) throws CoreException {
-        
-        IProject project = getProject();
-        
-        //load settings, if changed on disk
-        if (TexlipseProperties.isProjectPropertiesFileChanged(project)) {
-            TexlipseProperties.loadProjectProperties(project);
-        }
-        
-        // check settings
-        IResource resource = null;
-        try {
-            resource = checkFileSettings(project, monitor);
-        } catch (CoreException e) {}
-        if (resource == null) {
-            // silent fail. the file doesn't contain enough tags yet
-            return; 
-        }
-
-        Builder builder = null;
-        try {
-            builder = checkBuilderSettings(project);
-        } catch (CoreException e) {
-            // can't get builder, so can't build. error reported to the console
-            return;
-        }
-        
-        // check changed files
-        if (isUpToDate(project)) {
-            //BuilderRegistry.printToConsole("Project \"" + project.getName() + "\" already up to date.");
-            return;
-        }
-        
-        // number 100 is just some kind of guess of how much work there is
-        monitor.beginTask(TexlipsePlugin.getResourceString("builderSubTaskBuild"), 100);
-
-        this.deleteMarkers(project);
-        monitor.worked(1);
-
-        // reset builder instance to startable state
-        builder.reset(monitor);
-
-        // use temp files from previous build
-        moveBackTempFiles(project, monitor);
-        
-        // start the build
-        try {
-            builder.build(resource);
-        } catch (BuilderCoreException e) {
-        }
-
-        // build finished successfully, so refresh the directory
-        IContainer sourceDir = TexlipseProperties.getProjectSourceDir(project);
-        sourceDir.refreshLocal(IProject.DEPTH_INFINITE, monitor);
-        
-        // mark temp and output files as derived
-        markTempandOutFiles(project, sourceDir);
-        
-        try { // possibly move output & temp files away from the source dir
-            moveOutput(project, sourceDir, monitor);
-        } catch (CoreException e) {
-            throw new BuilderCoreException(TexlipsePlugin.stat("Could not write to output file. Please close the output document in your viewer and rebuild."));
-        }
-        moveTempFiles(project, monitor);
-        
-		monitor.done();
-	}
 
     /**
      * Check if the given project needs a rebuild.
@@ -660,7 +550,7 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
     }
 
     /**
-     * Mark temporary and output files used by Latex program as "derived" to hide them from
+     * Mark output file used by Latex program as "derived" to hide them from
      * version control systems. 
      * 
      * @param project the current project
@@ -668,37 +558,15 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
      * @param monitor progress monitor
      * @throws CoreException if an error occurs
      */
-    private void markTempandOutFiles(IProject project, IContainer sourceDir) throws CoreException {
+    private void markOutFile(IProject project, IContainer sourceDir) throws CoreException {
         
         String mark = TexlipseProperties.getProjectProperty(project, TexlipseProperties.MARK_DERIVED_PROPERTY);
         if (!"true".equals(mark)) {
             return;
         }
         
-        IResource[] files = sourceDir.members();
-        if (files == null) {
-            return;
-        }
-        
-        String[] exts = TexlipsePlugin.getPreferenceArray(TexlipseProperties.TEMP_FILE_EXTS);
-        String format = TexlipseProperties.getProjectProperty(project, TexlipseProperties.OUTPUT_FORMAT);
         String outputFileName = TexlipseProperties.getOutputFileName(project);
-
-        for (IResource file : files) {
-            
-            if (file instanceof IFolder) {
-                markTempandOutFiles(project, (IFolder) file);
-            }
-            else{
-                String fileName = file.getName();
-                if (fileName.equals(outputFileName)) {
-                    file.setDerived(true);
-                }
-                else if (isLatexTempFile(fileName, exts, format)) {
-                    file.setDerived(true);
-                }
-            }
-        }
+        sourceDir.findMember(outputFileName).setDerived(true);
     }
     
     /**
@@ -741,7 +609,9 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
             } else {
                 dest = project.getFile(outputFileName);
             }
-            if (dest != null && dest.exists()) {
+            if (dest == null) return;
+            
+            if (dest.exists()) {
                 File outFile = new File(outputFile.getLocationURI());
                 File destFile = new File(dest.getLocationURI());
                 try {
@@ -785,7 +655,7 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
     }
 
     /**
-     * Move temporary files to temp directory.
+     * Move temporary files to temp directory and mark them as derived if needed
      * 
      * @param project the current project
      * @param monitor progress monitor
@@ -842,6 +712,12 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
 		if (!source.exists())
 			return;
 
+        boolean markAsDerived = false;
+		String mark = TexlipseProperties.getProjectProperty(source.getProject(), TexlipseProperties.MARK_DERIVED_PROPERTY);
+        if (!"true".equals(mark)) {
+            markAsDerived = true;
+        }
+
 		if (destination instanceof IFolder) {
 			if (!destination.exists()){
 				if(!createFolders)
@@ -855,17 +731,16 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
 				 * create a directory in the sourcefolder. Only in the temp
 				 * directory.
 				 */
-				destination.setDerived(true);
+				if (markAsDerived) destination.setDerived(markAsDerived);
 			}
 		}
 
 		// source and destination are valid.
 		// start move
 		IResource[] res = source.members();
-		IResource current;
 
 		for (int i = 0; i < res.length; i++) {
-			current = res[i];
+		    IResource current = res[i];
 
 			if (current instanceof IFolder) {
 				// We are moving a directory
@@ -880,10 +755,24 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
 				}
 			} else {
 				// We are moving a file
-				if (isLatexTempFile(current.getName(), ext, format)) {
-					IPath newPath = destination.getFullPath().addTrailingSeparator().append(current.getName());
-					current.move(newPath, true, monitor);
-				}
+                if (createFolders == false) {
+                    //Move file from tmp back to src
+                    IPath newPath = destination.getFullPath().addTrailingSeparator().append(current.getName());
+                    current.move(newPath, true, monitor);
+                }			    
+                else if (hasTempFileExtension(current.getName(), ext, format)) {
+                    //File from src to tmp 
+                    //Check if there is a tex file with that name exists in the folder
+                    String cc = current.getName().substring(0, current.getName().length()-current.getFileExtension().length());
+                    for (IResource r : res) {
+                        if (r.getName().equals(cc+"tex") || r.getName().equals(cc+"sty") || r.getName().equals(cc+"cls")) {
+                            IPath newPath = destination.getFullPath().addTrailingSeparator().append(current.getName());
+                            current.move(newPath, true, monitor);
+                            if (markAsDerived) current.setDerived(true);
+                            break;
+                        }
+                    }
+                }
 			}
 			monitor.worked(1);
 		}
@@ -949,24 +838,7 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
         return -1;
     }
 
-    /**
-     * The launcher uses this method to check if the project is up-to-date.
-     * @return true, if currently open project needs a rebuild
-     */
-    public static boolean needsRebuild() {
-        
-        IProject project = TexlipsePlugin.getCurrentProject();
-        if (project == null) {
-            return false;
-        }
-        
-        IResource resource = TexlipseProperties.getProjectSourceFile(project);
-        if (resource == null) {
-            return false;
-        }
-        return resource.getLocalTimeStamp() > getOutputFileDate(project);
-    }
-    
+
     /**
      * Delete old build errors and layout markers from project
      * @param project

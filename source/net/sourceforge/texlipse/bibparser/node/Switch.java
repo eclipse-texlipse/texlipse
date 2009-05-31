@@ -4,4 +4,5 @@ package net.sourceforge.texlipse.bibparser.node;
 
 public interface Switch
 {
+        // Empty body
 }

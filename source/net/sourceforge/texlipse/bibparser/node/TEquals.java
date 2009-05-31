@@ -4,6 +4,7 @@ package net.sourceforge.texlipse.bibparser.node;
 
 import net.sourceforge.texlipse.bibparser.analysis.*;
 
+@SuppressWarnings("nls")
 public final class TEquals extends Token
 {
     public TEquals()
@@ -18,6 +19,7 @@ public final class TEquals extends Token
         setPos(pos);
     }
 
+    @Override
     public Object clone()
     {
       return new TEquals(getLine(), getPos());
@@ -28,7 +30,8 @@ public final class TEquals extends Token
         ((Analysis) sw).caseTEquals(this);
     }
 
-    public void setText(String text)
+    @Override
+    public void setText(@SuppressWarnings("unused") String text)
     {
         throw new RuntimeException("Cannot change TEquals text.");
     }

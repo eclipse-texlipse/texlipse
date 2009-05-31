@@ -2,27 +2,31 @@
 
 package net.sourceforge.texlipse.bibparser.node;
 
-import java.util.*;
 import net.sourceforge.texlipse.bibparser.analysis.*;
 
+@SuppressWarnings("nls")
 public final class ABibeBibEntry extends PBibEntry
 {
     private PEntry _entry_;
 
     public ABibeBibEntry()
     {
+        // Constructor
     }
 
     public ABibeBibEntry(
-        PEntry _entry_)
+        @SuppressWarnings("hiding") PEntry _entry_)
     {
+        // Constructor
         setEntry(_entry_);
 
     }
+
+    @Override
     public Object clone()
     {
         return new ABibeBibEntry(
-            (PEntry) cloneNode(_entry_));
+            cloneNode(this._entry_));
     }
 
     public void apply(Switch sw)
@@ -32,14 +36,14 @@ public final class ABibeBibEntry extends PBibEntry
 
     public PEntry getEntry()
     {
-        return _entry_;
+        return this._entry_;
     }
 
     public void setEntry(PEntry node)
     {
-        if(_entry_ != null)
+        if(this._entry_ != null)
         {
-            _entry_.parent(null);
+            this._entry_.parent(null);
         }
 
         if(node != null)
@@ -52,32 +56,39 @@ public final class ABibeBibEntry extends PBibEntry
             node.parent(this);
         }
 
-        _entry_ = node;
+        this._entry_ = node;
     }
 
+    @Override
     public String toString()
     {
         return ""
-            + toString(_entry_);
+            + toString(this._entry_);
     }
 
-    void removeChild(Node child)
+    @Override
+    void removeChild(@SuppressWarnings("unused") Node child)
     {
-        if(_entry_ == child)
+        // Remove child
+        if(this._entry_ == child)
         {
-            _entry_ = null;
+            this._entry_ = null;
             return;
         }
 
+        throw new RuntimeException("Not a child.");
     }
 
-    void replaceChild(Node oldChild, Node newChild)
+    @Override
+    void replaceChild(@SuppressWarnings("unused") Node oldChild, @SuppressWarnings("unused") Node newChild)
     {
-        if(_entry_ == oldChild)
+        // Replace child
+        if(this._entry_ == oldChild)
         {
             setEntry((PEntry) newChild);
             return;
         }
 
+        throw new RuntimeException("Not a child.");
     }
 }

@@ -2,27 +2,31 @@
 
 package net.sourceforge.texlipse.bibparser.node;
 
-import java.util.*;
 import net.sourceforge.texlipse.bibparser.analysis.*;
 
+@SuppressWarnings("nls")
 public final class ANumValOrSid extends PValOrSid
 {
     private TNumber _number_;
 
     public ANumValOrSid()
     {
+        // Constructor
     }
 
     public ANumValOrSid(
-        TNumber _number_)
+        @SuppressWarnings("hiding") TNumber _number_)
     {
+        // Constructor
         setNumber(_number_);
 
     }
+
+    @Override
     public Object clone()
     {
         return new ANumValOrSid(
-            (TNumber) cloneNode(_number_));
+            cloneNode(this._number_));
     }
 
     public void apply(Switch sw)
@@ -32,14 +36,14 @@ public final class ANumValOrSid extends PValOrSid
 
     public TNumber getNumber()
     {
-        return _number_;
+        return this._number_;
     }
 
     public void setNumber(TNumber node)
     {
-        if(_number_ != null)
+        if(this._number_ != null)
         {
-            _number_.parent(null);
+            this._number_.parent(null);
         }
 
         if(node != null)
@@ -52,32 +56,39 @@ public final class ANumValOrSid extends PValOrSid
             node.parent(this);
         }
 
-        _number_ = node;
+        this._number_ = node;
     }
 
+    @Override
     public String toString()
     {
         return ""
-            + toString(_number_);
+            + toString(this._number_);
     }
 
-    void removeChild(Node child)
+    @Override
+    void removeChild(@SuppressWarnings("unused") Node child)
     {
-        if(_number_ == child)
+        // Remove child
+        if(this._number_ == child)
         {
-            _number_ = null;
+            this._number_ = null;
             return;
         }
 
+        throw new RuntimeException("Not a child.");
     }
 
-    void replaceChild(Node oldChild, Node newChild)
+    @Override
+    void replaceChild(@SuppressWarnings("unused") Node oldChild, @SuppressWarnings("unused") Node newChild)
     {
-        if(_number_ == oldChild)
+        // Replace child
+        if(this._number_ == oldChild)
         {
             setNumber((TNumber) newChild);
             return;
         }
 
+        throw new RuntimeException("Not a child.");
     }
 }

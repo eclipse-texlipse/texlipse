@@ -4,6 +4,7 @@ package net.sourceforge.texlipse.bibparser.node;
 
 import net.sourceforge.texlipse.bibparser.analysis.*;
 
+@SuppressWarnings("nls")
 public final class TBString extends Token
 {
     public TBString(String text)
@@ -18,6 +19,7 @@ public final class TBString extends Token
         setPos(pos);
     }
 
+    @Override
     public Object clone()
     {
       return new TBString(getText(), getLine(), getPos());

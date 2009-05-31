@@ -2,27 +2,31 @@
 
 package net.sourceforge.texlipse.bibparser.node;
 
-import java.util.*;
 import net.sourceforge.texlipse.bibparser.analysis.*;
 
+@SuppressWarnings("nls")
 public final class AValueBValOrSid extends PValOrSid
 {
     private TStringLiteral _stringLiteral_;
 
     public AValueBValOrSid()
     {
+        // Constructor
     }
 
     public AValueBValOrSid(
-        TStringLiteral _stringLiteral_)
+        @SuppressWarnings("hiding") TStringLiteral _stringLiteral_)
     {
+        // Constructor
         setStringLiteral(_stringLiteral_);
 
     }
+
+    @Override
     public Object clone()
     {
         return new AValueBValOrSid(
-            (TStringLiteral) cloneNode(_stringLiteral_));
+            cloneNode(this._stringLiteral_));
     }
 
     public void apply(Switch sw)
@@ -32,14 +36,14 @@ public final class AValueBValOrSid extends PValOrSid
 
     public TStringLiteral getStringLiteral()
     {
-        return _stringLiteral_;
+        return this._stringLiteral_;
     }
 
     public void setStringLiteral(TStringLiteral node)
     {
-        if(_stringLiteral_ != null)
+        if(this._stringLiteral_ != null)
         {
-            _stringLiteral_.parent(null);
+            this._stringLiteral_.parent(null);
         }
 
         if(node != null)
@@ -52,32 +56,39 @@ public final class AValueBValOrSid extends PValOrSid
             node.parent(this);
         }
 
-        _stringLiteral_ = node;
+        this._stringLiteral_ = node;
     }
 
+    @Override
     public String toString()
     {
         return ""
-            + toString(_stringLiteral_);
+            + toString(this._stringLiteral_);
     }
 
-    void removeChild(Node child)
+    @Override
+    void removeChild(@SuppressWarnings("unused") Node child)
     {
-        if(_stringLiteral_ == child)
+        // Remove child
+        if(this._stringLiteral_ == child)
         {
-            _stringLiteral_ = null;
+            this._stringLiteral_ = null;
             return;
         }
 
+        throw new RuntimeException("Not a child.");
     }
 
-    void replaceChild(Node oldChild, Node newChild)
+    @Override
+    void replaceChild(@SuppressWarnings("unused") Node oldChild, @SuppressWarnings("unused") Node newChild)
     {
-        if(_stringLiteral_ == oldChild)
+        // Replace child
+        if(this._stringLiteral_ == oldChild)
         {
             setStringLiteral((TStringLiteral) newChild);
             return;
         }
 
+        throw new RuntimeException("Not a child.");
     }
 }

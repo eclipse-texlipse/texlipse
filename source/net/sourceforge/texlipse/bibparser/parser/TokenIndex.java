@@ -9,93 +9,111 @@ class TokenIndex extends AnalysisAdapter
 {
     int index;
 
-    public void caseTTaskcomment(TTaskcomment node)
+    @Override
+    public void caseTTaskcomment(@SuppressWarnings("unused") TTaskcomment node)
     {
-        index = 0;
+        this.index = 0;
     }
 
-    public void caseTEstring(TEstring node)
+    @Override
+    public void caseTEstring(@SuppressWarnings("unused") TEstring node)
     {
-        index = 1;
+        this.index = 1;
     }
 
-    public void caseTScribeComment(TScribeComment node)
+    @Override
+    public void caseTScribeComment(@SuppressWarnings("unused") TScribeComment node)
     {
-        index = 2;
+        this.index = 2;
     }
 
-    public void caseTPreamble(TPreamble node)
+    @Override
+    public void caseTPreamble(@SuppressWarnings("unused") TPreamble node)
     {
-        index = 3;
+        this.index = 3;
     }
 
-    public void caseTEntryName(TEntryName node)
+    @Override
+    public void caseTEntryName(@SuppressWarnings("unused") TEntryName node)
     {
-        index = 4;
+        this.index = 4;
     }
 
-    public void caseTLBrace(TLBrace node)
+    @Override
+    public void caseTLBrace(@SuppressWarnings("unused") TLBrace node)
     {
-        index = 5;
+        this.index = 5;
     }
 
-    public void caseTRBrace(TRBrace node)
+    @Override
+    public void caseTRBrace(@SuppressWarnings("unused") TRBrace node)
     {
-        index = 6;
+        this.index = 6;
     }
 
-    public void caseTBString(TBString node)
+    @Override
+    public void caseTBString(@SuppressWarnings("unused") TBString node)
     {
-        index = 7;
+        this.index = 7;
     }
 
-    public void caseTLParen(TLParen node)
+    @Override
+    public void caseTLParen(@SuppressWarnings("unused") TLParen node)
     {
-        index = 8;
+        this.index = 8;
     }
 
-    public void caseTRParen(TRParen node)
+    @Override
+    public void caseTRParen(@SuppressWarnings("unused") TRParen node)
     {
-        index = 9;
+        this.index = 9;
     }
 
-    public void caseTComma(TComma node)
+    @Override
+    public void caseTComma(@SuppressWarnings("unused") TComma node)
     {
-        index = 10;
+        this.index = 10;
     }
 
-    public void caseTEquals(TEquals node)
+    @Override
+    public void caseTEquals(@SuppressWarnings("unused") TEquals node)
     {
-        index = 11;
+        this.index = 11;
     }
 
-    public void caseTSharp(TSharp node)
+    @Override
+    public void caseTSharp(@SuppressWarnings("unused") TSharp node)
     {
-        index = 12;
+        this.index = 12;
     }
 
-    public void caseTNumber(TNumber node)
+    @Override
+    public void caseTNumber(@SuppressWarnings("unused") TNumber node)
     {
-        index = 13;
+        this.index = 13;
     }
 
-    public void caseTIdentifier(TIdentifier node)
+    @Override
+    public void caseTIdentifier(@SuppressWarnings("unused") TIdentifier node)
     {
-        index = 14;
+        this.index = 14;
     }
 
-    public void caseTQuotec(TQuotec node)
+    @Override
+    public void caseTQuotec(@SuppressWarnings("unused") TQuotec node)
     {
-        index = 15;
+        this.index = 15;
     }
 
-    public void caseTStringLiteral(TStringLiteral node)
+    @Override
+    public void caseTStringLiteral(@SuppressWarnings("unused") TStringLiteral node)
     {
-        index = 16;
+        this.index = 16;
     }
 
-    public void caseEOF(EOF node)
+    @Override
+    public void caseEOF(@SuppressWarnings("unused") EOF node)
     {
-        index = 17;
+        this.index = 17;
     }
 }

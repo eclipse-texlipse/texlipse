@@ -9,7 +9,7 @@ final class State
     int state;
     ArrayList nodes;
 
-    State(int state, ArrayList nodes)
+    State(@SuppressWarnings("hiding") int state, @SuppressWarnings("hiding") ArrayList nodes)
     {
         this.state = state;
         this.nodes = nodes;

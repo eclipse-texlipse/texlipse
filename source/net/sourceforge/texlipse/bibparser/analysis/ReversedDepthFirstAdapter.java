@@ -2,6 +2,7 @@
 
 package net.sourceforge.texlipse.bibparser.analysis;
 
+import java.util.*;
 import net.sourceforge.texlipse.bibparser.node.*;
 
 public class ReversedDepthFirstAdapter extends AnalysisAdapter
@@ -16,14 +17,17 @@ public class ReversedDepthFirstAdapter extends AnalysisAdapter
         defaultOut(node);
     }
 
-    public void defaultIn(Node node)
+    public void defaultIn(@SuppressWarnings("unused") Node node)
     {
+        // Do nothing
     }
 
-    public void defaultOut(Node node)
+    public void defaultOut(@SuppressWarnings("unused") Node node)
     {
+        // Do nothing
     }
 
+    @Override
     public void caseStart(Start node)
     {
         inStart(node);
@@ -42,14 +46,16 @@ public class ReversedDepthFirstAdapter extends AnalysisAdapter
         defaultOut(node);
     }
 
+    @Override
     public void caseABibtex(ABibtex node)
     {
         inABibtex(node);
         {
-            Object temp[] = node.getBibEntry().toArray();
-            for(int i = temp.length - 1; i >= 0; i--)
+            List<PBibEntry> copy = new ArrayList<PBibEntry>(node.getBibEntry());
+            Collections.reverse(copy);
+            for(PBibEntry e : copy)
             {
-                ((PBibEntry) temp[i]).apply(this);
+                e.apply(this);
             }
         }
         outABibtex(node);
@@ -65,6 +71,7 @@ public class ReversedDepthFirstAdapter extends AnalysisAdapter
         defaultOut(node);
     }
 
+    @Override
     public void caseABibstreBibEntry(ABibstreBibEntry node)
     {
         inABibstreBibEntry(node);
@@ -85,6 +92,7 @@ public class ReversedDepthFirstAdapter extends AnalysisAdapter
         defaultOut(node);
     }
 
+    @Override
     public void caseABibeBibEntry(ABibeBibEntry node)
     {
         inABibeBibEntry(node);
@@ -105,6 +113,7 @@ public class ReversedDepthFirstAdapter extends AnalysisAdapter
         defaultOut(node);
     }
 
+    @Override
     public void caseABibtaskBibEntry(ABibtaskBibEntry node)
     {
         inABibtaskBibEntry(node);
@@ -125,6 +134,7 @@ public class ReversedDepthFirstAdapter extends AnalysisAdapter
         defaultOut(node);
     }
 
+    @Override
     public void caseAStrbraceStringEntry(AStrbraceStringEntry node)
     {
         inAStrbraceStringEntry(node);
@@ -149,6 +159,7 @@ public class ReversedDepthFirstAdapter extends AnalysisAdapter
         defaultOut(node);
     }
 
+    @Override
     public void caseAStrparenStringEntry(AStrparenStringEntry node)
     {
         inAStrparenStringEntry(node);
@@ -173,6 +184,7 @@ public class ReversedDepthFirstAdapter extends AnalysisAdapter
         defaultOut(node);
     }
 
+    @Override
     public void caseAEntrybraceEntry(AEntrybraceEntry node)
     {
         inAEntrybraceEntry(node);
@@ -181,10 +193,11 @@ public class ReversedDepthFirstAdapter extends AnalysisAdapter
             node.getRBrace().apply(this);
         }
         {
-            Object temp[] = node.getKeyvalDecl().toArray();
-            for(int i = temp.length - 1; i >= 0; i--)
+            List<PKeyvalDecl> copy = new ArrayList<PKeyvalDecl>(node.getKeyvalDecl());
+            Collections.reverse(copy);
+            for(PKeyvalDecl e : copy)
             {
-                ((PKeyvalDecl) temp[i]).apply(this);
+                e.apply(this);
             }
         }
         if(node.getIdentifier() != null)
@@ -208,6 +221,7 @@ public class ReversedDepthFirstAdapter extends AnalysisAdapter
         defaultOut(node);
     }
 
+    @Override
     public void caseAEntryparenEntry(AEntryparenEntry node)
     {
         inAEntryparenEntry(node);
@@ -216,10 +230,11 @@ public class ReversedDepthFirstAdapter extends AnalysisAdapter
             node.getRParen().apply(this);
         }
         {
-            Object temp[] = node.getKeyvalDecl().toArray();
-            for(int i = temp.length - 1; i >= 0; i--)
+            List<PKeyvalDecl> copy = new ArrayList<PKeyvalDecl>(node.getKeyvalDecl());
+            Collections.reverse(copy);
+            for(PKeyvalDecl e : copy)
             {
-                ((PKeyvalDecl) temp[i]).apply(this);
+                e.apply(this);
             }
         }
         if(node.getIdentifier() != null)
@@ -243,6 +258,7 @@ public class ReversedDepthFirstAdapter extends AnalysisAdapter
         defaultOut(node);
     }
 
+    @Override
     public void caseAEntryDef(AEntryDef node)
     {
         inAEntryDef(node);
@@ -263,14 +279,16 @@ public class ReversedDepthFirstAdapter extends AnalysisAdapter
         defaultOut(node);
     }
 
+    @Override
     public void caseAKeyvalDecl(AKeyvalDecl node)
     {
         inAKeyvalDecl(node);
         {
-            Object temp[] = node.getConcat().toArray();
-            for(int i = temp.length - 1; i >= 0; i--)
+            List<PConcat> copy = new ArrayList<PConcat>(node.getConcat());
+            Collections.reverse(copy);
+            for(PConcat e : copy)
             {
-                ((PConcat) temp[i]).apply(this);
+                e.apply(this);
             }
         }
         if(node.getValOrSid() != null)
@@ -294,6 +312,7 @@ public class ReversedDepthFirstAdapter extends AnalysisAdapter
         defaultOut(node);
     }
 
+    @Override
     public void caseAConcat(AConcat node)
     {
         inAConcat(node);
@@ -314,6 +333,7 @@ public class ReversedDepthFirstAdapter extends AnalysisAdapter
         defaultOut(node);
     }
 
+    @Override
     public void caseAValueBValOrSid(AValueBValOrSid node)
     {
         inAValueBValOrSid(node);
@@ -334,6 +354,7 @@ public class ReversedDepthFirstAdapter extends AnalysisAdapter
         defaultOut(node);
     }
 
+    @Override
     public void caseAValueQValOrSid(AValueQValOrSid node)
     {
         inAValueQValOrSid(node);
@@ -354,6 +375,7 @@ public class ReversedDepthFirstAdapter extends AnalysisAdapter
         defaultOut(node);
     }
 
+    @Override
     public void caseANumValOrSid(ANumValOrSid node)
     {
         inANumValOrSid(node);
@@ -374,6 +396,7 @@ public class ReversedDepthFirstAdapter extends AnalysisAdapter
         defaultOut(node);
     }
 
+    @Override
     public void caseAIdValOrSid(AIdValOrSid node)
     {
         inAIdValOrSid(node);

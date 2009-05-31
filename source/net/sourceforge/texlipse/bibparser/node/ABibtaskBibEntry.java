@@ -2,27 +2,31 @@
 
 package net.sourceforge.texlipse.bibparser.node;
 
-import java.util.*;
 import net.sourceforge.texlipse.bibparser.analysis.*;
 
+@SuppressWarnings("nls")
 public final class ABibtaskBibEntry extends PBibEntry
 {
     private TTaskcomment _taskcomment_;
 
     public ABibtaskBibEntry()
     {
+        // Constructor
     }
 
     public ABibtaskBibEntry(
-        TTaskcomment _taskcomment_)
+        @SuppressWarnings("hiding") TTaskcomment _taskcomment_)
     {
+        // Constructor
         setTaskcomment(_taskcomment_);
 
     }
+
+    @Override
     public Object clone()
     {
         return new ABibtaskBibEntry(
-            (TTaskcomment) cloneNode(_taskcomment_));
+            cloneNode(this._taskcomment_));
     }
 
     public void apply(Switch sw)
@@ -32,14 +36,14 @@ public final class ABibtaskBibEntry extends PBibEntry
 
     public TTaskcomment getTaskcomment()
     {
-        return _taskcomment_;
+        return this._taskcomment_;
     }
 
     public void setTaskcomment(TTaskcomment node)
     {
-        if(_taskcomment_ != null)
+        if(this._taskcomment_ != null)
         {
-            _taskcomment_.parent(null);
+            this._taskcomment_.parent(null);
         }
 
         if(node != null)
@@ -52,32 +56,39 @@ public final class ABibtaskBibEntry extends PBibEntry
             node.parent(this);
         }
 
-        _taskcomment_ = node;
+        this._taskcomment_ = node;
     }
 
+    @Override
     public String toString()
     {
         return ""
-            + toString(_taskcomment_);
+            + toString(this._taskcomment_);
     }
 
-    void removeChild(Node child)
+    @Override
+    void removeChild(@SuppressWarnings("unused") Node child)
     {
-        if(_taskcomment_ == child)
+        // Remove child
+        if(this._taskcomment_ == child)
         {
-            _taskcomment_ = null;
+            this._taskcomment_ = null;
             return;
         }
 
+        throw new RuntimeException("Not a child.");
     }
 
-    void replaceChild(Node oldChild, Node newChild)
+    @Override
+    void replaceChild(@SuppressWarnings("unused") Node oldChild, @SuppressWarnings("unused") Node newChild)
     {
-        if(_taskcomment_ == oldChild)
+        // Replace child
+        if(this._taskcomment_ == oldChild)
         {
             setTaskcomment((TTaskcomment) newChild);
             return;
         }
 
+        throw new RuntimeException("Not a child.");
     }
 }

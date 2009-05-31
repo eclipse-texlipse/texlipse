@@ -5,42 +5,44 @@ package net.sourceforge.texlipse.bibparser.node;
 import java.util.*;
 import net.sourceforge.texlipse.bibparser.analysis.*;
 
+@SuppressWarnings("nls")
 public final class AEntrybraceEntry extends PEntry
 {
     private PEntryDef _entryDef_;
     private TIdentifier _identifier_;
-    private final LinkedList _keyvalDecl_ = new TypedLinkedList(new KeyvalDecl_Cast());
+    private final LinkedList<PKeyvalDecl> _keyvalDecl_ = new LinkedList<PKeyvalDecl>();
     private TRBrace _rBrace_;
 
     public AEntrybraceEntry()
     {
+        // Constructor
     }
 
     public AEntrybraceEntry(
-        PEntryDef _entryDef_,
-        TIdentifier _identifier_,
-        List _keyvalDecl_,
-        TRBrace _rBrace_)
+        @SuppressWarnings("hiding") PEntryDef _entryDef_,
+        @SuppressWarnings("hiding") TIdentifier _identifier_,
+        @SuppressWarnings("hiding") List<PKeyvalDecl> _keyvalDecl_,
+        @SuppressWarnings("hiding") TRBrace _rBrace_)
     {
+        // Constructor
         setEntryDef(_entryDef_);
 
         setIdentifier(_identifier_);
 
-        {
-            this._keyvalDecl_.clear();
-            this._keyvalDecl_.addAll(_keyvalDecl_);
-        }
+        setKeyvalDecl(_keyvalDecl_);
 
         setRBrace(_rBrace_);
 
     }
+
+    @Override
     public Object clone()
     {
         return new AEntrybraceEntry(
-            (PEntryDef) cloneNode(_entryDef_),
-            (TIdentifier) cloneNode(_identifier_),
-            cloneList(_keyvalDecl_),
-            (TRBrace) cloneNode(_rBrace_));
+            cloneNode(this._entryDef_),
+            cloneNode(this._identifier_),
+            cloneList(this._keyvalDecl_),
+            cloneNode(this._rBrace_));
     }
 
     public void apply(Switch sw)
@@ -50,14 +52,14 @@ public final class AEntrybraceEntry extends PEntry
 
     public PEntryDef getEntryDef()
     {
-        return _entryDef_;
+        return this._entryDef_;
     }
 
     public void setEntryDef(PEntryDef node)
     {
-        if(_entryDef_ != null)
+        if(this._entryDef_ != null)
         {
-            _entryDef_.parent(null);
+            this._entryDef_.parent(null);
         }
 
         if(node != null)
@@ -70,19 +72,19 @@ public final class AEntrybraceEntry extends PEntry
             node.parent(this);
         }
 
-        _entryDef_ = node;
+        this._entryDef_ = node;
     }
 
     public TIdentifier getIdentifier()
     {
-        return _identifier_;
+        return this._identifier_;
     }
 
     public void setIdentifier(TIdentifier node)
     {
-        if(_identifier_ != null)
+        if(this._identifier_ != null)
         {
-            _identifier_.parent(null);
+            this._identifier_.parent(null);
         }
 
         if(node != null)
@@ -95,30 +97,39 @@ public final class AEntrybraceEntry extends PEntry
             node.parent(this);
         }
 
-        _identifier_ = node;
+        this._identifier_ = node;
     }
 
-    public LinkedList getKeyvalDecl()
+    public LinkedList<PKeyvalDecl> getKeyvalDecl()
     {
-        return _keyvalDecl_;
+        return this._keyvalDecl_;
     }
 
-    public void setKeyvalDecl(List list)
+    public void setKeyvalDecl(List<PKeyvalDecl> list)
     {
-        _keyvalDecl_.clear();
-        _keyvalDecl_.addAll(list);
+        this._keyvalDecl_.clear();
+        this._keyvalDecl_.addAll(list);
+        for(PKeyvalDecl e : list)
+        {
+            if(e.parent() != null)
+            {
+                e.parent().removeChild(e);
+            }
+
+            e.parent(this);
+        }
     }
 
     public TRBrace getRBrace()
     {
-        return _rBrace_;
+        return this._rBrace_;
     }
 
     public void setRBrace(TRBrace node)
     {
-        if(_rBrace_ != null)
+        if(this._rBrace_ != null)
         {
-            _rBrace_.parent(null);
+            this._rBrace_.parent(null);
         }
 
         if(node != null)
@@ -131,66 +142,73 @@ public final class AEntrybraceEntry extends PEntry
             node.parent(this);
         }
 
-        _rBrace_ = node;
+        this._rBrace_ = node;
     }
 
+    @Override
     public String toString()
     {
         return ""
-            + toString(_entryDef_)
-            + toString(_identifier_)
-            + toString(_keyvalDecl_)
-            + toString(_rBrace_);
+            + toString(this._entryDef_)
+            + toString(this._identifier_)
+            + toString(this._keyvalDecl_)
+            + toString(this._rBrace_);
     }
 
-    void removeChild(Node child)
+    @Override
+    void removeChild(@SuppressWarnings("unused") Node child)
     {
-        if(_entryDef_ == child)
+        // Remove child
+        if(this._entryDef_ == child)
         {
-            _entryDef_ = null;
+            this._entryDef_ = null;
             return;
         }
 
-        if(_identifier_ == child)
+        if(this._identifier_ == child)
         {
-            _identifier_ = null;
+            this._identifier_ = null;
             return;
         }
 
-        if(_keyvalDecl_.remove(child))
+        if(this._keyvalDecl_.remove(child))
         {
             return;
         }
 
-        if(_rBrace_ == child)
+        if(this._rBrace_ == child)
         {
-            _rBrace_ = null;
+            this._rBrace_ = null;
             return;
         }
 
+        throw new RuntimeException("Not a child.");
     }
 
-    void replaceChild(Node oldChild, Node newChild)
+    @Override
+    void replaceChild(@SuppressWarnings("unused") Node oldChild, @SuppressWarnings("unused") Node newChild)
     {
-        if(_entryDef_ == oldChild)
+        // Replace child
+        if(this._entryDef_ == oldChild)
         {
             setEntryDef((PEntryDef) newChild);
             return;
         }
 
-        if(_identifier_ == oldChild)
+        if(this._identifier_ == oldChild)
         {
             setIdentifier((TIdentifier) newChild);
             return;
         }
 
-        for(ListIterator i = _keyvalDecl_.listIterator(); i.hasNext();)
+        for(ListIterator<PKeyvalDecl> i = this._keyvalDecl_.listIterator(); i.hasNext();)
         {
             if(i.next() == oldChild)
             {
                 if(newChild != null)
                 {
-                    i.set(newChild);
+                    i.set((PKeyvalDecl) newChild);
+                    newChild.parent(this);
                     oldChild.parent(null);
                     return;
                 }
@@ -201,33 +219,12 @@ public final class AEntrybraceEntry extends PEntry
             }
         }
 
-        if(_rBrace_ == oldChild)
+        if(this._rBrace_ == oldChild)
         {
             setRBrace((TRBrace) newChild);
             return;
         }
 
-    }
-
-    private class KeyvalDecl_Cast implements Cast
-    {
-        public Object cast(Object o)
-        {
-            PKeyvalDecl node = (PKeyvalDecl) o;
-
-            if((node.parent() != null) &&
-                (node.parent() != AEntrybraceEntry.this))
-            {
-                node.parent().removeChild(node);
-            }
-
-            if((node.parent() == null) ||
-                (node.parent() != AEntrybraceEntry.this))
-            {
-                node.parent(AEntrybraceEntry.this);
-            }
-
-            return node;
-        }
+        throw new RuntimeException("Not a child.");
     }
 }

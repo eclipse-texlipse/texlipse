@@ -2,27 +2,31 @@
 
 package net.sourceforge.texlipse.bibparser.node;
 
-import java.util.*;
 import net.sourceforge.texlipse.bibparser.analysis.*;
 
+@SuppressWarnings("nls")
 public final class AEntryDef extends PEntryDef
 {
     private TEntryName _entryName_;
 
     public AEntryDef()
     {
+        // Constructor
     }
 
     public AEntryDef(
-        TEntryName _entryName_)
+        @SuppressWarnings("hiding") TEntryName _entryName_)
     {
+        // Constructor
         setEntryName(_entryName_);
 
     }
+
+    @Override
     public Object clone()
     {
         return new AEntryDef(
-            (TEntryName) cloneNode(_entryName_));
+            cloneNode(this._entryName_));
     }
 
     public void apply(Switch sw)
@@ -32,14 +36,14 @@ public final class AEntryDef extends PEntryDef
 
     public TEntryName getEntryName()
     {
-        return _entryName_;
+        return this._entryName_;
     }
 
     public void setEntryName(TEntryName node)
     {
-        if(_entryName_ != null)
+        if(this._entryName_ != null)
         {
-            _entryName_.parent(null);
+            this._entryName_.parent(null);
         }
 
         if(node != null)
@@ -52,32 +56,39 @@ public final class AEntryDef extends PEntryDef
             node.parent(this);
         }
 
-        _entryName_ = node;
+        this._entryName_ = node;
     }
 
+    @Override
     public String toString()
     {
         return ""
-            + toString(_entryName_);
+            + toString(this._entryName_);
     }
 
-    void removeChild(Node child)
+    @Override
+    void removeChild(@SuppressWarnings("unused") Node child)
     {
-        if(_entryName_ == child)
+        // Remove child
+        if(this._entryName_ == child)
         {
-            _entryName_ = null;
+            this._entryName_ = null;
             return;
         }
 
+        throw new RuntimeException("Not a child.");
     }
 
-    void replaceChild(Node oldChild, Node newChild)
+    @Override
+    void replaceChild(@SuppressWarnings("unused") Node oldChild, @SuppressWarnings("unused") Node newChild)
     {
-        if(_entryName_ == oldChild)
+        // Replace child
+        if(this._entryName_ == oldChild)
         {
             setEntryName((TEntryName) newChild);
             return;
         }
 
+        throw new RuntimeException("Not a child.");
     }
 }

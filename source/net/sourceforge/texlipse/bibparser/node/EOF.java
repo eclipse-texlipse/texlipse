@@ -4,6 +4,7 @@ package net.sourceforge.texlipse.bibparser.node;
 
 import net.sourceforge.texlipse.bibparser.analysis.*;
 
+@SuppressWarnings("nls")
 public final class EOF extends Token
 {
     public EOF()
@@ -18,6 +19,7 @@ public final class EOF extends Token
         setPos(pos);
     }
 
+    @Override
     public Object clone()
     {
         return new EOF(getLine(), getPos());

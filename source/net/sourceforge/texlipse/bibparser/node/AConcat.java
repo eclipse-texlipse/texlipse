@@ -2,27 +2,31 @@
 
 package net.sourceforge.texlipse.bibparser.node;
 
-import java.util.*;
 import net.sourceforge.texlipse.bibparser.analysis.*;
 
+@SuppressWarnings("nls")
 public final class AConcat extends PConcat
 {
     private PValOrSid _valOrSid_;
 
     public AConcat()
     {
+        // Constructor
     }
 
     public AConcat(
-        PValOrSid _valOrSid_)
+        @SuppressWarnings("hiding") PValOrSid _valOrSid_)
     {
+        // Constructor
         setValOrSid(_valOrSid_);
 
     }
+
+    @Override
     public Object clone()
     {
         return new AConcat(
-            (PValOrSid) cloneNode(_valOrSid_));
+            cloneNode(this._valOrSid_));
     }
 
     public void apply(Switch sw)
@@ -32,14 +36,14 @@ public final class AConcat extends PConcat
 
     public PValOrSid getValOrSid()
     {
-        return _valOrSid_;
+        return this._valOrSid_;
     }
 
     public void setValOrSid(PValOrSid node)
     {
-        if(_valOrSid_ != null)
+        if(this._valOrSid_ != null)
         {
-            _valOrSid_.parent(null);
+            this._valOrSid_.parent(null);
         }
 
         if(node != null)
@@ -52,32 +56,39 @@ public final class AConcat extends PConcat
             node.parent(this);
         }
 
-        _valOrSid_ = node;
+        this._valOrSid_ = node;
     }
 
+    @Override
     public String toString()
     {
         return ""
-            + toString(_valOrSid_);
+            + toString(this._valOrSid_);
     }
 
-    void removeChild(Node child)
+    @Override
+    void removeChild(@SuppressWarnings("unused") Node child)
     {
-        if(_valOrSid_ == child)
+        // Remove child
+        if(this._valOrSid_ == child)
         {
-            _valOrSid_ = null;
+            this._valOrSid_ = null;
             return;
         }
 
+        throw new RuntimeException("Not a child.");
     }
 
-    void replaceChild(Node oldChild, Node newChild)
+    @Override
+    void replaceChild(@SuppressWarnings("unused") Node oldChild, @SuppressWarnings("unused") Node newChild)
     {
-        if(_valOrSid_ == oldChild)
+        // Replace child
+        if(this._valOrSid_ == oldChild)
         {
             setValOrSid((PValOrSid) newChild);
             return;
         }
 
+        throw new RuntimeException("Not a child.");
     }
 }

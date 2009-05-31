@@ -1,7 +1,7 @@
 /*
  * $Id$
  *
- * Copyright (c) 2004-2005 by the TeXlapse Team.
+ * Copyright (c) 2004-2009 by the TeXlapse Team.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -12,9 +12,9 @@
  * A BibTeX parser
  *
  * @author Oskar Ojala
+ * @author Boris von Loesch
  */
 
-//Package bibtex6;
 Package net.sourceforge.texlipse.bibparser;
 
 // ----------------------------------------------------------------------------
@@ -41,7 +41,9 @@ Helpers
 
     digit = ['0'..'9'];
     letter = ['a'..'z']|['A'..'Z'];
-    punctuation = ':'|'.'|'-'|'+'|'/'|'_'; // maybe add '
+    //punctuation = ':'|'.'|'-'|'+'|'/'|'_';
+    not_legal_in_ident = ['"'+['{'+['}'+['('+[')'+[','+['='+'#']]]]]]];
+    identifier_character = [input_character - [ws + not_legal_in_ident]]; 
 
 // ----------------------------------------------------------------------------
 States
@@ -78,7 +80,7 @@ Tokens
     {assign} sharp = '#';
 
     {assign} number = digit+;
-    {inentry, assign} identifier = (letter|digit|punctuation)+;
+    {inentry, assign} identifier = (identifier_character)+;
 
     {assign->qstring, qstring->assign} quotec = '"';
     {qstring} string_literal = q_str_char*;

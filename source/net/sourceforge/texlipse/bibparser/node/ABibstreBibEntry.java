@@ -2,27 +2,31 @@
 
 package net.sourceforge.texlipse.bibparser.node;
 
-import java.util.*;
 import net.sourceforge.texlipse.bibparser.analysis.*;
 
+@SuppressWarnings("nls")
 public final class ABibstreBibEntry extends PBibEntry
 {
     private PStringEntry _stringEntry_;
 
     public ABibstreBibEntry()
     {
+        // Constructor
     }
 
     public ABibstreBibEntry(
-        PStringEntry _stringEntry_)
+        @SuppressWarnings("hiding") PStringEntry _stringEntry_)
     {
+        // Constructor
         setStringEntry(_stringEntry_);
 
     }
+
+    @Override
     public Object clone()
     {
         return new ABibstreBibEntry(
-            (PStringEntry) cloneNode(_stringEntry_));
+            cloneNode(this._stringEntry_));
     }
 
     public void apply(Switch sw)
@@ -32,14 +36,14 @@ public final class ABibstreBibEntry extends PBibEntry
 
     public PStringEntry getStringEntry()
     {
-        return _stringEntry_;
+        return this._stringEntry_;
     }
 
     public void setStringEntry(PStringEntry node)
     {
-        if(_stringEntry_ != null)
+        if(this._stringEntry_ != null)
         {
-            _stringEntry_.parent(null);
+            this._stringEntry_.parent(null);
         }
 
         if(node != null)
@@ -52,32 +56,39 @@ public final class ABibstreBibEntry extends PBibEntry
             node.parent(this);
         }
 
-        _stringEntry_ = node;
+        this._stringEntry_ = node;
     }
 
+    @Override
     public String toString()
     {
         return ""
-            + toString(_stringEntry_);
+            + toString(this._stringEntry_);
     }
 
-    void removeChild(Node child)
+    @Override
+    void removeChild(@SuppressWarnings("unused") Node child)
     {
-        if(_stringEntry_ == child)
+        // Remove child
+        if(this._stringEntry_ == child)
         {
-            _stringEntry_ = null;
+            this._stringEntry_ = null;
             return;
         }
 
+        throw new RuntimeException("Not a child.");
     }
 
-    void replaceChild(Node oldChild, Node newChild)
+    @Override
+    void replaceChild(@SuppressWarnings("unused") Node oldChild, @SuppressWarnings("unused") Node newChild)
     {
-        if(_stringEntry_ == oldChild)
+        // Replace child
+        if(this._stringEntry_ == oldChild)
         {
             setStringEntry((PStringEntry) newChild);
             return;
         }
 
+        throw new RuntimeException("Not a child.");
     }
 }

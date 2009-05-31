@@ -5,37 +5,39 @@ package net.sourceforge.texlipse.bibparser.node;
 import java.util.*;
 import net.sourceforge.texlipse.bibparser.analysis.*;
 
+@SuppressWarnings("nls")
 public final class AKeyvalDecl extends PKeyvalDecl
 {
     private TIdentifier _identifier_;
     private PValOrSid _valOrSid_;
-    private final LinkedList _concat_ = new TypedLinkedList(new Concat_Cast());
+    private final LinkedList<PConcat> _concat_ = new LinkedList<PConcat>();
 
     public AKeyvalDecl()
     {
+        // Constructor
     }
 
     public AKeyvalDecl(
-        TIdentifier _identifier_,
-        PValOrSid _valOrSid_,
-        List _concat_)
+        @SuppressWarnings("hiding") TIdentifier _identifier_,
+        @SuppressWarnings("hiding") PValOrSid _valOrSid_,
+        @SuppressWarnings("hiding") List<PConcat> _concat_)
     {
+        // Constructor
         setIdentifier(_identifier_);
 
         setValOrSid(_valOrSid_);
 
-        {
-            this._concat_.clear();
-            this._concat_.addAll(_concat_);
-        }
+        setConcat(_concat_);
 
     }
+
+    @Override
     public Object clone()
     {
         return new AKeyvalDecl(
-            (TIdentifier) cloneNode(_identifier_),
-            (PValOrSid) cloneNode(_valOrSid_),
-            cloneList(_concat_));
+            cloneNode(this._identifier_),
+            cloneNode(this._valOrSid_),
+            cloneList(this._concat_));
     }
 
     public void apply(Switch sw)
@@ -45,14 +47,14 @@ public final class AKeyvalDecl extends PKeyvalDecl
 
     public TIdentifier getIdentifier()
     {
-        return _identifier_;
+        return this._identifier_;
     }
 
     public void setIdentifier(TIdentifier node)
     {
-        if(_identifier_ != null)
+        if(this._identifier_ != null)
         {
-            _identifier_.parent(null);
+            this._identifier_.parent(null);
         }
 
         if(node != null)
@@ -65,19 +67,19 @@ public final class AKeyvalDecl extends PKeyvalDecl
             node.parent(this);
         }
 
-        _identifier_ = node;
+        this._identifier_ = node;
     }
 
     public PValOrSid getValOrSid()
     {
-        return _valOrSid_;
+        return this._valOrSid_;
     }
 
     public void setValOrSid(PValOrSid node)
     {
-        if(_valOrSid_ != null)
+        if(this._valOrSid_ != null)
         {
-            _valOrSid_.parent(null);
+            this._valOrSid_.parent(null);
         }
 
         if(node != null)
@@ -90,70 +92,86 @@ public final class AKeyvalDecl extends PKeyvalDecl
             node.parent(this);
         }
 
-        _valOrSid_ = node;
+        this._valOrSid_ = node;
     }
 
-    public LinkedList getConcat()
+    public LinkedList<PConcat> getConcat()
     {
-        return _concat_;
+        return this._concat_;
     }
 
-    public void setConcat(List list)
+    public void setConcat(List<PConcat> list)
     {
-        _concat_.clear();
-        _concat_.addAll(list);
+        this._concat_.clear();
+        this._concat_.addAll(list);
+        for(PConcat e : list)
+        {
+            if(e.parent() != null)
+            {
+                e.parent().removeChild(e);
+            }
+
+            e.parent(this);
+        }
     }
 
+    @Override
     public String toString()
     {
         return ""
-            + toString(_identifier_)
-            + toString(_valOrSid_)
-            + toString(_concat_);
+            + toString(this._identifier_)
+            + toString(this._valOrSid_)
+            + toString(this._concat_);
     }
 
-    void removeChild(Node child)
+    @Override
+    void removeChild(@SuppressWarnings("unused") Node child)
     {
-        if(_identifier_ == child)
+        // Remove child
+        if(this._identifier_ == child)
         {
-            _identifier_ = null;
+            this._identifier_ = null;
             return;
         }
 
-        if(_valOrSid_ == child)
+        if(this._valOrSid_ == child)
         {
-            _valOrSid_ = null;
+            this._valOrSid_ = null;
             return;
         }
 
-        if(_concat_.remove(child))
+        if(this._concat_.remove(child))
         {
             return;
         }
 
+        throw new RuntimeException("Not a child.");
     }
 
-    void replaceChild(Node oldChild, Node newChild)
+    @Override
+    void replaceChild(@SuppressWarnings("unused") Node oldChild, @SuppressWarnings("unused") Node newChild)
     {
-        if(_identifier_ == oldChild)
+        // Replace child
+        if(this._identifier_ == oldChild)
         {
             setIdentifier((TIdentifier) newChild);
             return;
         }
 
-        if(_valOrSid_ == oldChild)
+        if(this._valOrSid_ == oldChild)
         {
             setValOrSid((PValOrSid) newChild);
             return;
         }
 
-        for(ListIterator i = _concat_.listIterator(); i.hasNext();)
+        for(ListIterator<PConcat> i = this._concat_.listIterator(); i.hasNext();)
         {
             if(i.next() == oldChild)
             {
                 if(newChild != null)
                 {
-                    i.set(newChild);
+                    i.set((PConcat) newChild);
+                    newChild.parent(this);
                     oldChild.parent(null);
                     return;
                 }
@@ -164,27 +182,6 @@ public final class AKeyvalDecl extends PKeyvalDecl
             }
         }
 
-    }
-
-    private class Concat_Cast implements Cast
-    {
-        public Object cast(Object o)
-        {
-            PConcat node = (PConcat) o;
-
-            if((node.parent() != null) &&
-                (node.parent() != AKeyvalDecl.this))
-            {
-                node.parent().removeChild(node);
-            }
-
-            if((node.parent() == null) ||
-                (node.parent() != AKeyvalDecl.this))
-            {
-                node.parent(AKeyvalDecl.this);
-            }
-
-            return node;
-        }
+        throw new RuntimeException("Not a child.");
     }
 }

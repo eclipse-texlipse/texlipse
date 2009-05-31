@@ -2,9 +2,9 @@
 
 package net.sourceforge.texlipse.bibparser.node;
 
-import java.util.*;
 import net.sourceforge.texlipse.bibparser.analysis.*;
 
+@SuppressWarnings("nls")
 public final class AStrparenStringEntry extends PStringEntry
 {
     private TIdentifier _identifier_;
@@ -12,22 +12,26 @@ public final class AStrparenStringEntry extends PStringEntry
 
     public AStrparenStringEntry()
     {
+        // Constructor
     }
 
     public AStrparenStringEntry(
-        TIdentifier _identifier_,
-        TStringLiteral _stringLiteral_)
+        @SuppressWarnings("hiding") TIdentifier _identifier_,
+        @SuppressWarnings("hiding") TStringLiteral _stringLiteral_)
     {
+        // Constructor
         setIdentifier(_identifier_);
 
         setStringLiteral(_stringLiteral_);
 
     }
+
+    @Override
     public Object clone()
     {
         return new AStrparenStringEntry(
-            (TIdentifier) cloneNode(_identifier_),
-            (TStringLiteral) cloneNode(_stringLiteral_));
+            cloneNode(this._identifier_),
+            cloneNode(this._stringLiteral_));
     }
 
     public void apply(Switch sw)
@@ -37,14 +41,14 @@ public final class AStrparenStringEntry extends PStringEntry
 
     public TIdentifier getIdentifier()
     {
-        return _identifier_;
+        return this._identifier_;
     }
 
     public void setIdentifier(TIdentifier node)
     {
-        if(_identifier_ != null)
+        if(this._identifier_ != null)
         {
-            _identifier_.parent(null);
+            this._identifier_.parent(null);
         }
 
         if(node != null)
@@ -57,19 +61,19 @@ public final class AStrparenStringEntry extends PStringEntry
             node.parent(this);
         }
 
-        _identifier_ = node;
+        this._identifier_ = node;
     }
 
     public TStringLiteral getStringLiteral()
     {
-        return _stringLiteral_;
+        return this._stringLiteral_;
     }
 
     public void setStringLiteral(TStringLiteral node)
     {
-        if(_stringLiteral_ != null)
+        if(this._stringLiteral_ != null)
         {
-            _stringLiteral_.parent(null);
+            this._stringLiteral_.parent(null);
         }
 
         if(node != null)
@@ -82,45 +86,52 @@ public final class AStrparenStringEntry extends PStringEntry
             node.parent(this);
         }
 
-        _stringLiteral_ = node;
+        this._stringLiteral_ = node;
     }
 
+    @Override
     public String toString()
     {
         return ""
-            + toString(_identifier_)
-            + toString(_stringLiteral_);
+            + toString(this._identifier_)
+            + toString(this._stringLiteral_);
     }
 
-    void removeChild(Node child)
+    @Override
+    void removeChild(@SuppressWarnings("unused") Node child)
     {
-        if(_identifier_ == child)
+        // Remove child
+        if(this._identifier_ == child)
         {
-            _identifier_ = null;
+            this._identifier_ = null;
             return;
         }
 
-        if(_stringLiteral_ == child)
+        if(this._stringLiteral_ == child)
         {
-            _stringLiteral_ = null;
+            this._stringLiteral_ = null;
             return;
         }
 
+        throw new RuntimeException("Not a child.");
     }
 
-    void replaceChild(Node oldChild, Node newChild)
+    @Override
+    void replaceChild(@SuppressWarnings("unused") Node oldChild, @SuppressWarnings("unused") Node newChild)
     {
-        if(_identifier_ == oldChild)
+        // Replace child
+        if(this._identifier_ == oldChild)
         {
             setIdentifier((TIdentifier) newChild);
             return;
         }
 
-        if(_stringLiteral_ == oldChild)
+        if(this._stringLiteral_ == oldChild)
         {
             setStringLiteral((TStringLiteral) newChild);
             return;
         }
 
+        throw new RuntimeException("Not a child.");
     }
 }

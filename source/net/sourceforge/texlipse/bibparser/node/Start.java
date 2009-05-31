@@ -4,6 +4,7 @@ package net.sourceforge.texlipse.bibparser.node;
 
 import net.sourceforge.texlipse.bibparser.analysis.*;
 
+@SuppressWarnings("nls")
 public final class Start extends Node
 {
     private PBibtex _pBibtex_;
@@ -11,21 +12,23 @@ public final class Start extends Node
 
     public Start()
     {
+        // Empty body
     }
 
     public Start(
-        PBibtex _pBibtex_,
-        EOF _eof_)
+        @SuppressWarnings("hiding") PBibtex _pBibtex_,
+        @SuppressWarnings("hiding") EOF _eof_)
     {
         setPBibtex(_pBibtex_);
         setEOF(_eof_);
     }
 
+    @Override
     public Object clone()
     {
         return new Start(
-            (PBibtex) cloneNode(_pBibtex_),
-            (EOF) cloneNode(_eof_));
+            cloneNode(this._pBibtex_),
+            cloneNode(this._eof_));
     }
 
     public void apply(Switch sw)
@@ -35,14 +38,14 @@ public final class Start extends Node
 
     public PBibtex getPBibtex()
     {
-        return _pBibtex_;
+        return this._pBibtex_;
     }
 
     public void setPBibtex(PBibtex node)
     {
-        if(_pBibtex_ != null)
+        if(this._pBibtex_ != null)
         {
-            _pBibtex_.parent(null);
+            this._pBibtex_.parent(null);
         }
 
         if(node != null)
@@ -55,19 +58,19 @@ public final class Start extends Node
             node.parent(this);
         }
 
-        _pBibtex_ = node;
+        this._pBibtex_ = node;
     }
 
     public EOF getEOF()
     {
-        return _eof_;
+        return this._eof_;
     }
 
     public void setEOF(EOF node)
     {
-        if(_eof_ != null)
+        if(this._eof_ != null)
         {
-            _eof_.parent(null);
+            this._eof_.parent(null);
         }
 
         if(node != null)
@@ -80,43 +83,50 @@ public final class Start extends Node
             node.parent(this);
         }
 
-        _eof_ = node;
+        this._eof_ = node;
     }
 
+    @Override
     void removeChild(Node child)
     {
-        if(_pBibtex_ == child)
+        if(this._pBibtex_ == child)
         {
-            _pBibtex_ = null;
+            this._pBibtex_ = null;
             return;
         }
 
-        if(_eof_ == child)
+        if(this._eof_ == child)
         {
-            _eof_ = null;
+            this._eof_ = null;
             return;
         }
+
+        throw new RuntimeException("Not a child.");
     }
 
+    @Override
     void replaceChild(Node oldChild, Node newChild)
     {
-        if(_pBibtex_ == oldChild)
+        if(this._pBibtex_ == oldChild)
         {
             setPBibtex((PBibtex) newChild);
             return;
         }
 
-        if(_eof_ == oldChild)
+        if(this._eof_ == oldChild)
         {
             setEOF((EOF) newChild);
             return;
         }
+
+        throw new RuntimeException("Not a child.");
     }
 
+    @Override
     public String toString()
     {
         return "" +
-            toString(_pBibtex_) +
-            toString(_eof_);
+            toString(this._pBibtex_) +
+            toString(this._eof_);
     }
 }

@@ -4,4 +4,5 @@ package net.sourceforge.texlipse.bibparser.node;
 
 public abstract class PConcat extends Node
 {
+    // Empty body
 }

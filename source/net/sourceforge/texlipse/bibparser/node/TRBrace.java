@@ -4,6 +4,7 @@ package net.sourceforge.texlipse.bibparser.node;
 
 import net.sourceforge.texlipse.bibparser.analysis.*;
 
+@SuppressWarnings("nls")
 public final class TRBrace extends Token
 {
     public TRBrace()
@@ -18,6 +19,7 @@ public final class TRBrace extends Token
         setPos(pos);
     }
 
+    @Override
     public Object clone()
     {
       return new TRBrace(getLine(), getPos());
@@ -28,7 +30,8 @@ public final class TRBrace extends Token
         ((Analysis) sw).caseTRBrace(this);
     }
 
-    public void setText(String text)
+    @Override
+    public void setText(@SuppressWarnings("unused") String text)
     {
         throw new RuntimeException("Cannot change TRBrace text.");
     }

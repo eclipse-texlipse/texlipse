@@ -4,6 +4,7 @@ package net.sourceforge.texlipse.bibparser.node;
 
 import net.sourceforge.texlipse.bibparser.analysis.*;
 
+@SuppressWarnings("nls")
 public final class TWhitespace extends Token
 {
     public TWhitespace(String text)
@@ -18,6 +19,7 @@ public final class TWhitespace extends Token
         setPos(pos);
     }
 
+    @Override
     public Object clone()
     {
       return new TWhitespace(getText(), getLine(), getPos());

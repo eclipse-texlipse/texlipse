@@ -285,7 +285,7 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
         //The temp file should be in the main folder
         IContainer folder = TexlipseProperties.getProjectSourceDir(project);
         
-        IFile tmpFile = folder.getFile(new Path("tempPartial0000.tex"));
+        IFile tmpFile = folder.getFile(new Path("tempPartial00000.tex"));
         TexlipseProperties.setSessionProperty(project, TexlipseProperties.PARTIAL_BUILD_FILE, tmpFile);
         if (tmpFile == null) {
             throw new CoreException(TexlipsePlugin.stat("Can't create temp file"));
@@ -323,7 +323,7 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
 
         // generate the file contents
         //StringBuffer sb = readFile(file.getContents(), monitor);
-        StringBuilder sb = new StringBuilder ("\\include{");
+        StringBuilder sb = new StringBuilder ("\\input{");
         String name = ViewerManager.resolveRelativePath(TexlipseProperties.getProjectSourceDir(project).getProjectRelativePath(), 
                 file.getProjectRelativePath());
         name = name.substring(0, name.lastIndexOf('.') + 1);
@@ -436,14 +436,14 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
         sourceDir.refreshLocal(IProject.DEPTH_INFINITE, monitor);
         
         
+        // mark output files as derived
+        markOutFile(project, sourceDir);
         try { // possibly move output & temp files away from the source dir
             moveOutput(project, sourceDir, monitor);
         } catch (CoreException e) {
             throw new BuilderCoreException(TexlipsePlugin.stat("Could not write to output file. Please close the output document in your viewer and rebuild."));
         }
         moveTempFiles(project, monitor);
-        // mark output files as derived
-        markOutFile(project, sourceDir);
         
         monitor.done();
 //-------------------------        
@@ -566,7 +566,8 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
         }
         
         String outputFileName = TexlipseProperties.getOutputFileName(project);
-        sourceDir.findMember(outputFileName).setDerived(true);
+        IResource r = sourceDir.findMember(outputFileName);
+        if (r != null) r.setDerived(true);
     }
     
     /**

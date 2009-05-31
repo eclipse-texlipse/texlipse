@@ -281,7 +281,10 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
             return;
         }
         String tempFileContents = getTempFileContents(file, project, monitor);
-
+        if (tempFileContents == null) {
+            //Can not create a valid tmp file
+            return;
+        }
         //The temp file should be in the main folder
         IContainer folder = TexlipseProperties.getProjectSourceDir(project);
         
@@ -311,13 +314,17 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
      * @param file
      * @param project
      * @param monitor
-     * @return
+     * @return The content of the tmp file or null if no preamble was found
      * @throws CoreException
      */
     private String getTempFileContents(IFile file, IProject project, final IProgressMonitor monitor) throws CoreException {
         
         // get information from the main file
         String preamble = (String) TexlipseProperties.getSessionProperty(project, TexlipseProperties.PREAMBLE_PROPERTY);
+        if (preamble == null) {
+            BuilderRegistry.printToConsole(TexlipsePlugin.getResourceString("builderNoPreambleFound"));
+            return null;
+        }
         String bibsty = (String) TexlipseProperties.getSessionProperty(project, TexlipseProperties.BIBSTYLE_PROPERTY);
         String[] bibli = (String[]) TexlipseProperties.getSessionProperty(project, TexlipseProperties.BIBFILE_PROPERTY);
 
@@ -766,7 +773,7 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
                     //Check if there is a tex file with that name exists in the folder
                     String cc = current.getName().substring(0, current.getName().length()-current.getFileExtension().length());
                     for (IResource r : res) {
-                        if (r.getName().equals(cc+"tex") || r.getName().equals(cc+"sty") || r.getName().equals(cc+"cls")) {
+                        if (r.getName().equals(cc+"tex") || r.getName().equals(cc+"sty") || r.getName().equals(cc+"cls") || r.getName().equals(cc+"ltx")) {
                             IPath newPath = destination.getFullPath().addTrailingSeparator().append(current.getName());
                             current.move(newPath, true, monitor);
                             if (markAsDerived) current.setDerived(true);

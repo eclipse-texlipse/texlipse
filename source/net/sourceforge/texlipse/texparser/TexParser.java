@@ -85,10 +85,10 @@ public class TexParser {
     }
     
     static String extractLaTeXPreamble(String input) {
-        if (LatexParserUtils.findCommand(input, "\\documentclass", 0) == -1
+        /*if (LatexParserUtils.findCommand(input, "\\documentclass", 0) == -1
                 && LatexParserUtils.findCommand(input, "\\documentstyle", 0) == -1) {
             return null;
-        }
+        }*/
         
         IRegion region = LatexParserUtils.findBeginEnvironment(input, "document", 0);
         if (region != null) {

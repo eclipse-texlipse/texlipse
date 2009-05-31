@@ -32,7 +32,7 @@ public class RunBibTeXOnNextBuildAction implements IEditorActionDelegate {
     }
 
     public void run(IAction action) {
-        IResource res = (IResource) editor.getAdapter(IResource.class);
+        IResource res = (IResource) editor.getEditorInput().getAdapter(IResource.class);
         if (res == null) return;
         
         IProject project = res.getProject();

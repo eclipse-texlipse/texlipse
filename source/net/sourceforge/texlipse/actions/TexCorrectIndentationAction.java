@@ -12,31 +12,30 @@ package net.sourceforge.texlipse.actions;
 import java.util.Arrays;
 
 import net.sourceforge.texlipse.TexlipsePlugin;
-import net.sourceforge.texlipse.editor.TexEditor;
+import net.sourceforge.texlipse.editor.TexAutoIndentStrategy;
 import net.sourceforge.texlipse.editor.TexEditorTools;
 import net.sourceforge.texlipse.properties.TexlipseProperties;
 
 import org.eclipse.jface.action.IAction;
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.TextSelection;
+import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.IEditorActionDelegate;
 import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants;
 import org.eclipse.ui.texteditor.ITextEditor;
 
 
 /**
  * @author Laura Takkinen
+ * @author Boris von Loesch
  *
  * Handles indentation quick fix when user selects text area 
  * and performs "Correct Indentation" action. (Correct Indentation button or Ctrl+I)
  */
 public class TexCorrectIndentationAction implements IEditorActionDelegate {
 	private IEditorPart targetEditor;
-	private static TexSelections selection;
+	private TexSelections selection;
 	private TexEditorTools tools;
 	private String indentationString = "";
 	private String[] indentationItems;
@@ -52,9 +51,9 @@ public class TexCorrectIndentationAction implements IEditorActionDelegate {
 	/**
 	 * Returns the TexEditor.
 	 */
-	private TexEditor getTexEditor() {
-		if (targetEditor instanceof TexEditor) {
-			return (TexEditor) targetEditor;
+	private ITextEditor getTexEditor() {
+		if (targetEditor instanceof ITextEditor) {
+			return (ITextEditor) targetEditor;
 		} else {
 			throw new RuntimeException("Expecting text editor. Found:"+targetEditor.getClass().getName());
 		}
@@ -64,7 +63,7 @@ public class TexCorrectIndentationAction implements IEditorActionDelegate {
 	 * @see org.eclipse.ui.IActionDelegate#run(org.eclipse.jface.action.IAction)
 	 */
 	public void run(IAction action) {
-		setIndetationPreferenceInfo(getTexEditor().getPreferences());
+		setIndetationPreferenceInfo();
 		
 		//no environments to indent
 		if (this.indentationItems.length == 0) {
@@ -84,35 +83,23 @@ public class TexCorrectIndentationAction implements IEditorActionDelegate {
 	}
 	
 	/**
-	 * Initializes indentation information from preferencepage
+	 * Initializes indentation information from preferences
 	 */
-	private void setIndetationPreferenceInfo(IPreferenceStore editorPreferenceStore) {
-		String indentationEnvironments = TexlipsePlugin.getPreference(TexlipseProperties.INDENTATION_ENVS);
+	private void setIndetationPreferenceInfo() {
+        indentationItems = TexlipsePlugin.getPreferenceArray(TexlipseProperties.INDENTATION_ENVS);
+        Arrays.sort(indentationItems);
 		
-		int indentationLevel = TexlipsePlugin.getDefault().getPreferenceStore().getInt(TexlipseProperties.INDENTATION_LEVEL);
-		this.tabWidth = editorPreferenceStore.getInt(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_TAB_WIDTH);
+		//this.tabWidth = editorPreferenceStore.getInt(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_TAB_WIDTH);
 		
-		this.indentationString = "";
-		for (int i = 0; i < indentationLevel; i++) {
-			this.indentationString += " ";
-		}
-		
-		if (indentationEnvironments != null && indentationEnvironments.indexOf(',') > 0) {
-			String[] environments = indentationEnvironments.split(",");
-			
-			this.indentationItems = new String[environments.length];
-			for (int i = 0; i < environments.length; i++) {
-				this.indentationItems[i] = environments[i].trim();
-			}
-		}		
-		Arrays.sort(this.indentationItems);
+		indentationString = TexAutoIndentStrategy.getIndentationString();
 	}
 	
 	/**
 	 * Checks if selection needs indentation and corrects it when necessary.
 	 * @throws BadLocationException
 	 */
-	private void indent() throws BadLocationException {		
+	private void indent() throws BadLocationException {	
+		//FIXME: Refactor
 		int index = 0;
 		boolean fix = false;
 		IDocument document = selection.getDocument();
@@ -122,7 +109,7 @@ public class TexCorrectIndentationAction implements IEditorActionDelegate {
 		
 		try {
 			lines = document.get(document.getLineOffset(selection.getStartLineIndex()), selection.getSelLength()).split(delimiter);
-		} catch(Exception e) {//for example new empty file
+		} catch(BadLocationException e) {//for example new empty file
 			return;
 		}	
 		//fix lines on at the time
@@ -191,7 +178,7 @@ public class TexCorrectIndentationAction implements IEditorActionDelegate {
 	 * @see org.eclipse.ui.IActionDelegate#selectionChanged(org.eclipse.jface.action.IAction, org.eclipse.jface.viewers.ISelection)
 	 */
 	public void selectionChanged(IAction action, ISelection selection) {
-		if (selection instanceof TextSelection) {
+		if (selection instanceof ITextSelection) {
 			action.setEnabled(true);
 			return;
 		}

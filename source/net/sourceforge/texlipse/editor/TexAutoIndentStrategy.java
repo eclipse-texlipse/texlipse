@@ -356,7 +356,7 @@ public class TexAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
             int currentLineNr = lineNr;
             
             String indentation = null;
-            while (lineNr > 1) {
+            while (lineNr >= 0) {
             	IRegion r = d.getLineInformation(lineNr);
             	String prevLine = d.get(r.getOffset(), r.getLength());
             	if (indentation == null) indentation = getIndentation(prevLine);

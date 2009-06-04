@@ -22,9 +22,11 @@ import net.sourceforge.texlipse.model.TexStyleCompletionManager;
 import net.sourceforge.texlipse.spelling.SpellChecker;
 import net.sourceforge.texlipse.templates.TexContextType;
 import net.sourceforge.texlipse.templates.TexTemplateCompletion;
+import net.sourceforge.texlipse.texparser.LatexParserUtils;
 
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.contentassist.CompletionProposal;
 import org.eclipse.jface.text.contentassist.ContextInformation;
@@ -302,6 +304,34 @@ public class TexCompletionProcessor implements IContentAssistProcessor {
     }
 
     /**
+     * Returns a replacement String for an ICompleteProposal if there is an open
+     * environment
+     * @param doc IDocument.get()
+     * @param offset current offset
+     * @return null if no open environment was found, else end{+name+}
+     */
+    static String environmentEnd(String doc, int offset) {
+        int o = offset;
+        while ((o=doc.lastIndexOf("\\begin", o)) >= 0) {
+            IRegion r = LatexParserUtils.getCommand(doc, o+1);
+            if (r != null) {
+                String command = doc.substring(r.getOffset(), r.getOffset() + r.getLength());
+                if ("\\begin".equals(command)) {
+                    IRegion r2 = LatexParserUtils.getCommandArgument(doc, o);
+                    if (r2 != null) {
+                        String envName = doc.substring(r2.getOffset(), r2.getOffset() + r2.getLength());
+                        if (TexAutoIndentStrategy.needsEnd(envName, doc, r.getOffset())) {
+                            return "end{"+envName+"}";
+                        }
+                    }
+                }
+            }
+            o--;
+        }
+        return null;
+    }
+    
+    /**
      * Computes and returns command-proposals
      * 
      * @param offset Current cursor offset
@@ -313,11 +343,31 @@ public class TexCompletionProcessor implements IContentAssistProcessor {
         TexCommandEntry[] comEntries = refManager.getCompletionsCom(prefix, TexCommandEntry.NORMAL_CONTEXT);
         if (comEntries == null)
             return null;
-
-        ICompletionProposal[] result = new ICompletionProposal[comEntries.length];
-
+        
+        CompletionProposal cp = null;
+        if ("\\".equals(prefix) || "end".startsWith(prefix)) {
+            String endString = environmentEnd(fviewer.getDocument().get(), offset);
+            if (endString != null) {
+                cp = new CompletionProposal(endString, 
+                        offset - replacementLength, 
+                        replacementLength, endString.length());
+            }
+        }
+        
+        int start;
+        ICompletionProposal[] result;
+        if (cp == null) {
+            result = new ICompletionProposal[comEntries.length];
+            start = 0;
+        } else {
+            result = new ICompletionProposal[comEntries.length+1];
+            result[0] = cp;
+            start = 1;
+        }
+        
+        
         for (int i=0; i < comEntries.length; i++) {
-            result[i] = new TexCompletionProposal(comEntries[i],
+            result[i+start] = new TexCompletionProposal(comEntries[i],
                     offset - replacementLength, 
                     replacementLength,
                     fviewer);

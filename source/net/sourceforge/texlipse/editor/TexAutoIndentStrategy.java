@@ -146,10 +146,9 @@ public class TexAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
      * 					the "\begin{...}"
      * @return	true, if it needs an end, else false
      */
-    private boolean needsEnd(String environment, IDocument document, int coffset) {
+    public static boolean needsEnd(String environment, String docString, int coffset) {
         int counter = 1;
         int offset = coffset;
-        String docString = document.get();
         while (counter > 0) {
             IRegion end = LatexParserUtils.findEndEnvironment(docString, environment, offset + 5);
             if (end == null) {
@@ -246,7 +245,7 @@ public class TexAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
                  * looks for the \begin-statement and inserts
                  * an equivalent \end-statement (respects \begin-indentation)
                  */
-                if (needsEnd(envName, document, lineOffset)){
+                if (needsEnd(envName, document.get(), lineOffset)){
                     buf.append(lineDelimiter);
                     buf.append(prevIndentation);
                     buf.append("\\end{" + envName + "}");

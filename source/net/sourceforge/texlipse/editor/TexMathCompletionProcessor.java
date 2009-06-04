@@ -21,6 +21,7 @@ import net.sourceforge.texlipse.templates.TexTemplateCompletion;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextViewer;
+import org.eclipse.jface.text.contentassist.CompletionProposal;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.contentassist.IContentAssistProcessor;
 import org.eclipse.jface.text.contentassist.IContextInformation;
@@ -37,7 +38,6 @@ public class TexMathCompletionProcessor implements IContentAssistProcessor {
     
     private TexTemplateCompletion templatesCompletion = new TexTemplateCompletion(TexContextType.MATH_CONTEXT_TYPE);
     private TexDocumentModel model;
-    private ReferenceManager refManager;
     private ISourceViewer fviewer;
     
     /**
@@ -86,15 +86,37 @@ public class TexMathCompletionProcessor implements IContentAssistProcessor {
                     || command.indexOf('{') >= 0
                     || command.indexOf('(') >= 0)) { 
                 
-                if (refManager == null)
-                    this.refManager = model.getRefMana();
-                
+                CompletionProposal cp = null;
+                if ("\\".equals(command) || "end".startsWith(command)) {
+                    String endString = TexCompletionProcessor.environmentEnd(doc.get(), offset);
+                    if (endString != null) {
+                        cp = new CompletionProposal("\\"+endString, 
+                                offset - replacement.length(), 
+                                replacement.length(), endString.length()+1);
+                    }
+                }
+
+
+                ReferenceManager refManager = model.getRefMana();
                 TexCommandEntry[] comEntries = refManager.getCompletionsCom(command, TexCommandEntry.MATH_CONTEXT);
                 if (comEntries != null){
+                    int start = 0;
+                    if (cp == null) {
+                        proposals = new ICompletionProposal[comEntries.length];
+                    } else {
+                        proposals = new ICompletionProposal[comEntries.length+1];
+                        proposals[0] = cp;
+                        start = 1;
+                    }
                     int len = command.length();
-                    proposals = new ICompletionProposal[comEntries.length];
                     for (int i=0; i < comEntries.length; i++) {
-                        proposals[i] = new TexCompletionProposal(comEntries[i], offset - len, len, fviewer);
+                        proposals[start + i] = new TexCompletionProposal(comEntries[i], offset - len, 
+                                len, fviewer);
+                    }
+                } else {
+                    if (cp != null) {
+                        proposals = new ICompletionProposal[1];
+                        proposals[0] = cp;
                     }
                 }
             }

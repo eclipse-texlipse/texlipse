@@ -442,11 +442,13 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
         IContainer sourceDir = TexlipseProperties.getProjectSourceDir(project);
         sourceDir.refreshLocal(IProject.DEPTH_INFINITE, monitor);
         
+        //Get directory that contains the build file 
+        final IContainer resSubDir = resource.getParent();
         
         // mark output files as derived
-        markOutFile(project, sourceDir);
+        markOutFile(project, resSubDir);
         try { // possibly move output & temp files away from the source dir
-            moveOutput(project, sourceDir, monitor);
+            moveOutput(project, resSubDir, monitor);
         } catch (CoreException e) {
             throw new BuilderCoreException(TexlipsePlugin.stat("Could not write to output file. Please close the output document in your viewer and rebuild."));
         }
@@ -682,16 +684,18 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
             if (tempDir.getFullPath().equals(sourceDir.getFullPath())) {
                 return;
             }
+            IPath destinationPath = tempDir.getProjectRelativePath().append(sourceDir.getProjectRelativePath());
+            final IFolder destination = project.getFolder(destinationPath);
+            if (!destination.exists()) destination.create(true, true, monitor);
             
-            final String tempExts = TexlipsePlugin.getPreference(TexlipseProperties.TEMP_FILE_EXTS);
-            if (tempExts == null || tempExts.length() == 0) {
+            final String[] tempExts = TexlipsePlugin.getPreferenceArray(TexlipseProperties.TEMP_FILE_EXTS);
+            if (tempExts == null || tempExts.length == 0) {
                 return;
             }
             project.getWorkspace().run(new IWorkspaceRunnable() {
                 public void run(IProgressMonitor monitor) throws CoreException{
-		            String[] ext = tempExts.split(",");
 		            String format = TexlipseProperties.getProjectProperty(project, TexlipseProperties.OUTPUT_FORMAT);
-		            recursiveTempMove(sourceDir, tempDir, true, ext, format, monitor);
+		            recursiveTempMove(sourceDir, destination, true, tempExts, format, monitor);
                 }
             }, monitor);
             // refresh to reflect the changes of the temp moves
@@ -766,6 +770,10 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
                 if (createFolders == false) {
                     //Move file from tmp back to src
                     IPath newPath = destination.getFullPath().addTrailingSeparator().append(current.getName());
+                    if (source.getWorkspace().getRoot().getFile(newPath).exists()) {
+                    	//Delete old file first
+                    	source.getWorkspace().getRoot().getFile(newPath).delete(true, monitor);
+                    }
                     current.move(newPath, true, monitor);
                 }			    
                 else if (hasTempFileExtension(current.getName(), ext, format)) {
@@ -797,7 +805,7 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
         
         final IFolder tempDir = TexlipseProperties.getProjectTempDir(project);
         if (tempDir != null && tempDir.exists()) {
-            
+        	
             final IContainer sourceDir = TexlipseProperties.getProjectSourceDir(project);
             if (!sourceDir.exists()) {
                 return;
@@ -805,10 +813,14 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
             tempDir.refreshLocal(IResource.DEPTH_INFINITE, monitor);
             sourceDir.refreshLocal(IResource.DEPTH_INFINITE, monitor);
             
-            if (tempDir.getFullPath().equals(sourceDir.getFullPath())) {
+        	//Get tmp dir that corresponds to current src directory
+            final IPath sourceTempPath = tempDir.getProjectRelativePath().append(sourceDir.getProjectRelativePath());
+            final IFolder sourceTempDir = project.getFolder(sourceTempPath);
+            
+            if (sourceTempDir.getFullPath().equals(sourceDir.getFullPath())) {
                 return;
             }
-            
+        	            
             final String[] ext = TexlipsePlugin.getPreferenceArray(TexlipseProperties.TEMP_FILE_EXTS);
             if (ext == null || ext.length == 0) {
                 return;
@@ -817,7 +829,7 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
 				public void run(IProgressMonitor monitor) throws CoreException {
 					String format = TexlipseProperties.getProjectProperty(
 							project, TexlipseProperties.OUTPUT_FORMAT);
-							recursiveTempMove(tempDir, sourceDir, false, ext, format, monitor);
+							recursiveTempMove(sourceTempDir, sourceDir, false, ext, format, monitor);
 				}
 				// no need to refresh, because Eclipse API is not going to read
 				// these temp files

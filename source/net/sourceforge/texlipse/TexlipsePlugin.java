@@ -10,9 +10,6 @@
 package net.sourceforge.texlipse;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.HashMap;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
@@ -52,6 +49,10 @@ import org.osgi.framework.BundleContext;
  */
 public class TexlipsePlugin extends AbstractUIPlugin {
     
+    //Plugin_ID
+    private static final String PLUGIN_ID = "net.sourceforge.texlipse";
+    private static final String ICONS_PATH = "icons/";
+    
     // Key to store custom templates. 
     private static final String CUSTOM_TEMPLATES_TEX_KEY = "TeXTemplates";
     private static final String CUSTOM_TEMPLATES_BIBTEX_KEY = "BiBTeXTemplates";
@@ -70,9 +71,6 @@ public class TexlipsePlugin extends AbstractUIPlugin {
     private ContributionContextTypeRegistry texTypeRegistry = null;
     private ContributionContextTypeRegistry bibtexTypeRegistry = null;
     
-    // cache for icons
-    private HashMap imageRegistry;
-
     // BibEditor presentation reconciler resources that are shared
     private BibColorProvider bibColor;
     private BibCodeScanner bibCodeScanner;
@@ -96,9 +94,7 @@ public class TexlipsePlugin extends AbstractUIPlugin {
             resourceBundle = ResourceBundle.getBundle(getClass().getPackage().getName() + ".TexlipsePluginResources");
         } catch (MissingResourceException x) {
             resourceBundle = null;
-        }
-        
-        imageRegistry = new HashMap();
+        }        
     }
     
     /**
@@ -176,43 +172,34 @@ public class TexlipsePlugin extends AbstractUIPlugin {
         if (key == null) {
             return null;
         }
-        
-        Image g = (Image) imageRegistry.get(key);
+        Image g = getImageRegistry().get(key);
         if (g != null) {
             return g;
         }
-        
-        ImageDescriptor d = ImageDescriptor.createFromURL(getBundle().getEntry("icons/" + key + ".gif"));
+
+        ImageDescriptor d = getImageDescriptor(key);
         if (d == null ) {
             return null;
         }
-        
+
         // we want null instead of default missing image
         if (d.equals(ImageDescriptor.getMissingImageDescriptor())) {
             return null;
         }
-        
+
         g = d.createImage();
-        imageRegistry.put(key, g);
+        getImageRegistry().put(key, g);
         return g;
     }
     
     /**
-     * Returns the image descriptor for the given image (from eclipse help)
-     * @param name Name of the iamge
-     * @return The corresponding image descriptor or <code>MissingImageDescriptor</code>
-     * if none is found
+     * Get the workbench image with the given path relative to
+     * ICON_PATH.
+     * @param relativePath
+     * @return ImageDescriptor
      */
-    public static ImageDescriptor getImageDescriptor(String name) {
-        String iconPath = "icons/";
-        try {
-            URL installURL = getDefault().getBundle().getEntry("/");
-            URL url = new URL(installURL, iconPath + name + ".gif");
-            return ImageDescriptor.createFromURL(url);
-        } catch (MalformedURLException e) {
-            // should not happen
-            return ImageDescriptor.getMissingImageDescriptor();
-        }
+    public static ImageDescriptor getImageDescriptor(String relativePath){
+        return imageDescriptorFromPlugin(PLUGIN_ID, ICONS_PATH + relativePath + ".gif");
     }
     
     /**

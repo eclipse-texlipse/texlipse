@@ -122,11 +122,12 @@ public class TexOutlineTreeView extends ViewPart implements  ISelectionChangedLi
         treeViewer = new TreeViewer(parent, SWT.H_SCROLL
                 | SWT.V_SCROLL);
         
+        filter = new TexOutlineFilter();
+
         treeViewer.addSelectionChangedListener(this);
-        treeViewer.setContentProvider(new TexContentProvider());
+        treeViewer.setContentProvider(new TexContentProvider(filter));
         treeViewer.setLabelProvider(new TexLabelProvider());
         treeViewer.setComparer(new TexOutlineNodeComparer());
-        this.filter = new TexOutlineFilter();
         
         // get and apply the preferences
         this.getOutlinePreferences();

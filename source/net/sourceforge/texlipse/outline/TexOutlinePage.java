@@ -131,10 +131,10 @@ public class TexOutlinePage extends ContentOutlinePage {
         
         // initialize the tree viewer
         TreeViewer viewer = getTreeViewer();		
-        viewer.setContentProvider(new TexContentProvider());
+        filter = new TexOutlineFilter();
+        viewer.setContentProvider(new TexContentProvider(filter));
         viewer.setLabelProvider(new TexLabelProvider());
         viewer.setComparer(new TexOutlineNodeComparer());
-        this.filter = new TexOutlineFilter();
         
         // get and apply the preferences
         this.getOutlinePreferences();

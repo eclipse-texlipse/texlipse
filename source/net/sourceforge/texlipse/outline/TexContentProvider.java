@@ -15,6 +15,7 @@ import net.sourceforge.texlipse.model.OutlineNode;
 
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.ViewerFilter;
 
 
 /**
@@ -26,7 +27,12 @@ import org.eclipse.jface.viewers.Viewer;
 public class TexContentProvider implements ITreeContentProvider {
 
     
-	private List rootElements;	
+	private List<OutlineNode> rootElements;	
+	private ViewerFilter filter;
+	
+	public TexContentProvider(ViewerFilter filter) {
+		this.filter = filter;
+	}
 	
 	/** 
 	 * Gets the children of the given parent node of the tree.
@@ -36,7 +42,7 @@ public class TexContentProvider implements ITreeContentProvider {
 	 */
 	public Object[] getChildren(Object parentElement) {
 		OutlineNode node = (OutlineNode) parentElement;
-		List children = node.getChildren();
+		List<OutlineNode> children = node.getChildren();
 		if (children != null && children.size() != 0) {
 			return children.toArray();
 		} else {
@@ -63,10 +69,14 @@ public class TexContentProvider implements ITreeContentProvider {
 	public boolean hasChildren(Object element) {
 		
 		OutlineNode node = (OutlineNode) element;
-		List children = node.getChildren();
+		List<OutlineNode> children = node.getChildren();
 		
 		if (children != null && children.size() != 0) {
-			return true;
+			//Check if at least one element is not filtered
+			for (OutlineNode n : children) {
+				if (filter.select(null, element, n)) return true;
+			}
+			return false;
 		} else {
 			return false;
 		}
@@ -97,7 +107,7 @@ public class TexContentProvider implements ITreeContentProvider {
      * @param newInput the new root element list
 	 */
 	public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
-		this.rootElements = (List)newInput;
+		this.rootElements = (List<OutlineNode>)newInput;
 		
 	}
 }

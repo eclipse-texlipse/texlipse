@@ -15,7 +15,6 @@ import java.util.regex.Pattern;
 import net.sourceforge.texlipse.TexlipsePlugin;
 
 import org.eclipse.jface.text.BadLocationException;
-import org.eclipse.jface.text.DefaultIndentLineAutoEditStrategy;
 import org.eclipse.jface.text.DocumentCommand;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.TextUtilities;
@@ -30,7 +29,7 @@ import org.eclipse.jface.text.TextUtilities;
  * @author Antti Pirinen
  * @author Oskar Ojala
  */
-public class TexEditorTools extends DefaultIndentLineAutoEditStrategy {
+public class TexEditorTools {
 	
     /**
      * Matches some simple LaTeX -commands
@@ -140,31 +139,7 @@ public class TexEditorTools extends DefaultIndentLineAutoEditStrategy {
 		}
 		return indentation;
 	}
-	
-	/**
-	 * Calculates indentation of a line where given command exists.
-	 * @param document 	Document that includes the line.
-	 * @param command 	Command that determines the document line.
-	 * @return 			Indentation String.
-	 */
-	public String getIndentation(IDocument document, DocumentCommand command) {
-		String indentation = "";
-        int line = -1;
-        try {
-            line = document.getLineOfOffset(command.offset);
-            if (line > -1) {
-                int start = document.getLineOffset(line);
-                int end = start + document.getLineLength(line) - 1;
-                int whiteend = findEndOfWhiteSpace(document, start, end);
-                if (whiteend > start)
-                    indentation = document.get(start, whiteend - start);
-            }
-        } catch (Exception e) {
-            TexlipsePlugin.log("TexAutoIndentStrategy:getIndentation", e);
-        }
-        return indentation;
-    }
-	
+		
 	/**
 	 * Gets substring of the given text by removing the given prexif from the string. 
 	 * Removes also white spaces from the substring.
@@ -200,35 +175,6 @@ public class TexEditorTools extends DefaultIndentLineAutoEditStrategy {
 		return "";
 	}
 	
-	/**
-	 * Checks if the target text ends with a new line.
-	 * @param document 	Document that includes the text.
-	 * @param text 		Text that is investigated.
-	 * @return 			<code>true</code> if the text ends with new 
-	 * 					line otherwise <code>false</code>.
-	 */
-	public boolean endsWithNewline(IDocument document, String text) {
-		String[] newlines = document.getLegalLineDelimiters();
-		boolean ends = false;
-		for (int i = 0; i < newlines.length; i++) {
-			String delimiter = newlines[i];
-			if (text.indexOf(delimiter) != -1)
-				ends = true;
-		}
-		return ends;
-	}
-		
-	
-	/**
-	 * Checks if the given character is legal line delimiter
-	 * @param d 	IDocument.
-	 * @param c 	DocumentCommand.
-	 * @return 		<code>true</code>, if the character is legal line delimiter, 
-	 * 				<code>false</code> otherwise
-	 */
-	public boolean isLineDelimiter(IDocument d, DocumentCommand c) {
-		return endsWithNewline(d, c.text);
-	}
 	/**
 	 * Finds matching \begin{environment} expression to the given \end{environment} line.
 	 * @param document 		Document that contains line.
@@ -298,61 +244,7 @@ public class TexEditorTools extends DefaultIndentLineAutoEditStrategy {
     public String getLineDelimiter(IDocument document) {
         return getLineDelimiter(document, null);
     }
-    
-	/**
-	 * Checks the first character of command.text is ' ' or '\t'.
-	 * @param command 	DocumentCommand that is checked.
-	 * @return 			<code>true</code> if the first character is white space
-	 * 					<code>false</code> otherwise
-	 */
-	public boolean isWhiteSpace(DocumentCommand command) {
-	    char[] array = command.text.toCharArray();
-	    if (array[0] == ' ' || array[0] == '\t') {
-	        return true;
-	    } else {
-	        return false;
-	    }
-	}
-	
-	/**
-	 * <pre>
-	 * Returns the index of the start position of the command.offset.
-	 *  0_1_2_3_4_5_6_7_8_
-	 * |a|a|a|c|b|b|b| | | ...
-	 *        ^
-	 *        New character here -> return 3
-	 * </pre>
-	 * @param document 	IDocument that contais the command.
-	 * @param command 	DocumentCommand for which the index is calculated.
-	 * @param delim 	determines if line delimiters are counted to the line length
-	 * @return 			Index of the command.offset, -1 is returned if command 
-	 * 					is last character of line.
-	 */
-	public int getIndexAtLine(IDocument document, 
-			DocumentCommand command, boolean delim) {
-		int index = -1;
-		try{
-			int line   = document.getLineOfOffset(command.offset);
-			int lineLength;
-			
-			if (delim){
-				lineLength = getLineLength(document,command,true);
-			}else{
-				lineLength = getLineLength(document,command,false);
-			}
-			
-			if ((document.getLineOffset(line) + lineLength) == command.offset){
-				// command.text is last character at the line
-				index = -1;
-			}else{
-				index = command.offset - document.getLineOffset(line);	
-			}
-		}catch(BadLocationException e){
-			TexlipsePlugin.log("TexEditorTools.getIndexAtLine: ", e);
-		}
-		return index;
-	}
-	
+    	
 	/**
 	 * Returns a length of a line.
 	 * @param document 	IDocument that contains the line.
@@ -402,33 +294,6 @@ public class TexEditorTools extends DefaultIndentLineAutoEditStrategy {
 		return length;
 	}
 
-	/**
-	 * Returns the location of last white space character.
-	 * The first character at a row is 0 and last is <code>lineText.length - 1</code>
-	 * If <code>command.text</code> is a white space, it is NOT counted.
-	 * @param document 	IDocument that contains the command.
-	 * @param command 	DocumentCommand that determines the row.
-	 * @return 			the index of the last white space character, 
-	 * 					returns -1 if not found.
-	 */
-	public int getLastWhiteSpacePosition(IDocument document, 
-			DocumentCommand command) {
-		String txt = "";
-		txt = getStringAt(document, command, false);
-		return getLastWhiteSpacePosition(txt);
-	}
-	/**
-	 * Returns the location of last white space character.
-	 * The fisrt character at a row is 0 and last is <code>lineText.length - 1 </code> 
-	 * @param text 	to search
-	 * @return 		index of last white space character, returns -1 if not found.
-	 */
-	public int getLastWhiteSpacePosition(String text) {
-		int lastSpace = text.lastIndexOf(' ');
-		int lastTab   = text.lastIndexOf('\t');
-		return (lastSpace > lastTab ? lastSpace : lastTab);
-	}
-	
 	/**
 	 * Returns a text String of the (line + <code>lineDif</code>). 
 	 * @param document 	IDocument that contains the line.
@@ -546,18 +411,6 @@ public class TexEditorTools extends DefaultIndentLineAutoEditStrategy {
 		return text.substring(0, i+1);
 	}
 	
-	/**
-	 * Checks if the target line begins with latex-command word.
-	 * @param d 	IDocument
-	 * @param c 	DocumentCommand
-	 * @param line 	-1 = previous line, 0 = current line, 1 = next line etc...
-	 * @return 		<code>true</code> if the line contains the latex command word, 
-	 * 				<code>false</code> otherwise
-	 */
-	public boolean isLineCommandLine(IDocument d, DocumentCommand c, int line) {
-		String lineTxt = getStringAt(d, c, true, line);
-		return isLineCommandLine(lineTxt);
-	}
 
     /**
 	 * Checks if the target text begins with a LaTeX command. 
@@ -574,18 +427,6 @@ public class TexEditorTools extends DefaultIndentLineAutoEditStrategy {
 	    return false;
 	}
 	
-	/**
-	 * Checks if the target line is a comment line
-	 * @param d 	IDocument
-	 * @param c 	DocumentCommand
-	 * @param line 	-1 = previous line, 0 = current line, 1 = next line etc...
-	 * @return 		<code>true</code> if the line is a comment line, 
-	 * 				<code>false</code> otherwise
-	 */
-	public boolean isLineCommentLine(IDocument d, DocumentCommand c, int line) {
-		String lineTxt = getStringAt(d,c,true,line);
-		return isLineCommentLine(lineTxt);
-	}
 	
 	/**
 	 * Checks if the target txt is a comment line
@@ -597,19 +438,6 @@ public class TexEditorTools extends DefaultIndentLineAutoEditStrategy {
         return text.trim().startsWith("%");
 	}
 	
-	/**
-	 * Checks is the line begins with \item key word
-	 * @param d 	IDocument
-	 * @param c 	DocumentCommand
-	 * @param line 	-1 = previous line, 0 = current line, 1 = next line etc...
-	 * @return 		<code>true</code> if the line contains the item key word, 
-	 * 				<code>false</code> otherwise
-	 * @return True if the line begins with \item, false otherwise
-	 */
-	public boolean isLineItemLine(IDocument d, DocumentCommand c, int line){
-		String lineTxt = getStringAt(d, c, true, line);
-		return isLineItemLine(lineTxt);
-	}
 	/**
 	 * Checks is the line begins with \item keyword
 	 * @param text	string to test

@@ -103,6 +103,7 @@ public abstract class PartialRetriever {
         int[] bounds = new int[] {-1,-1};
         int left = initBounds[0], right = initBounds[1] - 1;
         int middle = right/2;
+        if (left > right) return bounds;
         
         if (entries[left].key.startsWith(start))
             right = middle = left;

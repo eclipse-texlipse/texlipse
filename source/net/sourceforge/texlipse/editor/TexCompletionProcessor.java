@@ -384,9 +384,11 @@ public class TexCompletionProcessor implements IContentAssistProcessor {
      * @return An array of completion proposals to use directly
      */
     private ICompletionProposal[] computeTemplateCompletions(int offset, String lineStart, ITextViewer viewer) {
-        String replacement = lineStart.indexOf(' ') == -1 ? lineStart : lineStart.substring(lineStart.lastIndexOf(' ') + 1);
+        int t = lineStart.lastIndexOf(' ');
+        if (t < lineStart.lastIndexOf('\t')) t = lineStart.lastIndexOf('\t');
+        String replacement = lineStart.substring(t + 1);
         
-        ArrayList returnProposals = templatesCompletion.addTemplateProposals(viewer, offset, replacement);
+        ArrayList<ICompletionProposal> returnProposals = templatesCompletion.addTemplateProposals(viewer, offset, replacement);
         ICompletionProposal[] proposals = new ICompletionProposal[returnProposals.size()];
         
         returnProposals.toArray(proposals);

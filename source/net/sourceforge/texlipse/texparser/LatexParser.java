@@ -262,10 +262,10 @@ public class LatexParser {
                                 t.getText().length()));
                     } else if (prevToken instanceof TCcite) {
                         if (!"*".equals(t.getText())) {
-                            String[] cs = t.getText().replaceAll("\\s", "").split(",");
+                            String[] cs = t.getText().split(",");
                             for (String c : cs) {
                             	//just add all citation and check for errors later, after updating the citation index
-                                this.cites.add(new DocumentReference(c,
+                                this.cites.add(new DocumentReference(c.trim(),
                                 		t.getLine(), t.getPos(), t.getText().length()));								
 							}
                         }
@@ -563,6 +563,9 @@ public class LatexParser {
 
                     } else if (prevToken instanceof TCbib) {
                         bibs = t.getText().split(",");
+                        for (int i = 0; i < bibs.length; i++) {
+							bibs[i] = bibs[i].trim();
+						}
                         int startLine = prevToken.getLine();
                         while (!blocks.empty()) {
                             OutlineNode prev = blocks.pop();

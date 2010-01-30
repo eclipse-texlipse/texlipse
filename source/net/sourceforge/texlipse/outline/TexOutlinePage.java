@@ -580,9 +580,11 @@ public class TexOutlinePage extends ContentOutlinePage {
         
         // add floats to be included (and env type)
         filter.toggleType(OutlineNode.TYPE_ENVIRONMENT, true);
+        filter.toggleType(OutlineNode.TYPE_LABEL, true);
+        
         String[] environments = TexlipsePlugin.getPreferenceArray(TexlipseProperties.OUTLINE_ENVS);
-        for (int i = 0; i < environments.length; i++) {
-            filter.toggleEnvironment(environments[i], true);
+        for (String env : environments) {
+            filter.toggleEnvironment(env, true);            
         }
     }
     

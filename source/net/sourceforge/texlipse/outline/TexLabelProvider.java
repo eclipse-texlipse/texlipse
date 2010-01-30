@@ -9,7 +9,10 @@
  */
 package net.sourceforge.texlipse.outline;
 
+import java.util.ArrayList;
+
 import net.sourceforge.texlipse.TexlipsePlugin;
+import net.sourceforge.texlipse.editor.partitioner.FastLaTeXPartitionScanner;
 import net.sourceforge.texlipse.model.OutlineNode;
 
 import org.eclipse.jface.viewers.LabelProvider;
@@ -27,7 +30,7 @@ import org.eclipse.swt.graphics.Image;
  * 
  * The images are loaded and disposed by the TexlipsePlugin.
  *
- * @author Laura Takkinen, Taavi Hupponen 
+ * @author Laura Takkinen, Taavi Hupponen, Boris von Loesch
  *  
  */
 public class TexLabelProvider extends LabelProvider {
@@ -64,8 +67,11 @@ public class TexLabelProvider extends LabelProvider {
             image = TexlipsePlugin.getImage("paragraph");
         	break;
 		case OutlineNode.TYPE_ENVIRONMENT:
-			image = TexlipsePlugin.getImage(node.getName());
+			image = getEnvImage(node.getName());
 			break;
+		case OutlineNode.TYPE_LABEL:
+		    image = TexlipsePlugin.getImage("label");
+		    break;
 		default:
 			image = TexlipsePlugin.getImage("default_outline");
 		}
@@ -77,16 +83,33 @@ public class TexLabelProvider extends LabelProvider {
 	}
 
 	/**
-     * Returns the text description of the elemet. That is element 
+     * Returns the text description of the element. That is element 
      * name for OutlineNode.
      * 
 	 * @return the text to view at the given element
 	 */
 	public String getText(Object element) {
-		return ((OutlineNode)element).getName();
+	    OutlineNode node = (OutlineNode)element;
+	    String text = node.getName();
+	    if (node.hasChildren()) { 
+            ArrayList<OutlineNode> childs = node.getChildren();
+            //If first child is a label, add it to the name of the element
+	        if (childs.get(0).getType() == OutlineNode.TYPE_LABEL) {
+	            text = text + " (L: " + childs.get(0).getName() + ")";
+	        }
+	    }
+		return text;
 	}
 
-    
+    private static Image getEnvImage(String envName) {
+        Image image = TexlipsePlugin.getImage(envName);
+        if (image == null && FastLaTeXPartitionScanner.isMathEnv(envName)) {
+            //Return formula image if math environment
+            image = TexlipsePlugin.getImage("formula");
+        }
+        return image;
+    }
+	
     /**
      * Not used atm. Simply return false.
      * 

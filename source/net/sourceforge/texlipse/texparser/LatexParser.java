@@ -240,6 +240,21 @@ public class LatexParser {
                         l.startLine = t.getLine();
                         this.labels.add(l);
                         
+                        OutlineNode on = new OutlineNode(t.getText(),
+                                OutlineNode.TYPE_LABEL,
+                                t.getLine(),
+                                t.getPos(), t.getText().length());
+                        on.setEndLine(t.getLine());
+                        
+                        
+                        if (!blocks.empty()) {
+                            OutlineNode prev = blocks.peek();
+                            prev.addChild(on);
+                            on.setParent(prev);
+                        } else {
+                            outlineTree.add(on);
+                        }
+                        
                     } else if (prevToken instanceof TCref) {
                         this.refs.add(new DocumentReference(t.getText(),
                                 t.getLine(),

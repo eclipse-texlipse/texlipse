@@ -364,7 +364,12 @@ public class FastLaTeXPartitionScanner implements IPartitionTokenScanner {
         return false;
     }
 
-    private boolean isMathEnv(String envName) {
+    /**
+     * 
+     * @param envName Name of the environment
+     * @return true, if the given name denotes a math environment
+     */
+    public final static boolean isMathEnv(String envName) {
         final String[] MATHRULESSTAR = {"equation", "eqnarray", "align", "alignat", "flalign", "multline", "gather"};
         final String[] MATHRULESNOSTAR = {"math", "displaymath"};
         for (String st : MATHRULESSTAR) {

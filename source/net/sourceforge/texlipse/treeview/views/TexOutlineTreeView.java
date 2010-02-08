@@ -9,251 +9,76 @@
  */
 package net.sourceforge.texlipse.treeview.views;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import net.sourceforge.texlipse.TexlipsePlugin;
 import net.sourceforge.texlipse.editor.TexEditor;
 import net.sourceforge.texlipse.model.OutlineNode;
 import net.sourceforge.texlipse.model.TexOutlineInput;
-import net.sourceforge.texlipse.outline.TexContentProvider;
-import net.sourceforge.texlipse.outline.TexLabelProvider;
-import net.sourceforge.texlipse.outline.TexOutlineFilter;
-import net.sourceforge.texlipse.outline.TexOutlineNodeComparer;
-import net.sourceforge.texlipse.properties.TexlipseProperties;
+import net.sourceforge.texlipse.outline.TexOutlinePage;
 
-import org.eclipse.core.runtime.ListenerList;
-import org.eclipse.core.runtime.SafeRunner;
-import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.IAction;
-import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.util.IPropertyChangeListener;
-import org.eclipse.jface.util.PropertyChangeEvent;
-import org.eclipse.jface.util.SafeRunnable;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
-import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
-import org.eclipse.jface.viewers.StructuredSelection;
-import org.eclipse.jface.viewers.TreeViewer;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IPartListener;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.SubActionBars;
 import org.eclipse.ui.part.FileEditorInput;
+import org.eclipse.ui.part.PageSite;
 import org.eclipse.ui.part.ViewPart;
 
 /**
  * The view for the full outline.
  *
- * @author Markus Maus
- * @author Reza Esmaeili Soumeeh
- * @author Ehsan Baghi
+ * @author Boris von Loesch
  */
-public class TexOutlineTreeView extends ViewPart implements  ISelectionChangedListener, ISelectionProvider, IPartListener { 
+public class TexOutlineTreeView extends ViewPart implements  
+	ISelectionChangedListener, IPartListener { 
     
-    private TreeViewer treeViewer;
-    private TexOutlineInput input;
-    private TexOutlineFilter filter;
-    private TexEditor editor;
-    
-    private Map<String, IAction> outlineActions;
-    private int expandLevel;
-    
-    private ListenerList selectionChangedListeners = new ListenerList();
-    
-    private static final String ACTION_UPDATE = "update";
-    private static final String ACTION_COLLAPSE = "collapse";
-    private static final String ACTION_EXPAND = "expand";
-    private static final String ACTION_HIDE_SEC = "hideSec";
-    private static final String ACTION_HIDE_SUBSEC = "hideSubSec";
-    private static final String ACTION_HIDE_SUBSUBSEC = "hideSubSubSec";
-    private static final String ACTION_HIDE_PARAGRAPH = "hidePara";
-    private static final String ACTION_HIDE_FLOAT = "hideFloat";
-    
+    private TexOutlinePage outline;
+
     /**
      * The constructor.
      *
      */
     public TexOutlineTreeView() {
-        super();
-        this.outlineActions = new HashMap<String, IAction>();
-        expandLevel = 1;
-        
-        TexlipsePlugin.getDefault().getPreferenceStore().addPropertyChangeListener(new  
-                IPropertyChangeListener() {
-            
-            public void propertyChange(PropertyChangeEvent event) {
-                
-                String property = event.getProperty();
-                if (TexlipseProperties.OUTLINE_PART.equals(property) || 
-                        TexlipseProperties.OUTLINE_CHAPTER.equals(property) ||
-                        TexlipseProperties.OUTLINE_SECTION.equals(property) ||
-                        TexlipseProperties.OUTLINE_SUBSECTION.equals(property) ||
-                        TexlipseProperties.OUTLINE_SUBSUBSECTION.equals(property) ||
-                        TexlipseProperties.OUTLINE_PARAGRAPH.equals(property) ||
-                        TexlipseProperties.OUTLINE_ENVS.equals(property)) {
-                    getOutlinePreferences();
-                    resetToolbarButtons();
-                    if (treeViewer != null) {
-                        Control control= treeViewer.getControl();
-                        if (control != null && !control.isDisposed()) {
-                            treeViewer.refresh();
-                        }
-                    }	
-                }
-            }	
-        });    
+    	super();
+    	outline = new TexOutlinePage(null);
     }
     
+    
     /**
-     * Creates the viewer. Registeres the full outline at the document model.
+     * Creates the viewer. Registers the full outline at the document model.
      */
     public void createPartControl(Composite parent) {
-        createActions();
-        treeViewer = new TreeViewer(parent, SWT.H_SCROLL
-                | SWT.V_SCROLL);
-        
-        filter = new TexOutlineFilter();
-
-        treeViewer.addSelectionChangedListener(this);
-        treeViewer.setContentProvider(new TexContentProvider(filter));
-        treeViewer.setLabelProvider(new TexLabelProvider());
-        treeViewer.setComparer(new TexOutlineNodeComparer());
-        
-        // get and apply the preferences
-        this.getOutlinePreferences();
-        treeViewer.addFilter(filter);
-        
-        // create the menu bar and the context menu
-        createToolbar();
-        resetToolbarButtons();
-        
-        // finally set the input
-        if (this.input != null) {
-            treeViewer.setInput(this.input.getRootNodes());
-            
-            // set update button status and also the context actions
-            outlineActions.get(ACTION_UPDATE).setEnabled(false);
-        }
-        
-        // add a part listener if the editor isn't available when the view is created.
-        getViewSite().getPage().addPartListener(this);
+		PageSite site = new PageSite(getViewSite());
+		outline.init(site);
+    	outline.createControl(parent);
+    	((SubActionBars) site.getActionBars()).activate(true);
+    	outline.switchTreeViewerSelectionChangeListener(this);
+    	
+    	// add a part listener if the editor isn't available when the view is created.
+        getSite().getPage().addPartListener(this);
         // register it directly if the view is already created.
-        IEditorPart part = getViewSite().getPage().getActiveEditor();
+        IEditorPart part = getSite().getPage().getActiveEditor();
         if (part != null && part instanceof TexEditor) {
             TexEditor e = (TexEditor) part;
-            // editor = (TexEditor) part;
             e.registerFullOutline(this);
         }
     }
     
-    public void setFocus() {
-    }
-    
+
     /**
      * Updates the outline with the new input.
      * @param input the new input.
      */
     public void update(TexOutlineInput input) {
-        this.input = input; 
-        if (treeViewer != null) {
-            Control control= treeViewer.getControl();
-            if (control != null && !control.isDisposed()) {
-                control.setRedraw(false);
-                // save viewer state
-                ISelection selection = treeViewer.getSelection();
-                treeViewer.getTree().deselectAll();
-                
-                Object[] expandedElements = treeViewer.getExpandedElements();
-                
-                
-                // set new input
-                treeViewer.setInput(this.input.getRootNodes());
-                
-                // restore viewer state
-                treeViewer.setExpandedElements(expandedElements);
-                
-                treeViewer.refresh();
-                
-                //restore the selection
-                treeViewer.removeSelectionChangedListener(this);
-                treeViewer.setSelection(selection);
-                treeViewer.addSelectionChangedListener(this);
-                control.setRedraw(true);
-                
-                // disable the refresh button
-                outlineActions.get(ACTION_UPDATE).setEnabled(false);
-            }
-        }
-    }
-    
-    /**
-     * Reads the preferences for the outline.
-     *
-     */
-    private void getOutlinePreferences()  {
-        filter.reset();
-        
-        // add node types to be included
-        boolean preamble = TexlipsePlugin.getDefault().getPreferenceStore().getBoolean(TexlipseProperties.OUTLINE_PREAMBLE);
-        boolean part = TexlipsePlugin.getDefault().getPreferenceStore().getBoolean(TexlipseProperties.OUTLINE_PART);
-        boolean chapter = TexlipsePlugin.getDefault().getPreferenceStore().getBoolean(TexlipseProperties.OUTLINE_CHAPTER);
-        boolean section = TexlipsePlugin.getDefault().getPreferenceStore().getBoolean(TexlipseProperties.OUTLINE_SECTION);
-        boolean subsection = TexlipsePlugin.getDefault().getPreferenceStore().getBoolean(TexlipseProperties.OUTLINE_SUBSECTION);
-        boolean subsubsection = TexlipsePlugin.getDefault().getPreferenceStore().getBoolean(TexlipseProperties.OUTLINE_SUBSUBSECTION);
-        boolean paragraph = TexlipsePlugin.getDefault().getPreferenceStore().getBoolean(TexlipseProperties.OUTLINE_PARAGRAPH);
-        
-        if (preamble) {
-            filter.toggleType(OutlineNode.TYPE_PREAMBLE, true);
-        }
-        if (part) {
-            filter.toggleType(OutlineNode.TYPE_PART, true);
-        }
-        if (chapter) {
-            filter.toggleType(OutlineNode.TYPE_CHAPTER, true);
-        }
-        if (section) {
-            filter.toggleType(OutlineNode.TYPE_SECTION, true);
-        }
-        if (subsection) {
-            filter.toggleType(OutlineNode.TYPE_SUBSECTION, true);
-        }
-        if (subsubsection) {
-            filter.toggleType(OutlineNode.TYPE_SUBSUBSECTION, true);
-        }
-        if (paragraph) {
-            filter.toggleType(OutlineNode.TYPE_PARAGRAPH, true);
-        }
-        
-        // add floats to be included (and env type)
-        filter.toggleType(OutlineNode.TYPE_ENVIRONMENT, true);
-        filter.toggleType(OutlineNode.TYPE_LABEL, true);
-        
-        String[] environments = TexlipsePlugin.getPreferenceArray(TexlipseProperties.OUTLINE_ENVS);
-        for (String env : environments) {
-            filter.toggleEnvironment(env, true);            
-        }
-    }
-    
-    /**
-     * Resets the toolbar buttons.
-     *
-     */
-    private void resetToolbarButtons() {
-        outlineActions.get(ACTION_HIDE_SEC).setChecked(!filter.isTypeVisible(OutlineNode.TYPE_SECTION));
-        outlineActions.get(ACTION_HIDE_SUBSEC).setChecked(!filter.isTypeVisible(OutlineNode.TYPE_SUBSECTION));
-        outlineActions.get(ACTION_HIDE_SUBSUBSEC).setChecked(!filter.isTypeVisible(OutlineNode.TYPE_SUBSUBSECTION));
-        outlineActions.get(ACTION_HIDE_PARAGRAPH).setChecked(!filter.isTypeVisible(OutlineNode.TYPE_PARAGRAPH));
-        outlineActions.get(ACTION_HIDE_FLOAT).setChecked(!filter.isTypeVisible(OutlineNode.TYPE_ENVIRONMENT));
+    	outline.update(input);
     }
     
     /**
@@ -263,16 +88,16 @@ public class TexOutlineTreeView extends ViewPart implements  ISelectionChangedLi
      * @param event the selection event
      */
     public void selectionChanged(SelectionChangedEvent event) {
-        fireSelectionChanged(event.getSelection());
+        //fireSelectionChanged(event.getSelection());
         ISelection selection = event.getSelection();
         if (selection.isEmpty()) {
-            editor.resetHighlightRange();
+            outline.getEditor().resetHighlightRange();
         }
         else {
             OutlineNode node = (OutlineNode) ((IStructuredSelection) selection).getFirstElement();
-            editor.resetHighlightRange();
+            outline.getEditor().resetHighlightRange();
             
-            if(node.getIFile()!=null){
+            if (node.getIFile() != null){
                 FileEditorInput input = new FileEditorInput(node.getIFile());
                 try {
                     // open the editor and go to the correct position.
@@ -280,7 +105,6 @@ public class TexOutlineTreeView extends ViewPart implements  ISelectionChangedLi
                     // the position of a node in an other file isn't available.
                     IWorkbenchPage cPage = TexlipsePlugin.getCurrentWorkbenchPage();
                     TexEditor e = (TexEditor) cPage.findEditor(input);
-                    //editor = (TexEditor) cPage.findEditor(input);
                     if (e == null)
                         e = (TexEditor) cPage.openEditor(input, "net.sourceforge.texlipse.TexEditor");
                     if (cPage.getActiveEditor() != e)
@@ -296,60 +120,20 @@ public class TexOutlineTreeView extends ViewPart implements  ISelectionChangedLi
                 } catch (PartInitException e) {
                     TexlipsePlugin.log("Can't open editor.", e);
                 } catch (BadLocationException e) {
-                    editor.resetHighlightRange();
+                	outline.getEditor().resetHighlightRange();
                 }
             }
         }
     }      
     
-    /**
-     * Fires a selection changed event.
-     *
-     * @param selection the new selection
-     */
-    protected void fireSelectionChanged(ISelection selection) {
-        // create an event
-        final SelectionChangedEvent event = new SelectionChangedEvent(this,
-                selection);
-        
-        // fire the event
-        Object[] listeners = selectionChangedListeners.getListeners();
-        for (int i = 0; i < listeners.length; ++i) {
-            final ISelectionChangedListener l = (ISelectionChangedListener) listeners[i];
-            SafeRunner.run(new SafeRunnable() {
-                public void run() {
-                    l.selectionChanged(event);
-                }
-            });
-        }
-    }
-    
-    public void addSelectionChangedListener(ISelectionChangedListener listener) {
-        selectionChangedListeners.add(listener);
-    }
-    
-    public ISelection getSelection() {
-        if (treeViewer == null)
-            return StructuredSelection.EMPTY;
-        return treeViewer.getSelection();
-    }
-    
-    public void removeSelectionChangedListener(ISelectionChangedListener listener) {
-        selectionChangedListeners.remove(listener);
-    }
-    
-    public void setSelection(ISelection selection) {
-        if (treeViewer != null)
-            treeViewer.setSelection(selection);
-    }
-    
+
     /**
      * Returns whether the current TexDocumentModel is dirty
      * 
      * @return if current model is dirty.
      */
     public boolean isModelDirty() {
-        return editor.isModelDirty();
+    	return outline.isModelDirty();
     }
     
     /**
@@ -357,157 +141,16 @@ public class TexOutlineTreeView extends ViewPart implements  ISelectionChangedLi
      *
      */
     public void projectChanged() {
-        this.expandLevel = 1;
+        outline.reset();
     }
     
-    /**
-     * Creates the actions assosiated with the outline. 
-     */
-    private void createActions() {
-        // toolbar actions
-        TexFullOutlineActionUpdate update = new TexFullOutlineActionUpdate(this);
-        this.outlineActions.put(ACTION_UPDATE, update);
-        
-        Action collapse = new Action("Collapse one level", IAction.AS_PUSH_BUTTON) {
-            
-            public void run() {
-                if (expandLevel > 1) {
-                    expandLevel--;
-                    treeViewer.getControl().setRedraw(false);
-                    treeViewer.collapseAll();
-                    treeViewer.expandToLevel(expandLevel);
-                    treeViewer.getControl().setRedraw(true);
-                }
-            }
-        };
-        collapse.setToolTipText("Collapse one level");
-        collapse.setImageDescriptor(TexlipsePlugin.getImageDescriptor("collapse"));
-        this.outlineActions.put(ACTION_COLLAPSE, collapse);
-        
-        Action expand = new Action("Expand one level", IAction.AS_PUSH_BUTTON) {
-            public void run() {
-                if (expandLevel < input.getTreeDepth()) {
-                    expandLevel++;
-                }
-                treeViewer.getControl().setRedraw(false);
-                treeViewer.collapseAll();
-                treeViewer.expandToLevel(expandLevel);
-                treeViewer.getControl().setRedraw(true);
-            }
-        };
-        expand.setToolTipText("Expand one level");
-        expand.setImageDescriptor(TexlipsePlugin.getImageDescriptor("expand"));
-        this.outlineActions.put(ACTION_EXPAND, expand);
-        
-        Action hideSections = new Action("Hide sections", IAction.AS_CHECK_BOX) {
-            public void run() {
-                boolean oldState = filter.isTypeVisible(OutlineNode.TYPE_SECTION);
-                filter.toggleType(OutlineNode.TYPE_SECTION, !oldState);
-                if (oldState == false) {
-                    revealNodes(OutlineNode.TYPE_SECTION);
-                }
-                treeViewer.refresh();
-            }
-        };
-        hideSections.setToolTipText("Hide sections");
-        hideSections.setImageDescriptor(TexlipsePlugin.getImageDescriptor("hide_sec"));
-        this.outlineActions.put(ACTION_HIDE_SEC, hideSections);
-        
-        Action hideSubSections = new Action("Hide subsections", IAction.AS_CHECK_BOX) {
-            public void run() {
-                boolean oldState = filter.isTypeVisible(OutlineNode.TYPE_SUBSECTION);
-                filter.toggleType(OutlineNode.TYPE_SUBSECTION, !oldState);
-                if (oldState == false) {
-                    revealNodes(OutlineNode.TYPE_SUBSECTION);
-                }
-                treeViewer.refresh();
-            }
-        };
-        hideSubSections.setToolTipText("Hide subsections");
-        hideSubSections.setImageDescriptor(TexlipsePlugin.getImageDescriptor("hide_sub"));
-        this.outlineActions.put(ACTION_HIDE_SUBSEC, hideSubSections);
-        
-        Action hideSubSubSections = new Action("Hide subsubsections", IAction.AS_CHECK_BOX) {
-            public void run() {
-                boolean oldState = filter.isTypeVisible(OutlineNode.TYPE_SUBSUBSECTION);
-                filter.toggleType(OutlineNode.TYPE_SUBSUBSECTION, !oldState);
-                if (oldState == false) {
-                    revealNodes(OutlineNode.TYPE_SUBSUBSECTION);
-                }
-                treeViewer.refresh();
-            }
-        };
-        hideSubSubSections.setToolTipText("Hide subsubsections");
-        hideSubSubSections.setImageDescriptor(TexlipsePlugin.getImageDescriptor("hide_subsub"));
-        this.outlineActions.put(ACTION_HIDE_SUBSUBSEC, hideSubSubSections);
-        
-        Action hideParagraphs = new Action("Hide paragraphs", IAction.AS_CHECK_BOX) {
-            public void run() {
-                boolean oldState = filter.isTypeVisible(OutlineNode.TYPE_PARAGRAPH);
-                filter.toggleType(OutlineNode.TYPE_PARAGRAPH, !oldState);
-                if (oldState == false) {
-                    revealNodes(OutlineNode.TYPE_PARAGRAPH);
-                }
-                treeViewer.refresh();
-            }
-        };
-        hideParagraphs.setToolTipText("Hide paragraphs");
-        hideParagraphs.setImageDescriptor(TexlipsePlugin.getImageDescriptor("hide_para"));
-        this.outlineActions.put(ACTION_HIDE_PARAGRAPH, hideParagraphs);
-        
-        Action hideFloats = new Action("Hide floating environments", IAction.AS_CHECK_BOX) {
-            public void run() {
-                boolean oldState = filter.isTypeVisible(OutlineNode.TYPE_ENVIRONMENT);
-                filter.toggleType(OutlineNode.TYPE_ENVIRONMENT, !filter.isTypeVisible(OutlineNode.TYPE_ENVIRONMENT));
-                if (oldState == false) {
-                    revealNodes(OutlineNode.TYPE_ENVIRONMENT);
-                }
-                treeViewer.refresh();
-            }
-        };
-        hideFloats.setToolTipText("Hide floating environments");
-        hideFloats.setImageDescriptor(TexlipsePlugin.getImageDescriptor("hide_env"));
-        this.outlineActions.put(ACTION_HIDE_FLOAT, hideFloats);
-    }
-    
-    /**
-     * Reveals all the nodes of certain type in the outline tree.
-     * 
-     * @param nodeType the type of nodes to be revealed
-     */
-    private void revealNodes(int nodeType) {
-        List<OutlineNode> nodeList = input.getTypeList(nodeType);
-        if (nodeList != null) {
-            for (OutlineNode node : nodeList) {
-                treeViewer.reveal(node);
-            }
-        }
-    }
-    
-    /**
-     * Create the toolbar.
-     *
-     */
-    private void createToolbar() {
-        
-        // add actions to the toolbar
-        IToolBarManager toolbarManager = getViewSite().getActionBars().getToolBarManager();
-        toolbarManager.add(outlineActions.get(ACTION_UPDATE));
-        toolbarManager.add(outlineActions.get(ACTION_COLLAPSE));
-        toolbarManager.add(outlineActions.get(ACTION_EXPAND));
-        toolbarManager.add(outlineActions.get(ACTION_HIDE_SEC));
-        toolbarManager.add(outlineActions.get(ACTION_HIDE_SUBSEC));
-        toolbarManager.add(outlineActions.get(ACTION_HIDE_SUBSUBSEC));
-        toolbarManager.add(outlineActions.get(ACTION_HIDE_PARAGRAPH));
-        toolbarManager.add(outlineActions.get(ACTION_HIDE_FLOAT));
-    }	
     
     /**
      * Called by the TexDocumentModel when it gets dirty. Enables
      * the update button.
      */
     public void modelGotDirty() {
-        outlineActions.get(ACTION_UPDATE).setEnabled(true);
+        outline.modelGotDirty();
     }
     
     /**
@@ -515,7 +158,7 @@ public class TexOutlineTreeView extends ViewPart implements  ISelectionChangedLi
      * @return the editor
      */
     public TexEditor getEditor() {
-        return editor;
+    	return outline.getEditor();
     }
     
     /**
@@ -523,7 +166,7 @@ public class TexOutlineTreeView extends ViewPart implements  ISelectionChangedLi
      * @param editor the editor.
      */
     public void setEditor(TexEditor editor) {
-        this.editor = editor;
+    	outline.setEditor(editor);
     }
     
     /**
@@ -531,44 +174,49 @@ public class TexOutlineTreeView extends ViewPart implements  ISelectionChangedLi
      */
     public void partActivated(IWorkbenchPart part) {
         if (part instanceof TexEditor) {
-            if (editor != null)
-                editor.unregisterFullOutline(this);
+            if (outline.getEditor() != null) {
+            	outline.getEditor().unregisterFullOutline(this);
+            }
             TexEditor e = (TexEditor) part;
             e.registerFullOutline(this);
+            setEditor(e);
         }
     }
     
-    /**
-     * Not used.
+    /* (non-Javadoc)
+     * Method declared on IViewPart.
+     * Treat this the same as part activation.
      */
     public void partBroughtToTop(IWorkbenchPart part) {
+        partActivated(part);
     }
     
     /**
-     * Not used.
-     */
-    public void partClosed(IWorkbenchPart part) {
-    }
-    
-    /**
-     * Unregister the fulloutline if the editor is deactivated
-     */
-    public void partDeactivated(IWorkbenchPart part) {
-    }
-    
-    /**
-     * Not used.
-     */
-    public void partOpened(IWorkbenchPart part) {			
-    }
-    
-    /**
-     * unregisteres the full outline and removes the PartListener
+     * Unregisters the full outline and removes the PartListener
      * @see org.eclipse.ui.IWorkbenchPart#dispose()
      */
+    @Override
     public void dispose() {
         super.dispose();
-        getViewSite().getPage().removePartListener(this);
-        editor.unregisterFullOutline(this);
+        getSite().getPage().removePartListener(this);
+        outline.getEditor().unregisterFullOutline(this);
     }
+
+
+	@Override
+	public void setFocus() {
+		outline.setFocus();
+	}
+
+
+	public void partClosed(IWorkbenchPart part) {
+	}
+
+
+	public void partDeactivated(IWorkbenchPart part) {
+	}
+
+
+	public void partOpened(IWorkbenchPart part) {
+	}
 }

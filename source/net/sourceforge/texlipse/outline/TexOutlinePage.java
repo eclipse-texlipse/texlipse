@@ -26,11 +26,13 @@ import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.TreeViewer;
@@ -66,6 +68,7 @@ public class TexOutlinePage extends ContentOutlinePage {
     private static final String ACTION_HIDE_SUBSUBSEC = "hideSubSubSec";
     private static final String ACTION_HIDE_PARAGRAPH = "hidePara";
     private static final String ACTION_HIDE_FLOAT = "hideFloat";
+    private static final String ACTION_HIDE_LABEL = "hideLabel";
     
     private TexOutlineInput input;
     private TexEditor editor;
@@ -164,13 +167,18 @@ public class TexOutlinePage extends ContentOutlinePage {
             viewer.setInput(this.input.getRootNodes());
             
             // set update button status and also the context actions
-            ((IAction)outlineActions.get(ACTION_UPDATE)).setEnabled(false);
-            ((IAction)outlineActions.get(ACTION_COPY)).setEnabled(true);
-            ((IAction)outlineActions.get(ACTION_CUT)).setEnabled(true);
-            ((IAction)outlineActions.get(ACTION_PASTE)).setEnabled(true);
-            ((IAction)outlineActions.get(ACTION_DELETE)).setEnabled(true);
+            outlineActions.get(ACTION_UPDATE).setEnabled(false);
+            outlineActions.get(ACTION_COPY).setEnabled(true);
+            outlineActions.get(ACTION_CUT).setEnabled(true);
+            outlineActions.get(ACTION_PASTE).setEnabled(true);
+            outlineActions.get(ACTION_DELETE).setEnabled(true);
 
         }
+    }
+    
+    @Override
+    public void setFocus() {
+    	getTreeViewer().getTree().setFocus();
     }
     
     /**
@@ -219,11 +227,11 @@ public class TexOutlinePage extends ContentOutlinePage {
                 control.setRedraw(true);
                 
                 // disable the refresh button, enable context stuff
-                ((IAction)outlineActions.get(ACTION_UPDATE)).setEnabled(false);
-                ((IAction)outlineActions.get(ACTION_COPY)).setEnabled(true);
-                ((IAction)outlineActions.get(ACTION_CUT)).setEnabled(true);
-                ((IAction)outlineActions.get(ACTION_PASTE)).setEnabled(true);
-                ((IAction)outlineActions.get(ACTION_DELETE)).setEnabled(true);
+                outlineActions.get(ACTION_UPDATE).setEnabled(false);
+                outlineActions.get(ACTION_COPY).setEnabled(true);
+                outlineActions.get(ACTION_CUT).setEnabled(true);
+                outlineActions.get(ACTION_PASTE).setEnabled(true);
+                outlineActions.get(ACTION_DELETE).setEnabled(true);
             }
         }
     }
@@ -354,11 +362,11 @@ public class TexOutlinePage extends ContentOutlinePage {
      * the update button.
      */
     public void modelGotDirty() {
-        ((IAction)outlineActions.get(ACTION_UPDATE)).setEnabled(true);
-        ((IAction)outlineActions.get(ACTION_COPY)).setEnabled(false);
-        ((IAction)outlineActions.get(ACTION_CUT)).setEnabled(false);
-        ((IAction)outlineActions.get(ACTION_PASTE)).setEnabled(false);
-        ((IAction)outlineActions.get(ACTION_DELETE)).setEnabled(false);
+        outlineActions.get(ACTION_UPDATE).setEnabled(true);
+        outlineActions.get(ACTION_COPY).setEnabled(false);
+        outlineActions.get(ACTION_CUT).setEnabled(false);
+        outlineActions.get(ACTION_PASTE).setEnabled(false);
+        outlineActions.get(ACTION_DELETE).setEnabled(false);
     }
     
     /**
@@ -379,6 +387,10 @@ public class TexOutlinePage extends ContentOutlinePage {
         return this.editor;
     }
     
+    public void setEditor(TexEditor editor) {
+    	this.editor = editor;
+    }
+    
     /**
      * Gets the clipboard. Used by copy paste actions.
      * 
@@ -388,8 +400,28 @@ public class TexOutlinePage extends ContentOutlinePage {
         return this.clipboard;
     }
     
+    /*
+     * Creates a new action to hide a certain nodeType
+     */
+    private IAction createHideAction(String desc, final int nodeType, ImageDescriptor img) {
+        IAction action = new Action(desc, IAction.AS_CHECK_BOX) {
+            public void run() {
+                boolean oldState = filter.isTypeVisible(nodeType);
+                filter.toggleType(nodeType, !oldState);
+                TreeViewer viewer = getTreeViewer();
+                if (oldState == false) {
+                    revealNodes(nodeType);
+                }
+                viewer.refresh();
+            }
+        };
+        action.setToolTipText(desc);
+        action.setImageDescriptor(img);
+        return action;
+    }
+    
     /**
-     * Creates the actions assosiated with the outline. 
+     * Creates the actions associated with the outline. 
      */
     private void createActions() {
         // context menu actions 
@@ -437,80 +469,29 @@ public class TexOutlinePage extends ContentOutlinePage {
         expand.setImageDescriptor(TexlipsePlugin.getImageDescriptor("expand"));
         this.outlineActions.put(ACTION_EXPAND, expand);
         
-        Action hideSections = new Action("Hide sections", IAction.AS_CHECK_BOX) {
-            public void run() {
-                boolean oldState = filter.isTypeVisible(OutlineNode.TYPE_SECTION);
-                filter.toggleType(OutlineNode.TYPE_SECTION, !oldState);
-                TreeViewer viewer = getTreeViewer();
-                if (oldState == false) {
-                    revealNodes(OutlineNode.TYPE_SECTION);
-                }
-                viewer.refresh();
-            }
-        };
-        hideSections.setToolTipText("Hide sections");
-        hideSections.setImageDescriptor(TexlipsePlugin.getImageDescriptor("hide_sec"));
-        this.outlineActions.put(ACTION_HIDE_SEC, hideSections);
+        IAction action = createHideAction("Hide sections", OutlineNode.TYPE_SECTION, 
+        		TexlipsePlugin.getImageDescriptor("hide_sec"));
+        this.outlineActions.put(ACTION_HIDE_SEC, action);
         
-        Action hideSubSections = new Action("Hide subsections", IAction.AS_CHECK_BOX) {
-            public void run() {
-                boolean oldState = filter.isTypeVisible(OutlineNode.TYPE_SUBSECTION);
-                filter.toggleType(OutlineNode.TYPE_SUBSECTION, !oldState);
-                TreeViewer viewer = getTreeViewer();
-                if (oldState == false) {
-                    revealNodes(OutlineNode.TYPE_SUBSECTION);
-                }
-                viewer.refresh();
-            }
-        };
-        hideSubSections.setToolTipText("Hide subsections");
-        hideSubSections.setImageDescriptor(TexlipsePlugin.getImageDescriptor("hide_sub"));
-        this.outlineActions.put(ACTION_HIDE_SUBSEC, hideSubSections);
+        action = createHideAction("Hide subsections", OutlineNode.TYPE_SUBSECTION, 
+        		TexlipsePlugin.getImageDescriptor("hide_sub"));
+        this.outlineActions.put(ACTION_HIDE_SUBSEC, action);
         
-        Action hideSubSubSections = new Action("Hide subsubsections", IAction.AS_CHECK_BOX) {
-            public void run() {
-                boolean oldState = filter.isTypeVisible(OutlineNode.TYPE_SUBSUBSECTION);
-                filter.toggleType(OutlineNode.TYPE_SUBSUBSECTION, !oldState);
-                TreeViewer viewer = getTreeViewer();
-                if (oldState == false) {
-                    revealNodes(OutlineNode.TYPE_SUBSUBSECTION);
-                }
-                viewer.refresh();
-            }
-        };
-        hideSubSubSections.setToolTipText("Hide subsubsections");
-        hideSubSubSections.setImageDescriptor(TexlipsePlugin.getImageDescriptor("hide_subsub"));
-        this.outlineActions.put(ACTION_HIDE_SUBSUBSEC, hideSubSubSections);
-        
-        Action hideParagraphs = new Action("Hide paragraphs", IAction.AS_CHECK_BOX) {
-            public void run() {
-                boolean oldState = filter.isTypeVisible(OutlineNode.TYPE_PARAGRAPH);
-                filter.toggleType(OutlineNode.TYPE_PARAGRAPH, !oldState);
-                TreeViewer viewer = getTreeViewer();
-                if (oldState == false) {
-                    revealNodes(OutlineNode.TYPE_PARAGRAPH);
-                }
-                viewer.refresh();
-            }
-        };
-        hideParagraphs.setToolTipText("Hide paragraphs");
-        hideParagraphs.setImageDescriptor(TexlipsePlugin.getImageDescriptor("hide_para"));
-        this.outlineActions.put(ACTION_HIDE_PARAGRAPH, hideParagraphs);
-        
-        Action hideFloats = new Action("Hide floating environments", IAction.AS_CHECK_BOX) {
-            public void run() {
-                boolean oldState = filter.isTypeVisible(OutlineNode.TYPE_ENVIRONMENT);
-                filter.toggleType(OutlineNode.TYPE_ENVIRONMENT, !filter.isTypeVisible(OutlineNode.TYPE_ENVIRONMENT));
-                TreeViewer viewer = getTreeViewer();
-                if (oldState == false) {
-                    revealNodes(OutlineNode.TYPE_ENVIRONMENT);
-                }
-                viewer.refresh();
-            }
-        };
-        hideFloats.setToolTipText("Hide floating environments");
-        hideFloats.setImageDescriptor(TexlipsePlugin.getImageDescriptor("hide_env"));
-        this.outlineActions.put(ACTION_HIDE_FLOAT, hideFloats);
+        action = createHideAction("Hide subsubsections", OutlineNode.TYPE_SUBSUBSECTION, 
+        		TexlipsePlugin.getImageDescriptor("hide_subsub"));
+        this.outlineActions.put(ACTION_HIDE_SUBSUBSEC, action);
+
+        action = createHideAction("Hide paragraphs", OutlineNode.TYPE_PARAGRAPH, 
+        		TexlipsePlugin.getImageDescriptor("hide_para"));
+        this.outlineActions.put(ACTION_HIDE_PARAGRAPH, action);
+                
+        action = createHideAction("Hide floating environments", OutlineNode.TYPE_ENVIRONMENT, 
+        		TexlipsePlugin.getImageDescriptor("hide_env"));
+        this.outlineActions.put(ACTION_HIDE_FLOAT, action);
+
+        action = createHideAction("Hide labels", OutlineNode.TYPE_LABEL, 
+        		TexlipsePlugin.getImageDescriptor("hide_label"));
+        this.outlineActions.put(ACTION_HIDE_LABEL, action);
     }
     
     /**
@@ -594,20 +575,37 @@ public class TexOutlinePage extends ContentOutlinePage {
      * @param the IMenuManager of the context menu
      */
     private void fillContextMenu(IMenuManager mgr) {
-        mgr.add((Action)outlineActions.get(ACTION_COPY));
-        mgr.add((Action)outlineActions.get(ACTION_CUT));
-        mgr.add((Action)outlineActions.get(ACTION_PASTE));
+        mgr.add(outlineActions.get(ACTION_COPY));
+        mgr.add(outlineActions.get(ACTION_CUT));
+        mgr.add(outlineActions.get(ACTION_PASTE));
         mgr.add(new Separator());
-        mgr.add((Action)outlineActions.get(ACTION_DELETE));
+        mgr.add(outlineActions.get(ACTION_DELETE));
     }
     
     
     private void resetToolbarButtons() {
-        ((Action)outlineActions.get(ACTION_HIDE_SEC)).setChecked(!filter.isTypeVisible(OutlineNode.TYPE_SECTION));
-        ((Action)outlineActions.get(ACTION_HIDE_SUBSEC)).setChecked(!filter.isTypeVisible(OutlineNode.TYPE_SUBSECTION));
-        ((Action)outlineActions.get(ACTION_HIDE_SUBSUBSEC)).setChecked(!filter.isTypeVisible(OutlineNode.TYPE_SUBSUBSECTION));
-        ((Action)outlineActions.get(ACTION_HIDE_PARAGRAPH)).setChecked(!filter.isTypeVisible(OutlineNode.TYPE_PARAGRAPH));
-        ((Action)outlineActions.get(ACTION_HIDE_FLOAT)).setChecked(!filter.isTypeVisible(OutlineNode.TYPE_ENVIRONMENT));
+        outlineActions.get(ACTION_HIDE_SEC).setChecked(!filter.isTypeVisible(OutlineNode.TYPE_SECTION));
+        outlineActions.get(ACTION_HIDE_SUBSEC).setChecked(!filter.isTypeVisible(OutlineNode.TYPE_SUBSECTION));
+        outlineActions.get(ACTION_HIDE_SUBSUBSEC).setChecked(!filter.isTypeVisible(OutlineNode.TYPE_SUBSUBSECTION));
+        outlineActions.get(ACTION_HIDE_PARAGRAPH).setChecked(!filter.isTypeVisible(OutlineNode.TYPE_PARAGRAPH));
+        outlineActions.get(ACTION_HIDE_FLOAT).setChecked(!filter.isTypeVisible(OutlineNode.TYPE_ENVIRONMENT));
+        outlineActions.get(ACTION_HIDE_LABEL).setChecked(!filter.isTypeVisible(OutlineNode.TYPE_LABEL));
+    }
+    
+    /**
+     * Removes own SelectionChangeListener from TreeViewer and uses listener instead 
+     * Needed for Full LaTeX Outline
+     */
+    public void switchTreeViewerSelectionChangeListener(ISelectionChangedListener listener) {
+    	getTreeViewer().removeSelectionChangedListener(this);
+    	getTreeViewer().addSelectionChangedListener(listener);
+    }
+    
+    /**
+     * Resets outline (needed for Full LaTeX outline)
+     */
+    public void reset() {
+    	this.expandLevel = 1;
     }
     
     /**
@@ -618,14 +616,15 @@ public class TexOutlinePage extends ContentOutlinePage {
         
         // add actions to the toolbar
         IToolBarManager toolbarManager = getSite().getActionBars().getToolBarManager();
-        toolbarManager.add((IAction)outlineActions.get(ACTION_UPDATE));
-        toolbarManager.add((IAction)outlineActions.get(ACTION_COLLAPSE));
-        toolbarManager.add((IAction)outlineActions.get(ACTION_EXPAND));
-        toolbarManager.add((IAction)outlineActions.get(ACTION_HIDE_SEC));
-        toolbarManager.add((IAction)outlineActions.get(ACTION_HIDE_SUBSEC));
-        toolbarManager.add((IAction)outlineActions.get(ACTION_HIDE_SUBSUBSEC));
-        toolbarManager.add((IAction)outlineActions.get(ACTION_HIDE_PARAGRAPH));
-        toolbarManager.add((IAction)outlineActions.get(ACTION_HIDE_FLOAT));
+        toolbarManager.add(outlineActions.get(ACTION_UPDATE));
+        toolbarManager.add(outlineActions.get(ACTION_COLLAPSE));
+        toolbarManager.add(outlineActions.get(ACTION_EXPAND));
+        toolbarManager.add(outlineActions.get(ACTION_HIDE_SEC));
+        toolbarManager.add(outlineActions.get(ACTION_HIDE_SUBSEC));
+        toolbarManager.add(outlineActions.get(ACTION_HIDE_SUBSUBSEC));
+        toolbarManager.add(outlineActions.get(ACTION_HIDE_PARAGRAPH));
+        toolbarManager.add(outlineActions.get(ACTION_HIDE_FLOAT));
+        toolbarManager.add(outlineActions.get(ACTION_HIDE_LABEL));
     }
     
     /**

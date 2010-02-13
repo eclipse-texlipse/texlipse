@@ -91,8 +91,9 @@
       <wizard
             category="texlipse.category1"
             class="net.sourceforge.texlipse.wizards.TexlipseProjectCreationWizard"
+            finalPerspective="net.sourceforge.texlipse.TexlipsePerspective"
             icon="icons/logo.gif"
-            id="texlipse.wizard1"
+            id="net.sourceforge.texlipse.TexProjectWizard"
             name="LaTeX Project"
             project="true">
          <description>
@@ -102,6 +103,13 @@
       <category
             name="Texlipse"
             id="texlipse.category1"/>
+      <wizard
+            category="texlipse.category1"
+            class="net.sourceforge.texlipse.wizards.TexlipseNewTexFileWizard"
+            icon="icons/texfile.gif"
+            id="net.sourceforge.texlipse.wizards.TexlipseNewTexFileWizard"
+            name="New LaTeX file">
+      </wizard>
    </extension>
    <extension
          id="properties.propertyPage1"
@@ -128,13 +136,13 @@
             class="net.sourceforge.texlipse.tableview.views.TexTableView"
             category="TeXlipse"
             name="LaTeX Table View"
-            id="Texlipse.view1"/>
+            id="net.sourceforge.texlipse.TableView"/>
       <view
             icon="icons/outline_co.gif"
             class="net.sourceforge.texlipse.treeview.views.TexOutlineTreeView"
             category="TeXlipse"
             name="Full Latex Outline"
-            id="Texlipse.view2"/>
+            id="net.sourceforge.texlipse.FullOutline"/>
    </extension>
 
    <extension
@@ -1232,5 +1240,14 @@ ${cursor}
                </and>
                </triggerPoints>
       </navigatorContent>
+   </extension>
+   <extension
+         point="org.eclipse.ui.perspectives">
+      <perspective
+            class="net.sourceforge.texlipse.TexPerspectiveFactory"
+            icon="icons/logo.gif"
+            id="net.sourceforge.texlipse.TexlipsePerspective"
+            name="LaTeX">
+      </perspective>
    </extension>
 </plugin>

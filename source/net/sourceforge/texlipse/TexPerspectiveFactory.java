@@ -5,6 +5,12 @@ import org.eclipse.ui.IPageLayout;
 import org.eclipse.ui.IPerspectiveFactory;
 import org.eclipse.ui.console.IConsoleConstants;
 
+/**
+ * A simple LaTeX perspective
+ * 
+ * @author Boris von Loesch
+ *
+ */
 public class TexPerspectiveFactory implements IPerspectiveFactory {
     
     private final static String ID_TABLE_VIEW = "net.sourceforge.texlipse.TableView";
@@ -24,8 +30,6 @@ public class TexPerspectiveFactory implements IPerspectiveFactory {
         left.addView(IPageLayout.ID_OUTLINE);
         left.addView(ID_FULL_OUTLINE);
         
-        // Put the Favorites view on the bottom with 
-        // the Tasks view.
         IFolderLayout bottom =
            layout.createFolder(
               "bottom",
@@ -47,6 +51,7 @@ public class TexPerspectiveFactory implements IPerspectiveFactory {
         layout.addShowViewShortcut(IConsoleConstants.ID_CONSOLE_VIEW);
         layout.addShowViewShortcut(ID_TABLE_VIEW);
 
+        //Add project and Latex file creation wizards to menu
         layout.addNewWizardShortcut(ID_PROJECT_WIZARD);
         layout.addNewWizardShortcut(ID_LATEX_FILE_WIZARD);
     }

@@ -9,11 +9,15 @@
  */
 package net.sourceforge.texlipse.builder;
 
+import java.io.IOException;
+
 import net.sourceforge.texlipse.TexlipsePlugin;
+import net.sourceforge.texlipse.auxparser.AuxFileParser;
 import net.sourceforge.texlipse.properties.TexlipseProperties;
 import net.sourceforge.texlipse.viewer.ViewerManager;
 
 import org.eclipse.core.resources.IContainer;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
@@ -179,6 +183,29 @@ public class TexBuilder extends AbstractBuilder {
         
         // if bibtex is not used, maybe the references need to be updated in the main document
         String rerun = (String) TexlipseProperties.getSessionProperty(resource.getProject(), TexlipseProperties.SESSION_LATEX_RERUN);
+        
+        // evaluate the .aux file
+        String auxFileName = TexlipseProperties.getProjectProperty(project, TexlipseProperties.MAINFILE_PROPERTY);
+        //Check for partial build
+        Object s = TexlipseProperties.getProjectProperty(project, TexlipseProperties.PARTIAL_BUILD_PROPERTY);
+        if (s != null) {
+            IFile tmpFile = (IFile)TexlipseProperties.getSessionProperty(project, TexlipseProperties.PARTIAL_BUILD_FILE);
+            if (tmpFile != null) {
+                auxFileName = tmpFile.getProjectRelativePath().toPortableString();
+            }
+        }
+        auxFileName = auxFileName.replaceFirst("\\.tex$", "\\.aux");
+        IResource auxFile = project.getFile(auxFileName);
+        if (auxFile.exists()) {
+            AuxFileParser afp = new AuxFileParser();
+            try {
+                afp.parse(TexlipseProperties.getFileContents(auxFile));
+                boolean refsChanged = afp.referencesChanged();
+                if (refsChanged) bibChange = new Boolean(true);
+            } catch (IOException e) {
+                TexlipsePlugin.log("Could not parse BibTeX file", e);
+            }
+        }
         
         // if bibtex is used, the bibliography might be changed
         String[] bibs = (String[]) TexlipseProperties.getSessionProperty(project, TexlipseProperties.BIBFILE_PROPERTY);

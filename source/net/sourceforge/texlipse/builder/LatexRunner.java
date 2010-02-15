@@ -21,6 +21,8 @@ import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.Path;
 
 
 /**
@@ -89,14 +91,28 @@ public class LatexRunner extends AbstractProgramRunner {
     private void addProblemMarker(String error, String causingSourceFile,
             int linenr, int severity, IResource resource, boolean layout) {
         
-        IProject project = resource.getProject();
+        
+    	IProject project = resource.getProject();
         IContainer sourceDir = TexlipseProperties.getProjectSourceDir(project);
-
+        
         IResource extResource = null;
         if (causingSourceFile != null) {
-            extResource = sourceDir.findMember(causingSourceFile);
+        	IPath p = new Path(causingSourceFile);
+        	
+        	if (p.isAbsolute()) {
+        		//Make absolute path relative to source directory
+        		//or to the directory of the resource
+        		if (sourceDir.getLocation().isPrefixOf(p)) {
+        			p = p.makeRelativeTo(sourceDir.getLocation());
+        		}
+        		else if (resource.getParent().getLocation().isPrefixOf(p)) {
+        			p = p.makeRelativeTo(resource.getParent().getLocation());
+        		}
+        	}
+
+        	extResource = sourceDir.findMember(p);
             if (extResource == null) {
-                extResource = resource.getParent().findMember(causingSourceFile);
+                extResource = resource.getParent().findMember(p);
             }
         }
         if (extResource == null)

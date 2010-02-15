@@ -317,28 +317,43 @@ public abstract class AbstractProgramRunner implements ProgramRunner {
     /**
      * Create a layout warning marker to the given resource.
      *
+     * @param resource the file where the problem occurred
+     * @param message error message
+     * @param lineNumber line number
+     * @param markerType
+     * @param severity Severity of the error
+     */
+    @SuppressWarnings("unchecked")
+	protected static void createMarker(IResource resource, 
+    		Integer lineNumber, String message, String markerType, int severity) {
+    	IMarker marker = AbstractProgramRunner.findMarker(resource, lineNumber, message, markerType);
+    	if (marker == null) {
+    		try {
+    			HashMap map = new HashMap();
+    			map.put(IMarker.MESSAGE, message);
+    			map.put(IMarker.SEVERITY, new Integer (severity));
+
+    			if (lineNumber != null)
+    				map.put(IMarker.LINE_NUMBER, lineNumber);
+
+    			MarkerUtilities.createMarker(resource, map, markerType);
+    		} catch (CoreException e) {
+    			throw new RuntimeException(e);
+    		}
+    	}
+    }
+    
+    /**
+     * Create a layout warning marker to the given resource.
+     *
      * @param resource the file where the problem occured
      * @param message error message
      * @param lineNumber line number
      */
     public static void createLayoutMarker(IResource resource, Integer lineNumber, String message) {
         String markerType = TexlipseBuilder.LAYOUT_WARNING_TYPE;
-        
-        IMarker marker = AbstractProgramRunner.findMarker(resource, message, markerType);
-        if (marker == null) {
-            try {
-                HashMap map = new HashMap();
-                map.put(IMarker.MESSAGE, message);
-                map.put(IMarker.SEVERITY, new Integer(IMarker.SEVERITY_WARNING));
-                
-                if (lineNumber != null)
-                    map.put(IMarker.LINE_NUMBER, lineNumber);
-                
-                MarkerUtilities.createMarker(resource, map, markerType);
-            } catch (CoreException e) {
-                throw new RuntimeException(e);
-            }
-        }
+        int severity = IMarker.SEVERITY_WARNING;
+        createMarker(resource, lineNumber, message, markerType, severity);
     }
     
     /**
@@ -350,29 +365,8 @@ public abstract class AbstractProgramRunner implements ProgramRunner {
      * @param severity severity of the marker
      */
     public static void createMarker(IResource resource, Integer lineNumber, String message, int severity) {
-        
         String markerType = TexlipseBuilder.MARKER_TYPE;
-        //int severity = IMarker.SEVERITY_ERROR;
-        
-        IMarker marker = AbstractProgramRunner.findMarker(resource, message, markerType);
-        if (marker == null) {
-            
-            try {
-                
-                HashMap map = new HashMap();
-                map.put(IMarker.MESSAGE, message);
-                map.put(IMarker.SEVERITY, new Integer(severity));
-                
-                if (lineNumber != null) {
-                    map.put(IMarker.LINE_NUMBER, lineNumber);
-                }
-    
-                MarkerUtilities.createMarker(resource, map, markerType);
-                
-            } catch (CoreException e) {
-                throw new RuntimeException(e);
-            }
-        }
+        createMarker(resource, lineNumber, message, markerType, severity);
     }
 
     /**
@@ -389,21 +383,28 @@ public abstract class AbstractProgramRunner implements ProgramRunner {
     /**
      * Checks pre-existance of marker.
      * 
-     * @param resource Resource in wich marker will searched
+     * @param resource Resource in which marker will searched
+     * @param lineNr IMarker.LINE_NUMBER of the marker
      * @param message Message for marker
      * @param type The type of the marker to find
-     * @return pre-existance of marker
+     * @return pre-existance of marker or null if no marker was found
      */
-    public static IMarker findMarker(IResource resource, String message, String type) {
+    public static IMarker findMarker(IResource resource, int lineNr, String message, String type) {
         
-        IMarker[] tasks;
         try {
-            tasks = resource.findMarkers(type, true, IResource.DEPTH_ZERO);
-            for (int i = 0; i < tasks.length; i++) {
-                if (tasks[i].getAttribute(IMarker.MESSAGE).equals(message)) {
-                    return tasks[i];
-                }
-            }
+        	IMarker[] tasks = resource.findMarkers(type, true, IResource.DEPTH_ZERO);
+            for (IMarker marker : tasks) {
+            	Object lNrObj = marker.getAttribute(IMarker.LINE_NUMBER);
+            	int lNr = -1;
+            	if (lNrObj != null) {
+            		lNr = ((Integer) lNrObj);
+            	}
+				if (lNr == lineNr
+						&& marker.getAttribute(IMarker.MESSAGE).equals(message)) {
+					return marker;
+				}
+					
+			}
         } catch (CoreException e) {
             throw new RuntimeException(e);
         }

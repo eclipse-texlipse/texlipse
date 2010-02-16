@@ -326,7 +326,11 @@ public abstract class AbstractProgramRunner implements ProgramRunner {
     @SuppressWarnings("unchecked")
 	protected static void createMarker(IResource resource, 
     		Integer lineNumber, String message, String markerType, int severity) {
-    	IMarker marker = AbstractProgramRunner.findMarker(resource, lineNumber, message, markerType);
+    	int lineNr = -1;
+    	if (lineNumber != null) {
+    		lineNr = lineNumber;
+    	}
+    	IMarker marker = AbstractProgramRunner.findMarker(resource, lineNr, message, markerType);
     	if (marker == null) {
     		try {
     			HashMap map = new HashMap();

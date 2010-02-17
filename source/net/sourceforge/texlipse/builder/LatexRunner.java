@@ -34,7 +34,9 @@ import org.eclipse.core.runtime.Path;
  */
 public class LatexRunner extends AbstractProgramRunner {
     
-    private Stack<String> parsingStack;
+    private static final int MAX_LINE_LENGTH = 79;
+	
+	private Stack<String> parsingStack;
     private boolean alreadyShowError;
     
     /**
@@ -166,6 +168,12 @@ public class LatexRunner extends AbstractProgramRunner {
         
         while (st.hasMoreTokens()) {
             line = st.nextToken();
+            //Add more lines if line length is a multiple of 79 and
+            //it does not end with ...
+            while (!line.endsWith("...") && st.hasMoreTokens() 
+            		&& line.length() % MAX_LINE_LENGTH == 0) {
+            	line = line + st.nextToken();
+            }
             line = line.replaceAll(" {2,}", " ").trim();
             Matcher m = LATEXCERROR.matcher(line);
             if (m.matches()) {

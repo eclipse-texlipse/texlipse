@@ -10,7 +10,6 @@
 package net.sourceforge.texlipse.spelling;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.text.TextSelection;
 import org.eclipse.jface.viewers.ISelection;
@@ -47,15 +46,6 @@ public class SpellCheckAction implements IEditorActionDelegate {
         IEditorInput input = textEditor.getEditorInput();
         
         IFile file = ((FileEditorInput) input).getFile();
-        
-        // read encoding from the file
-        if (input instanceof FileEditorInput) {
-            try {
-                String enc = file.getCharset();
-                SpellChecker.setEncoding(enc);
-            } catch (CoreException e) {
-            }
-        }
         
         SpellChecker.checkSpelling(textEditor.getDocumentProvider().getDocument(input), file);
 	}

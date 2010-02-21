@@ -76,9 +76,18 @@ press the big Apply-button at the bottom of the page. The program paths should a
 The console log means the Console View, which is accessible through
 <b>Window &gt; Show View &gt; Other &gt; Basic &gt; Console</b>.
 If the builder console log is enabled, all the messages printed by external
-programs to standard output will be shown in the console log. That's a lot
-of output, and that's why this option is disabled by default. It is, however,
+programs to standard output will be shown in the console log. It is
 very handy for figuring out why something doesn't work.
+</p>
+
+<p>
+LaTeX writes additional informations into .aux files. Texlipse has a special parser
+for this kind of files that extracts informations about citations and labels. The
+citation information are used to determine whether a BibTeX run is necessary. 
+Some environments like <code>lstlisting</code> have a special syntax to add a label to it. 
+These labels are not detected by Texlipse's LaTeX parser in the source code.
+The .aux file parser can detect them and hence there should be
+no false warnings about undefined labels after a build.  
 </p>
 
 <h3><a name="latextemp"></a> LaTeX Temp Files </h3>

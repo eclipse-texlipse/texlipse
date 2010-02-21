@@ -219,6 +219,10 @@ public class OpenDeclarationAction implements IEditorActionDelegate {
             	//Try kpathsea
             	KpsewhichRunner filesearch = new KpsewhichRunner();
             	String filepath = filesearch.getFile(editor.getDocumentModel().getFile(), refEntry.fileName, "bibtex");
+            	if ("".equals(filepath)) {
+            	    createStatusLineErrorMessage(TexlipsePlugin.getResourceString("gotoDeclarationNoDeclarationFound"));
+                    return;
+            	}
             	File f = new File(filepath);
                	//Open the correct document and jump to label
                	part = (AbstractTextEditor) IDE.openEditor(editor.getEditorSite().getPage(), 

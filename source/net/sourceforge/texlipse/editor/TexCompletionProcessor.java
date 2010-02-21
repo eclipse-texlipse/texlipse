@@ -295,10 +295,20 @@ public class TexCompletionProcessor implements IContentAssistProcessor {
 
         ICompletionProposal[] result = new ICompletionProposal[refEntries.length];
         
-        for (int i=0; i < refEntries.length; i++) {         
+        for (int i=0; i < refEntries.length; i++) {
+        	
+        	String infoText = null;
+        	
+        	if (refEntries[i].info != null) {
+    			infoText = (refEntries[i].info.length() > assistLineLength)?
+            			wrapString(refEntries[i].info, assistLineLength)
+    					: refEntries[i].info;
+        	}
+
             result[i] = new CompletionProposal(refEntries[i].key,
                     offset - replacementLength, replacementLength,
-                    refEntries[i].key.length(), null, refEntries[i].key, null, null);
+                    refEntries[i].key.length(), null, refEntries[i].key, null, 
+                    infoText);
         }
         return result;        
     }

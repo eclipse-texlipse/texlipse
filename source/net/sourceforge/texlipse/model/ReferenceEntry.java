@@ -9,7 +9,10 @@
  */
 package net.sourceforge.texlipse.model;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
+import java.io.StringReader;
 
 
 /**
@@ -83,4 +86,33 @@ public final class ReferenceEntry extends AbstractEntry {
     public String toString() {
         return key;
     }
+    
+    private int labelPrecedingLines = 2;
+    private int labelFollowingLines = 2;
+    
+    public void setLabelInfo(String input) {
+    	int lineno = startLine;
+        StringBuilder extract = new StringBuilder();
+        try {
+            BufferedReader in = new BufferedReader(new StringReader(input));
+            int currentLine = 0;
+            int startLine = (lineno - labelPrecedingLines) >= 0 ?
+                    lineno - labelPrecedingLines : 0;
+            int endLine = lineno + labelFollowingLines;
+            String str;
+            while ((str = in.readLine()) != null) {
+                if (currentLine > endLine) {
+                    break;
+                } else if (currentLine >= startLine) {
+                    extract.append(str);
+                    extract.append(System.getProperty("line.separator"));
+                }
+                currentLine++;
+            }
+            in.close();
+        } catch (IOException e) {
+        }
+        info = extract.toString();
+    }
+
 }

@@ -102,6 +102,7 @@ public class LatexRefExtractingParser {
                             ReferenceEntry l = new ReferenceEntry(t.getText());
                             l.setPosition(t.getPos(), t.getText().length());
                             l.startLine = t.getLine();
+                            l.setLabelInfo(input);
                             this.labels.add(l);
                         } else if (prevToken instanceof TCbib) {
                             bibs = t.getText().split(",");

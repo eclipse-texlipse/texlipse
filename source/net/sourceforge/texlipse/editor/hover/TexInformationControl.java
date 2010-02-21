@@ -9,11 +9,6 @@
  */
 package net.sourceforge.texlipse.editor.hover;
 
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-
 import net.sourceforge.texlipse.TexlipsePlugin;
 import net.sourceforge.texlipse.editor.TexEditor;
 import net.sourceforge.texlipse.model.AbstractEntry;
@@ -21,9 +16,6 @@ import net.sourceforge.texlipse.model.ReferenceEntry;
 import net.sourceforge.texlipse.model.ReferenceManager;
 import net.sourceforge.texlipse.model.TexCommandEntry;
 
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
-import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IInformationControl;
 import org.eclipse.jface.text.IInformationControlExtension;
@@ -44,7 +36,6 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.part.FileEditorInput;
 
 /**
  * This class creates a informative hover for commands and BibTex entries.
@@ -54,10 +45,6 @@ import org.eclipse.ui.part.FileEditorInput;
  */
 public class TexInformationControl implements IInformationControl,
         IInformationControlExtension {
-
-    // TODO make these configurable
-    private static int labelPrecedingLines = 2;
-    private static int labelFollowingLines = 1;
     
     private AbstractEntry entry = null;
     private ReferenceManager refMana;
@@ -197,34 +184,7 @@ public class TexInformationControl implements IInformationControl,
         }
     }
 
-    
-    private String getDocumentExtract(String filename, int lineno) {
-        StringBuffer extract = new StringBuffer();
-        try {
-            BufferedReader in = new BufferedReader(new FileReader(filename));
-            int currentLine = 0;
-            int startLine = (lineno - labelPrecedingLines) >= 0 ?
-                    lineno - labelPrecedingLines : 0;
-            int endLine = lineno + labelFollowingLines;
-            String str;
-            while ((str = in.readLine()) != null) {
-                if (currentLine > endLine) {
-                    break;
-                } else if (currentLine >= startLine) {
-                    extract.append(str);
-                    extract.append(System.getProperty("line.separator"));
-                }
-                currentLine++;
-            }
-            in.close();
-        } catch (FileNotFoundException e) {
-        } catch (IOException e) {
-        }
-        return extract.toString();
-    }
-    
-    
-    
+        
     /**
      * Sets the hover for a reference to a label
      * 
@@ -238,34 +198,7 @@ public class TexInformationControl implements IInformationControl,
             entry = label;
             initTextBox();
             
-            String extract = "";
-            
-            String currentName = editor.getEditorInput().getName();
-            if (!currentName.equals(label.fileName)) {
-                // if the label is in a different file
-                IProject project = ((FileEditorInput)editor.getEditorInput()).getFile().getProject();
-                IResource res = project.findMember(label.fileName);
-                if (res != null) {
-                    String path = res.getLocation().toOSString();
-                    extract = getDocumentExtract(path, label.startLine).trim();
-                }
-            } else {
-                // if the label is in the same file
-                try {
-                    // Fetch some surroundings to the label declaration
-                    int firstLine = label.startLine >= labelPrecedingLines ?
-                            label.startLine - labelPrecedingLines : 0;
-                    int lastLine = (label.startLine + labelFollowingLines) < document.getNumberOfLines() ?
-                            label.startLine + labelFollowingLines : document.getNumberOfLines() - 1;
-                    int start = document.getLineOffset(firstLine);
-                    int end = document.getLineOffset(lastLine) + document.getLineLength(lastLine);
-                    
-                    extract = document.get(start, end - start).trim();
-                } catch (BadLocationException e) {
-                    TexlipsePlugin.log("TexInformationControl: ", e);
-                }
-            }
-            hoverText.setText(extract);
+            hoverText.setText(label.info);
             return true;
         }
         return false;

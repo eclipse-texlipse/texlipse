@@ -70,7 +70,8 @@ public class TexlipsePreferenceInitializer extends
         pref.setDefault(TexlipseProperties.BIB_DIR, "");
         pref.setDefault(TexlipseProperties.OUTPUT_FORMAT, TexlipseProperties.OUTPUT_FORMAT_DVI);
         pref.setDefault(TexlipseProperties.BUILDER_NUMBER, 0);
-        pref.setDefault(TexlipseProperties.BUILDER_CONSOLE_OUTPUT, false);
+        pref.setDefault(TexlipseProperties.BUILDER_CONSOLE_OUTPUT, true);
+        pref.setDefault(TexlipseProperties.BUILDER_PARSE_AUX_FILES, true);
         pref.setDefault(TexlipseProperties.BUILD_BEFORE_VIEW, false);
         pref.setDefault(TexlipseProperties.FILE_LOCATION_PORT, FileLocationClient.DEFAULT_PORTNUMBER);
         

@@ -9,10 +9,15 @@
  */
 package net.sourceforge.texlipse.builder;
 
-import java.io.IOException;
+import java.io.File;
+import java.util.LinkedList;
+
+import javax.swing.text.StyledEditorKit.BoldAction;
 
 import net.sourceforge.texlipse.TexlipsePlugin;
 import net.sourceforge.texlipse.auxparser.AuxFileParser;
+import net.sourceforge.texlipse.model.ReferenceContainer;
+import net.sourceforge.texlipse.model.ReferenceEntry;
 import net.sourceforge.texlipse.properties.TexlipseProperties;
 import net.sourceforge.texlipse.viewer.ViewerManager;
 
@@ -195,17 +200,33 @@ public class TexBuilder extends AbstractBuilder {
             }
         }
         auxFileName = auxFileName.replaceFirst("\\.tex$", "\\.aux");
-        IResource auxFile = project.getFile(auxFileName);
-        if (auxFile.exists()) {
-            AuxFileParser afp = new AuxFileParser();
-            try {
-                afp.parse(TexlipseProperties.getFileContents(auxFile));
-                boolean refsChanged = afp.referencesChanged();
-                if (refsChanged) bibChange = new Boolean(true);
-            } catch (IOException e) {
-                TexlipsePlugin.log("Could not parse BibTeX file", e);
-            }
-        }
+		IResource auxFile = project.getFile(auxFileName);
+		boolean parseAuxFiles = TexlipsePlugin.getDefault().getPreferenceStore().getBoolean(TexlipseProperties.BUILDER_PARSE_AUX_FILES);
+		if (parseAuxFiles && auxFile.exists()) {
+			AuxFileParser afp = new AuxFileParser(project, auxFileName);
+			afp.parse();
+			boolean refsChanged = afp.referencesChanged();
+			if (refsChanged)
+				bibChange = new Boolean(true);
+
+			// look for labels defined in the .aux-file
+			ReferenceContainer labelC = (ReferenceContainer) TexlipseProperties
+					.getSessionProperty(project,
+							TexlipseProperties.LABELCONTAINER_PROPERTY);
+			if (labelC != null) {
+			    //Add temp path to aux-File
+			    String tempPath = TexlipseProperties.getProjectProperty(project, TexlipseProperties.TEMP_DIR_PROPERTY);
+			    String correctedAuxFileName = tempPath + File.separator + auxFileName;
+			    
+			    //First remove the labels
+				labelC.addRefSource(correctedAuxFileName,
+						new LinkedList<ReferenceEntry>());
+				//and reorganize
+				labelC.organize();
+				//now add them 
+				labelC.updateRefSource(correctedAuxFileName, afp.getLabels());
+			}
+		}
         
         // if bibtex is used, the bibliography might be changed
         String[] bibs = (String[]) TexlipseProperties.getSessionProperty(project, TexlipseProperties.BIBFILE_PROPERTY);

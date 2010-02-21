@@ -11,6 +11,7 @@ package net.sourceforge.texlipse.model;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -49,17 +50,28 @@ public class ReferenceContainer {
      * @param refs The references to store
      */
     public void addRefSource(String key, List<ReferenceEntry> refs) {
-        // Add filename to all references
+    	if (key != null && key.endsWith(".aux")) {
+        	// Avoid duplicates
+        	Iterator<ReferenceEntry> it = refs.iterator();
+        	while (it.hasNext()) {
+        		String x = it.next().key;
+        		if (binTest(x)) {
+        			it.remove();
+        		}
+        	}
+    	}
+    	
+    	// Add filename to all references
     	for (ReferenceEntry r : refs) {
-            r.fileName = key;
+    	    r.fileName = key;
         }
-        
+    	
         size += refs.size();
         List<ReferenceEntry> al = referenceHash.put(key, refs);
         if (al != null)
             size -= al.size();
     }
-    
+        
     /**
      * Updates the contents of this object if the given key exists
      * in the internal set. Updating includes replacing the old 
@@ -160,7 +172,7 @@ public class ReferenceContainer {
         }
         return true;
     }
-    
+        
     /**
      * Tests (using binary search) if the given key exists in this container.
      * 
@@ -170,23 +182,13 @@ public class ReferenceContainer {
     public boolean binTest(String key) {
         if (sortedReferences == null || sortedReferences.length == 0)
             return false;
-        int left = 0;
-        int right = sortedReferences.length - 1;
-        int center = right >> 1;
-        int comparison;
-        
-        while (right >= left) {
-            comparison = key.compareTo(sortedReferences[center].key);
-            if (comparison < 0) {
-                right = center - 1;
-            } else if (comparison > 0) {
-                left = center + 1;
-            } else { //if (val == buf[center])
-                return true;
+        int s = Arrays.binarySearch(sortedReferences, new ReferenceEntry(key), 
+                new Comparator<ReferenceEntry>() {
+            public int compare(ReferenceEntry o1, ReferenceEntry o2) {
+                return o1.key.compareTo(o2.key);
             }
-            center = (left + right) >> 1;
-        }
-        return false;
+        });
+        return (s >= 0);
     }
     
     /**

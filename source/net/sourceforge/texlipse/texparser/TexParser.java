@@ -196,8 +196,14 @@ public class TexParser {
      * @return The labels <code>ArrayList<ReferenceEntry></code>
      */
     public List<ReferenceEntry> getLabels() {
-        return lparser.getLabels();
+    	List<ReferenceEntry> labels = lparser.getLabels();
+    	for (ReferenceEntry label : labels) {
+    		label.setLabelInfo(inputDoc.get());
+    	}
+        return labels;
     }
+    
+
 
     /**
      * @return The cite-references

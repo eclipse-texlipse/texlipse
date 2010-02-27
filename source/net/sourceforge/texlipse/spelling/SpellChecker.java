@@ -585,8 +585,10 @@ public class SpellChecker implements IPropertyChangeListener {
             } else {
                 options = new String[2];
             }
-            options[options.length - 2] = SPELL_CHECKER_IGNORE;
-            options[options.length - 1] = SPELL_CHECKER_ADD;
+            options[options.length - 2] = MessageFormat.format(SPELL_CHECKER_IGNORE,
+                    new Object[] { word });
+            options[options.length - 1] = MessageFormat.format(SPELL_CHECKER_ADD, 
+                    new Object[] { word });
 
             createMarker(file, options, offset + column, word,
                     lineNumber);

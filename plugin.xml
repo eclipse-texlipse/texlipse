@@ -1250,4 +1250,12 @@ ${cursor}
             name="LaTeX">
       </perspective>
    </extension>
+   <extension
+         point="org.eclipse.ui.workbench.texteditor.spellingEngine">
+      <engine
+            class="net.sourceforge.texlipse.spelling.TexSpellingEngine"
+            id="net.sourceforge.texlipse.LaTeXSpellEngine"
+            label="Latex">
+      </engine>
+   </extension>
 </plugin>

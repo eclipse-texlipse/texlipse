@@ -16,6 +16,7 @@ import net.sourceforge.texlipse.editor.scanner.TexMathScanner;
 import net.sourceforge.texlipse.editor.scanner.TexScanner;
 import net.sourceforge.texlipse.properties.TexlipseProperties;
 
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.text.DefaultInformationControl;
 import org.eclipse.jface.text.IAutoEditStrategy;
 import org.eclipse.jface.text.IDocument;
@@ -31,6 +32,7 @@ import org.eclipse.jface.text.presentation.PresentationReconciler;
 import org.eclipse.jface.text.reconciler.IReconciler;
 import org.eclipse.jface.text.reconciler.IReconcilingStrategy;
 import org.eclipse.jface.text.reconciler.MonoReconciler;
+import org.eclipse.jface.text.reconciler.Reconciler;
 import org.eclipse.jface.text.rules.DefaultDamagerRepairer;
 import org.eclipse.jface.text.rules.RuleBasedScanner;
 import org.eclipse.jface.text.rules.Token;
@@ -78,14 +80,17 @@ public class TexSourceViewerConfiguration extends TextSourceViewerConfiguration 
             return null;
         if (!TexlipsePlugin.getDefault().getPreferenceStore().getBoolean(TexlipseProperties.ECLIPSE_BUILDIN_SPELLCHECKER))
             return null;
-        
-        SpellingService spellingService= EditorsUI.getSpellingService();
+        //Set TeXlipse spelling Engine as default
+        fPreferenceStore.setValue(SpellingService.PREFERENCE_SPELLING_ENGINE, 
+                "net.sourceforge.texlipse.LaTeXSpellEngine");
+        SpellingService spellingService = new SpellingService(fPreferenceStore);
         if (spellingService.getActiveSpellingEngineDescriptor(fPreferenceStore) == null)
             return null;
-        
         IReconcilingStrategy strategy= new TeXSpellingReconcileStrategy(sourceViewer, spellingService);
-        MonoReconciler reconciler= new MonoReconciler(strategy, false);
+        
+        MonoReconciler reconciler= new MonoReconciler(strategy, true);
         reconciler.setDelay(500);
+        reconciler.setProgressMonitor(new NullProgressMonitor());
         return reconciler;
     }
     

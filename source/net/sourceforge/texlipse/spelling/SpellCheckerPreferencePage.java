@@ -14,9 +14,11 @@ import net.sourceforge.texlipse.properties.TexlipsePreferencePage;
 import net.sourceforge.texlipse.properties.TexlipseProperties;
 
 import org.eclipse.jface.preference.BooleanFieldEditor;
+import org.eclipse.jface.preference.DirectoryFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.FileFieldEditor;
 import org.eclipse.jface.preference.StringFieldEditor;
+import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 
@@ -48,7 +50,16 @@ public class SpellCheckerPreferencePage
         TexlipsePreferencePage.addSpacer(3, getFieldEditorParent());
         addField(new StringFieldEditor(SpellChecker.SPELL_CHECKER_ARGUMENTS, TexlipsePlugin.getResourceString("preferenceSpellArgumentsLabel"), getFieldEditorParent()));
         TexlipsePreferencePage.addSpacer(3, getFieldEditorParent());
-        addField(new BooleanFieldEditor(TexlipseProperties.ECLIPSE_BUILDIN_SPELLCHECKER, TexlipsePlugin.getResourceString("preferenceSpellUseBuildIn"), getFieldEditorParent()));
+        final DirectoryFieldEditor dictDir = new DirectoryFieldEditor(TexlipseProperties.SPELLCHECKER_CUSTOM_DICT_DIR, TexlipsePlugin.getResourceString("preferenceSpellCustomDict"), getFieldEditorParent());
+        BooleanFieldEditor buildInSpell = new BooleanFieldEditor(TexlipseProperties.ECLIPSE_BUILDIN_SPELLCHECKER, TexlipsePlugin.getResourceString("preferenceSpellUseBuildIn"), getFieldEditorParent()) {
+            protected void valueChanged(boolean oldValue, boolean newValue) {
+                super.valueChanged(oldValue, newValue);
+                dictDir.setEnabled(newValue, getFieldEditorParent());
+            }
+        };
+        dictDir.setEnabled(buildInSpell.getBooleanValue(), getFieldEditorParent());
+        addField(buildInSpell);
+        addField(dictDir);
     }
     
     /**

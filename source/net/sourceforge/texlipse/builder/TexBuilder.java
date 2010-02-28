@@ -11,6 +11,7 @@ package net.sourceforge.texlipse.builder;
 
 import java.io.File;
 import java.util.LinkedList;
+import java.util.List;
 
 import javax.swing.text.StyledEditorKit.BoldAction;
 
@@ -155,6 +156,55 @@ public class TexBuilder extends AbstractBuilder {
     }
     
     /**
+     * Calculates the name of the root aux-file to be used by the 
+     * <code>AuxFileParser</code>.
+     * 
+     * @param project
+     * @return
+     */
+    private String getAuxFileName(IProject project) {
+        // evaluate the .aux file
+        String auxFileName = TexlipseProperties.getProjectProperty(project, TexlipseProperties.MAINFILE_PROPERTY);
+        //Check for partial build
+        Object s = TexlipseProperties.getProjectProperty(project, TexlipseProperties.PARTIAL_BUILD_PROPERTY);
+        if (s != null) {
+            IFile tmpFile = (IFile)TexlipseProperties.getSessionProperty(project, TexlipseProperties.PARTIAL_BUILD_FILE);
+            if (tmpFile != null) {
+                auxFileName = tmpFile.getProjectRelativePath().toPortableString();
+            }
+        }
+        auxFileName = auxFileName.replaceFirst("\\.tex$", "\\.aux");
+        return auxFileName;
+    }
+    
+    /**
+     * Extracts all labels defined in the aux-file and adds them to the
+     * label container
+     * 
+     * @param afp the <code>AuxFileParser</code> used to extract the labels
+     */
+	private void extractLabels(AuxFileParser afp) {
+		ReferenceContainer labelC = (ReferenceContainer) TexlipseProperties
+				.getSessionProperty(afp.getProject(),
+						TexlipseProperties.LABELCONTAINER_PROPERTY);
+		if (labelC != null) {
+			// Add temp path to aux-File
+			String tempPath = TexlipseProperties.getProjectProperty(afp.getProject(),
+					TexlipseProperties.TEMP_DIR_PROPERTY);
+			String correctedAuxFileName = tempPath + File.separator
+					+ afp.getRootAuxFile();
+
+			// First remove the labels
+			labelC.addRefSource(correctedAuxFileName,
+					new LinkedList<ReferenceEntry>());
+			// and reorganize
+			labelC.organize();
+			// now add them
+			labelC.updateRefSource(correctedAuxFileName, afp.getLabels());
+		}
+    }
+    
+    /**
      * Run latex and optionally bibtex to produce a dvi file.
      * @throws CoreException if the build fails at any point
      */
@@ -169,6 +219,18 @@ public class TexBuilder extends AbstractBuilder {
     		monitor.worked(5);    		
     	}
     	
+    	IProject project = resource.getProject();
+    	boolean parseAuxFiles = TexlipsePlugin.getDefault().getPreferenceStore().getBoolean(TexlipseProperties.BUILDER_PARSE_AUX_FILES);
+    	String auxFileName = getAuxFileName(project);
+		IResource auxFile = project.getFile(auxFileName);
+    	List<String> oldCitations = null;
+    
+		if (parseAuxFiles && auxFile.exists()) {
+			// read all citations from the aux-files and save them for later
+			AuxFileParser afp = new AuxFileParser(project, auxFileName);
+			oldCitations = afp.getCitations();
+		}		
+    	
     	monitor.subTask("Building document");
         try {
             latex.run(resource);
@@ -180,7 +242,7 @@ public class TexBuilder extends AbstractBuilder {
         monitor.worked(10);
         if (stopped)
             return;
-        IProject project = resource.getProject();
+        
         String runBib = (String) TexlipseProperties.getSessionProperty(project, TexlipseProperties.SESSION_BIBTEX_RERUN);
         Boolean bibChange = (Boolean) TexlipseProperties.getSessionProperty(project, TexlipseProperties.BIBFILES_CHANGED);
         IResource runIdx = findIndex(project, resource);
@@ -189,43 +251,16 @@ public class TexBuilder extends AbstractBuilder {
         // if bibtex is not used, maybe the references need to be updated in the main document
         String rerun = (String) TexlipseProperties.getSessionProperty(resource.getProject(), TexlipseProperties.SESSION_LATEX_RERUN);
         
-        // evaluate the .aux file
-        String auxFileName = TexlipseProperties.getProjectProperty(project, TexlipseProperties.MAINFILE_PROPERTY);
-        //Check for partial build
-        Object s = TexlipseProperties.getProjectProperty(project, TexlipseProperties.PARTIAL_BUILD_PROPERTY);
-        if (s != null) {
-            IFile tmpFile = (IFile)TexlipseProperties.getSessionProperty(project, TexlipseProperties.PARTIAL_BUILD_FILE);
-            if (tmpFile != null) {
-                auxFileName = tmpFile.getProjectRelativePath().toPortableString();
-            }
-        }
-        auxFileName = auxFileName.replaceFirst("\\.tex$", "\\.aux");
-		IResource auxFile = project.getFile(auxFileName);
-		boolean parseAuxFiles = TexlipsePlugin.getDefault().getPreferenceStore().getBoolean(TexlipseProperties.BUILDER_PARSE_AUX_FILES);
 		if (parseAuxFiles && auxFile.exists()) {
 			AuxFileParser afp = new AuxFileParser(project, auxFileName);
-			afp.parse();
-			boolean refsChanged = afp.referencesChanged();
-			if (refsChanged)
+
+			// check whether a new bibtex run is required
+			List<String> newCitations = afp.getCitations();
+			if (!newCitations.equals(oldCitations))
 				bibChange = new Boolean(true);
 
-			// look for labels defined in the .aux-file
-			ReferenceContainer labelC = (ReferenceContainer) TexlipseProperties
-					.getSessionProperty(project,
-							TexlipseProperties.LABELCONTAINER_PROPERTY);
-			if (labelC != null) {
-			    //Add temp path to aux-File
-			    String tempPath = TexlipseProperties.getProjectProperty(project, TexlipseProperties.TEMP_DIR_PROPERTY);
-			    String correctedAuxFileName = tempPath + File.separator + auxFileName;
-			    
-			    //First remove the labels
-				labelC.addRefSource(correctedAuxFileName,
-						new LinkedList<ReferenceEntry>());
-				//and reorganize
-				labelC.organize();
-				//now add them 
-				labelC.updateRefSource(correctedAuxFileName, afp.getLabels());
-			}
+			// add the labels defined in the .aux-file to the label container
+			extractLabels(afp);
 		}
         
         // if bibtex is used, the bibliography might be changed

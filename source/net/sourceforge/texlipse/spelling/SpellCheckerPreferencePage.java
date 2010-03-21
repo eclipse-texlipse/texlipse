@@ -56,8 +56,8 @@ public class SpellCheckerPreferencePage
                 super.valueChanged(oldValue, newValue);
                 dictDir.setEnabled(newValue, getFieldEditorParent());
             }
-        };
-        dictDir.setEnabled(buildInSpell.getBooleanValue(), getFieldEditorParent());
+        };        
+        dictDir.setEnabled(TexlipsePlugin.getDefault().getPreferenceStore().getBoolean(TexlipseProperties.ECLIPSE_BUILDIN_SPELLCHECKER), getFieldEditorParent());
         addField(buildInSpell);
         addField(dictDir);
     }

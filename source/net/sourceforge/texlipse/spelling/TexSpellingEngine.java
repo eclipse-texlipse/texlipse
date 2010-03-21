@@ -14,9 +14,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URL;
-import java.nio.charset.Charset;
 import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -48,7 +46,6 @@ import com.swabunga.spell.event.SpellCheckListener;
 import com.swabunga.spell.event.SpellChecker;
 import com.swabunga.spell.event.StringWordTokenizer;
 import com.swabunga.spell.event.TeXWordFinder;
-import com.swabunga.spell.event.WordFinder;
 
 /**
  * The default spelling engine for LaTeX files. Uses Jazzy for spell
@@ -62,16 +59,16 @@ public class TexSpellingEngine implements ISpellingEngine, SpellCheckListener {
         
         private SpellCheckEvent fError;
         private int roffset;
-        private TexSpellDictionary fDict;
+        private String fLang;
         
         private final static Image fCorrectionImage = TexlipsePlugin.getImage("correction_change");
         private final static String CHANGE_TO = TexlipsePlugin.getResourceString("spellCheckerChangeWord");
         private final static String MESSAGE = TexlipsePlugin.getResourceString("spellMarkerMessage");
         
-        public TexSpellingProblem(SpellCheckEvent error, int roffset, TexSpellDictionary dict) {
+        public TexSpellingProblem(SpellCheckEvent error, int roffset, String lang) {
             this.fError = error;
             this.roffset = roffset;
-            fDict = dict;
+            fLang = lang;
         }
         
         @Override
@@ -93,7 +90,7 @@ public class TexSpellingEngine implements ISpellingEngine, SpellCheckListener {
                         offset, length, length, fCorrectionImage, s, null, null);
             }
             props[props.length - 2] = new IgnoreProposal(ignore, fError.getInvalidWord(), context.getSourceViewer());
-            props[props.length - 1] = new AddToDictProposal(fError, fDict, context.getSourceViewer());
+            props[props.length - 1] = new AddToDictProposal(fError, fLang, context.getSourceViewer());
             return props;
         }
 
@@ -130,13 +127,11 @@ public class TexSpellingEngine implements ISpellingEngine, SpellCheckListener {
      * @param project
      * @return
      */
-    private SpellChecker getSpellChecker(IProject project) {
-        String lang = DEFAULT_LANG;
-        if (project != null) {
-            lang = TexlipseProperties.getProjectProperty(project, TexlipseProperties.LANGUAGE_PROPERTY);
-        }
+    private static SpellChecker getSpellChecker(String lang) {
         if (lang.equals(currentLang)) return spellCheck;
+        
         //Set spellCheck to null to allow the GC to trash the current dict
+        //FIXME: dict is referenced on other places too and hence not trashed by GC
         spellCheck = null;
         dict = null;
         try {
@@ -179,16 +174,35 @@ public class TexSpellingEngine implements ISpellingEngine, SpellCheckListener {
         return null;
     }
     
+    /**
+     * <p>Returns the dictionary for that language, or the default dictionary if no
+     * exists.</p> 
+     * <p><b>Beware:</b> Only use local references for the dictionary, otherwise
+     * it can not be trashed by the GC and we get memory problems.
+     * @param lang Language of the file
+     * @return The dictionary
+     */
+    public static TexSpellDictionary getDict(String lang) {
+        getSpellChecker(lang);
+        return dict;
+    }
+    
     public void check(IDocument document, IRegion[] regions, SpellingContext context, 
             ISpellingProblemCollector collector, IProgressMonitor monitor) {
         
         if (ignore == null) {
             ignore = new HashSet<String>();
         }
-        //TODO: This must not necessary be the project of the document
+
         IProject project = TexlipsePlugin.getCurrentProject();
-        SpellChecker spellCheck = getSpellChecker(project);
+        String lang = DEFAULT_LANG;
+        if (project != null) {
+            lang = TexlipseProperties.getProjectProperty(project, TexlipseProperties.LANGUAGE_PROPERTY);
+        }
+        //Get spellchecker for the correct language
+        SpellChecker spellCheck = getSpellChecker(lang);
         if (spellCheck == null) return;
+        
         if (collector instanceof TeXSpellingProblemCollector) {
             ((TeXSpellingProblemCollector) collector).setRegions(regions);
         }
@@ -196,14 +210,14 @@ public class TexSpellingEngine implements ISpellingEngine, SpellCheckListener {
         try {
             spellCheck.addSpellCheckListener(this);
             for (final IRegion r : regions) {
-                int roffset = r.getOffset();
-                //System.out.println(r.getOffset()+"; "+r.getLength());
                 errors = new LinkedList<SpellCheckEvent>();
+                int roffset = r.getOffset();
+
                 spellCheck.checkSpelling(new StringWordTokenizer(
-                        document.get(r.getOffset(), r.getLength()), new TeXWordFinder()));
+                        document.get(roffset, r.getLength()), new TeXWordFinder()));
                 
                 for (SpellCheckEvent error : errors) {
-                    SpellingProblem p = new TexSpellingProblem(error, roffset, dict);
+                    SpellingProblem p = new TexSpellingProblem(error, roffset, lang);
                     collector.accept(p);
                 }
             }

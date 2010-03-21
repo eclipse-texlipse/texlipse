@@ -34,18 +34,19 @@ import com.swabunga.spell.event.SpellCheckEvent;
 public class AddToDictProposal implements ICompletionProposal {
 
     private SpellCheckEvent ferror;
-    private TexSpellDictionary fdict;
+    private String fLang;
     private ISourceViewer fviewer;
     
-    public AddToDictProposal(SpellCheckEvent error, TexSpellDictionary dict, 
+    public AddToDictProposal(SpellCheckEvent error, String lang, 
             ISourceViewer viewer) {
         ferror = error;
-        fdict = dict;
+        fLang = lang;
         fviewer = viewer;
     }
     
     public void apply(IDocument document) {
-        fdict.addWord(ferror.getInvalidWord());
+        TexSpellDictionary dict = TexSpellingEngine.getDict(fLang);
+        dict.addWord(ferror.getInvalidWord());
         SpellingProblem.removeAll(fviewer, ferror.getInvalidWord());
     }
 

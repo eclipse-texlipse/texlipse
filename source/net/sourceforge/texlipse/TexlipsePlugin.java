@@ -20,6 +20,7 @@ import net.sourceforge.texlipse.properties.StringListFieldEditor;
 import net.sourceforge.texlipse.templates.BibTexContextType;
 import net.sourceforge.texlipse.templates.TexContextType;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IStatus;
@@ -29,6 +30,8 @@ import org.eclipse.jface.text.templates.ContextTypeRegistry;
 import org.eclipse.jface.text.templates.persistence.TemplateStore;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -215,6 +218,17 @@ public class TexlipsePlugin extends AbstractUIPlugin {
      * @return reference to the currently active project 
      */
     public static IProject getCurrentProject() {
+        IWorkbenchPage page = TexlipsePlugin.getCurrentWorkbenchPage();
+        IEditorPart actEditor = null;
+        if (page.isEditorAreaVisible()
+             && page.getActiveEditor() != null) {
+            actEditor = page.getActiveEditor();
+        }
+        IEditorInput editorInput = actEditor.getEditorInput();
+        
+        IFile aFile = (IFile)editorInput.getAdapter(IFile.class);
+        if (aFile != null) return aFile.getProject();
+        // If the first way does not gonna work...
         // actually this returns the file of the editor that was last selected
         IResource res = SelectedResourceManager.getDefault().getSelectedResource();
         return res == null ? null : res.getProject();

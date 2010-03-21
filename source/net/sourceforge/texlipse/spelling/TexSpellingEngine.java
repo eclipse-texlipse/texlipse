@@ -130,8 +130,7 @@ public class TexSpellingEngine implements ISpellingEngine, SpellCheckListener {
     private static SpellChecker getSpellChecker(String lang) {
         if (lang.equals(currentLang)) return spellCheck;
         
-        //Set spellCheck to null to allow the GC to trash the current dict
-        //FIXME: dict is referenced on other places too and hence not trashed by GC
+        //Set spellCheck to null to allow the GC to trash the current dictionary
         spellCheck = null;
         dict = null;
         try {

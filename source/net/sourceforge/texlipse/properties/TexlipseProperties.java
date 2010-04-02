@@ -169,7 +169,11 @@ public class TexlipseProperties {
     public static final String SESSION_PROJECT_FULLOUTLINE = "project.fullTexParser";
     
     public static final String ECLIPSE_BUILDIN_SPELLCHECKER = "eclipseBuildInSpellChecker";
+    public static final String SPELLCHECKER_DICT_DIR = "spellcheckerDictDir";
     public static final String SPELLCHECKER_CUSTOM_DICT_DIR = "spellcheckerCustomDictDir";
+    public static final String SPELLCHECKER_IGNORE_COMMENTS = "spellcheckerIgnoreComments"; 
+    public static final String SPELLCHECKER_IGNORE_MATH = "spellcheckerIgnoreMath"; 
+    public static final String SPELLCHECKER_IGNORE_MIXED_CASE = "spellcheckerIgnoreMixedCase"; 
     
     /**
        * A named preference that controls whether bracket matching highlighting is turned on or off.

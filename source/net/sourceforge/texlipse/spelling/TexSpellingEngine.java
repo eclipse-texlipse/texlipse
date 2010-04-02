@@ -9,17 +9,16 @@
  */
 package net.sourceforge.texlipse.spelling;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.net.URL;
 import java.text.MessageFormat;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import net.sourceforge.texlipse.TexlipsePlugin;
@@ -45,7 +44,6 @@ import com.swabunga.spell.event.SpellCheckEvent;
 import com.swabunga.spell.event.SpellCheckListener;
 import com.swabunga.spell.event.SpellChecker;
 import com.swabunga.spell.event.StringWordTokenizer;
-import com.swabunga.spell.event.TeXWordFinder;
 
 /**
  * The default spelling engine for LaTeX files. Uses Jazzy for spell
@@ -118,54 +116,42 @@ public class TexSpellingEngine implements ISpellingEngine, SpellCheckListener {
     private static TexSpellDictionary dict;
     private static String currentLang;
     private static Set<String> ignore;
-    private static Map<String, String> customDicts = new HashMap<String, String>();
     
     private List<SpellCheckEvent> errors;
     
     /**
      * Returns a SpellChecker that checks the language of the current project
      * @param project
-     * @return
+     * @return null, if no dictionary for the current language was found
      */
     private static SpellChecker getSpellChecker(String lang) {
         if (lang.equals(currentLang)) return spellCheck;
+                
+        //Get dictionary path from preferences and check if it exists
+        String dictPathSt = TexlipsePlugin.getPreference(TexlipseProperties.SPELLCHECKER_DICT_DIR);
+        if (dictPathSt == null || "".equals(dictPathSt.trim())) return null;
+        File dictPath = new File(dictPathSt);
+        if (!dictPath.exists() || !dictPath.isDirectory()) return null;
+
+        File f = new File(dictPath.getAbsolutePath() + File.separator + lang + ".dict");
+        if (!f.exists() || !f.canRead()) return null;
         
         //Set spellCheck to null to allow the GC to trash the current dictionary
         spellCheck = null;
         dict = null;
+        currentLang = lang;
+
         try {
-            URL u = TexlipsePlugin.getDefault().getBundle().getEntry(DEFAULT_DICT_PATH + lang + ".dict");
-            if (u == null) {
-                if ("en".equals(currentLang)) return spellCheck;
-                //We assume that at least an English dictionary exists
-                u = TexlipsePlugin.getDefault().getBundle().getEntry(DEFAULT_DICT_PATH + DEFAULT_LANG + ".dict");
-                if (u == null) return null;
-                lang = DEFAULT_LANG;
-            }
-            URL u2 = TexlipsePlugin.getDefault().getBundle().getEntry(DEFAULT_DICT_PATH+lang+".phonet");
-            Reader r = new InputStreamReader(u.openStream(), "UTF-8");
-            TexSpellDictionary dict;
-            if (u2 == null) {
-                dict = new TexSpellDictionary(r);                
-            }
-            else {
-                Reader r2 = new InputStreamReader(u2.openStream());
-                dict = new TexSpellDictionary(r);
-                r2.close();
-            }
-            String custom = customDicts.get(lang);
-            if (custom == null) {
-                custom = "";
-                customDicts.put(lang, custom);
-            }
+            FileInputStream input = new FileInputStream(f);
+            Reader r = new BufferedReader(new InputStreamReader(input, "UTF-8"));
+            dict = new TexSpellDictionary(r);
+            r.close();
+
             String customDictPath = TexlipsePlugin.getPreference(TexlipseProperties.SPELLCHECKER_CUSTOM_DICT_DIR);
             if (customDictPath != null && !"".equals(customDictPath.trim())) {
                 dict.setUserDict(new File (customDictPath + File.separator + lang + "_user.dict"));
             }
             spellCheck = new SpellChecker(dict);
-            TexSpellingEngine.dict = dict;
-            currentLang = lang;
-            r.close();
             return spellCheck;
         } catch (IOException e) {
             TexlipsePlugin.log("Error while loading dictionary", e);
@@ -211,9 +197,14 @@ public class TexSpellingEngine implements ISpellingEngine, SpellCheckListener {
             for (final IRegion r : regions) {
                 errors = new LinkedList<SpellCheckEvent>();
                 int roffset = r.getOffset();
-
+                
+                //Create a new wordfinder and initialize it
+                TexlipseWordFinder wf = new TexlipseWordFinder();
+                wf.setIgnoreComments(TexlipsePlugin.getDefault().getPreferenceStore().getBoolean(TexlipseProperties.SPELLCHECKER_IGNORE_COMMENTS));
+                wf.setIgnoreMath(TexlipsePlugin.getDefault().getPreferenceStore().getBoolean(TexlipseProperties.SPELLCHECKER_IGNORE_MATH));
+                
                 spellCheck.checkSpelling(new StringWordTokenizer(
-                        document.get(roffset, r.getLength()), new TeXWordFinder()));
+                        document.get(roffset, r.getLength()), wf));
                 
                 for (SpellCheckEvent error : errors) {
                     SpellingProblem p = new TexSpellingProblem(error, roffset, lang);
@@ -226,11 +217,28 @@ public class TexSpellingEngine implements ISpellingEngine, SpellCheckListener {
         }
     }
 
+    /**
+     * Checks if the input string contains upper case letters after the first letter
+     * @param word
+     * @return
+     */
+    public static boolean isMixedCase(String word) {
+        for (int i = 1; i < word.length(); i++) {
+            if (Character.isUpperCase(word.charAt(i))) return true;
+        }
+        return false;
+    }
+    
     public void spellingError(SpellCheckEvent event) {
-        if (ignore.contains(event.getInvalidWord())) return;
-        if (event.getInvalidWord().length() < 3) return;
-        if (event.getInvalidWord().indexOf('_') > -1) return;
-        if (event.getInvalidWord().indexOf('^') > -1) return;
+        String invWord = event.getInvalidWord();
+        if (invWord.length() < 3) return;
+        if (invWord.indexOf('_') > -1) return;
+        if (invWord.indexOf('^') > -1) return;
+        if (ignore.contains(invWord)) return;
+        if (TexlipsePlugin.getDefault().getPreferenceStore().getBoolean(TexlipseProperties.SPELLCHECKER_IGNORE_MIXED_CASE)) {
+            if (isMixedCase(invWord)) return;
+        }
+        
         errors.add(event);
       }
 }

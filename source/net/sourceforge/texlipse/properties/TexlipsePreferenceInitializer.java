@@ -142,6 +142,9 @@ public class TexlipsePreferenceInitializer extends
         pref.setDefault(TexlipseProperties.OUTLINE_PARAGRAPH, true);
         pref.setDefault(TexlipseProperties.OUTLINE_ENVS, "list,enumerate,itemize,figure,table,tabular");
         
-        pref.setDefault(TexlipseProperties.ECLIPSE_BUILDIN_SPELLCHECKER, false);
+        pref.setDefault(TexlipseProperties.ECLIPSE_BUILDIN_SPELLCHECKER, true);
+        pref.setDefault(TexlipseProperties.SPELLCHECKER_IGNORE_COMMENTS, true);
+        pref.setDefault(TexlipseProperties.SPELLCHECKER_IGNORE_MATH, false);
+        pref.setDefault(TexlipseProperties.SPELLCHECKER_IGNORE_MIXED_CASE, true);
     }
 }

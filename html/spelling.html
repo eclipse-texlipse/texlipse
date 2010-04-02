@@ -13,12 +13,83 @@
 <h3> Introduction </h3>
 
 <p>
-Spell checking is implemented into TeXlipse by utilising an external
-spell-checking program called <a href="http://aspell.net">Aspell</a>.
+Since version 1.3.1 spell checking is implemented in TeXlipse using 
+the <a href="http://jazzy.sourceforge.net/">Jazzy</a> library. No additional external 
+program is needed.
+</p>
+<p>
+Furthermore there is still the possibility to use <a href="http://aspell.net">Aspell</a>
+as external spell checker. This feature is likely to be removed in a future version.
 </p>
 
-<h3> Setting up </h3>
+<h3>Setting up spell checking</h3>
+<p>
+In the preferences dialog you have to set the directories where your standard and 
+user dictionaries are. If you decide to add a word to the spell checker, it will be added 
+in your user dictionary. The name of the main dictionaries must be 
+<code>&lt;language code&gt;.dict</code> where language code is the 
+two-letter ISO standard language code. If not existent, the user dictionary will be 
+created automatically if you add a word to it. 
+The name is <code>&lt;language code&gt;_user.dict</code>.
+</p>
 
+<h3> Choosing language </h3>
+<p>
+Not all documents are written in English, so the language of the spell checker
+can be changed by changing the language code field from the project properties.
+This is a text field where you can type the language code of the project.</p>
+<p>
+Some common language codes:<br/>
+<ul>
+<li>English: en</li>
+<li>German: de</li>
+<li>French: fr</li>
+<li>Spanish: es</li>
+<li>Finnish: fi</li>
+</ul>
+</p>
+
+<h3> Using spell checker </h3>
+<p>
+The spell checker checks the text while you type. Beware that spell checking is only 
+performed if a main dictionary for the language was found. 
+</p>
+<p>
+Possible spelling
+errors are marked in the text by a curly underline. You can use Eclipse's 
+<em>Quick Fix</em> feature (standard shortkey: Ctrl+1) to get correction proposals
+and the option to add the word to your user dictionary or ignore it for the rest of the
+session.
+</p>
+
+<h3> Ignored words </h3>
+<p>
+LaTeX has a very special syntax and this is appreciated by the spell checker. It ignores
+all command strings, i.e., strings that start with a backslash. Furthermore words with less
+than three letters are ignored also. Some commands have arguments that normally are not a
+word in a language, e.g., <code>\label, \ref, \begin, \end, \usepackage, ...</code> . The arguments 
+of these commands are also ignored by the spell checker.
+</p>
+
+<h3>Dictionaries</h3>
+<p>
+The dictionaries are UTF-8 encoded plain text word lists. They can be downloaded at various
+places on the internet. You find some dictionaries on our <a href="http://texlipse.sourceforge.net">
+homepage</a>.
+</p>
+
+<h3>Known problems</h3>
+<p>
+In this version, the spell checker is not capable of correctly detecting words 
+where <code>"</code> is used, e.g., H"auser.
+</p>
+
+<font color="gray">
+<h1>Setting up Aspell</h1>
+<p>
+<b>If possible use the build-in spell checker and not Aspell. 
+This feature is likely to be removed in a future version of TeXlispe.</b>
+</p>
 <p>
 First, Aspell needs to be installed. This usually means installing the Aspell
 core program and one or more dictionaries. There are instructions to this in the
@@ -78,24 +149,6 @@ The language code is also part of the Aspell dictionary package filename.
 For example, the Aspell German dictionary package might be called
 <code>aspell-<b>de</b>-0.50-2.tar.bz2</code>.
 </p>
-
-<p>
-Some common language codes:<br/>
-<ul>
-<li>English: en</li>
-<li>German: de</li>
-<li>French: fr</li>
-<li>Spanish: es</li>
-<li>Finnish: fi</li>
-</ul>
-</p>
-
-<h3>Using Eclipse build-in spell checker</h3>
-Instead of using Aspell, it is also possible to use Eclipse build-in spell checker.
-It will mark errors while typing. 
-Remark, that this feature is currently experimental. To use it, you first need to enable it
-in <code>Preferences/Texlipse/Spell checker</code>. 
-In most cases you have to increase the maximum numbers of errors reported per file in 
-<code>General/Editors/Text Editors/Spelling</code>.
+</font>
 </body>
 </html>

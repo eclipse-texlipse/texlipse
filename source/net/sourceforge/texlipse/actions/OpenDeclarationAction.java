@@ -159,16 +159,7 @@ public class OpenDeclarationAction implements IEditorActionDelegate {
             }
             else if (command.equals("\\include") || command.equals("\\input") || 
                     command.equals("\\bibliography")) {
-                IContainer dir;
-                IFile refFile = editor.getDocumentModel().getFile();
-                if (refFile == null) {
-                    //Fallback strategie, try to determine the source path
-                    dir = TexlipseProperties.getProjectSourceDir(project);
-                }
-                else {
-                    dir = refFile.getParent();
-                }
-                
+
                 if (command.equals("\\bibliography")) {
                     if (!ref.toLowerCase().endsWith(".bib")) {
                         ref = ref + ".bib";
@@ -180,7 +171,18 @@ public class OpenDeclarationAction implements IEditorActionDelegate {
                     }
                 }
                 
+                IContainer dir = TexlipseProperties.getProjectSourceDir(project);
                 IResource file = dir.findMember(ref);
+                
+                if (file == null) {
+                    //Fallback strategy, try to find the file from the referring file ddir
+                    IFile refFile = editor.getDocumentModel().getFile();
+                    if (refFile != null) {
+                        dir = refFile.getParent();
+                        file = dir.findMember(ref);
+                    }
+                }                
+
                 if (file == null){
 /*                	TODO: Kpsewhich support
 					KpsewhichRunner filesearch = new KpsewhichRunner();

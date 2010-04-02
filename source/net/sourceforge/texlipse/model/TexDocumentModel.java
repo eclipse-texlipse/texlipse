@@ -28,6 +28,7 @@ import net.sourceforge.texlipse.texparser.TexParser;
 import net.sourceforge.texlipse.treeview.views.TexOutlineTreeView;
 import net.sourceforge.texlipse.builder.KpsewhichRunner;
 
+import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -683,10 +684,16 @@ public class TexDocumentModel implements IDocumentListener {
         	    String filepath = "";
         	    //First try local search
         	    IResource res = project.findMember(path + name);
-        	    if (res != null) {
-        	        filepath = res.getLocation().toOSString();
+        	    //Try searching relative to main file
+        	    if (res == null) {
+        	        IContainer sourceDir = TexlipseProperties.getProjectSourceDir(project);
+        	        res = sourceDir.findMember(name);
         	    }
-        	    else {
+                
+        	    if (res != null) {
+                    filepath = res.getLocation().toOSString();
+                }
+        	    if (res == null) {
         	        //Try Kpsewhich
         	        filepath = filesearch.getFile(resource, name, "bibtex");
         	        if (filepath.length() > 0 && !(new File(filepath).isAbsolute())) {
@@ -712,6 +719,7 @@ public class TexDocumentModel implements IDocumentListener {
                         }
         	        }
         	    }
+        	    
         		if (filepath.length() > 0) {
         			BibParser parser = new BibParser(filepath);
         			try {

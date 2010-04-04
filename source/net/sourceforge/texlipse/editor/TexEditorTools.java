@@ -489,7 +489,8 @@ public class TexEditorTools {
         sbout.append(words[0]);
         int currLength = indent.length() + words[0].length();
         for (int j = 1; j < words.length; j++) {
-            if (words[j].length() + currLength <= width) {
+            // Check whether the next word still fits on the current line
+            if (currLength + 1 + words[j].length() <= width) {
                 sbout.append(" ");
                 sbout.append(words[j]);
                 currLength += 1 + words[j].length(); 

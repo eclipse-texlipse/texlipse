@@ -15,6 +15,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import net.sourceforge.texlipse.spelling.TexSpellingEngine.TexSpellingProblem;
+
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Platform;
@@ -124,8 +126,14 @@ public class TeXSpellingReconcileStrategy implements IReconcilingStrategy, IReco
                 while (iter.hasNext()) {
                     Annotation annotation= (Annotation)iter.next();
                     if (SpellingAnnotation.TYPE.equals(annotation.getType())) { 
-                        Position p = fAnnotationModel.getPosition(annotation);
+                        final Position p = fAnnotationModel.getPosition(annotation);
                         if (wasChecked(p)) toRemove.add(annotation);
+                        else {
+                            //Update position (Bug 2983142)
+                            SpellingAnnotation spAnn = (SpellingAnnotation) annotation;
+                            TexSpellingProblem problem = (TexSpellingProblem) spAnn.getSpellingProblem();
+                            problem.setOffset(p.getOffset());
+                        }
                     }
                 }
                 Annotation[] annotationsToRemove= (Annotation[])toRemove.toArray(new Annotation[toRemove.size()]);
@@ -208,6 +216,9 @@ public class TeXSpellingReconcileStrategy implements IReconcilingStrategy, IReco
                 subRegion= startLineInfo;
             else
                 subRegion= new Region(startLineInfo.getOffset(), endLineInfo.getOffset() + endLineInfo.getLength() - startLineInfo.getOffset());
+            //Check everything from startLine to the end of the document, otherwise
+            //The positions of the errors are not in sync
+            //subRegion= new Region(startLineInfo.getOffset(), fDocument.getLength() - startLineInfo.getOffset());
 
         } catch (BadLocationException e) {
             subRegion= new Region(0, fDocument.getLength());

@@ -56,8 +56,9 @@ public class TexSpellingEngine implements ISpellingEngine, SpellCheckListener {
     public static class TexSpellingProblem extends SpellingProblem {
         
         private SpellCheckEvent fError;
-        private int roffset;
         private String fLang;
+        
+        private int fOffset;
         
         private final static Image fCorrectionImage = TexlipsePlugin.getImage("correction_change");
         private final static String CHANGE_TO = TexlipsePlugin.getResourceString("spellCheckerChangeWord");
@@ -65,7 +66,7 @@ public class TexSpellingEngine implements ISpellingEngine, SpellCheckListener {
         
         public TexSpellingProblem(SpellCheckEvent error, int roffset, String lang) {
             this.fError = error;
-            this.roffset = roffset;
+            this.fOffset = roffset + fError.getWordContextPosition();
             fLang = lang;
         }
         
@@ -78,23 +79,31 @@ public class TexSpellingEngine implements ISpellingEngine, SpellCheckListener {
         @Override
         public ICompletionProposal[] getProposals(IQuickAssistInvocationContext context) {
             List<Word> sugg = fError.getSuggestions();
-            int offset = fError.getWordContextPosition() + roffset;
             int length = fError.getInvalidWord().length();
             ICompletionProposal[] props = new ICompletionProposal[sugg.size() + 2];
             for (int i=0; i < sugg.size(); i++) {
+                String suggestion = sugg.get(i).toString();
                 String s = MessageFormat.format(CHANGE_TO,
-                        new Object[] { sugg.get(i).toString() });
-                props[i] = new CompletionProposal(sugg.get(i).toString(), 
-                        offset, length, length, fCorrectionImage, s, null, null);
+                        new Object[] { suggestion });
+                props[i] = new CompletionProposal(suggestion, 
+                        fOffset, length, suggestion.length(), fCorrectionImage, s, null, null);
             }
             props[props.length - 2] = new IgnoreProposal(ignore, fError.getInvalidWord(), context.getSourceViewer());
             props[props.length - 1] = new AddToDictProposal(fError, fLang, context.getSourceViewer());
             return props;
         }
 
+        /**
+         * Updates the offset of the spelling error
+         * @param offset
+         */
+        public void setOffset(int offset) {
+            fOffset = offset;
+        }
+        
         @Override
         public int getOffset() {
-            return fError.getWordContextPosition()  + roffset;
+            return fOffset;
         }
 
         @Override

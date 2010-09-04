@@ -17,6 +17,7 @@ import net.sourceforge.texlipse.editor.scanner.TexScanner;
 import net.sourceforge.texlipse.properties.TexlipseProperties;
 
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.jface.preference.PreferenceStore;
 import org.eclipse.jface.text.DefaultInformationControl;
 import org.eclipse.jface.text.IAutoEditStrategy;
 import org.eclipse.jface.text.IDocument;
@@ -81,10 +82,13 @@ public class TexSourceViewerConfiguration extends TextSourceViewerConfiguration 
         if (!TexlipsePlugin.getDefault().getPreferenceStore().getBoolean(TexlipseProperties.ECLIPSE_BUILDIN_SPELLCHECKER))
             return null;
         //Set TeXlipse spelling Engine as default
-        fPreferenceStore.setValue(SpellingService.PREFERENCE_SPELLING_ENGINE, 
+        PreferenceStore store = new PreferenceStore();
+        store.setValue(SpellingService.PREFERENCE_SPELLING_ENGINE, 
                 "net.sourceforge.texlipse.LaTeXSpellEngine");
-        SpellingService spellingService = new SpellingService(fPreferenceStore);
-        if (spellingService.getActiveSpellingEngineDescriptor(fPreferenceStore) == null)
+        store.setValue(SpellingService.PREFERENCE_SPELLING_ENABLED, 
+        true);
+        SpellingService spellingService = new SpellingService(store);
+        if (spellingService.getActiveSpellingEngineDescriptor(store) == null)
             return null;
         IReconcilingStrategy strategy= new TeXSpellingReconcileStrategy(sourceViewer, spellingService);
         

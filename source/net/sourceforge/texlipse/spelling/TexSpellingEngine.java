@@ -134,6 +134,9 @@ public class TexSpellingEngine implements ISpellingEngine, SpellCheckListener {
      * @return null, if no dictionary for the current language was found
      */
     private static SpellChecker getSpellChecker(String lang) {
+        //Return null, when no language is set
+        if (lang == null) return null;
+        
         if (lang.equals(currentLang)) return spellCheck;
                 
         //Get dictionary path from preferences and check if it exists

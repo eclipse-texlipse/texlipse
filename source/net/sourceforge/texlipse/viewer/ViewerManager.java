@@ -9,6 +9,7 @@
  */
 package net.sourceforge.texlipse.viewer;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -640,7 +641,7 @@ public class ViewerManager {
      * @param in input stream where the output of a viewer program will be available
      * @param viewer the name of the viewer
      */
-    private void startOutputListener(InputStream in, String inverse) {
+    private void startOutputListener(final InputStream in, String inverse) {
         
         if (inverse.equals(ViewerAttributeRegistry.INVERSE_SEARCH_RUN)) {
             
@@ -649,6 +650,28 @@ public class ViewerManager {
             if (!server.isRunning()) {
                 new Thread(server).start();
             }
+            
+            //Read everything from InputStream, otherwise the process will stay open in some cases
+            //happens e.g. with sumatrapdf
+            new Thread(new Runnable(){
+                public void run() {
+                    InputStream st = new BufferedInputStream(in);
+                    try {
+                        
+                        byte[] buf = new byte[1024];
+                        //read as long as the process exists and dump its content
+                        while (st.read(buf) != -1) {
+                            //System.out.println(new String(buf));
+                            try {
+                                Thread.sleep(100);
+                            } catch (InterruptedException e) {}
+                        }
+                        st.close();
+                    } catch (IOException e) {
+                    }
+
+                }
+            }).start();
         } else if (inverse.equals(ViewerAttributeRegistry.INVERSE_SEARCH_STD)) {
             new Thread(new ViewerOutputScanner(project, in)).start();
         }

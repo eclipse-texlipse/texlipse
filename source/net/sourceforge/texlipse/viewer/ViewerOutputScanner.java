@@ -196,7 +196,9 @@ public class ViewerOutputScanner implements Runnable {
             
             new Thread(new Runnable() {
                 public void run() {
-                      ViewerManager.returnFocusToEclipse(true);
+                      ViewerManager.returnFocusToEclipse(
+                    		  TexlipsePlugin.getDefault().getPreferenceStore().getBoolean(
+                          			TexlipseProperties.BUILDER_FORCE_RETURN_FOCUS));
                 }
              }).start();
         }

@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import net.sourceforge.texlipse.PathUtils;
@@ -62,6 +63,7 @@ public class ViewerAttributeRegistry implements Cloneable {
 
     private static final String VIEWER_GV = "gv";
     private static final String VIEWER_ACROBAT = "acroread";
+    private static final String VIEWER_SUMATRA = "sumatra PDF";
     private static final String VIEWER_ITEXMAC = "itexmac";
 
     // default viewer attribute values 
@@ -71,6 +73,7 @@ public class ViewerAttributeRegistry implements Cloneable {
     private static final String DEFAULT_ARGUMENTS_YAP = "-1 -s \"%line %texfile\" %file";
 
     private static final String DEFAULT_ARGUMENTS_GV = "%file";
+    private static final String DEFAULT_ARGUMENTS_SUMATRA = "-reuse-instance %file";
     private static final String DEFAULT_ARGUMENTS_ACROBAT = "%file";
     private static final String DEFAULT_ARGUMENTS_ITEXMAC = "-a \"/Applications/iTeXMac 1.3.15/iTeXMac.app\" %file";
     
@@ -131,19 +134,20 @@ public class ViewerAttributeRegistry implements Cloneable {
         prefs.setDefault(VIEWER_CURRENT, def);
         
         // list the viewers
-        ArrayList<String> vlist = new ArrayList<String>();
+        List<String> vlist = new ArrayList<String>();
         vlist.add(VIEWER_NONE);
         vlist.add(VIEWER_XDVI);
         vlist.add(VIEWER_YAP);
         vlist.add(VIEWER_ITEXMAC);
         vlist.add(VIEWER_KDVI);
         vlist.add(VIEWER_GV);
+        vlist.add(VIEWER_SUMATRA);
         vlist.add(VIEWER_ACROBAT);
         vlist.remove(def);
-        StringBuffer sb = new StringBuffer(def); // put default on front
-        for (int i = 0; i < vlist.size(); i++) {
+        StringBuilder sb = new StringBuilder(def); // put default on front
+        for (String viewer : vlist) {
             sb.append(',');
-            sb.append(vlist.get(i));
+            sb.append(viewer);
         }
         prefs.setDefault(VIEWER_NAMES, sb.toString());
         
@@ -178,6 +182,15 @@ public class ViewerAttributeRegistry implements Cloneable {
         prefs.setDefault(VIEWER_GV + ATTRIBUTE_FORMAT, TexlipseProperties.OUTPUT_FORMAT_PS);
         prefs.setDefault(VIEWER_GV + ATTRIBUTE_INVERSE_SEARCH, INVERSE_SEARCH_NO);
         prefs.setDefault(VIEWER_GV + ATTRIBUTE_FORWARD_SEARCH, "false");
+
+        prefs.setDefault(VIEWER_SUMATRA + ATTRIBUTE_COMMAND, findFromEnvPath("SumatraPDF", "SumatraPDF.exe", "C:\\Program Files\\SumatraPDF"));
+        prefs.setDefault(VIEWER_SUMATRA + ATTRIBUTE_ARGUMENTS, DEFAULT_ARGUMENTS_SUMATRA);
+        prefs.setDefault(VIEWER_SUMATRA + ATTRIBUTE_DDE_VIEW_COMMAND, "[ForwardSearch(\"%file\",\"%texfile\",%line,0)]"); 
+        prefs.setDefault(VIEWER_SUMATRA + ATTRIBUTE_DDE_VIEW_SERVER, "SUMATRA");
+        prefs.setDefault(VIEWER_SUMATRA + ATTRIBUTE_DDE_VIEW_TOPIC, "control");
+        prefs.setDefault(VIEWER_SUMATRA + ATTRIBUTE_FORMAT, TexlipseProperties.OUTPUT_FORMAT_PDF);
+        prefs.setDefault(VIEWER_SUMATRA + ATTRIBUTE_INVERSE_SEARCH, INVERSE_SEARCH_NO);
+        prefs.setDefault(VIEWER_SUMATRA + ATTRIBUTE_FORWARD_SEARCH, "true");
 
         prefs.setDefault(VIEWER_ACROBAT + ATTRIBUTE_COMMAND, findFromEnvPath("acroread", "acroread.exe", ""));
         prefs.setDefault(VIEWER_ACROBAT + ATTRIBUTE_ARGUMENTS, DEFAULT_ARGUMENTS_ACROBAT);

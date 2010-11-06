@@ -146,5 +146,7 @@ public class TexlipsePreferenceInitializer extends
         pref.setDefault(TexlipseProperties.SPELLCHECKER_IGNORE_COMMENTS, true);
         pref.setDefault(TexlipseProperties.SPELLCHECKER_IGNORE_MATH, false);
         pref.setDefault(TexlipseProperties.SPELLCHECKER_IGNORE_MIXED_CASE, true);
+        
+        pref.setDefault(TexlipseProperties.BUILDER_FORCE_RETURN_FOCUS, true);
     }
 }

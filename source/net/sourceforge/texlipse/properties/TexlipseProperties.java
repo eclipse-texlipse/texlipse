@@ -146,6 +146,7 @@ public class TexlipseProperties {
     public static final String BUILD_BEFORE_VIEW = "buildBeforeView";
     public static final String BUILDER_RETURN_FOCUS = "returnFocusOnPreivew";
     public static final String BUILDER_PARSE_AUX_FILES = "builderParseAuxFiles";
+    public static final String BUILDER_FORCE_RETURN_FOCUS = "forceReturnFocusOnInverseSearch";
     
     public static final String OUTPUT_FORMAT = "outputFormat";
     public static final String OUTPUT_FORMAT_AUX = "aux";

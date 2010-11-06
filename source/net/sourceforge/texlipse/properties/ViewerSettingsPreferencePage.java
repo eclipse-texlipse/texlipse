@@ -67,7 +67,8 @@ public class ViewerSettingsPreferencePage extends FieldEditorPreferencePage
         port.setValidRange(MIN_PORT, MAX_PORT);
         addField(port);
         
-        TexlipsePreferencePage.addSpacer(2, getFieldEditorParent());
+        addField(new BooleanFieldEditor(TexlipseProperties.BUILDER_FORCE_RETURN_FOCUS, TexlipsePlugin.getResourceString("forceReturnFocusOnInverseSearch"), getFieldEditorParent()));
+        
         addField(new BooleanFieldEditor(TexlipseProperties.BUILDER_RETURN_FOCUS, TexlipsePlugin.getResourceString("preferenceViewerReturnFocusLabel"), getFieldEditorParent()));
         
         WorkbenchHelp.setHelp(port.getTextControl(getFieldEditorParent()), TexlipseHelpIds.VIEWER_PORT);

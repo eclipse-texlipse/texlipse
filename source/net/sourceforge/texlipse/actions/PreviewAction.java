@@ -70,7 +70,7 @@ public class PreviewAction implements IWorkbenchWindowActionDelegate, IEditorAct
 //          Internal, but will probably not change very much *cross fingers* :P
             LaunchConfigurationManager configManager = DebugUIPlugin.getDefault().getLaunchConfigurationManager();
             if (configManager != null) {
-                LaunchHistory history = configManager.getLaunchHistory("org.eclipse.debug.ui.launchGroup.run");
+                LaunchHistory history = configManager.getLaunchHistory("org.eclipse.ui.externaltools.launchGroup");
                 if (history != null) {
                     ILaunchConfiguration[] configs = history.getHistory();
                     if (configs != null) {

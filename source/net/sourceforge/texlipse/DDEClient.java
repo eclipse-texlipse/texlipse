@@ -22,7 +22,11 @@ public class DDEClient {
 			String command);
 
 	static {
-		System.loadLibrary("ddeclient");
+		if (System.getProperty("os.arch").contains("64")) { 
+			System.loadLibrary("ddeclient-x86_64");
+		} else {
+			System.loadLibrary("ddeclient-x86");
+		}
 	}
 
 	public static void main(String[] args) {

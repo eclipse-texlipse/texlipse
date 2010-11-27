@@ -606,8 +606,43 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
         }
         
         String outputFileName = TexlipseProperties.getOutputFileName(project);
-        IResource outputFile = sourceDir.findMember(outputFileName);
-        if (outputFile != null && outputFile.exists()) {
+        moveFile(project, sourceDir, outputDir, outputFileName, monitor);
+        
+        
+        //Move the synctex files also, this will not throw an exception, if synctex is not enabled
+        String synctexFileName = new Path(outputFileName).removeFileExtension().addFileExtension("synctex.gz").toString();
+        moveFile(project, sourceDir, outputDir, synctexFileName, monitor);
+        synctexFileName = new Path(outputFileName).removeFileExtension().addFileExtension("synctex").toString();
+        moveFile(project, sourceDir, outputDir, synctexFileName, monitor);
+        
+        // refresh the directories whose contents changed
+        sourceDir.refreshLocal(IProject.DEPTH_INFINITE, monitor);
+        monitor.worked(1);
+        if (outputDir != null) {
+            outputDir.refreshLocal(IProject.DEPTH_ONE, monitor);
+        } else {
+            project.refreshLocal(IProject.DEPTH_ONE, monitor);
+        }
+        monitor.worked(1);
+    }
+
+    
+    /**
+     * Moves a file to the output directory.
+     * 
+     * @param project the current project
+     * @param srcDir the directory where the output file is (where the source file was built)
+     * @param outputDir the destination directory of the file
+     * @param fileName the filename of the file to be moved
+     * @param monitor progress monitor
+     * @throws CoreException if an error occurs
+     */
+	private void moveFile(IProject project, IContainer sourceDir,
+			IFolder outputDir, String fileName,
+			IProgressMonitor monitor) throws CoreException {
+		
+		IResource outputFile = sourceDir.findMember(fileName);
+		if (outputFile != null && outputFile.exists()) {
             //Check if the output dir exists, if not create it
             if (outputDir != null && !outputDir.exists()) {
                 outputDir.create(true, true, null);
@@ -615,9 +650,9 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
 
             IResource dest = null;
             if (outputDir != null) {
-                dest = outputDir.getFile(outputFileName);
+                dest = outputDir.getFile(fileName);
             } else {
-                dest = project.getFile(outputFileName);
+                dest = project.getFile(fileName);
             }
             if (dest == null) return;
             
@@ -650,19 +685,8 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
                 outputFile.move(dest.getFullPath(), true, monitor);
             }
             monitor.worked(1);
-            
-            
-            // refresh the directories whose contents changed
-            sourceDir.refreshLocal(IProject.DEPTH_INFINITE, monitor);
-            monitor.worked(1);
-            if (outputDir != null) {
-                outputDir.refreshLocal(IProject.DEPTH_ONE, monitor);
-            } else {
-                project.refreshLocal(IProject.DEPTH_ONE, monitor);
-            }
-            monitor.worked(1);
         }
-    }
+	}
 
     /**
      * Move temporary files to temp directory and mark them as derived if needed

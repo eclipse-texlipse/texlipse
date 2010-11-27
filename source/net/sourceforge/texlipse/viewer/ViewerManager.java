@@ -90,6 +90,9 @@ public class ViewerManager {
     // file name with absolute path
     public static final String FILENAME_FULLPATH_PATTERN = "%fullfile";
     
+    // the source file name variable in the arguments with absolute path
+    public static final String TEX_FILENAME_FULLPATH_PATTERN = "%fulltexfile";
+
     // viewer attributes
     private ViewerAttributeRegistry registry;
 
@@ -612,6 +615,15 @@ public class ViewerManager {
                     selectedRes.getFullPath().removeLastSegments(1));
             String texFile = relPath + selectedRes.getName();
         	input = input.replaceAll(TEX_FILENAME_PATTERN, escapeBackslashes(texFile));
+        }
+        
+        if (input.indexOf(TEX_FILENAME_FULLPATH_PATTERN) >= 0) {
+            IResource selectedRes = SelectedResourceManager.getDefault().getSelectedResource();
+            if (selectedRes.getType() != IResource.FOLDER) {
+                selectedRes = SelectedResourceManager.getDefault().getSelectedTexResource();
+            }
+
+            input = input.replaceAll(TEX_FILENAME_FULLPATH_PATTERN, escapeBackslashes(selectedRes.getLocation().toOSString()));
         }
         
         return input;

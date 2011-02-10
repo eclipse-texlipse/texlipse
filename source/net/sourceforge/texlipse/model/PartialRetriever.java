@@ -9,6 +9,9 @@
  */
 package net.sourceforge.texlipse.model;
 
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * This class provides methods for retrieving partial matches from arrays.
  * Sorted arrays containing <code>AbstractEntry</code> -objects can be searched
@@ -21,54 +24,49 @@ package net.sourceforge.texlipse.model;
  * @author Boris von Loesch
  */
 public abstract class PartialRetriever {
-
-    /**
-     * Search the given (sorted) array of entries for all entries,
-     * for which the start of the key matches the given search string.
-     * 
-     * This version uses a trivial linear search, which performs in O(n).
-     * 
-     * @param start The start of the searchable string
-     * @param entries The entries to search
-     * @return A two-element array with the lower (inclusive) and upper
-     * (exclusive) bounds or {-1,-1} if no matching entries were found.
-     */
-    protected int[] getCompletionsLin(String start, AbstractEntry[] entries) {
-        int startIdx = -1, endIdx = -1;
-        for (int i=0; i < entries.length; i++) {
-            if (entries[i].key.startsWith(start)) {
-                if (startIdx == -1)
-                    startIdx = i;
-            } else if (startIdx != -1) {
-                endIdx = i;
-                break;
-            }
-        }
-        if (startIdx != -1 && endIdx == -1)
-            endIdx = startIdx + 1;
-        return new int[] {startIdx, endIdx};
-    }
-
+    
     /**
      * Returns (if exist) the position of the entry with the given name in 
      * the array 
      * @param entryname Name of the wanted entry
-     * @param entries	Sorted array of AbstractEntry
-     * @return The position inside the array or -1 if the entry was not found
+     * @param entries   Sorted List of AbstractEntry
+     * @param lowerCase If true, entries must be sorted case insensitive
+     * @return The position inside the list or -1 if the entry was not found
      */
-    protected int getEntry(String entryname, AbstractEntry[] entries){
-    	if (entries == null || entries.length == 0) return -1;
-    	int start = 0;
-    	int end = entries.length;
-    	while (end-start>1 && !entries[(start+end)/2].key.equals(entryname)){
-    		int c = entries[(start+end)/2].key.compareTo(entryname);
-    		if (c < 0) start = (start+end)/2;
-    		else end = (start+end)/2;
-    	}
-    	if (entries[(start+end)/2].key.equals(entryname)) return (start+end)/2;
-    	else return -1;
+    public static int getEntry(String entryname, List<? extends AbstractEntry> entries, boolean lowerCase){
+        if (entries == null || entries.size() == 0) return -1;
+        String lEntryname = entryname.toLowerCase();
+        
+        int start = 0;
+        int end = entries.size();
+        while (end - start > 1 && !entries.get((start + end)/2).getkey(lowerCase).equals(lEntryname)){
+            int c = entries.get((start + end)/2).getkey(lowerCase).compareTo(lEntryname);
+            if (c < 0) start = (start + end)/2;
+            else end = (start + end)/2;
+        }
+        
+        if (lowerCase) {
+            //This case is a bit more complicated since there could be different entries with the
+            //same lower case letters
+            int m = (start + end)/2;
+            if (!entries.get(m).getkey(lowerCase).equals(lEntryname)) return -1;
+            
+            m--;
+            while (m >= 0 && entries.get(m).getkey(lowerCase).equals(lEntryname)) m--;
+            m++;
+            
+            while (m < entries.size() && entries.get(m).getkey(lowerCase).equals(lEntryname)) {
+                if (entries.get(m).key.equals(entryname)) return m;
+                m++;
+            }
+            return -1;
+        }
+        else {
+            if (entries.get((start + end)/2).getkey(lowerCase).equals(lEntryname)) return (start + end)/2;
+            else return -1;
+        }
     }
-    
+
     /**
      * Search the given (sorted) array of entries for all entries,
      * for which the start of the key matches the given search string.
@@ -78,15 +76,20 @@ public abstract class PartialRetriever {
      * 
      * @param start The start of the searchable string
      * @param entries The entries to search
+     * @param lowerCase If true, entries must be sorted case insensitive
      * @return A two-element array with the lower (inclusive) and upper
      * (exclusive) bounds or {-1,-1} if no matching entries were found.
      */    
+    protected int[] getCompletionsBin(String start, List<? extends AbstractEntry> entries, boolean lowerCase) {
+        return this.getCompletionsBin(start, entries, new int[] {0, entries.size()}, lowerCase);
+    }
+
     protected int[] getCompletionsBin(String start, AbstractEntry[] entries) {
-        return this.getCompletionsBin(start, entries, new int[] {0, entries.length});
+        return this.getCompletionsBin(start, Arrays.asList(entries), new int[] {0, entries.length}, false);
     }
 
     /**
-     * Search the given (sorted) array of entries for all entries,
+     * Search the given (sorted) list of entries for all entries,
      * for which the start of the key matches the given search string.
      * 
      * This version uses binary search for finding the lower and upper
@@ -96,21 +99,24 @@ public abstract class PartialRetriever {
      * @param entries The entries to search
      * @param initBounds The initial lower and upper bounds to start the
      * search from
+     * @param lowerCase If true, assumes that the list is sorted lower case and 
      * @return A two-element array with the lower (inclusive) and upper
      * (exclusive) bounds or {-1,-1} if no matching entries were found.
      */
-    protected int[] getCompletionsBin(String start, AbstractEntry[] entries, int[] initBounds) {
+    protected int[] getCompletionsBin(String start, List<? extends AbstractEntry> entries, 
+            int[] initBounds, boolean lowerCase) {
         int[] bounds = new int[] {-1,-1};
         int left = initBounds[0], right = initBounds[1] - 1;
         int middle = right/2;
         if (left > right) return bounds;
+        if (lowerCase) start = start.toLowerCase();
         
-        if (entries[left].key.startsWith(start))
+        if (entries.get(left).getkey(lowerCase).startsWith(start))
             right = middle = left;
 
         // get upper bound (inclusive)
         while (left < middle) {
-            if (entries[middle].key.compareTo(start) >= 0) {
+            if (entries.get(middle).getkey(lowerCase).compareTo(start) >= 0) {
                 right = middle;
                 middle = (left + middle)/2;
             } else {
@@ -118,7 +124,7 @@ public abstract class PartialRetriever {
                 middle = (middle + right)/2;
             }
         }
-        if (!entries[right].key.startsWith(start))
+        if (!entries.get(right).getkey(lowerCase).startsWith(start))
             return bounds;
 
         bounds[0] = right;
@@ -127,13 +133,13 @@ public abstract class PartialRetriever {
         left = right;
         right = initBounds[1] - 1;
         
-        if (entries[right].key.startsWith(start)) {
+        if (entries.get(right).getkey(lowerCase).startsWith(start)) {
             bounds[1] = right + 1;
             return bounds;
         }
         middle = (left + right)/2;
         while (left < middle) {
-            if (entries[middle].key.startsWith(start)) {
+            if (entries.get(middle).getkey(lowerCase).startsWith(start)) {
                 left = middle;
                 middle = (right + middle)/2;
             } else {

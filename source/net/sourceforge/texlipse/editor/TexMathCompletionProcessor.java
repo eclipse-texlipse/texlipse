@@ -10,6 +10,7 @@
 package net.sourceforge.texlipse.editor;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import net.sourceforge.texlipse.TexlipsePlugin;
 import net.sourceforge.texlipse.model.ReferenceManager;
@@ -98,19 +99,19 @@ public class TexMathCompletionProcessor implements IContentAssistProcessor {
 
 
                 ReferenceManager refManager = model.getRefMana();
-                TexCommandEntry[] comEntries = refManager.getCompletionsCom(command, TexCommandEntry.MATH_CONTEXT);
+                List<TexCommandEntry> comEntries = refManager.getCompletionsCom(command, TexCommandEntry.MATH_CONTEXT);
                 if (comEntries != null){
                     int start = 0;
                     if (cp == null) {
-                        proposals = new ICompletionProposal[comEntries.length];
+                        proposals = new ICompletionProposal[comEntries.size()];
                     } else {
-                        proposals = new ICompletionProposal[comEntries.length+1];
+                        proposals = new ICompletionProposal[comEntries.size()+1];
                         proposals[0] = cp;
                         start = 1;
                     }
                     int len = command.length();
-                    for (int i=0; i < comEntries.length; i++) {
-                        proposals[start + i] = new TexCompletionProposal(comEntries[i], offset - len, 
+                    for (int i=0; i < comEntries.size(); i++) {
+                        proposals[start + i] = new TexCompletionProposal(comEntries.get(i), offset - len, 
                                 len, fviewer);
                     }
                 } else {

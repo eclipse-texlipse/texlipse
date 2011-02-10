@@ -59,4 +59,9 @@ public abstract class AbstractEntry implements Comparable {
     public void setPosition(int docOffset, int length) {
         this.position = new Position(docOffset, length);
     }
+    
+    public String getkey(boolean lowerCase) {
+        if (lowerCase) return key.toLowerCase();
+        return key;
+    }
 }

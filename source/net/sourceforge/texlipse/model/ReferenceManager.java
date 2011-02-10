@@ -9,6 +9,8 @@
  */
 package net.sourceforge.texlipse.model;
 
+import java.util.List;
+
 /**
  * Manages the references (BibTeX and \label) and provides an interface
  * for searching them efficiently by partial matches.
@@ -20,11 +22,6 @@ public class ReferenceManager extends PartialRetriever {
     private ReferenceContainer bibContainer;
     private ReferenceContainer labelContainer;
     private TexCommandContainer commandContainer;
-
-    private String lastBib = "";
-    private int[] lastBibBounds;
-    private String lastLab = "";
-    private int[] lastLabBounds;
 
     /**
      * Creates new ReferenceManager that uses the given BibTeX,
@@ -43,9 +40,9 @@ public class ReferenceManager extends PartialRetriever {
     // B-----borisvl
     
     public ReferenceEntry getBib(String name) {
-        ReferenceEntry[] bibEntries = bibContainer.getSortedReferences();
-        int nr = getEntry(name, bibEntries);
-        if (nr != -1) return bibEntries[nr];
+        List<ReferenceEntry> bibEntries = bibContainer.getSortedReferences();
+        int nr = getEntry(name.toLowerCase(), bibEntries, true);
+        if (nr != -1) return bibEntries.get(nr);
         else return null;
     }
 
@@ -56,9 +53,9 @@ public class ReferenceManager extends PartialRetriever {
      * @return The adequate entry or null if no entry was found
      */
     public ReferenceEntry getLabel(String ref) {
-        ReferenceEntry[] labels = labelContainer.getSortedReferences();
-        int nr = getEntry(ref, labels);
-        if (nr != -1) return labels[nr];
+        List<ReferenceEntry> labels = labelContainer.getSortedReferences();
+        int nr = getEntry(ref, labels, true);
+        if (nr != -1) return labels.get(nr);
         else return null;
     }
 
@@ -69,13 +66,13 @@ public class ReferenceManager extends PartialRetriever {
      * @return The adequate entry or null if no entry was found
      */
     public TexCommandEntry getEntry(String name) {
-        TexCommandEntry[] commands = commandContainer.getSortedCommands(TexCommandEntry.MATH_CONTEXT);
-        int nr = getEntry(name, commands);
-        if (nr != -1) return commands[nr];
+        List<TexCommandEntry> commands = commandContainer.getSortedCommands(TexCommandEntry.MATH_CONTEXT);
+        int nr = getEntry(name, commands, false);
+        if (nr != -1) return commands.get(nr);
         // If no math command look at the normal commands
         commands = commandContainer.getSortedCommands(TexCommandEntry.NORMAL_CONTEXT);
-        nr = getEntry(name, commands);
-        if (nr != -1) return commands[nr];
+        nr = getEntry(name, commands, false);
+        if (nr != -1) return commands.get(nr);
         return null;
     }
 
@@ -88,8 +85,8 @@ public class ReferenceManager extends PartialRetriever {
      * @param start The string with which the completions should start
      * @return An array of completions or null if there were no completions
      */
-    public ReferenceEntry[] getCompletionsRef(String start) {
-        ReferenceEntry[] labels = labelContainer.getSortedReferences();
+    public List<ReferenceEntry> getCompletionsRef(String start) {
+        List<ReferenceEntry> labels = labelContainer.getSortedReferences();
 
         if (labels == null)
             return null;
@@ -104,18 +101,10 @@ public class ReferenceManager extends PartialRetriever {
         // else
         // bounds = getCompletionsBin(start, labels);
 
-        bounds = getCompletionsBin(start, labels);
+        bounds = getCompletionsBin(start, labels, true);
 
-        if (bounds[0] == -1) {
-            lastLab = "";
-            return null;
-        } else {
-            lastLab = start;
-            lastLabBounds = bounds;
-        }
-        ReferenceEntry[] compls = new ReferenceEntry[bounds[1] - bounds[0]];
-        System.arraycopy(labels, bounds[0], compls, 0, bounds[1] - bounds[0]);
-        return compls;
+        if (bounds[0] == -1) return null;
+        return labels.subList(bounds[0], bounds[1]);
     }
 
     /**
@@ -125,8 +114,8 @@ public class ReferenceManager extends PartialRetriever {
      * @param start The string with which the completions should start
      * @return An array of completions or null if there were no completions
      */
-    public ReferenceEntry[] getCompletionsBib(String start) {
-        ReferenceEntry[] bibEntries = bibContainer.getSortedReferences();
+    public List<ReferenceEntry> getCompletionsBib(String start) {
+        List<ReferenceEntry> bibEntries = bibContainer.getSortedReferences();
 
         if (bibEntries == null)
             return null;
@@ -142,18 +131,10 @@ public class ReferenceManager extends PartialRetriever {
         // bounds = getCompletionsBin(start, bibEntries);
 
         // ...either solve problems with bounds or remove them...
-        bounds = getCompletionsBin(start, bibEntries);
+        bounds = getCompletionsBin(start, bibEntries, true);
 
-        if (bounds[0] == -1) {
-            lastBib = "";
-            return null;
-        } else {
-            lastBib = start;
-            lastBibBounds = bounds;
-        }
-        ReferenceEntry[] compls = new ReferenceEntry[bounds[1] - bounds[0]];
-        System.arraycopy(bibEntries, bounds[0], compls, 0, bounds[1] - bounds[0]);
-        return compls;
+        if (bounds[0] == -1) return null;
+        return bibEntries.subList(bounds[0], bounds[1]);
     }
 
     /**
@@ -162,19 +143,17 @@ public class ReferenceManager extends PartialRetriever {
      * @param start The string with which the completions should start
      * @return An array of completions or null if there were no completions
      */
-    public TexCommandEntry[] getCompletionsCom(String start, int context) {
-        TexCommandEntry[] commands = commandContainer.getSortedCommands(context);
+    public List<TexCommandEntry> getCompletionsCom(String start, int context) {
+        List<TexCommandEntry> commands = commandContainer.getSortedCommands(context);
         if (commands == null)
             return null;
         if (start.equals(""))
             return commands;
 
-        int[] bounds = getCompletionsBin(start, commands);
+        int[] bounds = getCompletionsBin(start, commands, false);
         if (bounds[1] == -1)
             return null;
-        TexCommandEntry[] compls = new TexCommandEntry[bounds[1] - bounds[0]];
-
-        System.arraycopy(commands, bounds[0], compls, 0, bounds[1] - bounds[0]);
-        return compls;
+        
+        return commands.subList(bounds[0], bounds[1]);
     }
 }

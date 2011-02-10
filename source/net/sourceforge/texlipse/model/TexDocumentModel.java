@@ -884,7 +884,7 @@ public class TexDocumentModel implements IDocumentListener {
                         if (labels.size() > 0) {
                             labelContainer.addRefSource(files[i].getProjectRelativePath().toString(), labels);
                         }
-                        ArrayList<TexCommandEntry> commands = lrep.getCommands();
+                        List<TexCommandEntry> commands = lrep.getCommands();
                         if (commands.size() > 0) {
                             commandContainer.addRefSource(files[i].getProjectRelativePath().toString(), commands);
                         }

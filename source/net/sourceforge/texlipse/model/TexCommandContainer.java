@@ -13,6 +13,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Contains the LaTeX commands that can be completed.
@@ -419,8 +421,8 @@ public class TexCommandContainer {
     	new TexCommandEntry("Pr", "\\Pr  \n\n", 0, TexCommandEntry.MATH_CONTEXT)
     };
 
-    private HashMap commandHash;
-    private ArrayList sortedCommands;
+    private Map<String, List<TexCommandEntry>> commandHash;
+    private List<TexCommandEntry> sortedCommands;
     private int size;
     //Saves the positions of the contexts
     private int[] contexts;
@@ -429,8 +431,8 @@ public class TexCommandContainer {
      * Constructs a new command container
      */
     public TexCommandContainer() {
-    	sortedCommands = new ArrayList(100);
-        commandHash = new HashMap(4);
+    	sortedCommands = new ArrayList<TexCommandEntry>(100);
+        commandHash = new HashMap<String, List<TexCommandEntry>>(4);
         contexts = new int[TexCommandEntry.NUMBER_OF_CONTEXTS + 1];
         organize();
 //        for (int i=0; i<builtIn.length; i++) sortedCommands.add(builtIn[i]);
@@ -445,14 +447,14 @@ public class TexCommandContainer {
      * @param refs The commands to insert
      * @return true if the container needs a reorganize
      */
-    public boolean addRefSource(String key, ArrayList refs) {
+    public boolean addRefSource(String key, List<TexCommandEntry> refs) {
         //Add filenames to the entries
-        for (Iterator iter = refs.iterator(); iter.hasNext();) {
+        for (Iterator<TexCommandEntry> iter = refs.iterator(); iter.hasNext();) {
             AbstractEntry r = (AbstractEntry) iter.next();
             r.fileName = key;
         }
         size += refs.size();
-        ArrayList al = (ArrayList) commandHash.put(key, refs);
+        List<TexCommandEntry> al = commandHash.put(key, refs);
         if (al != null)
             size -= al.size();
         //Check if something has changed
@@ -487,36 +489,35 @@ public class TexCommandContainer {
     public void organize() {
         //if (commandHash.size() == 0)
         //    return;
-        ArrayList allRefs = new ArrayList(size);
+        List<TexCommandEntry> allRefs = new ArrayList<TexCommandEntry>(size);
         if (commandHash.size() > 1) {
-            for (Iterator iter = commandHash.values().iterator(); iter.hasNext();) {
-                ArrayList refList = (ArrayList) iter.next();
-                allRefs.addAll(refList);
+            for (List<TexCommandEntry> l : commandHash.values()) {
+                allRefs.addAll(l);
             }
         } else if (commandHash.size() == 1) {
-            Iterator iter = commandHash.values().iterator();
-            allRefs = (ArrayList) iter.next();
+            Iterator<List<TexCommandEntry>> iter = commandHash.values().iterator();
+            allRefs = iter.next();
         }
         //copy all commands and change the context to activate them also in mathmode
-        ArrayList mathRefs = new ArrayList (allRefs.size());
-        for (Iterator iter = allRefs.iterator(); iter.hasNext();) {
-            Object c = iter.next();
-            TexCommandEntry element = new TexCommandEntry((TexCommandEntry) c);
+        List<TexCommandEntry> mathRefs = new ArrayList<TexCommandEntry> (allRefs.size());
+        for (TexCommandEntry c : allRefs) {
+            TexCommandEntry element = new TexCommandEntry(c);
             element.context = TexCommandEntry.MATH_CONTEXT;
             mathRefs.add(element);
         }
+        
         sortedCommands.clear();
-        for (int i=0; i<builtIn.length; i++) sortedCommands.add(builtIn[i]);
+        for (TexCommandEntry c : builtIn) sortedCommands.add(c);
         sortedCommands.addAll(allRefs);
-        for (int i=0; i<greekCapital.length; i++) sortedCommands.add(greekCapital[i]);
-        for (int i=0; i<greekSmall.length; i++) sortedCommands.add(greekSmall[i]);
-        for (int i=0; i<miscMath.length; i++) sortedCommands.add(miscMath[i]);
-        for (int i=0; i<stdArrows.length; i++) sortedCommands.add(stdArrows[i]);
-        for (int i=0; i<stdCompare.length; i++) sortedCommands.add(stdCompare[i]);
-        for (int i=0; i<functionNames.length; i++) sortedCommands.add(functionNames[i]);
-        for (int i=0; i<stdBinOpSymbols.length; i++) sortedCommands.add(stdBinOpSymbols[i]);
-        for (int i=0; i<stdBraces.length; i++) sortedCommands.add(stdBraces[i]);
-        for (int i=0; i<stdAccents.length; i++) sortedCommands.add(stdAccents[i]);
+        for (TexCommandEntry c : greekCapital) sortedCommands.add(c);
+        for (TexCommandEntry c : greekSmall) sortedCommands.add(c);
+        for (TexCommandEntry c : miscMath) sortedCommands.add(c);
+        for (TexCommandEntry c : stdArrows) sortedCommands.add(c);
+        for (TexCommandEntry c : stdCompare) sortedCommands.add(c);
+        for (TexCommandEntry c : functionNames) sortedCommands.add(c);
+        for (TexCommandEntry c : stdBinOpSymbols) sortedCommands.add(c);
+        for (TexCommandEntry c : stdBraces) sortedCommands.add(c);
+        for (TexCommandEntry c : stdAccents) sortedCommands.add(c);
         sortedCommands.addAll(mathRefs);
         Collections.sort(sortedCommands);
         createContexts();
@@ -525,16 +526,8 @@ public class TexCommandContainer {
     /**
      * @return Returns the sortedCommands.
      */
-    public TexCommandEntry[] getSortedCommands(int context) {
-    	Object[] sub = sortedCommands.subList(
-    			contexts[context-1]+1, contexts[context]+2).toArray(new TexCommandEntry[0]);
-    	return (TexCommandEntry[])sub;
-    }
-    /**
-     * @return Returns the sortedCommands.
-     */
-    public TexCommandEntry[] getSortedCommands() {
-    	return (TexCommandEntry[])sortedCommands.toArray(new TexCommandEntry[0]);
+    public List<TexCommandEntry> getSortedCommands(int context) {
+        return sortedCommands.subList(contexts[context-1]+1, contexts[context]+2);
     }
 
 }

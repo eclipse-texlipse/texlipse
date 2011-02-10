@@ -750,7 +750,7 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
 
         boolean markAsDerived = false;
 		String mark = TexlipseProperties.getProjectProperty(source.getProject(), TexlipseProperties.MARK_DERIVED_PROPERTY);
-        if (!"true".equals(mark)) {
+        if ("true".equals(mark)) {
             markAsDerived = true;
         }
 
@@ -805,10 +805,13 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
                     //Check if there is a tex file with that name exists in the folder
                     String cc = current.getName().substring(0, current.getName().length()-current.getFileExtension().length());
                     for (IResource r : res) {
-                        if (r.getName().equals(cc+"tex") || r.getName().equals(cc+"sty") || r.getName().equals(cc+"cls") || r.getName().equals(cc+"ltx")) {
+                        String name = r.getName();
+                        if (name.equals(cc+"tex") || name.equals(cc+"sty") || name.equals(cc+"cls") || name.equals(cc+"ltx")) {
+                            
+                            if (markAsDerived) current.setDerived(true);
+
                             IPath newPath = destination.getFullPath().addTrailingSeparator().append(current.getName());
                             current.move(newPath, true, monitor);
-                            if (markAsDerived) current.setDerived(true);
                             break;
                         }
                     }

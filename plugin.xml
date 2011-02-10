@@ -325,7 +325,7 @@ ${cursor}
         name="begin"
         id="net.sourceforge.texlipse.templates.tex.begin">
 		<pattern>
-\begin{${environment}} ${cursor}
+\begin{${environment}}${cursor}
 \end{${environment}}
 		</pattern>
 		</template>

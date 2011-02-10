@@ -224,6 +224,9 @@ public class TexlipsePlugin extends AbstractUIPlugin {
              && page.getActiveEditor() != null) {
             actEditor = page.getActiveEditor();
         }
+        else {
+            return null;
+        }
         IEditorInput editorInput = actEditor.getEditorInput();
         
         IFile aFile = (IFile)editorInput.getAdapter(IFile.class);

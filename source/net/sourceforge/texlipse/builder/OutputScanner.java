@@ -43,7 +43,7 @@ public class OutputScanner {
     private String query;
     
     // the scanned input
-    private StringBuffer sb;
+    private StringBuilder sb;
     
     // the length of the occured trigger string
     protected int currentTriggerStringLength;
@@ -65,7 +65,7 @@ public class OutputScanner {
         this.triggerString = trig;
         this.okPressed = false;
         this.query = null;
-        this.sb = new StringBuffer();
+        this.sb = new StringBuilder();
         this.consoleOutput = console;
     }
 
@@ -87,7 +87,6 @@ public class OutputScanner {
      * @return true if the output was read successfully into the buffer
      */
     public boolean scanOutput() {
-
         try {
             // this was the index we had parsed the output to
             // when the user pressed ok on our dialog
@@ -101,14 +100,18 @@ public class OutputScanner {
                         maxLength = triggerString[i].length();
                 }
             }
+            int avail = 0;
             while (true) {
                 
                 int nextByte = in.read();
                 if (nextByte == -1) break;
                 sb.append((char)nextByte);
                 
+                avail--;                
+                if (avail <= 0) avail = in.available();
+                
                 //TriggerStrings can only occur if the program is waiting for input => in.available() == 0
-                if (triggerString != null && in.available() == 0) {
+                if (triggerString != null && avail == 0) {
                     for (int i = 0; i < triggerString.length; i++) {
                         if (sb.length() > maxLength)
                             okIndex = sb.length() - maxLength;
@@ -128,6 +131,7 @@ public class OutputScanner {
                 }
                 
                 if (consoleOutput != null && (char)nextByte == '\n') {
+                    
                     int lf = 1;
                     if (sb.charAt(sb.length()-2) == '\r') { // fix for windows linefeeds
                         lf++;
@@ -140,7 +144,6 @@ public class OutputScanner {
             }
         } catch (IOException e) {
         }
-        
         return true;
     }
     

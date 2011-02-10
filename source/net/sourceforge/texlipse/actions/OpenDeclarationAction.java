@@ -11,6 +11,7 @@ package net.sourceforge.texlipse.actions;
 
 import java.io.File;
 import java.text.MessageFormat;
+import java.util.List;
 
 import net.sourceforge.texlipse.TexlipsePlugin;
 import net.sourceforge.texlipse.bibeditor.BibEditor;
@@ -115,10 +116,10 @@ public class OpenDeclarationAction implements IEditorActionDelegate {
         AbstractEntry refEntry = null;
         if (selection.getOffset() < comRegion.getOffset() + comRegion.getLength()) {
             //Cursor is over a command, not the argument, we first try to find the command in the user defined commands
-            AbstractEntry[] entries = editor.getDocumentModel().getRefMana().getCompletionsCom(command.substring(1), TexCommandEntry.NORMAL_CONTEXT); 
-            if (entries != null && entries.length > 0 && entries[0].fileName != null) {
+            List<TexCommandEntry> entries = editor.getDocumentModel().getRefMana().getCompletionsCom(command.substring(1), TexCommandEntry.NORMAL_CONTEXT); 
+            if (entries != null && entries.size() > 0 && entries.get(0).fileName != null) {
                 //the command is defined by the user
-                refEntry = entries[0];
+                refEntry = entries.get(0);
             }
         }
         

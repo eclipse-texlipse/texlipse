@@ -10,6 +10,7 @@
 package net.sourceforge.texlipse.properties;
 
 import java.io.File;
+import java.util.Locale;
 
 import net.sourceforge.texlipse.TexlipsePlugin;
 import net.sourceforge.texlipse.builder.BuilderChooser;
@@ -18,6 +19,8 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.fieldassist.AutoCompleteField;
+import org.eclipse.jface.fieldassist.TextContentAdapter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -394,6 +397,8 @@ public class TexlipseProjectPropertyPage extends PropertyPage {
         
         languageField = new Text(composite, SWT.SINGLE | SWT.BORDER);
         languageField.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        languageField.setTextLimit(2);
+        new AutoCompleteField(languageField, new TextContentAdapter(), Locale.getISOLanguages());
     }
     
     /**

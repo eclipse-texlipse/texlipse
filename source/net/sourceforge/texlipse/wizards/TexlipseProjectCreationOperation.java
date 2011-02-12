@@ -18,7 +18,6 @@ import net.sourceforge.texlipse.builder.TexlipseNature;
 import net.sourceforge.texlipse.properties.TexlipseProperties;
 import net.sourceforge.texlipse.templates.ProjectTemplateManager;
 
-import org.eclipse.core.internal.resources.ResourceException;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
@@ -87,7 +86,7 @@ public class TexlipseProjectCreationOperation implements IRunnableWithProgress {
             createProjectDirs(project, monitor);
             monitor.worked(1);
             
-            TexlipseProperties.setProjectProperty(project, TexlipseProperties.LANGUAGE_PROPERTY, "en");
+            TexlipseProperties.setProjectProperty(project, TexlipseProperties.LANGUAGE_PROPERTY, attributes.getLanguageCode()+"");
             TexlipseProperties.setProjectProperty(project, TexlipseProperties.MARK_DERIVED_PROPERTY, "true");
             TexlipseProperties.setProjectProperty(project, TexlipseProperties.MAKEINDEX_STYLEFILE_PROPERTY, "");
             TexlipseProperties.setProjectProperty(project, TexlipseProperties.BIBREF_DIR_PROPERTY, "");

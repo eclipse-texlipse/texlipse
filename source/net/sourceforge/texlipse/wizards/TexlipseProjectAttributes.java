@@ -31,6 +31,7 @@ public class TexlipseProjectAttributes {
     private String outputFormat;
     private int builder;
     private String projectLocation;
+    private String languageCode;
 
     /**
      * 
@@ -44,6 +45,7 @@ public class TexlipseProjectAttributes {
         outputFormat = TexlipsePlugin.getPreference(TexlipseProperties.OUTPUT_FORMAT);
         outputFile = sourceFile.substring(0, sourceFile.lastIndexOf('.')+1) + outputFormat;
         template = "";
+        languageCode = TexlipsePlugin.getPreference(TexlipseProperties.LANGUAGE_PROPERTY);
         builder = TexlipsePlugin.getDefault().getPreferenceStore().getInt(TexlipseProperties.BUILDER_NUMBER);
     }
 
@@ -109,5 +111,11 @@ public class TexlipseProjectAttributes {
     }
     public void setProjectLocation(String text) {
         this.projectLocation = text;
+    }
+    public void setLanguageCode(String text) {
+        this.languageCode = text;
+    }
+    public String getLanguageCode() {
+        return this.languageCode;
     }
 }

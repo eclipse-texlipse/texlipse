@@ -34,7 +34,7 @@ import org.eclipse.swt.widgets.Label;
 public abstract class TexlipseWizardPage extends WizardPage {
 
     // the status of the input fields
-    protected HashMap statusMap;
+    protected HashMap<Object, IStatus> statusMap;
     protected TexlipseProjectAttributes attributes;
     
     /**
@@ -47,7 +47,7 @@ public abstract class TexlipseWizardPage extends WizardPage {
         this.attributes = attributes;
         setTitle(TexlipsePlugin.getResourceString("projectWizardPageTitle"));
         setDescription(TexlipsePlugin.getResourceString("projectWizardPageDescription"));
-        statusMap = new HashMap();
+        statusMap = new HashMap<Object, IStatus>();
     }
 
     /**
@@ -148,13 +148,12 @@ public abstract class TexlipseWizardPage extends WizardPage {
         } else {
         
             // see if some other value is invalid
-            Iterator iter = statusMap.values().iterator();
+            Iterator<IStatus> iter = statusMap.values().iterator();
             while (iter.hasNext()) {
-                IStatus i = (IStatus) iter.next();
-                boolean b = i.matches(IStatus.ERROR);
-                if (b) {
+                IStatus i = iter.next();
+                if (!i.matches(IStatus.OK)) status = i;
+                if (i.matches(IStatus.ERROR)) {
                     allOk = false;
-                    status = i;
                     break;
                 }
             }
@@ -195,6 +194,6 @@ public abstract class TexlipseWizardPage extends WizardPage {
             }
         }
         page.setErrorMessage(errorMessage);
-        page.setMessage(warningMessage);
+        page.setMessage(warningMessage, status.getSeverity());
     }
 }

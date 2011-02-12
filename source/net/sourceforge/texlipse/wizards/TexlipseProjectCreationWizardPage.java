@@ -15,6 +15,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.util.Arrays;
+import java.util.Locale;
 
 import net.sourceforge.texlipse.TexlipsePlugin;
 import net.sourceforge.texlipse.builder.BuilderChooser;
@@ -27,6 +29,8 @@ import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.jface.fieldassist.AutoCompleteField;
+import org.eclipse.jface.fieldassist.TextContentAdapter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -56,6 +60,9 @@ public class TexlipseProjectCreationWizardPage extends TexlipseWizardPage {
     
     // project location, if not in workspace
     private Text projectLocationField;
+    
+    // textfield for language
+    private Text languageField;
     
     // textfield for template preview
     private Text descriptionField;
@@ -129,15 +136,20 @@ public class TexlipseProjectCreationWizardPage extends TexlipseWizardPage {
      * @param composite the parent container
      */
     private void createProjectNameControl(Composite composite) {
-        
+        Composite c = new Composite(composite, SWT.NULL);
+        c.setLayout(new GridLayout(2, false));
+        GridData lgd = new GridData(GridData.FILL_HORIZONTAL);
+        lgd.horizontalSpan = 2;
+        c.setLayoutData(lgd);
+
         // add label
-        Label label = new Label(composite, SWT.LEFT);
+        Label label = new Label(c, SWT.LEFT);
         label.setText(TexlipsePlugin.getResourceString("projectWizardNameLabel"));
         label.setToolTipText(TexlipsePlugin.getResourceString("projectWizardNameTooltip"));
         label.setLayoutData(new GridData());
 
         // add text field
-        projectNameField = new Text(composite, SWT.SINGLE | SWT.BORDER);
+        projectNameField = new Text(c, SWT.SINGLE | SWT.BORDER);
         projectNameField.setText(attributes.getProjectName());
         projectNameField.setToolTipText(TexlipsePlugin.getResourceString("projectWizardNameTooltip"));
         projectNameField.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -148,6 +160,36 @@ public class TexlipseProjectCreationWizardPage extends TexlipseWizardPage {
                     if (!projectLocationField.isEnabled()) {
                         projectLocationField.setText(workspacePath + projectNameField.getText());
                     }
+                }
+            }
+        });
+        
+        // add language label
+        final Label mainLabel = new Label(c, SWT.LEFT);
+        mainLabel.setText(TexlipsePlugin.getResourceString("propertiesLanguage"));
+        mainLabel.setToolTipText(TexlipsePlugin.getResourceString("propertiesLanguageDescription"));
+        mainLabel.setLayoutData(new GridData());
+        
+        // add text field
+        languageField = new Text(c, SWT.SINGLE | SWT.BORDER);
+        languageField.setText(attributes.getLanguageCode());
+        languageField.setToolTipText(TexlipsePlugin.getResourceString("propertiesLanguageDescription"));
+        languageField.setLayoutData(new GridData());     
+        new AutoCompleteField(languageField, new TextContentAdapter(), Locale.getISOLanguages());
+        languageField.setTextLimit(2);
+        languageField.addModifyListener(new ModifyListener() {
+            public void modifyText(ModifyEvent e) {
+                if (!languageField.isDisposed()) {
+                    String text = languageField.getText();
+                    IStatus status = createStatus(IStatus.OK, "");
+                    //Has it exactly two characters
+                    //Is this a valid language code
+                    if (text.length() != 2 || Arrays.binarySearch(Locale.getISOLanguages(), text) < 0) {
+                        status = createStatus(IStatus.WARNING,
+                            TexlipsePlugin.getResourceString("projectWizardLanguageCodeError"));
+                    }
+                    attributes.setProjectName(text);
+                    updateStatus(status, languageField);
                 }
             }
         });
@@ -264,9 +306,9 @@ public class TexlipseProjectCreationWizardPage extends TexlipseWizardPage {
         }
         updateStatus(status, projectLocationField);
     }
-
+    
     /**
-     * Creates labels for the template list and the dexription text area 
+     * Creates labels for the template list and the description text area 
      * to the given Composite object
      * 
      * @param composite the parent container
@@ -305,7 +347,6 @@ public class TexlipseProjectCreationWizardPage extends TexlipseWizardPage {
      * @param composite the parent container
      */
     private void createTemplateControl(Composite composite) {
-        
         // add list for templates
         templateList = new List(composite, SWT.SINGLE | SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
 		templateList.setItems(ProjectTemplateManager.loadTemplateNames());

@@ -64,11 +64,13 @@ public class PartialBuildAction implements IWorkbenchWindowActionDelegate, IEdit
                     if (res[i].getName().startsWith("tempPartial0000"))
                         res[i].delete(true, null);
                 }
+                
                 IFolder projectTempDir = TexlipseProperties.getProjectTempDir(project);
-                if (projectTempDir != null)
+                if (projectTempDir != null && projectTempDir.exists())
                     res = projectTempDir.members();
                 else
                     res = project.members();
+                
                 for (int i = 0; i < res.length; i++) {
                     if (res[i].getName().startsWith("tempPartial0000"))
                         res[i].delete(true, null);

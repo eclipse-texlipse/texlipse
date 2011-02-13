@@ -699,6 +699,8 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
         
         final IFolder tempDir = TexlipseProperties.getProjectTempDir(project);
         if (tempDir != null) {
+            //Create temp-Folder if it was deleted
+            if (!tempDir.exists()) tempDir.create(true, true, monitor);
             
             final IContainer sourceDir = TexlipseProperties.getProjectSourceDir(project);
             if (!sourceDir.exists()) {

@@ -23,9 +23,6 @@ import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationType;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.core.ILaunchManager;
-import org.eclipse.debug.internal.ui.DebugUIPlugin;
-import org.eclipse.debug.internal.ui.launchConfigurations.LaunchConfigurationManager;
-import org.eclipse.debug.internal.ui.launchConfigurations.LaunchHistory;
 import org.eclipse.debug.ui.DebugUITools;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.viewers.ISelection;
@@ -67,24 +64,19 @@ public class PreviewAction implements IWorkbenchWindowActionDelegate, IEditorAct
                 throw new CoreException(TexlipsePlugin.stat("No previewer found for the current output format."));
             }
             
-//          Internal, but will probably not change very much *cross fingers* :P
-            LaunchConfigurationManager configManager = DebugUIPlugin.getDefault().getLaunchConfigurationManager();
-            if (configManager != null) {
-                LaunchHistory history = configManager.getLaunchHistory("org.eclipse.ui.externaltools.launchGroup");
-                if (history != null) {
-                    ILaunchConfiguration[] configs = history.getHistory();
-                    if (configs != null) {
-                        // Try to find a recent viewer launch first
-                        for (int i = 0; i < configs.length ; i++) {
-                            ILaunchConfiguration c = configs[i];
-                            if (c.getType().getIdentifier().equals(TexLaunchConfigurationDelegate.CONFIGURATION_ID)) {
-                                if (c.getAttribute("viewerCurrent", "").equals(preferredViewer)) {
-                                    config = c;
-                                    break;
-                                }
-                            }
+            ILaunchManager manager = DebugPlugin.getDefault().getLaunchManager();
+            ILaunchConfigurationType type = manager.getLaunchConfigurationType(
+                    TexLaunchConfigurationDelegate.CONFIGURATION_ID);               
+            ILaunchConfiguration[] configs = manager.getLaunchConfigurations(type);
+            if (configs != null) {
+                // Try to find a recent viewer launch first
+                for (ILaunchConfiguration c : configs) {
+                    if (c.getType().getIdentifier().equals(TexLaunchConfigurationDelegate.CONFIGURATION_ID)) {
+                        if (c.getAttribute("viewerCurrent", "").equals(preferredViewer)) {
+                            config = c;
+                            break;
                         }
-                    }
+                    }                
                 }
             }
             
@@ -92,9 +84,6 @@ public class PreviewAction implements IWorkbenchWindowActionDelegate, IEditorAct
             if (config == null)
             {
                 // Create a new one
-                ILaunchManager manager = DebugPlugin.getDefault().getLaunchManager();
-                ILaunchConfigurationType type = manager.getLaunchConfigurationType(
-                        TexLaunchConfigurationDelegate.CONFIGURATION_ID);               
                 ILaunchConfigurationWorkingCopy workingCopy = type.newInstance(null,
                         manager.generateUniqueLaunchConfigurationNameFrom("Preview Document in " + preferredViewer));
                 

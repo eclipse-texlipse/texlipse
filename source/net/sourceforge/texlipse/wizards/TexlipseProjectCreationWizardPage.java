@@ -188,7 +188,7 @@ public class TexlipseProjectCreationWizardPage extends TexlipseWizardPage {
                         status = createStatus(IStatus.WARNING,
                             TexlipsePlugin.getResourceString("projectWizardLanguageCodeError"));
                     }
-                    attributes.setProjectName(text);
+                    attributes.setLanguageCode(text);
                     updateStatus(status, languageField);
                 }
             }

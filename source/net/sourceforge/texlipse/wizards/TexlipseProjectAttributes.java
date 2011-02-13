@@ -45,7 +45,7 @@ public class TexlipseProjectAttributes {
         outputFormat = TexlipsePlugin.getPreference(TexlipseProperties.OUTPUT_FORMAT);
         outputFile = sourceFile.substring(0, sourceFile.lastIndexOf('.')+1) + outputFormat;
         template = "";
-        languageCode = TexlipsePlugin.getPreference(TexlipseProperties.LANGUAGE_PROPERTY);
+        languageCode = "en";
         builder = TexlipsePlugin.getDefault().getPreferenceStore().getInt(TexlipseProperties.BUILDER_NUMBER);
     }
 

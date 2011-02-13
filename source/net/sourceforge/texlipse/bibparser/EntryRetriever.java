@@ -56,20 +56,18 @@ public final class EntryRetriever extends DepthFirstAdapter {
     
     private final class EntryText {
         Token token;
-        Set definedFields;
-        public EntryText(Token t, Set df) {
+        Set<String> definedFields;
+        public EntryText(Token t, Set<String> df) {
             token = t;
             definedFields = df;
         }
     }
     
-    //private ArrayList<ParseErrorMessage> warnings = new ArrayList<ParseErrorMessage>();
-    private List warnings = new ArrayList();
+    private List<ParseErrorMessage> warnings = new ArrayList<ParseErrorMessage>();
    
-    private List tasks = new ArrayList(); // type: ParseErrorMessage
+    private List<ParseErrorMessage> tasks = new ArrayList<ParseErrorMessage>(); // type: ParseErrorMessage
     
-    //private List<ReferenceEntry> entries = new ArrayList<ReferenceEntry>();
-    private List entries = new ArrayList();
+    private List<ReferenceEntry> entries = new ArrayList<ReferenceEntry>();
     
     private ReferenceEntry currEntry;
     private StringBuffer currEntryInfo;    
@@ -80,22 +78,21 @@ public final class EntryRetriever extends DepthFirstAdapter {
     /**
      * Currently defined fields for an entry
      */
-    private Set currDefinedFields;
+    private Set<String> currDefinedFields;
 
     /**
      * All defined keys -- can be used for testing whether a key is unique
      */
-    private Set allDefinedKeys;
+    private Map<String,Integer> allDefinedKeys;
     
-    private static final Map predefAbbrevs = new HashMap();
-    private Map abbrevs;
-    private Map crossrefs; // String->List(EntryText)
+    private static final Map<String, String> predefAbbrevs = new HashMap<String, String>();
+    private Map<String, String> abbrevs;
+    private Map<String, List<EntryText>> crossrefs; // String->List(EntryText)
     
     /**
      * A list of required fields for the different BibTeX entries
      */
-    //private static final Map<String, List<String>> requiredFieldsPerType = new HashMap<String, List<String>>();
-    private static final Map requiredFieldsPerType = new HashMap();
+    private static final Map<String, ArrayList<String>> requiredFieldsPerType = new HashMap<String, ArrayList<String>>();
     
     static {
         predefAbbrevs.put("jan", "January");
@@ -125,61 +122,47 @@ public final class EntryRetriever extends DepthFirstAdapter {
         String[] proceedings = {"title", "year"};
         String[] unpublished = {"author", "title", "note"};
 
-//        requiredFieldsPerType.put("article", new ArrayList<String>(Arrays.asList(article)));
-//        requiredFieldsPerType.put("book", new ArrayList<String>(Arrays.asList(book)));
-//        requiredFieldsPerType.put("booklet", new ArrayList<String>(Arrays.asList(booklet)));
-//        requiredFieldsPerType.put("conference", new ArrayList<String>(Arrays.asList(conference)));
-//        requiredFieldsPerType.put("inbook", new ArrayList<String>(Arrays.asList(inbook)));
-//        requiredFieldsPerType.put("incollection", new ArrayList<String>(Arrays.asList(incollection)));
-//        requiredFieldsPerType.put("inproceedings", new ArrayList<String>(Arrays.asList(inproceedings)));
-//        requiredFieldsPerType.put("manual", new ArrayList<String>(Arrays.asList(manual)));
-//        requiredFieldsPerType.put("mastersthesis", new ArrayList<String>(Arrays.asList(mastersthesis)));        
-//        requiredFieldsPerType.put("phdthesis", new ArrayList<String>(Arrays.asList(phdthesis)));
-//        requiredFieldsPerType.put("techreport", new ArrayList<String>(Arrays.asList(techreport)));
-//        requiredFieldsPerType.put("proceedings", new ArrayList<String>(Arrays.asList(proceedings)));
-//        requiredFieldsPerType.put("unpublished", new ArrayList<String>(Arrays.asList(unpublished)));
-
-        requiredFieldsPerType.put("article", new ArrayList(Arrays.asList(article)));
-        requiredFieldsPerType.put("book", new ArrayList(Arrays.asList(book)));
-        requiredFieldsPerType.put("booklet", new ArrayList(Arrays.asList(booklet)));
-        requiredFieldsPerType.put("conference", new ArrayList(Arrays.asList(conference)));
-        requiredFieldsPerType.put("inbook", new ArrayList(Arrays.asList(inbook)));
-        requiredFieldsPerType.put("incollection", new ArrayList(Arrays.asList(incollection)));
-        requiredFieldsPerType.put("inproceedings", new ArrayList(Arrays.asList(inproceedings)));
-        requiredFieldsPerType.put("manual", new ArrayList(Arrays.asList(manual)));
-        requiredFieldsPerType.put("mastersthesis", new ArrayList(Arrays.asList(mastersthesis)));        
-        requiredFieldsPerType.put("phdthesis", new ArrayList(Arrays.asList(phdthesis)));
-        requiredFieldsPerType.put("techreport", new ArrayList(Arrays.asList(techreport)));
-        requiredFieldsPerType.put("proceedings", new ArrayList(Arrays.asList(proceedings)));
-        requiredFieldsPerType.put("unpublished", new ArrayList(Arrays.asList(unpublished)));    
+        requiredFieldsPerType.put("article", new ArrayList<String>(Arrays.asList(article)));
+        requiredFieldsPerType.put("book", new ArrayList<String>(Arrays.asList(book)));
+        requiredFieldsPerType.put("booklet", new ArrayList<String>(Arrays.asList(booklet)));
+        requiredFieldsPerType.put("conference", new ArrayList<String>(Arrays.asList(conference)));
+        requiredFieldsPerType.put("inbook", new ArrayList<String>(Arrays.asList(inbook)));
+        requiredFieldsPerType.put("incollection", new ArrayList<String>(Arrays.asList(incollection)));
+        requiredFieldsPerType.put("inproceedings", new ArrayList<String>(Arrays.asList(inproceedings)));
+        requiredFieldsPerType.put("manual", new ArrayList<String>(Arrays.asList(manual)));
+        requiredFieldsPerType.put("mastersthesis", new ArrayList<String>(Arrays.asList(mastersthesis)));        
+        requiredFieldsPerType.put("phdthesis", new ArrayList<String>(Arrays.asList(phdthesis)));
+        requiredFieldsPerType.put("techreport", new ArrayList<String>(Arrays.asList(techreport)));
+        requiredFieldsPerType.put("proceedings", new ArrayList<String>(Arrays.asList(proceedings)));
+        requiredFieldsPerType.put("unpublished", new ArrayList<String>(Arrays.asList(unpublished)));    
     }
 
     public EntryRetriever() {
-        this.currDefinedFields = new HashSet();
+        this.currDefinedFields = new HashSet<String>();
         
-        this.allDefinedKeys = new HashSet();
-        this.abbrevs = new HashMap(predefAbbrevs);
-        this.crossrefs = new HashMap();
+        this.allDefinedKeys = new HashMap<String, Integer>();
+        this.abbrevs = new HashMap<String, String>(predefAbbrevs);
+        this.crossrefs = new HashMap<String, List<EntryText>>();
     }
     
     /**
      * @return The entries as a list of <code>ReferenceEntry</code>s
      */
-    public List getEntries() {
+    public List<ReferenceEntry> getEntries() {
         return entries;
     }
     
     /**
      * @return A list of warnings in the file
      */
-    public List getWarnings() {
+    public List<ParseErrorMessage> getWarnings() {
         return warnings;
     }
     
     /**
      * @return A list of task markers in the file
      */
-    public List getTasks() {
+    public List<ParseErrorMessage> getTasks() {
         return tasks;
     }
 
@@ -188,12 +171,12 @@ public final class EntryRetriever extends DepthFirstAdapter {
      */
     public void finishParse() {
         // Set warnings for unfulfilled cross references
-        Set keys = crossrefs.entrySet();
-        for (Iterator iter = keys.iterator(); iter.hasNext();) {
-            Map.Entry mapping = (Map.Entry) iter.next();
-            List crefs = (List) mapping.getValue();
-            for (Iterator iter2 = crefs.iterator(); iter2.hasNext();) {
-                EntryText et = (EntryText) iter2.next();
+        Set<Map.Entry<String, List<EntryText>>>  keys = crossrefs.entrySet();
+        for (Iterator<Map.Entry<String, List<EntryText>>> iter = keys.iterator(); iter.hasNext();) {
+            Map.Entry<String, List<EntryText>> mapping = iter.next();
+            List<EntryText> crefs = mapping.getValue();
+            for (Iterator<EntryText> iter2 = crefs.iterator(); iter2.hasNext();) {
+                EntryText et = iter2.next();
                 setMissingWarnings(et.token, et.definedFields);
                 warnings.add(new ParseErrorMessage(et.token.getLine(),
                         et.token.getPos() - 1, et.token.getText().length(),
@@ -261,19 +244,20 @@ public final class EntryRetriever extends DepthFirstAdapter {
         currEntry.startLine = tid.getLine();
         currEntryInfo = new StringBuffer();
         
-        if (!allDefinedKeys.add(currEntry.key)) {
+        Integer x=allDefinedKeys.put(currEntry.key, currEntry.startLine);
+        if (x != null) {
             warnings.add(new ParseErrorMessage(currEntry.startLine,
                     tid.getPos() - 1, currEntry.key.length(),
-                    "BibTex key " + currEntry.key + " is not unique",
+                    "BibTex key " + currEntry.key + " is not unique: also defined in line "+x,
                     IMarker.SEVERITY_WARNING));
         }
     }
 
-    private void setMissingWarnings(Token t, Set fields) {
-        List reqFieldList = (List) requiredFieldsPerType.get(t.getText());
+    private void setMissingWarnings(Token t, Set<String> fields) {
+        List<String> reqFieldList = requiredFieldsPerType.get(t.getText());
         if (reqFieldList != null) {
             if (!fields.containsAll(reqFieldList)) {
-                for (Iterator iter = reqFieldList.iterator(); iter.hasNext();) {
+                for (Iterator<String> iter = reqFieldList.iterator(); iter.hasNext();) {
                     String reqField = (String) iter.next();
                     if (!fields.contains(reqField)) {
                         // FIXME key
@@ -305,21 +289,21 @@ public final class EntryRetriever extends DepthFirstAdapter {
         //currEntry.endLine = node.getIdentifier().getLine();
 
         if (crossref != null) {
-            List crefs = (List) crossrefs.get(crossref);
+            List<EntryText> crefs = crossrefs.get(crossref);
             if (crefs == null) {
-                crefs = new ArrayList();
+                crefs = new ArrayList<EntryText>();
             }
             crefs.add(new EntryText(currEntryType,
-                    new HashSet(currDefinedFields)));
+                    new HashSet<String>(currDefinedFields)));
             crossrefs.put(crossref, crefs);
             crossref = null;
         } else {
             setMissingWarnings(currEntryType, currDefinedFields);
         }
         if (crossrefs.containsKey(currEntry.key)) {
-            List crefs = (List) crossrefs.remove(currEntry.key);
-            for (Iterator iter = crefs.iterator(); iter.hasNext();) {
-                EntryText et = (EntryText) iter.next();
+            List<EntryText> crefs = crossrefs.remove(currEntry.key);
+            for (Iterator<EntryText> iter = crefs.iterator(); iter.hasNext();) {
+                EntryText et = iter.next();
                 et.definedFields.addAll(currDefinedFields);
                 setMissingWarnings(et.token, et.definedFields);
             }

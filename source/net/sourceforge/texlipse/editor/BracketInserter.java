@@ -236,7 +236,7 @@ public class BracketInserter implements VerifyKeyListener, ILinkedModeListener {
      * @return True if <code>c</code> is a bracket or paren, false otherwise
      */
     private static boolean isClosingBracket(char c){
-        if (c == ')' || c == '}' || c == ']')
+        if (c == ')' || c == '}' || c == ']' || c == '$')
             return true;
         return false;
     }

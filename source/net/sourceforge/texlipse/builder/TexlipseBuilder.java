@@ -71,18 +71,23 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
 	protected IProject[] build(int kind, Map args, IProgressMonitor monitor)
 			throws CoreException {
         
+        IProject p = getProject();
+        
+        Object rebuild = TexlipseProperties.getSessionProperty(p, TexlipseProperties.FORCED_REBUILD);
+        
+        if (rebuild == null && isUpToDate(p)) return null;
+
         BuilderRegistry.clearConsole();
 
-        if (isUpToDate(getProject()))
-            return null;
-
-        Object s = TexlipseProperties.getProjectProperty(getProject(), TexlipseProperties.PARTIAL_BUILD_PROPERTY);
+        Object s = TexlipseProperties.getProjectProperty(p, TexlipseProperties.PARTIAL_BUILD_PROPERTY);
 		if (s != null) {
 			partialBuild(monitor);
 		} else {
 			buildFile(null, monitor);
 		}
         
+		TexlipseProperties.setSessionProperty(p, TexlipseProperties.FORCED_REBUILD, null);
+		
 		return null;
 	}
 

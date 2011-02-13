@@ -54,6 +54,7 @@ public class TexlipseProperties {
     public static final String PARTIAL_BUILD_PROPERTY = "partialBuild";
     public static final String PARTIAL_BUILD_FILE = "partialFile";
     public static final String BIBFILES_CHANGED = "bibFilesChanged";
+    public static final String FORCED_REBUILD = "forcedRebuild";
     
     public static final String OUTPUT_DIR_PROPERTY = "outputDir";
     public static final String SOURCE_DIR_PROPERTY = "srcDir";

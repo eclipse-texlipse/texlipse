@@ -932,6 +932,14 @@ ${cursor}
                menubarPath="net.sourceforge.texlipse.menus.latex/latexGroup"
                style="push">
          </action>
+         <action
+               class="net.sourceforge.texlipse.actions.ForceRebuildAction"
+               icon="icons/build_exec.gif"
+               id="net.sourceforge.texlipse.actions.ForceRebuild"
+               label="Force build"
+               menubarPath="net.sourceforge.texlipse.menus.latex/latexGroup"
+               style="push">
+         </action>
       </editorContribution>
    </extension>
    <extension

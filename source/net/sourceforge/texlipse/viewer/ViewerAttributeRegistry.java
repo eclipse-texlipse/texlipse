@@ -135,7 +135,6 @@ public class ViewerAttributeRegistry implements Cloneable {
         
         // list the viewers
         List<String> vlist = new ArrayList<String>();
-        vlist.add(VIEWER_NONE);
         vlist.add(VIEWER_XDVI);
         vlist.add(VIEWER_YAP);
         vlist.add(VIEWER_ITEXMAC);
@@ -143,6 +142,7 @@ public class ViewerAttributeRegistry implements Cloneable {
         vlist.add(VIEWER_GV);
         vlist.add(VIEWER_SUMATRA);
         vlist.add(VIEWER_ACROBAT);
+        vlist.add(VIEWER_NONE);
         vlist.remove(def);
         StringBuilder sb = new StringBuilder(def); // put default on front
         for (String viewer : vlist) {

@@ -3,7 +3,7 @@ Bundle-ManifestVersion: 2
 Bundle-Vendor: TeXlapse Team
 Bundle-Name: TeXlipse
 Bundle-SymbolicName: net.sourceforge.texlipse;singleton:=true
-Bundle-Version: 1.4.1
+Bundle-Version: 1.4.2
 Bundle-Activator: net.sourceforge.texlipse.TexlipsePlugin
 Bundle-RequiredExecutionEnvironment: J2SE-1.5
 Bundle-ClassPath: texlipse.jar,

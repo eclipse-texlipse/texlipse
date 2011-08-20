@@ -232,7 +232,29 @@ public class TexParser {
     public String getBibstyle() {
     	return lparser.getBibstyle();
     }
-    
+
+    /**
+     * @return Whether Biblatex mode is activated
+     */
+    public boolean isBiblatexMode() {
+        return lparser.isBiblatexMode();
+    }
+
+    /**
+     * @return The selected biblatex backend
+     */
+    public String getBiblatexBackend() {
+        return lparser.getBiblatexBackend();
+    }
+
+    /**
+     * @return Whether the parsed file contains a bibliography print command.
+     *  This is only relevant if biblatex mode is enabled.
+     */
+    public boolean isLocalBib() {
+        return lparser.isLocalBib();
+    }
+
     /**
      * @return Returns the preamble.
      */

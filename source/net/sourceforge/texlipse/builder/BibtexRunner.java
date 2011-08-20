@@ -105,6 +105,9 @@ public class BibtexRunner extends AbstractProgramRunner {
             bibDirs = "";
         }
         
+        Boolean biblatexMode = (Boolean) TexlipseProperties.getSessionProperty(project,
+                TexlipseProperties.SESSION_BIBLATEXMODE_PROPERTY);
+
         // TODO useless? shouldn't be such a project property
         String aDir = TexlipseProperties.getProjectProperty(project, TexlipseProperties.BIBFILE_PROPERTY);
         if (aDir == null) {
@@ -121,7 +124,14 @@ public class BibtexRunner extends AbstractProgramRunner {
         StringBuffer sb = new StringBuffer();
         for (int i = 0; i < bibs.length; i++) {
             for (int j = 0; j < dirs.length; j++) {
-                File b = new File(dirs[j] + bibs[i] + ".bib");
+                String bibPath;
+                if (biblatexMode == null) {
+                    bibPath = dirs[j] + bibs[i] + ".bib";
+                }
+                else {
+                    bibPath = dirs[j] + bibs[i]; 
+                }
+                File b = new File(bibPath);
                 if (b.exists()) {
                     sb.append(" -include-dir=");
                     sb.append(dirs[j]);

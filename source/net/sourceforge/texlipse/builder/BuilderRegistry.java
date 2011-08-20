@@ -170,6 +170,7 @@ public class BuilderRegistry {
                 new PdflatexRunner(),
                 new XelatexRunner(),
                 new BibtexRunner(),
+                new BiberRunner(),
                 new MakeindexRunner(),
                 new DvipsRunner(),
                 new DvipdfRunner(),

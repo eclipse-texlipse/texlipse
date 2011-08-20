@@ -87,7 +87,8 @@ public class TexlipseProjectCreationOperation implements IRunnableWithProgress {
             monitor.worked(1);
             
             TexlipseProperties.setProjectProperty(project, TexlipseProperties.LANGUAGE_PROPERTY, attributes.getLanguageCode()+"");
-            TexlipseProperties.setProjectProperty(project, TexlipseProperties.MARK_DERIVED_PROPERTY, "true");
+            TexlipseProperties.setProjectProperty(project, TexlipseProperties.MARK_OUTPUT_DERIVED_PROPERTY, "true");
+            TexlipseProperties.setProjectProperty(project, TexlipseProperties.MARK_TEMP_DERIVED_PROPERTY, "true");
             TexlipseProperties.setProjectProperty(project, TexlipseProperties.MAKEINDEX_STYLEFILE_PROPERTY, "");
             TexlipseProperties.setProjectProperty(project, TexlipseProperties.BIBREF_DIR_PROPERTY, "");
             TexlipseProperties.setProjectProperty(project, TexlipseProperties.OUTPUTFILE_PROPERTY, attributes.getOutputFile());
@@ -194,9 +195,9 @@ public class TexlipseProjectCreationOperation implements IRunnableWithProgress {
         String sourceDir = attributes.getSourceDir();
         String tempDir = attributes.getTempDir();
 
-        createDir(project, monitor, outputDir);
-        createDir(project, monitor, sourceDir);
-        createDir(project, monitor, tempDir);
+        createDir(project, monitor, outputDir, true);
+        createDir(project, monitor, sourceDir, false);
+        createDir(project, monitor, tempDir, true);
 
         TexlipseProperties.setProjectProperty(project, TexlipseProperties.OUTPUT_DIR_PROPERTY, outputDir);
         TexlipseProperties.setProjectProperty(project, TexlipseProperties.SOURCE_DIR_PROPERTY, sourceDir);
@@ -210,10 +211,14 @@ public class TexlipseProjectCreationOperation implements IRunnableWithProgress {
      * @param dir directory name
      * @throws CoreException
      */
-    private void createDir(IProject project, IProgressMonitor monitor, String dir) throws CoreException {
+    private void createDir(IProject project, IProgressMonitor monitor, String dir,
+            boolean derivedAsDefault) throws CoreException {
         if (dir != null && dir.length() > 0) {
             IFolder folder = project.getFolder(dir);
             folder.create(true, true, monitor);
+            if (derivedAsDefault) {
+                folder.setDerived(true, monitor);
+            }
         }
     }
     

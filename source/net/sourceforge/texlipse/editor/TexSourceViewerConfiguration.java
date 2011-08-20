@@ -63,6 +63,8 @@ public class TexSourceViewerConfiguration extends TextSourceViewerConfiguration 
     private TexMathScanner mathScanner;
     private TexScanner scanner;
     private TexCommentScanner commentScanner;
+    private TexScanner argumentScanner;
+    private TexScanner optArgumentScanner;
     private RuleBasedScanner verbatimScanner;
     private ColorManager colorManager;
     private TexAnnotationHover annotationHover;
@@ -227,7 +229,15 @@ public class TexSourceViewerConfiguration extends TextSourceViewerConfiguration 
         dr = new DefaultDamagerRepairer(getTexCommentScanner());
         reconciler.setDamager(dr, FastLaTeXPartitionScanner.TEX_COMMENT);
         reconciler.setRepairer(dr, FastLaTeXPartitionScanner.TEX_COMMENT);
-        
+
+        dr = new DefaultDamagerRepairer(getTexArgScanner());
+        reconciler.setDamager(dr, FastLaTeXPartitionScanner.TEX_CURLY_BRACKETS);
+        reconciler.setRepairer(dr, FastLaTeXPartitionScanner.TEX_CURLY_BRACKETS);
+
+        dr = new DefaultDamagerRepairer(getTexOptArgScanner());
+        reconciler.setDamager(dr, FastLaTeXPartitionScanner.TEX_SQUARE_BRACKETS);
+        reconciler.setRepairer(dr, FastLaTeXPartitionScanner.TEX_SQUARE_BRACKETS);
+
         dr = new DefaultDamagerRepairer(getTexScanner());
         reconciler.setDamager(dr, IDocument.DEFAULT_CONTENT_TYPE);
         reconciler.setRepairer(dr, IDocument.DEFAULT_CONTENT_TYPE);
@@ -288,7 +298,41 @@ public class TexSourceViewerConfiguration extends TextSourceViewerConfiguration 
         }
         return commentScanner;
     }
-    
+
+    /**
+     * Defines an argument (curly bracket) scanner and sets the default color for it
+     * @return a scanner to detect argument partitions
+     */
+    protected TexScanner getTexArgScanner() {
+        if (argumentScanner == null) {
+            argumentScanner = new TexScanner(colorManager);
+            argumentScanner.setDefaultReturnToken(
+                    new Token(
+                            new TextAttribute(
+                                    colorManager.getColor(ColorManager.CURLY_BRACKETS),
+                                    null,
+                                    colorManager.getStyle(ColorManager.CURLY_BRACKETS_STYLE))));
+        }
+        return argumentScanner;
+    }
+
+    /**
+     * Defines an optional argument (square bracket) scanner and sets the default color for it
+     * @return a scanner to detect argument partitions
+     */
+    protected TexScanner getTexOptArgScanner() {
+        if (optArgumentScanner == null) {
+            optArgumentScanner = new TexScanner(colorManager);
+            optArgumentScanner.setDefaultReturnToken(
+                    new Token(
+                            new TextAttribute(
+                                    colorManager.getColor(ColorManager.SQUARE_BRACKETS),
+                                    null,
+                                    colorManager.getStyle(ColorManager.SQUARE_BRACKETS_STYLE))));
+        }
+        return optArgumentScanner;
+    }
+
     /**
      * Defines a verbatim scanner and sets the default color for it
      * @return a scanner to detect verbatim style partitions

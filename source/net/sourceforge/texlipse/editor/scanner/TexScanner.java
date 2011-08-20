@@ -54,16 +54,6 @@ public class TexScanner extends RuleBasedScanner {
                 null,
                 manager.getStyle(ColorManager.COMMAND_STYLE)));
 
-        IToken braketToken = new Token(new TextAttribute(manager
-                .getColor(ColorManager.CURLY_BRACKETS),
-                null,
-                manager.getStyle(ColorManager.CURLY_BRACKETS_STYLE)));
-
-        IToken squareToken = new Token(new TextAttribute(manager
-                .getColor(ColorManager.SQUARE_BRACKETS),
-                null,
-                manager.getStyle(ColorManager.SQUARE_BRACKETS_STYLE)));
-
         IToken commentToken = new Token(new TextAttribute(manager
                 .getColor(ColorManager.COMMENT),
                 null,
@@ -79,8 +69,6 @@ public class TexScanner extends RuleBasedScanner {
         rules.add(new TexSpecialCharRule(specialCharToken));
         rules.add(new WordRule(new TexWord(), commandToken));
         rules.add(new NumberRule(numberToken));
-        rules.add(new MultiLineRule("{", "}", braketToken, '\\'));
-        rules.add(new MultiLineRule("[", "]", squareToken, '\\'));
         rules.add(new EndOfLineRule("%", commentToken, '\\'));
         rules.add(new WhitespaceRule(new WhitespaceDetector()));
         

@@ -7,14 +7,14 @@ import net.sourceforge.texlipse.texparser.analysis.*;
 @SuppressWarnings("nls")
 public final class TCbib extends Token
 {
-    public TCbib()
+    public TCbib(String text)
     {
-        super.setText("\\bibliography");
+        setText(text);
     }
 
-    public TCbib(int line, int pos)
+    public TCbib(String text, int line, int pos)
     {
-        super.setText("\\bibliography");
+        setText(text);
         setLine(line);
         setPos(pos);
     }
@@ -22,17 +22,11 @@ public final class TCbib extends Token
     @Override
     public Object clone()
     {
-      return new TCbib(getLine(), getPos());
+      return new TCbib(getText(), getLine(), getPos());
     }
 
     public void apply(Switch sw)
     {
         ((Analysis) sw).caseTCbib(this);
-    }
-
-    @Override
-    public void setText(@SuppressWarnings("unused") String text)
-    {
-        throw new RuntimeException("Cannot change TCbib text.");
     }
 }

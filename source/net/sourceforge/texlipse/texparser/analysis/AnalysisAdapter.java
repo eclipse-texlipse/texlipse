@@ -154,7 +154,17 @@ public class AnalysisAdapter implements Analysis
         defaultCase(node);
     }
 
+    public void caseTCpackage(TCpackage node)
+    {
+        defaultCase(node);
+    }
+
     public void caseTCpindex(TCpindex node)
+    {
+        defaultCase(node);
+    }
+
+    public void caseTCpbib(TCpbib node)
     {
         defaultCase(node);
     }

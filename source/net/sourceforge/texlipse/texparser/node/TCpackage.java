@@ -5,16 +5,16 @@ package net.sourceforge.texlipse.texparser.node;
 import net.sourceforge.texlipse.texparser.analysis.*;
 
 @SuppressWarnings("nls")
-public final class TStar extends Token
+public final class TCpackage extends Token
 {
-    public TStar()
+    public TCpackage()
     {
-        super.setText("*");
+        super.setText("\\usepackage");
     }
 
-    public TStar(int line, int pos)
+    public TCpackage(int line, int pos)
     {
-        super.setText("*");
+        super.setText("\\usepackage");
         setLine(line);
         setPos(pos);
     }
@@ -22,17 +22,17 @@ public final class TStar extends Token
     @Override
     public Object clone()
     {
-      return new TStar(getLine(), getPos());
+      return new TCpackage(getLine(), getPos());
     }
 
     public void apply(Switch sw)
     {
-        ((Analysis) sw).caseTStar(this);
+        ((Analysis) sw).caseTCpackage(this);
     }
 
     @Override
     public void setText(@SuppressWarnings("unused") String text)
     {
-        throw new RuntimeException("Cannot change TStar text.");
+        throw new RuntimeException("Cannot change TCpackage text.");
     }
 }

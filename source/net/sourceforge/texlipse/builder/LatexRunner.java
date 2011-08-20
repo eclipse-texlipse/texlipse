@@ -245,11 +245,11 @@ public class LatexRunner extends AbstractProgramRunner {
                     continue;
                 }
 
-                // Ignore undefined references or citations because they are
+                // Ignore undefined references because they are
                 // found by the parser
-                if (line.indexOf("Warning: Reference `") > -1)
+                if (line.indexOf("Warning: Reference ") > -1)
                     continue;
-                if (line.indexOf("Warning: Citation `") > -1) {
+                if (line.indexOf("Warning: Citation ") > -1) {
                     citeNotfound = true;
                     continue;
                 }

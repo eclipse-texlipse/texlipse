@@ -13,6 +13,8 @@
 -->
 
 <plugin>
+   <extension-point id="CiteAutocompleteExtension" name="CiteAutocompleteExtension" schema="schema/CiteAutocompleteExtension.exsd"/>
+   <extension-point id="BibEditorOutlineExtension" name="BibEditorOutlineExtension" schema="schema/BibEditorOutlineExtension.exsd"/>
    <extension
          point="org.eclipse.core.runtime.contentTypes">
       <content-type

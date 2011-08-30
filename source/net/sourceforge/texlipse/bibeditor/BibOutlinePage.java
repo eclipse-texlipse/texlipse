@@ -9,12 +9,19 @@
  */
 package net.sourceforge.texlipse.bibeditor;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import net.sourceforge.texlipse.TexlipsePlugin;
 import net.sourceforge.texlipse.bibparser.BibOutlineContainer;
+import net.sourceforge.texlipse.extension.BibOutlineActionProvider;
 import net.sourceforge.texlipse.model.ReferenceEntry;
 
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuListener;
@@ -55,6 +62,9 @@ public class BibOutlinePage extends ContentOutlinePage {
     protected ITextEditor editor;
     
     private HashMap outlineActions;
+    
+    //a list that holds additional action-buttons for the outline page
+    private List<Action> extensionActions;
     
     /**
      * Constructs a new outline page
@@ -144,7 +154,27 @@ public class BibOutlinePage extends ContentOutlinePage {
      * Creates the actions assosiated with the outline. 
      */
     private void createActions() {
-        
+    	
+    	//creates the additional actions from "BibEditorOutlineExtension"-Extension point
+    	IConfigurationElement[] config = Platform
+		.getExtensionRegistry()
+		.getConfigurationElementsFor(
+			"net.sourceforge.texlipse.BibEditorOutlineExtension");
+        if (config.length > 0){
+        	this.extensionActions = new ArrayList<Action>();
+        	for (IConfigurationElement elem : config) {
+        		try {
+        			BibOutlineActionProvider a = (BibOutlineActionProvider)elem.createExecutableExtension("OutlineActionProvider");
+        			//get a resource representation of the opened .bib file
+        			IResource resource = (IResource) editor.getEditorInput().getAdapter(IResource.class);
+        			//get the action button and add it to the extension buttons
+        			this.extensionActions.add(a.getAction(getTreeViewer(), resource));
+        		} catch (CoreException e) {
+        			//e.printStackTrace();
+        			//do some logging
+        		}
+        	}
+        }
         // toolbar actions        
         Action byAuthor = new Action("Sort by Author", IAction.AS_RADIO_BUTTON) {
             public void run() {
@@ -221,7 +251,13 @@ public class BibOutlinePage extends ContentOutlinePage {
         toolbarManager.add((IAction)outlineActions.get(ACTION_BYINDEX));
         toolbarManager.add((IAction)outlineActions.get(ACTION_BYAUTHOR));    	
         toolbarManager.add((IAction)outlineActions.get(ACTION_BYJOURNAL));
-        toolbarManager.add((IAction)outlineActions.get(ACTION_BYYEAR));    	
+        toolbarManager.add((IAction)outlineActions.get(ACTION_BYYEAR));      
+        //adds the additional actions from the "BibEditorOutlineExtension"-Extension point
+        if (this.extensionActions != null) {
+        	for (Action a : this.extensionActions) {
+        		toolbarManager.add(a);
+        	}
+        }
     }
     
     /**

@@ -37,6 +37,15 @@ public class ReferenceManager extends PartialRetriever {
         this.commandContainer = commands;
     }
 
+    /**
+     * A simple getter for the Bibcontainer
+     * 
+     * @return the bibContainer
+     */
+    public ReferenceContainer getBibContainer() {
+    	return this.bibContainer;
+    }
+    
     // B-----borisvl
     
     public ReferenceEntry getBib(String name) {

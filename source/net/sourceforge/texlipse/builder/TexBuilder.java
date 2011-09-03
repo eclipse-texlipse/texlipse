@@ -274,13 +274,15 @@ public class TexBuilder extends AbstractBuilder implements AdaptableBuilder {
         // if bibtex is not used, maybe the references need to be updated in the main document
         String rerun = (String) TexlipseProperties.getSessionProperty(resource.getProject(), TexlipseProperties.SESSION_LATEX_RERUN);
         
-		if (!biblatexMode && parseAuxFiles && auxFile.exists()) {
+		if (parseAuxFiles && auxFile.exists()) {
 			AuxFileParser afp = new AuxFileParser(project, auxFileName);
 
-			// check whether a new bibtex run is required
-			List<String> newCitations = afp.getCitations();
-			if (!newCitations.equals(oldCitations))
-				bibChange = new Boolean(true);
+			if (!biblatexMode) {
+    			// check whether a new bibtex run is required
+    			List<String> newCitations = afp.getCitations();
+    			if (!newCitations.equals(oldCitations))
+    				bibChange = new Boolean(true);
+			}
 
 			// add the labels defined in the .aux-file to the label container
 			extractLabels(afp);

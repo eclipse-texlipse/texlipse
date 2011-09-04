@@ -11,8 +11,10 @@ package net.sourceforge.texlipse.editor;
 import net.sourceforge.texlipse.TexlipsePlugin;
 import net.sourceforge.texlipse.editor.hover.TexHover;
 import net.sourceforge.texlipse.editor.partitioner.FastLaTeXPartitionScanner;
+import net.sourceforge.texlipse.editor.scanner.TexArgScanner;
 import net.sourceforge.texlipse.editor.scanner.TexCommentScanner;
 import net.sourceforge.texlipse.editor.scanner.TexMathScanner;
+import net.sourceforge.texlipse.editor.scanner.TexOptArgScanner;
 import net.sourceforge.texlipse.editor.scanner.TexScanner;
 import net.sourceforge.texlipse.properties.TexlipseProperties;
 
@@ -63,8 +65,8 @@ public class TexSourceViewerConfiguration extends TextSourceViewerConfiguration 
     private TexMathScanner mathScanner;
     private TexScanner scanner;
     private TexCommentScanner commentScanner;
-    private TexScanner argumentScanner;
-    private TexScanner optArgumentScanner;
+    private TexArgScanner argumentScanner;
+    private TexOptArgScanner optArgumentScanner;
     private RuleBasedScanner verbatimScanner;
     private ColorManager colorManager;
     private TexAnnotationHover annotationHover;
@@ -303,9 +305,9 @@ public class TexSourceViewerConfiguration extends TextSourceViewerConfiguration 
      * Defines an argument (curly bracket) scanner and sets the default color for it
      * @return a scanner to detect argument partitions
      */
-    protected TexScanner getTexArgScanner() {
+    protected TexArgScanner getTexArgScanner() {
         if (argumentScanner == null) {
-            argumentScanner = new TexScanner(colorManager);
+            argumentScanner = new TexArgScanner(colorManager);
             argumentScanner.setDefaultReturnToken(
                     new Token(
                             new TextAttribute(
@@ -320,9 +322,9 @@ public class TexSourceViewerConfiguration extends TextSourceViewerConfiguration 
      * Defines an optional argument (square bracket) scanner and sets the default color for it
      * @return a scanner to detect argument partitions
      */
-    protected TexScanner getTexOptArgScanner() {
+    protected TexOptArgScanner getTexOptArgScanner() {
         if (optArgumentScanner == null) {
-            optArgumentScanner = new TexScanner(colorManager);
+            optArgumentScanner = new TexOptArgScanner(colorManager);
             optArgumentScanner.setDefaultReturnToken(
                     new Token(
                             new TextAttribute(

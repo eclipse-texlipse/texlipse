@@ -183,12 +183,6 @@ public class FastLaTeXPartitionScanner implements IPartitionTokenScanner {
                      fTokenLength = offsetEnd-fTokenOffset;
                      return fTokens[MATH];
                  }
-                 else if (ch == '&' && c1 == '$') {
-                     // If column delimiter is found, treat $$ as empty math partition
-                     unReadScanner(offsetEnd - fTokenOffset - 2);
-                     fTokenLength = 2;
-                     return fTokens[MATH];
-                 }
                  else if (ch == '$') {
                      c1 = ' ';
                  }

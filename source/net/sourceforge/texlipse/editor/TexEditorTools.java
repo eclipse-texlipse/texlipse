@@ -447,6 +447,34 @@ public class TexEditorTools {
 	public boolean isLineItemLine(String text){
 		return text.trim().startsWith("\\item");		
 	}
+	
+    /**
+     * This method will return the starting index of first
+     * comment on the given line or -1 if non is found.
+     * 
+     * This method looks for the first occurrence of an unescaped %
+     * 
+     * No special treatment of newlines is done.
+     * 
+     * @param line The line on which to look for a comment.
+     *          
+     * @return the index of the first % which marks the beginning of a comment
+     *         or -1 if there is no comment on the given line.
+     */
+    public int getIndexOfComment(String line) {
+        int p = 0;
+        int n = line.length();
+        while (p < n) {
+            char c = line.charAt(p);
+            if (c == '%') {
+                return p;
+            } else if (c == '\\') {
+                p++; // Ignore next character
+            }
+            p++;
+        }
+        return -1; // not found
+    }
     
     
     // Oskar's additions
@@ -477,6 +505,25 @@ public class TexEditorTools {
             indentation.append("% ");
         }
         
+        return indentation.toString();
+    }
+    
+    /**
+     * Returns the indentation of the given string but keeping tabs.
+     * 
+     * @param text      source where to find the indentation
+     * @return          The indentation of the line
+     */
+    public String getIndentation(String text) {
+        StringBuffer indentation = new StringBuffer();
+        char[] array = text.toCharArray();
+        
+        int i = 0;
+        while (i < array.length
+                && (array[i] == ' ' || array[i] == '\t')) {
+            indentation.append(array[i]);
+            i++;
+        }
         return indentation.toString();
     }
     

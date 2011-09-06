@@ -45,8 +45,32 @@ public class HardLineWrap {
      */
     private static String trimBegin (final String str) {
         int i = 0;
-        //while (i < str.length() && (str.charAt(i) == ' ' || str.charAt(i) == '\t')) 
-       while (i < str.length() && (Character.isWhitespace(str.charAt(i)))) 
+        while (i < str.length() && (Character.isWhitespace(str.charAt(i)))) 
+            i++;
+        return str.substring(i);
+    }
+    
+    /**
+     * Removes all whitespaces and the first "% " from the beginning of the 
+     * String.
+     * 
+     * Examples:
+     * "   hello world" will return "hello world"
+     * "   % hello" will return "hello"
+     * "   %hello" will return "hello"
+     * "   % % hello" will return "% hello"
+     * "   %% hello" will return "% hello"
+     * 
+     * @param str The string to trim
+     * @return trimmed version of the string
+     */
+    private static String trimBeginPlusComment (final String str) {
+        int i = 0;
+        while (i < str.length() && (Character.isWhitespace(str.charAt(i)))) 
+            i++;
+        if (i < str.length() && str.charAt(i) == '%')
+            i++;
+        if (i < str.length() && str.charAt(i) == ' ')
             i++;
         return str.substring(i);
     }
@@ -173,19 +197,46 @@ public class HardLineWrap {
             String nextline = tools.getStringAt(d, c, false, 1);
             String nextTrimLine = nextline.trim(); 
             boolean isWithNextline = false;
-            if (!isSingleLine(nextTrimLine) && indent.indexOf('%') == -1) {
-                //Add the whole next line
-                newLineBuf.append(' ');
-                newLineBuf.append(trimBegin(nextline));
-                length += nextline.length();
-                isWithNextline = true;
+            
+            // Figure out whether the next line should be merged with the wrapped text
+            
+            // 1st case: wrapped text ends with . or :
+            if (line.trim().endsWith(".") || line.trim().endsWith(":") || line.trim().endsWith("\\\\")){
+                newLineBuf.append(delim); // do not merge
             } else {
-                newLineBuf.append(delim);
+                // 2nd case: merge comment lines
+                if (tools.getIndexOfComment(line) >= 0 // wrapped text contains a comment,
+                    && tools.isLineCommentLine(nextTrimLine) // next line is also a comment line, 
+                    && tools.getIndentation(line).equals(tools.getIndentation(nextline)) // with the same indentation!
+                    && !isSingleLine(trimBeginPlusComment(nextTrimLine))) // but not an empty comment line, commented command line, etc.
+                { 
+                    // merge!
+                    newLineBuf.append(' ');
+                    newLineBuf.append(trimBeginPlusComment(nextline));
+                    length += nextline.length();
+                    isWithNextline = true;
+                    // 3th case: Wrapped text is comment, next line is not (otherwise case 2)
+                } else if (tools.getIndexOfComment(line) >= 0) {
+                    newLineBuf.append(delim);
+                    // 4rd case: Next line is a comment/command
+                } else if (isSingleLine(nextTrimLine)){
+                    newLineBuf.append(delim);
+                    // all other cases
+                } else {
+                    // merge: Add the whole next line
+                    newLineBuf.append(' ');
+                    newLineBuf.append(trimBegin(nextline));
+                    length += nextline.length();
+                    isWithNextline = true;
+                }
             }
+
+            // TODO: if line has a comment at the end, this might be wrapped onto a non-comment line
+            // TODO: newLine might need wrapping as well if too long
+            
             if (!isLastLine) length += delim.length(); //delim.length();
             String newLine = newLineBuf.toString();
 
-            
             int breakpos = getLineBreakPosition(newLine, MAX_LENGTH);
             if (breakpos < 0) return;
 
@@ -207,6 +258,9 @@ public class HardLineWrap {
             buf.append(newLine.substring(0, breakpos));
             buf.append(delim);
             buf.append(indent);
+            // Are we wrapping a comment onto the next line without its %?
+            if (tools.getIndexOfComment(newLine.substring(0,breakpos)) >= 0 && tools.getIndexOfComment(indent) == -1)
+                buf.append("% ");
             buf.append(trimBegin(newLine.substring(breakpos)));
             
             //Remove unnecessary characters from buf

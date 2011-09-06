@@ -307,7 +307,7 @@ public class TexHardLineWrapAction implements IEditorActionDelegate {
         newText.append(wrapper.loadWrapped(indentation));
 
         // put old delims here
-        newText.deleteCharAt(newText.length() - 1);
+        newText.delete(newText.length() - delimiter.length(), newText.length());
         newText.append(endNewlines);
         
 //        selection.getDocument().replace(selection.getTextSelection().getOffset(),

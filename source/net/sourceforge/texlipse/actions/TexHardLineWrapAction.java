@@ -274,9 +274,8 @@ public class TexHardLineWrapAction implements IEditorActionDelegate {
                         environment = "";
                     }
                 }
-            } else if (trimmedLine.length() == 0
-                    || trimmedLine.endsWith("\\\\")) {
-                // empty lines or forced breaks -> don't wrap them
+            } else if (trimmedLine.length() == 0){ 
+                // empty lines -> don't wrap them
                 
                 newText.append(wrapper.loadWrapped(indentation));
                 newText.append(lines[index]);
@@ -295,13 +294,20 @@ public class TexHardLineWrapAction implements IEditorActionDelegate {
                 }
                 indentation = newIndentation;
                 wrapper.storeUnwrapped(trimmedLine);
+                
+                if (trimmedLine.endsWith("\\\\")
+                        || trimmedLine.endsWith(".")
+                        || trimmedLine.endsWith(":")) {
+                    // On forced breaks, end of sentence or enumerations keep existing breaks
+                    newText.append(wrapper.loadWrapped(indentation));
+                }
             }
         }
         // empty the buffer
         newText.append(wrapper.loadWrapped(indentation));
 
         // put old delims here
-        newText.deleteCharAt(newText.length() - 1);
+        newText.delete(newText.length() - delimiter.length(), newText.length());
         newText.append(endNewlines);
         
 //        selection.getDocument().replace(selection.getTextSelection().getOffset(),

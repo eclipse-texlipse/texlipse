@@ -421,8 +421,8 @@ public class TexlipseProperties {
         setProjectProperty(project, BIBREF_DIR_PROPERTY, prop.getProperty(BIBREF_DIR_PROPERTY, ""));
         setProjectProperty(project, BUILDER_NUMBER, prop.getProperty(BUILDER_NUMBER, ""));
         setProjectProperty(project, OUTPUT_FORMAT, prop.getProperty(OUTPUT_FORMAT, ""));
-        setProjectProperty(project, MARK_TEMP_DERIVED_PROPERTY, prop.getProperty(MARK_TEMP_DERIVED_PROPERTY, ""));
-        setProjectProperty(project, MARK_OUTPUT_DERIVED_PROPERTY, prop.getProperty(MARK_OUTPUT_DERIVED_PROPERTY, ""));
+        setProjectProperty(project, MARK_TEMP_DERIVED_PROPERTY, prop.getProperty(MARK_TEMP_DERIVED_PROPERTY, "true"));
+        setProjectProperty(project, MARK_OUTPUT_DERIVED_PROPERTY, prop.getProperty(MARK_OUTPUT_DERIVED_PROPERTY, "true"));
         setProjectProperty(project, LANGUAGE_PROPERTY, prop.getProperty(LANGUAGE_PROPERTY, ""));
         setProjectProperty(project, MAKEINDEX_STYLEFILE_PROPERTY, prop.getProperty(MAKEINDEX_STYLEFILE_PROPERTY, ""));
     }

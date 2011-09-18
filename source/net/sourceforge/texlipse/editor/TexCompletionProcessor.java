@@ -330,14 +330,16 @@ public class TexCompletionProcessor implements IContentAssistProcessor {
 		List<ICompletionProposal> resultAsList = new ArrayList<ICompletionProposal>();
 		List<ReferenceEntry> bibEntries = refManager.getCompletionsBib(prefix);
 		//add the entries of the .bib file(s) to the results
-		for (int i = 0; i < bibEntries.size(); i++) {
-			ReferenceEntry bib = bibEntries.get(i);
-			String infoText = bib.info.length() > assistLineLength ? wrapString(
-					bib.info, assistLineLength)
-					: bib.info;
-			resultAsList.add(new CompletionProposal(bib.key, offset
-					- replacementLength, replacementLength, bib.key.length(),
-					null, bib.key, null, infoText));
+		if (bibEntries != null) {
+			for (int i = 0; i < bibEntries.size(); i++) {
+				ReferenceEntry bib = bibEntries.get(i);
+				String infoText = bib.info.length() > assistLineLength ? wrapString(
+						bib.info, assistLineLength)
+						: bib.info;
+						resultAsList.add(new CompletionProposal(bib.key, offset
+								- replacementLength, replacementLength, bib.key.length(),
+								null, bib.key, null, infoText));
+			}
 		}
 		//the extension points
 		IConfigurationElement[] configuration = Platform.getExtensionRegistry()
@@ -360,9 +362,9 @@ public class TexCompletionProcessor implements IContentAssistProcessor {
 		}
 
 		//if there are no entries, return null
-		if (resultAsList.size() == 0)
+		if (resultAsList == null || resultAsList.size() == 0)
 			return null;
-		ICompletionProposal[] result = new ICompletionProposal[bibEntries
+		ICompletionProposal[] result = new ICompletionProposal[resultAsList
 				.size()];
 		return resultAsList.toArray(result);
 	}

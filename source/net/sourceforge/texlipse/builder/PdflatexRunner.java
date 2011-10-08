@@ -38,6 +38,13 @@ public class PdflatexRunner extends LatexRunner {
     }
     
     /**
+     * Enable SyncTeX
+     */
+    public String getDefaultArguments() {
+        return "-synctex=1 "+super.getDefaultArguments();
+    }
+
+    /**
      * @return output file format (pdf)
      */
     public String getOutputFormat() {

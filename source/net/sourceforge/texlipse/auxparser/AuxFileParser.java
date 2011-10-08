@@ -99,7 +99,7 @@ public class AuxFileParser {
             return new LinkedList<String>();
         }
 
-        LatexLexer lexer = new LatexLexer(new PushbackReader(new StringReader(input), 1024));
+        LatexLexer lexer = new LatexLexer(new PushbackReader(new StringReader(input), 4096));
         Token prevCommand = null;
         Token prevSymbol = null;
         Token prevText = null;

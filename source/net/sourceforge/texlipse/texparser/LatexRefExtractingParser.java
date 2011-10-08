@@ -1,7 +1,6 @@
 /*
- * $Id$
  *
- * Copyright (c) 2004-2005 by the TeXlapse Team.
+ * Copyright (c) 2004-2011 by the TeXlapse Team.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -84,7 +83,7 @@ public class LatexRefExtractingParser {
      */
     public void parse(String input) throws IOException {
         this.extractPreamble(input);
-        LatexLexer lexer = new LatexLexer(new PushbackReader(new StringReader(input), 1024));
+        LatexLexer lexer = new LatexLexer(new PushbackReader(new StringReader(input), 4096));
         boolean expectArg = false;
         boolean expectArg2 = false;
         Token prevToken = null;

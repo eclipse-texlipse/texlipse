@@ -1,7 +1,6 @@
 /*
- * $Id$
  *
- * Copyright (c) 2004-2005 by the TeXlapse Team.
+ * Copyright (c) 2004-2011 by the TeXlapse Team.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -55,14 +54,6 @@ public class TexParser {
         this.fatalErrors = false;
     }
 
-//    public LatexLexer getLexer(String str) {
-//        if (llexer == null) {
-//            llexer = new LatexLexer(new PushbackReader(new StringReader(str), 4096));
-//        } else {
-//            llexer.resetState(new PushbackReader(new StringReader(str), 4096));
-//        }
-//        return llexer;
-//    }
     
     /**
      * Removes trailing whitespace from the document. This is needed since
@@ -156,7 +147,7 @@ public class TexParser {
         
         try {
             // start the parse
-            LatexLexer lexer = new LatexLexer(new PushbackReader(new StringReader(input), 1024));
+            LatexLexer lexer = new LatexLexer(new PushbackReader(new StringReader(input), 4096));
             //LatexLexer lexer = this.getLexer(input); 
             if (this.preamble != null) {
                 OutlineNode on = new OutlineNode("Preamble",

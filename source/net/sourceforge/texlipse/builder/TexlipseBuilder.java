@@ -63,11 +63,12 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
 	 * @see IncrementalProjectBuilder.build
 	 */
     @Override
-	protected IProject[] build(int kind, Map<String, String> args,
+	protected IProject[] build(int kind, Map args,
 	        IProgressMonitor monitor) throws CoreException {
 
         final IProject project = getProject();
-        final OutputFileManager fileManager = new OutputFileManager(project);
+        final ProjectFileTracking fileTracking = new ProjectFileTracking(project);
+        final OutputFileManager fileManager = new OutputFileManager(project, fileTracking);
 
         Object rebuild = TexlipseProperties.getSessionProperty(project,
                 TexlipseProperties.FORCED_REBUILD);
@@ -116,7 +117,8 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
 	protected void clean(IProgressMonitor monitor) throws CoreException {
 
         IProject project = getProject();
-        OutputFileManager fileManager = new OutputFileManager(project);
+        final ProjectFileTracking fileTracking = new ProjectFileTracking(project);
+        final OutputFileManager fileManager = new OutputFileManager(project, fileTracking);
 
         BuilderRegistry.clearConsole();
 

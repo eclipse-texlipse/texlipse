@@ -30,7 +30,6 @@ public class ProjectFileTracking {
     private final IProject project;
     private final Set<IFolder> excludeFolders;
 
-    private IContainer sourceDir;
     private IFolder outputDir;
     private IFolder tempDir;
 
@@ -124,7 +123,7 @@ public class ProjectFileTracking {
     private boolean isNewer(IPath name, long currentTimestamp) {
         Long prevTimestamp = buildDirNames.get(name);
         return prevTimestamp == null
-                || (prevTimestamp.longValue() > currentTimestamp);
+                || (prevTimestamp.longValue() < currentTimestamp);
     }
 
     /**
@@ -299,15 +298,17 @@ public class ProjectFileTracking {
      * These can later be used to determine, which temporary files have been
      * added during a LaTeX build process.
      *
+     * @param container source container
      * @param monitor progress monitor
      * @throws CoreException if an error occurs
      */
-    public void refreshSnapshots(IProgressMonitor monitor) throws CoreException {
+    public void refreshSnapshots(final IContainer container,
+            IProgressMonitor monitor) throws CoreException {
         tempDirNames = getTempFolderNames(monitor);
-    
+
         final Map<IPath, Long> newBuildDirFiles = new HashMap<IPath, Long>();
-        if (sourceDir != null && sourceDir.exists()) {
-            recursiveScanFiles(sourceDir, newBuildDirFiles, monitor);
+        if (container != null && container.exists()) {
+            recursiveScanFiles(container, newBuildDirFiles, monitor);
         }
         buildDirNames = newBuildDirFiles;
     }

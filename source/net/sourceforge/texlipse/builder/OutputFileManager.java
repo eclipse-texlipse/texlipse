@@ -393,8 +393,8 @@ public class OutputFileManager {
      * <li>it had been in the temporary files folder before the build
      *  process</li>
      * <p><b>or</b></p>
-     * <li>it was created during the build process, and has a temporary file
-     *  extension as specified in the preferences</li>
+     * <li>it was created or modified during the build process, and has a
+     *  temporary file extension as specified in the preferences</li>
      * </ul>
      *
      * @param monitor progress monitor
@@ -550,7 +550,7 @@ public class OutputFileManager {
      */
     public void performBeforeBuild(IProgressMonitor monitor) throws CoreException {
         // capture current state of build and temp folder
-        tracking.refreshSnapshots(monitor);
+        tracking.refreshSnapshots(sourceDir, monitor);
 
         // use temp files from previous build
         restoreTempFiles(monitor);

@@ -323,9 +323,10 @@ public class OutputFileManager {
      * </ul>
      *
      * @param monitor progress monitor
+     * @return set of paths to the (possibly moved) files
      * @throws CoreException if an error occurs
      */
-    private void moveOutputFiles(IProgressMonitor monitor)
+    private Set<IPath> moveOutputFiles(IProgressMonitor monitor)
             throws CoreException {
         final boolean markAsDerived = "true".equals(
                 TexlipseProperties.getProjectProperty(project,
@@ -341,7 +342,7 @@ public class OutputFileManager {
         if (aSourceFile == null || aSourceContainer == null
                 || sOutputFile == null || sOutputContainer == null) {
             // Something is wrong with the settings
-            return;
+            return null;
         }
 
         // Get name without extension from main files for renaming
@@ -352,15 +353,17 @@ public class OutputFileManager {
         // Check if files are to be moved or renamed
         final boolean moveFiles = !sourceBaseName.equals(outputBaseName)
                 || !sOutputContainer.equals(aSourceContainer);
+        // Retrieve output and other derived files along with their extensions
+        final Map<IPath, String> outputFiles =
+                ProjectFileTracking.getOutputNames(aSourceContainer,
+                sourceBaseName, derivedExts, format, monitor);
+
         // Check if there is anything to do
-        if (moveFiles || markAsDerived) {
+        if ((moveFiles || markAsDerived) && !outputFiles.isEmpty()) {
+            final Set<IPath> movedFiles = new HashSet<IPath>(outputFiles.size());
+
             project.getWorkspace().run(new IWorkspaceRunnable() {
                 public void run(IProgressMonitor monitor) throws CoreException {
-                    // Retrieve output and other derived files along with their extensions
-                    final Map<IPath, String> outputFiles =
-                            ProjectFileTracking.getOutputNames(aSourceContainer,
-                            sourceBaseName, derivedExts, format, monitor);
-
                     // Move files to destination folder and rename
                     for (Entry<IPath, String> entry : outputFiles.entrySet()) {
                         IFile currentFile = project.getFile(entry.getKey());
@@ -373,16 +376,23 @@ public class OutputFileManager {
                             if (dest != null && markAsDerived) {
                                 dest.setDerived(true, monitor);
                             }
+                            movedFiles.add(dest.getProjectRelativePath());
                         }
                         else {
                             // Possibly mark as derived
                             if (markAsDerived) {
                                 currentFile.setDerived(true, monitor);
                             }
+                            movedFiles.add(entry.getKey());
                         }
                     }
                 }
-            }, monitor);    
+            }, monitor);
+
+            return movedFiles;
+        }
+        else {
+            return outputFiles.keySet();
         }
     }
 
@@ -397,10 +407,13 @@ public class OutputFileManager {
      *  temporary file extension as specified in the preferences</li>
      * </ul>
      *
+     * @param excludes set of paths to exclude from moving, e.g. because they
+     *  are the main output files
      * @param monitor progress monitor
      * @throws CoreException if an error occurs
      */
-    private void moveTempFiles(IProgressMonitor monitor) throws CoreException {
+    private void moveTempFiles(final Set<IPath> excludes, IProgressMonitor monitor)
+            throws CoreException {
         final IContainer aSourceContainer = getActualSourceContainer();
         if (tracking.isInitial() || tempDir == null
                 || aSourceContainer == null || !aSourceContainer.exists()) {
@@ -418,9 +431,17 @@ public class OutputFileManager {
         // then check for new temporary files, which need to be moved
         project.getWorkspace().run(new IWorkspaceRunnable() {
             public void run(IProgressMonitor monitor) throws CoreException {
-                moveFiles(sourceDir, tempDir, movedFiles, markAsDerived, true, monitor);
+                if (movedFiles != null) {
+                    if (excludes != null) {
+                        movedFiles.removeAll(excludes);
+                    }
+                    moveFiles(sourceDir, tempDir, movedFiles, markAsDerived, true, monitor);
+                }
                 final Set<IPath> newTempNames = tracking.getNewTempNames(aSourceContainer,
                         tempExts, format, monitor);
+                if (excludes != null) {
+                    newTempNames.removeAll(excludes);
+                }
                 moveFiles(sourceDir, tempDir, newTempNames, markAsDerived, true, monitor);
             }
         }, monitor);
@@ -436,6 +457,7 @@ public class OutputFileManager {
     private void restoreTempFiles(IProgressMonitor monitor) throws CoreException {
         final Set<IPath> tempNames = tracking.getTempFiles();
         if (tempDir == null || tempNames.isEmpty()) {
+            movedFiles = new HashSet<IPath>();
             return;
         }
 
@@ -582,8 +604,9 @@ public class OutputFileManager {
         // all following steps)
         refreshView(monitor);
 
+        Set<IPath> outputFiles = null;
         try { // possibly move output files away from the source dir and mark as derived
-            moveOutputFiles(monitor);
+            outputFiles = moveOutputFiles(monitor);
         } catch (CoreException e) {
             // store exception for throwing it later
             ex = new BuilderCoreException(TexlipsePlugin.stat(
@@ -591,7 +614,7 @@ public class OutputFileManager {
         }
 
         try { // move temp files out of this folder and mark as derived
-            moveTempFiles(monitor);
+            moveTempFiles(outputFiles, monitor);
         } catch (CoreException e) {
             // we only worry about this one, if the build was okay
             if (ex == null) {

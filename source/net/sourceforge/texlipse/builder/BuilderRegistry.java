@@ -169,6 +169,7 @@ public class BuilderRegistry {
                 new PslatexRunner(),
                 new PdflatexRunner(),
                 new XelatexRunner(),
+                new LualatexRunner(),
                 new BibtexRunner(),
                 new MakeindexRunner(),
                 new DvipsRunner(),
@@ -184,7 +185,7 @@ public class BuilderRegistry {
      * because builders need to use BuilderRegistry to resolve runners.
      */
     protected void initBuilders() {
-        builderList = new Builder[8];
+        builderList = new Builder[9];
         builderList[0] = new TexBuilder(0, TexlipseProperties.OUTPUT_FORMAT_DVI, 0);
         builderList[1] = new TexBuilder(1, TexlipseProperties.OUTPUT_FORMAT_PS, 0);
         builderList[2] = new TexBuilder(2, TexlipseProperties.OUTPUT_FORMAT_PDF, 0);
@@ -195,6 +196,7 @@ public class BuilderRegistry {
         builderList[5] = new PsBuilder(5, TexBuilder.class);
         builderList[6] = new PsBuilder(6, DviBuilder.class);
         builderList[7] = new TexBuilder(7, TexlipseProperties.OUTPUT_FORMAT_PDF, 1);
+        builderList[8] = new TexBuilder(8, TexlipseProperties.OUTPUT_FORMAT_PDF, 2);
     }
     
     /**

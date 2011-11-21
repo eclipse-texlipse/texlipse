@@ -1,7 +1,7 @@
 /*
  * $Id$
  *
- * Copyright (c) 2004-2005 by the TeXlapse Team.
+ * Copyright (c) 2004-2011 by the TeXlapse Team.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -66,7 +66,7 @@ Tokens
     {normal->comcapt, comcapt} csssection = '\subsubsection';
     {normal->comcapt, comcapt} cparagraph = '\paragraph';
 
-    {normal->comcapt, comcapt} cbib = '\bibliography';
+    {normal->comcapt, comcapt} cbib = '\bibliography' | '\addbibresource' | '\addglobalbib';
     {normal->comcapt, comcapt} cbibstyle = '\bibliographystyle';
     {normal->comcapt, comcapt} clabel = '\label';
 
@@ -90,10 +90,13 @@ Tokens
     {normal->comcapt, comcapt} cnew = '\newcommand' | '\providecommand';
     {normal->comcapt, comcapt} crenew = '\renewcommand';
 
+    {normal->comcapt, comcapt} cpackage = '\usepackage';
+
 // "The \providecommand command is identical to the \newcommand  command if a command with this name does not exist;
 // if it does already exist, the \providecommand does nothing and the old definition remains in effect."
 
     {normal} cpindex = '\printindex';
+    {normal} cpbib = '\printbibliography' | '\bibbysection' | '\bibbysegment' | '\bibbycategory'; 
 
 	// Note: this doesn't check that the right command completes the verbatim
     {normal->verbatim, comcapt->verbatim} bverbatim = '\begin' wspace* '{' ('lstlisting'|'verbatim'|'Verbatim') ('*}'|'}');

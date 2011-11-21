@@ -32,6 +32,8 @@ public class FastLaTeXPartitionScanner implements IPartitionTokenScanner {
     private static final int COMMENT = 1;
     private static final int MATH = 2;
     private static final int VERBATIM = 3;
+    private static final int ARGS = 4;
+    private static final int OPT_ARGS = 5;
     
     private static final String BEGIN = "begin";
     private static final String END = "end";
@@ -45,7 +47,9 @@ public class FastLaTeXPartitionScanner implements IPartitionTokenScanner {
             new Token(null),
             new Token(TEX_COMMENT),
             new Token(TEX_MATH),
-            new Token(TEX_VERBATIM)
+            new Token(TEX_VERBATIM),
+            new Token(TEX_CURLY_BRACKETS),
+            new Token(TEX_SQUARE_BRACKETS)
         };
     private int fTokenOffset;
     private int fTokenLength;
@@ -204,9 +208,14 @@ public class FastLaTeXPartitionScanner implements IPartitionTokenScanner {
                      return fTokens[COMMENT];
                  }
              }
+        case '{':
+            return scanBracket('{', '}', ARGS, fTokenOffset + 1);
+        case '[':
+            return scanBracket('[', ']', OPT_ARGS, fTokenOffset + 1);
          default:
              offsetEnd = fTokenOffset+1;
-             while (ch != '$' && ch != '\\' && ch != '%' && ch != ICharacterScanner.EOF) {
+             while (ch != '$' && ch != '\\' && ch != '%' && ch != '{'
+            	 && ch != '[' && ch != ICharacterScanner.EOF) {
                  ch = fScanner.read();
                  offsetEnd++;                 
              }
@@ -353,6 +362,37 @@ public class FastLaTeXPartitionScanner implements IPartitionTokenScanner {
                 if (isMathEnv(name)) return fTokens[MATH];
                 if (isVerbatimEnv(name)) return fTokens[VERBATIM];
                 if (isCommentEnv(name)) return fTokens[COMMENT];
+            }
+        }
+    }
+
+    private IToken scanBracket(int openChar, int closeChar, int type, int currentOffset) {
+        int ch;
+        int offsetEnd = currentOffset;
+        int stack = 0;
+        while (true) {
+            ch = fScanner.read();
+            offsetEnd++;
+            if (ch == closeChar) {
+                stack--;
+                if (stack < 0) {
+                    fTokenLength = offsetEnd - fTokenOffset;
+                    return fTokens[type];
+                }
+            }
+            else if (ch == openChar) {
+                stack++;
+            }
+            else if (ch == '%') {
+                offsetEnd += ignoreComment();
+            }
+            else if (ch == '\\') {
+                ch = fScanner.read();
+                offsetEnd++;
+            }
+            else if (ch == ICharacterScanner.EOF) {
+                fTokenLength = offsetEnd - fTokenOffset - 1;
+                return fTokens[type];
             }
         }
     }

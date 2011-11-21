@@ -248,9 +248,15 @@ public class OutlineNode {
      * @return String presentation of the node
      */
     public String toString() {
-    	return this.getType() + " " + this.getName() + " " + 
-        		this.getPosition().getOffset() + " " + this.getPosition().getLength() +
-				super.toString();
+        if (this.position == null) {
+            return this.type + " " + this.name + " (null position) " +
+                super.toString();
+        }
+        else {
+            return this.type + " " + this.name + " " + 
+            this.position.getOffset() + " " + this.position.getLength() +
+            super.toString();
+        }
     }
 
     /**

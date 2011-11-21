@@ -40,8 +40,10 @@ import org.eclipse.swt.widgets.Shell;
  * @author Tor Arne Vestbø
  * @author Boris von Loesch
  */
-public class TexBuilder extends AbstractBuilder {
+public class TexBuilder extends AbstractBuilder implements AdaptableBuilder {
 
+    private boolean biblatexMode;
+    private String biblatexBackend;
     private ProgramRunner latex;
     private ProgramRunner bibtex;
     private ProgramRunner makeIndex;
@@ -52,6 +54,8 @@ public class TexBuilder extends AbstractBuilder {
     
     public TexBuilder(int i, String outputFormat, int alt) {
         super(i);
+        biblatexMode = false;
+        biblatexBackend = null;
         output = outputFormat;
         latex = null;
         bibtex = null;
@@ -70,7 +74,12 @@ public class TexBuilder extends AbstractBuilder {
             latex = BuilderRegistry.getRunner(TexlipseProperties.INPUT_FORMAT_TEX, output, alternative);
         }
         if (bibtex == null || !bibtex.isValid()) {
-            bibtex = BuilderRegistry.getRunner(TexlipseProperties.INPUT_FORMAT_BIB, TexlipseProperties.OUTPUT_FORMAT_AUX, 0);
+            if (!biblatexMode || biblatexBackend == null || "bibtex".equals(biblatexBackend)) {
+                bibtex = BuilderRegistry.getRunner(TexlipseProperties.INPUT_FORMAT_BIB, TexlipseProperties.OUTPUT_FORMAT_AUX, 0);
+            }
+            else if (biblatexMode && "biber".equals(biblatexBackend)) {
+                bibtex = BuilderRegistry.getRunner(TexlipseProperties.INPUT_FORMAT_BCF, TexlipseProperties.OUTPUT_FORMAT_BBL, 0);
+            }
         }
         if (makeIndex == null || !makeIndex.isValid()) {
             makeIndex = BuilderRegistry.getRunner(TexlipseProperties.INPUT_FORMAT_IDX, TexlipseProperties.OUTPUT_FORMAT_IDX, 0);
@@ -78,7 +87,7 @@ public class TexBuilder extends AbstractBuilder {
         if (makeIndexNomencl == null || !makeIndexNomencl.isValid()) {
             makeIndexNomencl = BuilderRegistry.getRunner(TexlipseProperties.INPUT_FORMAT_NOMENCL, TexlipseProperties.OUTPUT_FORMAT_NOMENCL, 0);
         }
-         return latex != null && latex.isValid()
+        return latex != null && latex.isValid()
             && bibtex != null && bibtex.isValid()
             && makeIndex != null && makeIndex.isValid();
     }
@@ -203,6 +212,20 @@ public class TexBuilder extends AbstractBuilder {
 			labelC.updateRefSource(correctedAuxFileName, afp.getLabels());
 		}
     }
+
+	/**
+	 * Clears errors and warnings from the problem view. If LaTeX runs more than once, this
+	 * makes sure, the view only shows the messages of the last run, which are still valid.
+	 *
+	 * @param project the project
+	 */
+	private void clearMarkers(IProject project) {
+        try {
+            project.deleteMarkers(TexlipseBuilder.MARKER_TYPE, false, IResource.DEPTH_INFINITE);
+            project.deleteMarkers(TexlipseBuilder.LAYOUT_WARNING_TYPE, false, IResource.DEPTH_INFINITE);
+        } catch (CoreException e) {
+        }
+	}
     
     /**
      * Run latex and optionally bibtex to produce a dvi file.
@@ -225,7 +248,7 @@ public class TexBuilder extends AbstractBuilder {
 		IResource auxFile = project.getFile(auxFileName);
     	List<String> oldCitations = null;
     
-		if (parseAuxFiles && auxFile.exists()) {
+		if (!biblatexMode && parseAuxFiles && auxFile.exists()) {
 			// read all citations from the aux-files and save them for later
 			AuxFileParser afp = new AuxFileParser(project, auxFileName);
 			oldCitations = afp.getCitations();
@@ -254,10 +277,12 @@ public class TexBuilder extends AbstractBuilder {
 		if (parseAuxFiles && auxFile.exists()) {
 			AuxFileParser afp = new AuxFileParser(project, auxFileName);
 
-			// check whether a new bibtex run is required
-			List<String> newCitations = afp.getCitations();
-			if (!newCitations.equals(oldCitations))
-				bibChange = new Boolean(true);
+			if (!biblatexMode) {
+    			// check whether a new bibtex run is required
+    			List<String> newCitations = afp.getCitations();
+    			if (!newCitations.equals(oldCitations))
+    				bibChange = new Boolean(true);
+			}
 
 			// add the labels defined in the .aux-file to the label container
 			extractLabels(afp);
@@ -308,6 +333,7 @@ public class TexBuilder extends AbstractBuilder {
             if (stopped)
                 return;
             monitor.worked(10);
+            clearMarkers(project);
             try {
                 latex.run(resource);
             } catch (BuilderCoreException ex) {
@@ -355,6 +381,22 @@ public class TexBuilder extends AbstractBuilder {
             
             TexlipseProperties.setSessionProperty(resource.getProject(), TexlipseProperties.SESSION_LATEX_RERUN, null);
         }
+    }
+
+    public void updateBuilder(IProject project) {
+        // Check if runners need to be updated due to changes in BibTeX / BibLaTeX settings
+        Boolean newBiblatexMode = (Boolean) TexlipseProperties.getSessionProperty(project,
+                TexlipseProperties.SESSION_BIBLATEXMODE_PROPERTY);
+        String newBiblatexBackend = (String) TexlipseProperties.getSessionProperty(project,
+                TexlipseProperties.SESSION_BIBLATEXBACKEND_PROPERTY);
+        boolean blModeVal = newBiblatexMode != null;
+        String blBEVal = newBiblatexBackend != null ? newBiblatexBackend : ""; 
+        if (blModeVal != biblatexMode || (biblatexMode && !blBEVal.equals(biblatexBackend))) {
+            bibtex = null;
+            // isValid will later re-assign the runners
+        }
+        biblatexMode = blModeVal;
+        biblatexBackend = newBiblatexBackend;
     }
 
     /**

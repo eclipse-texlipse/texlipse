@@ -26,52 +26,39 @@ import org.eclipse.jface.text.rules.WhitespaceRule;
 import org.eclipse.jface.text.rules.WordRule;
 
 /**
- * TexScanner is used as a default scanner at the moment.
- * It works for "__tex_default" content type areas.
+ * TexArgScanner is used as a scanner for the "__tex_curlyBracketPartition"
+ * content type areas.
  * It uses defined rules to detect sequences and it returns the
  * specified token that satisfies a rule. The token defines how the
  * characters are presented.
  * 
  * @see net.sourceforge.texlipse.editor.partitioner.FastLaTeXPartitionScanner
- * @author Antti Pirinen
+ * @author Matthias Erll
  */
-public class TexScanner extends RuleBasedScanner {
+public class TexArgScanner extends RuleBasedScanner {
     
     /**
      * A default constructor.
      * @param manager
      */
-    public TexScanner(ColorManager manager) {
-        // A token that defines how to color numbers
-        IToken numberToken = new Token(new TextAttribute(manager
-                .getColor(ColorManager.TEX_NUMBER),
-                null,
-                manager.getStyle(ColorManager.TEX_NUMBER_STYLE)));
-
-        // A token that defines how to color command words (\command_word)
-        IToken commandToken = new Token(new TextAttribute(manager
-                .getColor(ColorManager.COMMAND),
-                null,
-                manager.getStyle(ColorManager.COMMAND_STYLE)));
-
+    public TexArgScanner(ColorManager manager) {
         IToken commentToken = new Token(new TextAttribute(manager
                 .getColor(ColorManager.COMMENT),
                 null,
                 manager.getStyle(ColorManager.COMMENT_STYLE)));
 
-        // A token that defines how to color special characters (\_, \&, \~ ...)
-        IToken specialCharToken = new Token(new TextAttribute(manager
-                .getColor(ColorManager.TEX_SPECIAL),
-                null,
-                manager.getStyle(ColorManager.TEX_SPECIAL_STYLE)));
-        
+        //Commands are colored in argument color with command styles 
+        IToken commandToken = new Token(
+                new TextAttribute(
+                        manager.getColor(ColorManager.CURLY_BRACKETS),
+                        null,
+                        manager.getStyle(ColorManager.COMMAND_STYLE)));
+
         List<IRule> rules = new ArrayList<IRule>();
-        rules.add(new TexSpecialCharRule(specialCharToken));
-        rules.add(new WordRule(new TexWord(), commandToken));
-        rules.add(new NumberRule(numberToken));
         rules.add(new EndOfLineRule("%", commentToken, '\\'));
         rules.add(new WhitespaceRule(new WhitespaceDetector()));
-        
+        rules.add(new WordRule(new TexWord(), commandToken));
+
         IRule[] result = new IRule[rules.size()];
         rules.toArray(result);
         setRules(result);

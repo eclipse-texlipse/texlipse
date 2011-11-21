@@ -50,6 +50,9 @@ public class TexlipseProperties {
     public static final String OUTPUTFILE_PROPERTY = "outputFile";
     public static final String BIBFILE_PROPERTY = "bibFiles";
     public static final String BIBSTYLE_PROPERTY = "bibStyle";
+    public static final String SESSION_BIBLATEXMODE_PROPERTY = "biblatexMode";
+    public static final String SESSION_BIBLATEXBACKEND_PROPERTY = "biblatexBackend";
+    public static final String SESSION_BIBLATEXLOCALBIB_PROPERTY = "biblatexLocalBib";
     public static final String PREAMBLE_PROPERTY = "preamble";
     public static final String PARTIAL_BUILD_PROPERTY = "partialBuild";
     public static final String PARTIAL_BUILD_FILE = "partialFile";
@@ -60,7 +63,8 @@ public class TexlipseProperties {
     public static final String SOURCE_DIR_PROPERTY = "srcDir";
     public static final String TEMP_DIR_PROPERTY = "tempDir";
     public static final String BIBREF_DIR_PROPERTY = "bibrefDir";
-    public static final String MARK_DERIVED_PROPERTY = "markDer";
+    public static final String MARK_OUTPUT_DERIVED_PROPERTY = "markDer";
+    public static final String MARK_TEMP_DERIVED_PROPERTY = "markTmpDer";
     public static final String LANGUAGE_PROPERTY = "langSpell";
     public static final String MAKEINDEX_STYLEFILE_PROPERTY = "makeIndSty";
     
@@ -72,6 +76,7 @@ public class TexlipseProperties {
     // preferences
     public static final String BIB_DIR = "bibDir";
     public static final String TEMP_FILE_EXTS = "tempFileExts";
+    public static final String DERIVED_FILES = "derivedFiles";
     public static final String FILE_LOCATION_PORT = "fileLocPort";
     public static final String BUILD_ENV_SETTINGS = "buildEnvSet";
     public static final String VIEWER_ENV_SETTINGS = "viewerEnvSet";
@@ -154,6 +159,8 @@ public class TexlipseProperties {
     public static final String INPUT_FORMAT_BIB = "bib";
     public static final String INPUT_FORMAT_IDX = "idx";
     public static final String OUTPUT_FORMAT_IDX = "ind";
+    public static final String INPUT_FORMAT_BCF = "bcf";
+    public static final String OUTPUT_FORMAT_BBL = "bbl";
     public static final String INPUT_FORMAT_NOMENCL = "nlo";
     public static final String OUTPUT_FORMAT_NOMENCL = "nls";
     public static final String INPUT_FORMAT_TEX = "tex";
@@ -414,7 +421,8 @@ public class TexlipseProperties {
         setProjectProperty(project, BIBREF_DIR_PROPERTY, prop.getProperty(BIBREF_DIR_PROPERTY, ""));
         setProjectProperty(project, BUILDER_NUMBER, prop.getProperty(BUILDER_NUMBER, ""));
         setProjectProperty(project, OUTPUT_FORMAT, prop.getProperty(OUTPUT_FORMAT, ""));
-        setProjectProperty(project, MARK_DERIVED_PROPERTY, prop.getProperty(MARK_DERIVED_PROPERTY, ""));
+        setProjectProperty(project, MARK_TEMP_DERIVED_PROPERTY, prop.getProperty(MARK_TEMP_DERIVED_PROPERTY, "true"));
+        setProjectProperty(project, MARK_OUTPUT_DERIVED_PROPERTY, prop.getProperty(MARK_OUTPUT_DERIVED_PROPERTY, "true"));
         setProjectProperty(project, LANGUAGE_PROPERTY, prop.getProperty(LANGUAGE_PROPERTY, ""));
         setProjectProperty(project, MAKEINDEX_STYLEFILE_PROPERTY, prop.getProperty(MAKEINDEX_STYLEFILE_PROPERTY, ""));
     }
@@ -454,7 +462,8 @@ public class TexlipseProperties {
         prop.setProperty(BIBREF_DIR_PROPERTY, getProjectProperty(project, BIBREF_DIR_PROPERTY));
         prop.setProperty(BUILDER_NUMBER, getProjectProperty(project, BUILDER_NUMBER));
         prop.setProperty(OUTPUT_FORMAT, getProjectProperty(project, OUTPUT_FORMAT));
-        prop.setProperty(MARK_DERIVED_PROPERTY, getProjectProperty(project, MARK_DERIVED_PROPERTY));
+        prop.setProperty(MARK_TEMP_DERIVED_PROPERTY, getProjectProperty(project, MARK_TEMP_DERIVED_PROPERTY));
+        prop.setProperty(MARK_OUTPUT_DERIVED_PROPERTY, getProjectProperty(project, MARK_OUTPUT_DERIVED_PROPERTY));
         prop.setProperty(LANGUAGE_PROPERTY, getProjectProperty(project, LANGUAGE_PROPERTY));
         prop.setProperty(MAKEINDEX_STYLEFILE_PROPERTY, getProjectProperty(project, MAKEINDEX_STYLEFILE_PROPERTY));
         

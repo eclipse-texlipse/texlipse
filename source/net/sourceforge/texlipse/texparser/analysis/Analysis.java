@@ -29,7 +29,9 @@ public interface Analysis extends Switch
     void caseTCinclude(TCinclude node);
     void caseTCnew(TCnew node);
     void caseTCrenew(TCrenew node);
+    void caseTCpackage(TCpackage node);
     void caseTCpindex(TCpindex node);
+    void caseTCpbib(TCpbib node);
     void caseTBverbatim(TBverbatim node);
     void caseTEverbatim(TEverbatim node);
     void caseTVtext(TVtext node);

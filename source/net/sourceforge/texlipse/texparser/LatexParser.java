@@ -133,7 +133,7 @@ public class LatexParser {
     private ArrayList<TexCommandEntry> commands;
     private List<ParseErrorMessage> tasks;
     
-    private String[] bibs;
+    private List<String> bibs;
     private String bibstyle;
     
     private List<OutlineNode> inputs;
@@ -144,6 +144,9 @@ public class LatexParser {
     
     private OutlineNode documentEnv;
     
+    private boolean biblatexMode;
+    private String biblatexBackend;
+    private boolean localBib;
     private boolean index;
     private boolean fatalErrors;
     
@@ -162,9 +165,135 @@ public class LatexParser {
         this.outlineTree = new ArrayList<OutlineNode>();
         this.errors = new ArrayList<ParseErrorMessage>();
         
-        this.bibs = null;
+        this.bibs = new ArrayList<String>();
+        this.biblatexMode = false;
+        this.biblatexBackend = null;
+        this.localBib = false;
         this.index = false;
         this.fatalErrors = false;
+    }
+
+    /**
+     * Adds a node for a document section to the outline tree.
+     *
+     * @param blocks stack with open blocks in outline
+     * @param envBlocks stack with open environments
+     * @param startLine beginning line of this section
+     * @param level node document hierarchy level
+     * @param text node text
+     * @return the document hierarchy level of this node's parent
+     */
+    private int addSectionNode(final StackUnsynch<OutlineNode> blocks,
+            final StackUnsynch<OutlineNode> envBlocks,
+            final int startLine, final int level, final String text) {
+        int parentLevel = OutlineNode.TYPE_DOCUMENT;
+
+        OutlineNode on = new OutlineNode(text,
+                level,
+                startLine,
+                null);
+
+        if (!blocks.empty()) {
+            boolean traversing = true;
+            while (traversing && !blocks.empty()) {
+                OutlineNode prev = blocks.peek();
+                int prevType = prev.getType();
+                if (prevType == OutlineNode.TYPE_ENVIRONMENT) {
+                    /* An environment is breaking the current section.
+                     * Determine next parent which is not an environment,
+                     * but an actual document hierarchy node */
+                    OutlineNode topEnv; // First environment on top of previous section
+                    OutlineNode parent; // Previous section
+                    do {
+                        /* Close environments in hierarchy. Blocks will be
+                         * synchronized later again using envBlocks. */
+                        topEnv = blocks.pop();
+                        if (!blocks.empty()) {
+                            parent = blocks.peek();
+                            prevType = parent.getType();
+                        }
+                        else {
+                            parent = null;
+                            prevType = OutlineNode.TYPE_DOCUMENT;
+                        }
+                    } while (prevType == OutlineNode.TYPE_ENVIRONMENT);
+
+                    /* If the previous document hierarchy level is deeper than this
+                     * one, move the environment one document level up. */
+                    int upperLevel = level - 1;
+                    if (prevType > upperLevel) {
+                        // Remove environment from current parent
+                        parent.deleteChild(topEnv);
+                        // Find next higher hierarchy level, if any...
+                        int envBegin = topEnv.getBeginLine();
+                        do {
+                            // Close blocks
+                            parent.setEndLine(envBegin);
+                            blocks.pop();
+                            parent = parent.getParent();
+                        } while (parent != null && parent.getType() > upperLevel);
+                        // ...and add there, or to tree root
+                        if (parent != null) {
+                            prevType = parent.getType();
+                            parent.addChild(topEnv);
+                        }
+                        else {
+                            prevType = OutlineNode.TYPE_DOCUMENT;
+                            outlineTree.add(topEnv);
+                        }
+                        topEnv.setParent(parent);
+                    }
+                    prev = parent;
+                }
+                if (prevType >= OutlineNode.TYPE_DOCUMENT &&
+                        prevType < level) {
+                    parentLevel = prevType;
+                    if (prev != null) {
+                        prev.addChild(on);
+                    }
+                    on.setParent(prev);
+                    traversing = false;
+                }
+                else {
+                    prev.setEndLine(startLine);
+                    blocks.pop();
+                }
+            }
+        }
+        // add directly to tree if no parent was found
+        if (blocks.empty()) {
+            outlineTree.add(on);
+        }
+        blocks.push(on);
+        return parentLevel;
+    }
+
+    /**
+     * Evaluates package loading options for biblatex and locates the backend
+     * option.
+     *
+     * @param options string with options in format <code>key=value</code>,
+     *  or simply <code>key</code>, each separated by commas
+     * @return selected biblatex backend, if it was selected; otherwise null
+     */
+    private static String findBiblatexBackend(String options) {
+        int beIdx = options.indexOf("backend=");
+        if (beIdx > 0) {
+            int startIdx = beIdx + 8; // move forward by length of "backend="
+            int endIdx = options.indexOf(',', startIdx);
+            if (endIdx > startIdx) {
+                return options.substring(startIdx, endIdx).trim();
+            }
+            else if (endIdx == -1) {
+                return options.substring(startIdx).trim();
+            }
+            else {
+                return null;
+            }
+        }
+        else {
+            return null;
+        }
     }
         
     /**
@@ -206,11 +335,14 @@ public class LatexParser {
     throws LexerException, IOException {
         initializeDatastructs();
         StackUnsynch<OutlineNode> blocks = new StackUnsynch<OutlineNode>();
+        StackUnsynch<OutlineNode> envBlocks = new StackUnsynch<OutlineNode>();
         StackUnsynch<Token> braces = new StackUnsynch<Token>();
         
         boolean expectArg = false;
         boolean expectArg2 = false;
         Token prevToken = null;
+
+        String packageOptions = null;
         
         TexCommandEntry currentCommand = null;
         int argCount = 0;
@@ -289,6 +421,7 @@ public class LatexParser {
                                 outlineTree.add(on);
                             }
                             blocks.push(on);
+                            envBlocks.push(on);
                         }
                         
                     } else if (prevToken instanceof TCend) { // \end{...}
@@ -314,157 +447,49 @@ public class LatexParser {
                             }
                         } else {
                             // the "normal" case
-                            boolean traversing = true;
-                            if (!blocks.empty()) {
-                                while (traversing && !blocks.empty()) {
-                                    prev = blocks.pop();
-                                    if (prev.getType() == OutlineNode.TYPE_ENVIRONMENT) {
-                                        prev.setEndLine(endLine + 1);
-                                        traversing = false;                                        
-                                    } else {
-                                        prev.setEndLine(endLine);
-                                    }
+                            if (!envBlocks.empty()) {
+                                prev = envBlocks.pop();
+                                prev.setEndLine(endLine + 1);
+                                if (!prev.getName().equals(t.getText())) {
+                                    fatalErrors = true;
+                                    errors.add(new ParseErrorMessage(prev.getBeginLine(),
+                                            prev.getOffsetOnLine(), prev.getDeclarationLength(),
+                                            "\\end{" + prev.getName() + "} expected, but \\end{" + t.getText() + "} found; unbalanced begin-end",
+                                            IMarker.SEVERITY_ERROR));
+                                    errors.add(new ParseErrorMessage(prevToken.getLine(),
+                                            prevToken.getPos(),
+                                            prevToken.getText().length() + accumulatedLength + t.getText().length(),
+                                            "\\end{" + prev.getName() + "} expected, but \\end{" + t.getText() + "} found; unbalanced begin-end",
+                                            IMarker.SEVERITY_ERROR));
+                                }
+                                if (!blocks.empty()
+                                        && blocks.peek().getType() == OutlineNode.TYPE_ENVIRONMENT) {
+                                    blocks.pop();
                                 }
                             }
-                            if (blocks.empty() && traversing) {
+                            else {
                                 fatalErrors = true;
                                 errors.add(new ParseErrorMessage(prevToken.getLine(),
                                         prevToken.getPos(),
                                         prevToken.getText().length() + accumulatedLength + t.getText().length(),
                                         "\\end{" + t.getText() + "} found with no preceding \\begin",
                                         IMarker.SEVERITY_ERROR));
-                            } else if (!prev.getName().equals(t.getText())) {
-                                fatalErrors = true;
-                                errors.add(new ParseErrorMessage(prev.getBeginLine(),
-                                        prev.getOffsetOnLine(), prev.getDeclarationLength(),
-                                        "\\end{" + prev.getName() + "} expected, but \\end{" + t.getText() + "} found; unbalanced begin-end",
-                                        IMarker.SEVERITY_ERROR));
-                                errors.add(new ParseErrorMessage(prevToken.getLine(),
-                                        prevToken.getPos(),
-                                        prevToken.getText().length() + accumulatedLength + t.getText().length(),
-                                        "\\end{" + prev.getName() + "} expected, but \\end{" + t.getText() + "} found; unbalanced begin-end",
-                                        IMarker.SEVERITY_ERROR));
                             }
                         }
                     } else if (prevToken instanceof TCpart) {
-                        int startLine = prevToken.getLine();
-                        OutlineNode on = new OutlineNode(t.getText(),
-                                OutlineNode.TYPE_PART,
-                                startLine,
-                                null);
-                        
-                        if (!blocks.empty()) {
-                            boolean traversing = true;
-                            while (traversing && !blocks.empty()) {
-                                OutlineNode prev = blocks.peek();
-                                if (prev.getType() == OutlineNode.TYPE_ENVIRONMENT) {
-                                    prev.addChild(on);
-                                    on.setParent(prev);
-                                    traversing = false;                                    
-                                } else {
-                                    prev.setEndLine(startLine);
-                                    blocks.pop();                                    
-                                }
-                            }
-                        }
-                        if (blocks.empty())
-                            outlineTree.add(on);
-                        blocks.push(on);
-                        
+                        addSectionNode(blocks, envBlocks, prevToken.getLine(),
+                                OutlineNode.TYPE_PART, t.getText());                        
                     } else if (prevToken instanceof TCchapter) {
-                        int startLine = prevToken.getLine();
-                        OutlineNode on = new OutlineNode(t.getText(),
-                                OutlineNode.TYPE_CHAPTER,
-                                startLine,
-                                null);
-                        
-                        if (!blocks.empty()) {
-                            boolean traversing = true;
-                            while (traversing && !blocks.empty()) {
-                                OutlineNode prev = blocks.peek();
-                                switch (prev.getType()) {
-                                case OutlineNode.TYPE_PART:
-                                case OutlineNode.TYPE_ENVIRONMENT:
-                                    prev.addChild(on);
-                                on.setParent(prev);
-                                traversing = false;
-                                break;
-                                default:
-                                    prev.setEndLine(startLine);
-                                blocks.pop();
-                                break;
-                                }
-                            }
-                        }
-                        // add directly to tree if no parent was found
-                        if (blocks.empty())
-                            outlineTree.add(on);
-                        
-                        blocks.push(on);
+                        addSectionNode(blocks, envBlocks, prevToken.getLine(),
+                                OutlineNode.TYPE_CHAPTER, t.getText());
                     } else if (prevToken instanceof TCsection) {
-                        int startLine = prevToken.getLine();
-                        OutlineNode on = new OutlineNode(t.getText(),
-                                OutlineNode.TYPE_SECTION,
-                                startLine,
-                                null);
-                        
-                        if (!blocks.empty()) {
-                            boolean traversing = true;
-                            while (traversing && !blocks.empty()) {
-                                OutlineNode prev = blocks.peek();
-                                switch (prev.getType()) {
-                                case OutlineNode.TYPE_PART:
-                                case OutlineNode.TYPE_CHAPTER:
-                                case OutlineNode.TYPE_ENVIRONMENT:
-                                    prev.addChild(on);
-                                on.setParent(prev);
-                                traversing = false;
-                                break;
-                                default:
-                                    prev.setEndLine(startLine);
-                                blocks.pop();
-                                break;
-                                }
-                            }
-                        }
-                            // add directly to tree if no parent was found
-                        if (blocks.empty()) {
-                            outlineTree.add(on);
-                        }
-                        blocks.push(on);
+                        addSectionNode(blocks, envBlocks, prevToken.getLine(),
+                                OutlineNode.TYPE_SECTION, t.getText());
                     } else if (prevToken instanceof TCssection) {
-                        int startLine = prevToken.getLine();
-                        OutlineNode on = new OutlineNode(t.getText(),
-                                OutlineNode.TYPE_SUBSECTION,
-                                startLine,
-                                null);
-                        
-                        boolean foundSection = false;
-                        if (!blocks.empty()) {
-                            boolean traversing = true;
-                            while (traversing && !blocks.empty()) {
-                                OutlineNode prev = blocks.peek();
-                                switch (prev.getType()) {
-                                case OutlineNode.TYPE_ENVIRONMENT:
-                                case OutlineNode.TYPE_SECTION:
-                                    foundSection = true;
-                                case OutlineNode.TYPE_PART:
-                                case OutlineNode.TYPE_CHAPTER:
-                                    prev.addChild(on);
-                                on.setParent(prev);
-                                traversing = false;
-                                break;
-                                default:
-                                    prev.setEndLine(startLine);
-                                blocks.pop();
-                                break;
-                                }
-                            }
-                        }
-                        // add directly to tree if no parent was found
-                        if (blocks.empty())
-                            outlineTree.add(on);
-                        
+                        boolean foundSection = addSectionNode(blocks, envBlocks,
+                                prevToken.getLine(), OutlineNode.TYPE_SUBSECTION, t.getText())
+                                >= OutlineNode.TYPE_SECTION;
+
                         if (!foundSection && checkForMissingSections) {
                             errors.add(new ParseErrorMessage(prevToken.getLine(),
                                     prevToken.getPos(),
@@ -472,41 +497,11 @@ public class LatexParser {
                                     "Subsection " + prevToken.getText() + " has no preceding section",
                                     IMarker.SEVERITY_WARNING));
                         }
-                        blocks.push(on);
                     } else if (prevToken instanceof TCsssection) {
-                        int startLine = prevToken.getLine();
-                        OutlineNode on = new OutlineNode(t.getText(),
-                                OutlineNode.TYPE_SUBSUBSECTION,
-                                prevToken.getLine(),
-                                null);
-                        
-                        boolean foundSsection = false;
-                        if (!blocks.empty()) {
-                            boolean traversing = true;
-                            while (traversing && !blocks.empty()) {
-                                OutlineNode prev = blocks.peek();
-                                switch (prev.getType()) {
-                                case OutlineNode.TYPE_ENVIRONMENT:
-                                case OutlineNode.TYPE_SUBSECTION:
-                                    foundSsection = true;                                
-                                case OutlineNode.TYPE_PART:
-                                case OutlineNode.TYPE_CHAPTER:
-                                case OutlineNode.TYPE_SECTION:
-                                    prev.addChild(on);
-                                on.setParent(prev);
-                                traversing = false;
-                                break;
-                                default:
-                                    prev.setEndLine(startLine);
-                                blocks.pop();
-                                break;
-                                }
-                            }
-                        }
-                        // add directly to tree if no parent was found
-                        if (blocks.empty())
-                            outlineTree.add(on);
-                        
+                        boolean foundSsection = addSectionNode(blocks, envBlocks,
+                                prevToken.getLine(), OutlineNode.TYPE_SUBSUBSECTION, t.getText())
+                                >= OutlineNode.TYPE_SUBSECTION;
+
                         if (!foundSsection && checkForMissingSections) {
                             errors.add(new ParseErrorMessage(prevToken.getLine(),
                                     prevToken.getPos(),
@@ -514,44 +509,11 @@ public class LatexParser {
                                     "Subsubsection " + prevToken.getText() + " has no preceding subsection",
                                     IMarker.SEVERITY_WARNING));
                         }
-                        
-                        blocks.push(on);
-                        
                     } else if (prevToken instanceof TCparagraph) {
-                        int startLine = prevToken.getLine();
-                        OutlineNode on = new OutlineNode(t.getText(),
-                                OutlineNode.TYPE_PARAGRAPH,
-                                prevToken.getLine(),
-                                null);
-                        
-                        boolean foundSssection = false;
-                        if (!blocks.empty()) {
-                            boolean traversing = true;
-                            while (traversing && !blocks.empty()) {
-                                OutlineNode prev = blocks.peek();
-                                switch (prev.getType()) {
-                                case OutlineNode.TYPE_ENVIRONMENT:
-                                case OutlineNode.TYPE_SUBSUBSECTION:
-                                    foundSssection = true;
-                                case OutlineNode.TYPE_PART:
-                                case OutlineNode.TYPE_CHAPTER:
-                                case OutlineNode.TYPE_SECTION:
-                                case OutlineNode.TYPE_SUBSECTION:
-                                    prev.addChild(on);
-                                on.setParent(prev);
-                                traversing = false;
-                                break;
-                                default:
-                                    prev.setEndLine(startLine);
-                                blocks.pop();
-                                break;
-                                }
-                            }
-                        }
-                        // add directly to tree if no parent was found
-                        if (blocks.empty())
-                            outlineTree.add(on);
-                        
+                        boolean foundSssection = addSectionNode(blocks, envBlocks,
+                                prevToken.getLine(), OutlineNode.TYPE_PARAGRAPH, t.getText())
+                                >= OutlineNode.TYPE_SUBSUBSECTION;
+
                         if (!foundSssection && checkForMissingSections) {
                             errors.add(new ParseErrorMessage(prevToken.getLine(),
                                     prevToken.getPos(),
@@ -559,21 +521,24 @@ public class LatexParser {
                                     "Paragraph " + prevToken.getText() + " has no preceding subsubsection",
                                     IMarker.SEVERITY_WARNING));
                         }
-                        blocks.push(on);
-
                     } else if (prevToken instanceof TCbib) {
-                        bibs = t.getText().split(",");
-                        for (int i = 0; i < bibs.length; i++) {
-							bibs[i] = bibs[i].trim();
-						}
-                        int startLine = prevToken.getLine();
-                        while (!blocks.empty()) {
-                            OutlineNode prev = blocks.pop();
-                            if (prev.getType() == OutlineNode.TYPE_ENVIRONMENT) { // this is an error...
-                                blocks.push(prev);
-                                break;
+                        if (biblatexMode) {
+                            bibs.add(t.getText().trim());
+                        }
+                        else {
+                            String[] sBibs = t.getText().split(",");
+                            for (String bib : sBibs) {
+                                bibs.add(bib.trim());
                             }
-                            prev.setEndLine(startLine);
+                            int startLine = prevToken.getLine();
+                            while (!blocks.empty()) {
+                                OutlineNode prev = blocks.pop();
+                                if (prev.getType() == OutlineNode.TYPE_ENVIRONMENT) { // this is an error...
+                                    blocks.push(prev);
+                                    break;
+                                }
+                                prev.setEndLine(startLine);
+                            }
                         }
                     } else if (prevToken instanceof TCbibstyle) {
                         this.bibstyle = t.getText();
@@ -609,6 +574,15 @@ public class LatexParser {
                         currentCommand.startLine = t.getLine();
                         lexer.registerCommand(currentCommand.key);
                         expectArg2 = true;
+                    } else if (prevToken instanceof TCpackage) {
+                        if (t.getText().equals("biblatex")) {
+                            biblatexMode = true;
+                            if (packageOptions != null) {
+                                biblatexBackend = findBiblatexBackend(packageOptions);
+                                // reset
+                                packageOptions = null;
+                            }
+                        }
                     }
                     
                     // reset state to normal scanning
@@ -627,8 +601,14 @@ public class LatexParser {
                     prevToken = null;
                     expectArg = false;
 
-                } else if (!(t instanceof TOptargument) && !(t instanceof TWhitespace)
-                        && !(t instanceof TStar) && !(t instanceof TCommentline)
+                } else if (t instanceof TOptargument) {
+                    if (prevToken instanceof TCpackage) {
+                        packageOptions = t.getText();
+                    }
+                    accumulatedLength += t.getText().length();
+                } else if (!(t instanceof TWhitespace)
+                        && !(t instanceof TStar)
+                        && !(t instanceof TCommentline)
                         && !(t instanceof TTaskcomment)) {
                     
                     // if we didn't get the mandatory argument we were expecting...
@@ -705,7 +685,7 @@ public class LatexParser {
                         || t instanceof TCpart || t instanceof TCchapter 
                         || t instanceof TCsection || t instanceof TCssection 
                         || t instanceof TCsssection || t instanceof TCparagraph
-                        || t instanceof TCnew) {
+                        || t instanceof TCpackage || t instanceof TCnew) {
                     prevToken = t;
                     expectArg = true;
                 } else if (t instanceof TCword) {
@@ -742,6 +722,17 @@ public class LatexParser {
                     }
                 } else if (t instanceof TCpindex) {
                     this.index = true;
+                } else if (t instanceof TCpbib) {
+                    int startLine = t.getLine();
+                    while (!blocks.empty()) {
+                        OutlineNode prev = blocks.pop();
+                        if (prev.getType() == OutlineNode.TYPE_ENVIRONMENT) { // this is an error...
+                            blocks.push(prev);
+                            break;
+                        }
+                        prev.setEndLine(startLine);
+                    }
+                    this.localBib = true;
                 } else if (t instanceof TTaskcomment) {
                     int severity = IMarker.PRIORITY_HIGH;
                     int start = t.getText().indexOf("FIXME");
@@ -801,13 +792,18 @@ public class LatexParser {
             OutlineNode prev = blocks.pop();
             prev.setEndLine(endLine);
             if (prev.getType() == OutlineNode.TYPE_ENVIRONMENT) {
-                fatalErrors = true;
-                errors.add(new ParseErrorMessage(prev.getBeginLine(),
-                        0,
-                        prev.getName().length(),
-                        "\\begin{" + prev.getName() + "} does not have matching end; at least one unbalanced begin-end",
-                        IMarker.SEVERITY_ERROR));
+                envBlocks.pop();
             }
+        }
+        while (!envBlocks.empty()) {
+            OutlineNode prev = envBlocks.pop();
+            prev.setEndLine(endLine);
+            fatalErrors = true;
+            errors.add(new ParseErrorMessage(prev.getBeginLine(),
+                    0,
+                    prev.getName().length(),
+                    "\\begin{" + prev.getName() + "} does not have matching end; at least one unbalanced begin-end",
+                    IMarker.SEVERITY_ERROR));
         }
     }
     
@@ -836,7 +832,7 @@ public class LatexParser {
      * @return The bibliography files to use.
      */
     public String[] getBibs() {
-        return this.bibs;
+        return this.bibs.toArray(new String[0]);
     }
     
     /**
@@ -866,7 +862,29 @@ public class LatexParser {
     public List<ParseErrorMessage> getErrors() {
         return this.errors;
     }
-    
+
+    /**
+     * @return Whether biblatex mode is activated
+     */
+    public boolean isBiblatexMode() {
+        return biblatexMode;
+    }
+
+    /**
+     * @return The selected biblatex backend
+     */
+    public String getBiblatexBackend() {
+        return biblatexBackend;
+    }
+
+    /**
+     * @return Whether the parsed file contains a bibliography print command.
+     *  This is only relevant if biblatex mode is enabled.
+     */
+    public boolean isLocalBib() {
+        return localBib;
+    }
+
     /**
      * @return Returns whether makeindex is to be used or not
      */

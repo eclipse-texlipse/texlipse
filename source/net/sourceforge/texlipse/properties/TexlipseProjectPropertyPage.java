@@ -55,8 +55,11 @@ public class TexlipseProjectPropertyPage extends PropertyPage {
     // text field for bib references file
     private Text bibRefDirField;
 
-    // checkbox for marking derived files
-    private Button derivedCheckbox;
+    // checkbox for marking derived temp files
+    private Button derivedTempCheckbox;
+
+    // checkbox for marking derived output files
+    private Button derivedOutputCheckbox;
     
     // builder choosing component
     private BuilderChooser builderChooser;
@@ -342,10 +345,14 @@ public class TexlipseProjectPropertyPage extends PropertyPage {
      * @param parent parent component
      */
     private void addDerivedSection(Composite parent) {
-        derivedCheckbox = new Button(parent, SWT.CHECK | SWT.LEFT);
-        derivedCheckbox.setLayoutData(new GridData());
-        derivedCheckbox.setText(TexlipsePlugin.getResourceString("propertiesDerivedFiles"));
-        derivedCheckbox.setToolTipText(TexlipsePlugin.getResourceString("propertiesDerivedFilesTooltip"));
+        derivedTempCheckbox = new Button(parent, SWT.CHECK | SWT.LEFT);
+        derivedTempCheckbox.setLayoutData(new GridData());
+        derivedTempCheckbox.setText(TexlipsePlugin.getResourceString("propertiesDerivedTempFiles"));
+        derivedTempCheckbox.setToolTipText(TexlipsePlugin.getResourceString("propertiesDerivedFilesTooltip"));
+        derivedOutputCheckbox = new Button(parent, SWT.CHECK | SWT.LEFT);
+        derivedOutputCheckbox.setLayoutData(new GridData());
+        derivedOutputCheckbox.setText(TexlipsePlugin.getResourceString("propertiesDerivedOutputFiles"));
+        derivedOutputCheckbox.setToolTipText(TexlipsePlugin.getResourceString("propertiesDerivedFilesTooltip"));
     }
     
     /**
@@ -468,9 +475,11 @@ public class TexlipseProjectPropertyPage extends PropertyPage {
             }
         }
         
-        // derived flag
-        String deriv = TexlipseProperties.getProjectProperty(project, TexlipseProperties.MARK_DERIVED_PROPERTY);
-        derivedCheckbox.setSelection("true".equals(deriv));
+        // derived flags
+        String derivTmp = TexlipseProperties.getProjectProperty(project, TexlipseProperties.MARK_TEMP_DERIVED_PROPERTY);
+        derivedTempCheckbox.setSelection("true".equals(derivTmp));
+        String derivOut = TexlipseProperties.getProjectProperty(project, TexlipseProperties.MARK_OUTPUT_DERIVED_PROPERTY);
+        derivedOutputCheckbox.setSelection("true".equals(derivOut));
         
         // language code
         String lang = TexlipseProperties.getProjectProperty(project, TexlipseProperties.LANGUAGE_PROPERTY);
@@ -604,7 +613,10 @@ public class TexlipseProjectPropertyPage extends PropertyPage {
                 TexlipseProperties.BUILDER_NUMBER, num+"");
         
         TexlipseProperties.setProjectProperty(project,
-                TexlipseProperties.MARK_DERIVED_PROPERTY, derivedCheckbox.getSelection()+"");
+                TexlipseProperties.MARK_TEMP_DERIVED_PROPERTY, derivedTempCheckbox.getSelection()+"");
+        
+        TexlipseProperties.setProjectProperty(project,
+                TexlipseProperties.MARK_OUTPUT_DERIVED_PROPERTY, derivedOutputCheckbox.getSelection()+"");
         
         TexlipseProperties.setProjectProperty(project,
                 TexlipseProperties.LANGUAGE_PROPERTY, languageField.getText());

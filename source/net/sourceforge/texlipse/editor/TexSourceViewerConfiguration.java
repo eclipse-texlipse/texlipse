@@ -11,8 +11,10 @@ package net.sourceforge.texlipse.editor;
 import net.sourceforge.texlipse.TexlipsePlugin;
 import net.sourceforge.texlipse.editor.hover.TexHover;
 import net.sourceforge.texlipse.editor.partitioner.FastLaTeXPartitionScanner;
+import net.sourceforge.texlipse.editor.scanner.TexArgScanner;
 import net.sourceforge.texlipse.editor.scanner.TexCommentScanner;
 import net.sourceforge.texlipse.editor.scanner.TexMathScanner;
+import net.sourceforge.texlipse.editor.scanner.TexOptArgScanner;
 import net.sourceforge.texlipse.editor.scanner.TexScanner;
 import net.sourceforge.texlipse.properties.TexlipseProperties;
 
@@ -63,6 +65,8 @@ public class TexSourceViewerConfiguration extends TextSourceViewerConfiguration 
     private TexMathScanner mathScanner;
     private TexScanner scanner;
     private TexCommentScanner commentScanner;
+    private TexArgScanner argumentScanner;
+    private TexOptArgScanner optArgumentScanner;
     private RuleBasedScanner verbatimScanner;
     private ColorManager colorManager;
     private TexAnnotationHover annotationHover;
@@ -227,7 +231,15 @@ public class TexSourceViewerConfiguration extends TextSourceViewerConfiguration 
         dr = new DefaultDamagerRepairer(getTexCommentScanner());
         reconciler.setDamager(dr, FastLaTeXPartitionScanner.TEX_COMMENT);
         reconciler.setRepairer(dr, FastLaTeXPartitionScanner.TEX_COMMENT);
-        
+
+        dr = new DefaultDamagerRepairer(getTexArgScanner());
+        reconciler.setDamager(dr, FastLaTeXPartitionScanner.TEX_CURLY_BRACKETS);
+        reconciler.setRepairer(dr, FastLaTeXPartitionScanner.TEX_CURLY_BRACKETS);
+
+        dr = new DefaultDamagerRepairer(getTexOptArgScanner());
+        reconciler.setDamager(dr, FastLaTeXPartitionScanner.TEX_SQUARE_BRACKETS);
+        reconciler.setRepairer(dr, FastLaTeXPartitionScanner.TEX_SQUARE_BRACKETS);
+
         dr = new DefaultDamagerRepairer(getTexScanner());
         reconciler.setDamager(dr, IDocument.DEFAULT_CONTENT_TYPE);
         reconciler.setRepairer(dr, IDocument.DEFAULT_CONTENT_TYPE);
@@ -288,7 +300,41 @@ public class TexSourceViewerConfiguration extends TextSourceViewerConfiguration 
         }
         return commentScanner;
     }
-    
+
+    /**
+     * Defines an argument (curly bracket) scanner and sets the default color for it
+     * @return a scanner to detect argument partitions
+     */
+    protected TexArgScanner getTexArgScanner() {
+        if (argumentScanner == null) {
+            argumentScanner = new TexArgScanner(colorManager);
+            argumentScanner.setDefaultReturnToken(
+                    new Token(
+                            new TextAttribute(
+                                    colorManager.getColor(ColorManager.CURLY_BRACKETS),
+                                    null,
+                                    colorManager.getStyle(ColorManager.CURLY_BRACKETS_STYLE))));
+        }
+        return argumentScanner;
+    }
+
+    /**
+     * Defines an optional argument (square bracket) scanner and sets the default color for it
+     * @return a scanner to detect argument partitions
+     */
+    protected TexOptArgScanner getTexOptArgScanner() {
+        if (optArgumentScanner == null) {
+            optArgumentScanner = new TexOptArgScanner(colorManager);
+            optArgumentScanner.setDefaultReturnToken(
+                    new Token(
+                            new TextAttribute(
+                                    colorManager.getColor(ColorManager.SQUARE_BRACKETS),
+                                    null,
+                                    colorManager.getStyle(ColorManager.SQUARE_BRACKETS_STYLE))));
+        }
+        return optArgumentScanner;
+    }
+
     /**
      * Defines a verbatim scanner and sets the default color for it
      * @return a scanner to detect verbatim style partitions

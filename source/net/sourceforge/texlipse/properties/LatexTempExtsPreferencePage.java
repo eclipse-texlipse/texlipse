@@ -38,7 +38,12 @@ public class LatexTempExtsPreferencePage
      * Creates the property editing UI components of this page.
      */
     protected void createFieldEditors() {
-        addField(new StringListFieldEditor(TexlipseProperties.TEMP_FILE_EXTS, TexlipsePlugin.getResourceString("preferenceTempFileExtsLabel"), getFieldEditorParent()));
+        addField(new StringListFieldEditor(TexlipseProperties.TEMP_FILE_EXTS,
+                TexlipsePlugin.getResourceString("preferenceTempFileExtsLabel"),
+                getFieldEditorParent()));
+        addField(new StringListFieldEditor(TexlipseProperties.DERIVED_FILES,
+                TexlipsePlugin.getResourceString("preferenceDerivedFilesLabel"),
+                getFieldEditorParent()));
     }
     
     /**

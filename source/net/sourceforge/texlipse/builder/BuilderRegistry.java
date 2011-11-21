@@ -171,6 +171,7 @@ public class BuilderRegistry {
                 new XelatexRunner(),
                 new LualatexRunner(),
                 new BibtexRunner(),
+                new BiberRunner(),
                 new MakeindexRunner(),
                 new DvipsRunner(),
                 new DvipdfRunner(),

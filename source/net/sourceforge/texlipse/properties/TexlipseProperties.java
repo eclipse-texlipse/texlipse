@@ -327,10 +327,14 @@ public class TexlipseProperties {
     public static IFile getProjectSourceFile(IProject project) {
     	//IContainer folder = getProjectSourceDir(project);
         String dir = TexlipseProperties.getProjectProperty(project, TexlipseProperties.SOURCE_DIR_PROPERTY);
-        if (dir != null && dir.length() > 0) {
-            return project.getFolder(dir).getFile(getProjectProperty(project, MAINFILE_PROPERTY));
+        String mainFile = getProjectProperty(project, MAINFILE_PROPERTY);
+        if (mainFile != null) {
+            if (dir != null && dir.length() > 0) {
+                return project.getFolder(dir).getFile(mainFile);
+            }
+            return project.getFile(mainFile);
         }
-        return project.getFile(getProjectProperty(project, MAINFILE_PROPERTY));
+        return null;
     }
     
     /**

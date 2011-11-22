@@ -212,10 +212,13 @@ public class OutputFileManager {
     /**
      * Moves a set of files from the source container to the destination. All
      * files need to be inside the source container or any of its
-     * subfolders. Existing folders are not removed, if left empty.
+     * subfolders. Existing folders are not removed, if left empty. If source
+     * and destination container are identical, files are if applicable only
+     * marked as derived.
      *
      * @param source source container
-     * @param dest destination folder
+     * @param dest destination folder (can be null, for only marking files as
+     *  derived)
      * @param nameSet set of file paths to move
      * @param markAsDerived mark files as derived after moving
      * @param force overwrite exiting files and create subfolders in destination
@@ -231,7 +234,14 @@ public class OutputFileManager {
         Set<IPath> newNames = new HashSet<IPath>();
         if (nameSet != null && !nameSet.isEmpty()) {
             IPath sourcePath = source.getProjectRelativePath();
-            IPath destPath = dest.getProjectRelativePath();
+            IPath destPath;
+            if (dest != null) {
+                destPath = dest.getProjectRelativePath();
+            }
+            else {
+                destPath = sourcePath;
+            }
+            boolean moveFiles = !sourcePath.equals(destPath);
             int sourceSeg = sourcePath.segmentCount();
             // Sort paths for running through file system structure incrementally
             IPath[] sortedNames = nameSet.toArray(new IPath[0]);
@@ -242,35 +252,44 @@ public class OutputFileManager {
             });
 
             for (IPath filePath : sortedNames) {
-                // Generate new path
                 if (sourcePath.isPrefixOf(filePath)) {
                     IFile currentFile = project.getFile(filePath);
-                    IPath destFilePath = destPath.append(filePath.removeFirstSegments(sourceSeg));
-                    IFile destFile = project.getFile(destFilePath);
-                    if (currentFile.exists() && !filePath.equals(destFilePath)
-                            && (force || !destFile.exists())) {
-                        // Retrieve destination parent folder
-                        IContainer destFolder = destFile.getParent();
-                        if (destFolder instanceof IFolder && !destFolder.exists()
-                                && force) {
-                            // Create destination folder if necessary
-                            ((IFolder) destFolder).create(true, true, monitor);
-                            if (markAsDerived) {
-                                destFolder.setDerived(true, monitor);
+                    if (moveFiles) {
+                        // Generate new path
+                        IPath destFilePath = destPath.append(filePath.removeFirstSegments(sourceSeg));
+                        IFile destFile = project.getFile(destFilePath);
+                        if (currentFile.exists() && (force || !destFile.exists())) {
+                            // Retrieve destination parent folder
+                            IContainer destFolder = destFile.getParent();
+                            if (destFolder instanceof IFolder && !destFolder.exists()
+                                    && force) {
+                                // Create destination folder if necessary
+                                ((IFolder) destFolder).create(true, true, monitor);
+                                if (markAsDerived) {
+                                    destFolder.setDerived(true, monitor);
+                                }
                             }
-                        }
-                        if (destFolder.exists()) {
-                            // Move file
-                            currentFile.move(destFile.getFullPath(), false, monitor);
-                            if (markAsDerived && destFile.exists()) {
-                                destFile.setDerived(true, monitor);
+                            if (destFolder.exists()) {
+                                // Move file
+                                if (destFile.exists() && force) {
+                                    destFile.delete(true, monitor);
+                                }
+                                currentFile.move(destFile.getFullPath(), true, monitor);
+                                if (markAsDerived && destFile.exists()) {
+                                    destFile.setDerived(true, monitor);
+                                }
+                                // Store path for later reversal
+                                newNames.add(destFilePath);
                             }
-                            // Store path for later reversal
-                            newNames.add(destFilePath);
                         }
                     }
+                    else {
+                        if (markAsDerived && currentFile.exists()) {
+                            currentFile.setDerived(true, monitor);
+                        }
+                    }
+                    monitor.worked(1);
                 }
-                monitor.worked(1);
             }
         }
         return newNames;
@@ -347,7 +366,7 @@ public class OutputFileManager {
 
         // Get name without extension from main files for renaming
         final String dotFormat = '.' + format;
-        final String sourceBaseName = stripFileExt(aSourceFile.getName(), dotFormat);
+        final String sourceBaseName = stripFileExt(aSourceFile.getName(), null);
         final String outputBaseName = stripFileExt(sOutputFile.getName(), dotFormat);
 
         // Check if files are to be moved or renamed
@@ -415,8 +434,8 @@ public class OutputFileManager {
     private void moveTempFiles(final Set<IPath> excludes, IProgressMonitor monitor)
             throws CoreException {
         final IContainer aSourceContainer = getActualSourceContainer();
-        if (tracking.isInitial() || tempDir == null
-                || aSourceContainer == null || !aSourceContainer.exists()) {
+        if (tracking.isInitial() || aSourceContainer == null
+                || !aSourceContainer.exists()) {
             return;
         }
 
@@ -426,25 +445,28 @@ public class OutputFileManager {
         final String[] tempExts = TexlipsePlugin.getPreferenceArray(
                 TexlipseProperties.TEMP_FILE_EXTS);
 
-        // First move temporary files, which had been placed into the source folder
-        // just prior to the build;
-        // then check for new temporary files, which need to be moved
-        project.getWorkspace().run(new IWorkspaceRunnable() {
-            public void run(IProgressMonitor monitor) throws CoreException {
-                if (movedFiles != null) {
-                    if (excludes != null) {
-                        movedFiles.removeAll(excludes);
+        // Check if there is anything to do
+        if (markAsDerived || tempDir != null) {
+            // First move temporary files, which had been placed into the source folder
+            // just prior to the build;
+            // then check for new temporary files, which need to be moved
+            project.getWorkspace().run(new IWorkspaceRunnable() {
+                public void run(IProgressMonitor monitor) throws CoreException {
+                    if (movedFiles != null) {
+                        if (excludes != null) {
+                            movedFiles.removeAll(excludes);
+                        }
+                        moveFiles(sourceDir, tempDir, movedFiles, markAsDerived, true, monitor);
                     }
-                    moveFiles(sourceDir, tempDir, movedFiles, markAsDerived, true, monitor);
+                    final Set<IPath> newTempNames = tracking.getNewTempNames(aSourceContainer,
+                            tempExts, format, monitor);
+                    if (excludes != null) {
+                        newTempNames.removeAll(excludes);
+                    }
+                    moveFiles(sourceDir, tempDir, newTempNames, markAsDerived, true, monitor);
                 }
-                final Set<IPath> newTempNames = tracking.getNewTempNames(aSourceContainer,
-                        tempExts, format, monitor);
-                if (excludes != null) {
-                    newTempNames.removeAll(excludes);
-                }
-                moveFiles(sourceDir, tempDir, newTempNames, markAsDerived, true, monitor);
-            }
-        }, monitor);
+            }, monitor);
+        }
     }
 
     /**
@@ -510,7 +532,7 @@ public class OutputFileManager {
             if (ext == null) {
                 int idx = name.lastIndexOf('.');
                 if (idx > 0) {
-                    return name.substring(0, idx - 1);
+                    return name.substring(0, idx);
                 }
                 else {
                     return name;

@@ -144,7 +144,7 @@ public class OutputFileManager {
                 outputDir.create(true, true, monitor);
             }
             if (markAsDerived) {
-                outputDir.setDerived(true, monitor);
+                outputDir.setDerived(true);
             }
             return outputDir;
         }
@@ -266,7 +266,7 @@ public class OutputFileManager {
                                 // Create destination folder if necessary
                                 ((IFolder) destFolder).create(true, true, monitor);
                                 if (markAsDerived) {
-                                    destFolder.setDerived(true, monitor);
+                                    destFolder.setDerived(true);
                                 }
                             }
                             if (destFolder.exists()) {
@@ -276,7 +276,7 @@ public class OutputFileManager {
                                 }
                                 currentFile.move(destFile.getFullPath(), true, monitor);
                                 if (markAsDerived && destFile.exists()) {
-                                    destFile.setDerived(true, monitor);
+                                    destFile.setDerived(true);
                                 }
                                 // Store path for later reversal
                                 newNames.add(destFilePath);
@@ -285,7 +285,7 @@ public class OutputFileManager {
                     }
                     else {
                         if (markAsDerived && currentFile.exists()) {
-                            currentFile.setDerived(true, monitor);
+                            currentFile.setDerived(true);
                         }
                     }
                     monitor.worked(1);
@@ -393,14 +393,14 @@ public class OutputFileManager {
                             IFile dest = moveFile(project, currentFile, sOutputContainer,
                                     destName, monitor);
                             if (dest != null && markAsDerived) {
-                                dest.setDerived(true, monitor);
+                                dest.setDerived(true);
                             }
                             movedFiles.add(dest.getProjectRelativePath());
                         }
                         else {
                             // Possibly mark as derived
                             if (markAsDerived) {
-                                currentFile.setDerived(true, monitor);
+                                currentFile.setDerived(true);
                             }
                             movedFiles.add(entry.getKey());
                         }

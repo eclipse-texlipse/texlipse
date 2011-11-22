@@ -219,7 +219,7 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
         } else {
             tmpFile.create(bar, true, monitor);
         }
-        tmpFile.setDerived(true, monitor);
+        tmpFile.setDerived(true);
         
         // build temp file
         buildFile(project, tmpFile, fileManager, monitor);

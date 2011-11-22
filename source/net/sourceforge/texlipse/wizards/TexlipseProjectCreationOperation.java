@@ -217,7 +217,7 @@ public class TexlipseProjectCreationOperation implements IRunnableWithProgress {
             IFolder folder = project.getFolder(dir);
             folder.create(true, true, monitor);
             if (derivedAsDefault) {
-                folder.setDerived(true, monitor);
+                folder.setDerived(true);
             }
         }
     }

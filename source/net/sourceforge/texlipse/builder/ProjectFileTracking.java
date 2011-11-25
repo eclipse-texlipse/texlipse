@@ -141,11 +141,12 @@ public class ProjectFileTracking {
                     throws CoreException {
         IResource[] res = container.members();
         for (IResource current : res) {
-            if (current instanceof IFolder
-                    && !excludeFolders.contains(current)) {
-                // Recurse into subfolders
-                IFolder subFolder = (IFolder) current;
-                recursiveScanFiles(subFolder, nameMap, monitor);
+            if (current instanceof IFolder) {
+                if (!excludeFolders.contains(current)) {
+                    // Recurse into subfolders
+                    IFolder subFolder = (IFolder) current;
+                    recursiveScanFiles(subFolder, nameMap, monitor);
+                }
             }
             else if (!isProjectFile(current.getName())) {
                 Long timestamp = new Long(current.getModificationStamp());
@@ -219,8 +220,12 @@ public class ProjectFileTracking {
         buildDirNames = null;
         outputDir = TexlipseProperties.getProjectOutputDir(project);
         tempDir = TexlipseProperties.getProjectTempDir(project);
-        excludeFolders.add(outputDir);
-        excludeFolders.add(tempDir);
+        if (outputDir != null) {
+            excludeFolders.add(outputDir);
+        }
+        if (tempDir != null) {
+            excludeFolders.add(tempDir);
+        }
     }
 
     /**

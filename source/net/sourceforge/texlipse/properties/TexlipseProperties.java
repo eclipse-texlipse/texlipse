@@ -79,6 +79,11 @@ public class TexlipseProperties {
     public static final String DERIVED_FILES = "derivedFiles";
     public static final String FILE_LOCATION_PORT = "fileLocPort";
     public static final String BUILD_ENV_SETTINGS = "buildEnvSet";
+    public static final String BUILD_CYCLE_FLS_ENABLED = "buildCycleFlsEnabled";
+    public static final String BUILD_CYCLE_ADD_EXTS = "buildCycleAddExts";
+    public static final String BUILD_CYCLE_MAX = "buildCycleMax";
+    public static final String BUILD_CYCLE_MAX_ERROR = "buildCycleMaxError";
+    public static final String BUILD_CYCLE_HALT_INVALID = "buildCycleHaltOnInv";
     public static final String VIEWER_ENV_SETTINGS = "viewerEnvSet";
 
     public static final String TEX_COMPLETION = "texCompletion";

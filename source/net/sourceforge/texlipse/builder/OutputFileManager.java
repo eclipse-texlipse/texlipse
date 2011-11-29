@@ -7,6 +7,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -37,16 +38,14 @@ import org.eclipse.core.runtime.Path;
 public class OutputFileManager {
 
     private final IProject project;
-    private final ProjectFileTracking tracking;
 
+    private ProjectFileTracking tracking;
     private IContainer sourceDir;
     private IFolder outputDir;
     private IFolder tempDir;
     private String format;
     private IFile sourceFile;
     private IFile currentSourceFile;
-
-    private Set<IPath> movedFiles;
 
     /**
      * Moves a file to the output directory with a new name.
@@ -224,14 +223,15 @@ public class OutputFileManager {
      * @param force overwrite exiting files and create subfolders in destination
      *  folder, if necessary
      * @param monitor progress monitor
-     * @return a new set of file paths in their new location. This only includes
-     *  files which have actually been moved.
+     * @return a map of file paths in their old and new location. This only
+     *  includes files which have actually been moved.
      * @throws CoreException if an error occurs
      */
-    private Set<IPath> moveFiles(final IContainer source, final IContainer dest,
-            final Set<IPath> nameSet, boolean markAsDerived, boolean force,
-            IProgressMonitor monitor) throws CoreException {
-        Set<IPath> newNames = new HashSet<IPath>();
+    private Map<IPath, IPath> moveFiles(final IContainer source,
+            final IContainer dest, final Set<IPath> nameSet,
+            boolean markAsDerived, boolean force, IProgressMonitor monitor)
+                    throws CoreException {
+        Map<IPath, IPath> newNames = new HashMap<IPath, IPath>();
         if (nameSet != null && !nameSet.isEmpty()) {
             IPath sourcePath = source.getProjectRelativePath();
             IPath destPath;
@@ -279,7 +279,7 @@ public class OutputFileManager {
                                     destFile.setDerived(true);
                                 }
                                 // Store path for later reversal
-                                newNames.add(destFilePath);
+                                newNames.put(filePath, destFilePath);
                             }
                         }
                     }
@@ -452,14 +452,8 @@ public class OutputFileManager {
             // then check for new temporary files, which need to be moved
             project.getWorkspace().run(new IWorkspaceRunnable() {
                 public void run(IProgressMonitor monitor) throws CoreException {
-                    if (movedFiles != null) {
-                        if (excludes != null) {
-                            movedFiles.removeAll(excludes);
-                        }
-                        moveFiles(sourceDir, tempDir, movedFiles, markAsDerived, true, monitor);
-                    }
-                    final Set<IPath> newTempNames = tracking.getNewTempNames(aSourceContainer,
-                            tempExts, format, monitor);
+                    final Set<IPath> newTempNames = tracking.getUpdatedTempNames(
+                            aSourceContainer, tempExts, format, monitor);
                     if (excludes != null) {
                         newTempNames.removeAll(excludes);
                     }
@@ -477,17 +471,17 @@ public class OutputFileManager {
      * @throws CoreException if an error occurs
      */
     private void restoreTempFiles(IProgressMonitor monitor) throws CoreException {
-        final Set<IPath> tempNames = tracking.getTempFiles();
+        final Set<IPath> tempNames = tracking.getTempFolderNames();
         if (tempDir == null || tempNames.isEmpty()) {
-            movedFiles = new HashSet<IPath>();
             return;
         }
 
         // Move files and store new paths for later reversal
         project.getWorkspace().run(new IWorkspaceRunnable() {
             public void run(IProgressMonitor monitor) throws CoreException {
-                movedFiles = moveFiles(tempDir, sourceDir,
-                        tracking.getTempFiles(), false, false, monitor);
+                Map<IPath, IPath> movedFiles = moveFiles(tempDir, sourceDir,
+                        tracking.getTempFolderNames(), false, false, monitor);
+                tracking.setMovedTempFiles(movedFiles);
             }
         }, monitor);
     }
@@ -558,12 +552,9 @@ public class OutputFileManager {
      * Constructor.
      *
      * @param project current project
-     * @param tracking file tracking for the project
      */
-    public OutputFileManager(final IProject project,
-            final ProjectFileTracking tracking) {
+    public OutputFileManager(final IProject project) {
         this.project = project;
-        this.tracking = tracking;
         this.init();
     }
 
@@ -589,12 +580,17 @@ public class OutputFileManager {
      *  the build process has access to them.</li>
      * </ul>
      *
+     * @param tracking project file tracking
      * @param monitor progress monitor
      * @throws CoreException if an error occurs
      */
     public void performBeforeBuild(IProgressMonitor monitor) throws CoreException {
+        if (tracking == null) {
+            throw new CoreException(TexlipsePlugin.stat("Project file tracking has not been initialized."));
+        }
+
         // capture current state of build and temp folder
-        tracking.refreshSnapshots(sourceDir, monitor);
+        tracking.initSnapshots(sourceDir, monitor);
 
         // use temp files from previous build
         restoreTempFiles(monitor);
@@ -691,7 +687,7 @@ public class OutputFileManager {
             monitor.subTask(TexlipsePlugin.getResourceString("builderSubTaskCleanTemp"));
 
             // Retrieve current temp folder content
-            final Set<IPath> currentTmpFiles = tracking.getTempFolderNames(monitor);
+            final Set<IPath> currentTmpFiles = tracking.refreshTempFolderNames(monitor);
 
             // Perform deletion
             deleteFiles(currentTmpFiles, monitor);
@@ -718,6 +714,26 @@ public class OutputFileManager {
         }
 
         return true;
+    }
+
+    /**
+     * Returns the file tracking object of this output file manager instance.
+     *
+     * @return project file tracking
+     */
+    public ProjectFileTracking getFileTracking() {
+        return tracking;
+    }
+
+    /**
+     * Sets the project file tracking object, which this output file manager
+     * will use for detecting temporary and output files before and after a
+     * build process.
+     *
+     * @param tracking project file tracking
+     */
+    public void setFileTracking(final ProjectFileTracking tracking) {
+        this.tracking = tracking;
     }
 
     /**

@@ -13,8 +13,6 @@ import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
 
-import javax.swing.text.StyledEditorKit.BoldAction;
-
 import net.sourceforge.texlipse.TexlipsePlugin;
 import net.sourceforge.texlipse.auxparser.AuxFileParser;
 import net.sourceforge.texlipse.model.ReferenceContainer;

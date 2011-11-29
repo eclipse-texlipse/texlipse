@@ -186,18 +186,25 @@ public class BuilderRegistry {
      * because builders need to use BuilderRegistry to resolve runners.
      */
     protected void initBuilders() {
-        builderList = new Builder[9];
+        builderList = new Builder[14];
+
         builderList[0] = new TexBuilder(0, TexlipseProperties.OUTPUT_FORMAT_DVI, 0);
         builderList[1] = new TexBuilder(1, TexlipseProperties.OUTPUT_FORMAT_PS, 0);
         builderList[2] = new TexBuilder(2, TexlipseProperties.OUTPUT_FORMAT_PDF, 0);
-        
+
         builderList[3] = new DviBuilder(3, TexlipseProperties.OUTPUT_FORMAT_PS);
         builderList[4] = new DviBuilder(4, TexlipseProperties.OUTPUT_FORMAT_PDF);
-        
+
         builderList[5] = new PsBuilder(5, TexBuilder.class);
         builderList[6] = new PsBuilder(6, DviBuilder.class);
         builderList[7] = new TexBuilder(7, TexlipseProperties.OUTPUT_FORMAT_PDF, 1);
         builderList[8] = new TexBuilder(8, TexlipseProperties.OUTPUT_FORMAT_PDF, 2);
+
+        builderList[9] = new TexCycleBuilder(9, TexlipseProperties.OUTPUT_FORMAT_DVI, 0);
+        builderList[10] = new TexCycleBuilder(10, TexlipseProperties.OUTPUT_FORMAT_PS, 0);
+        builderList[11] = new TexCycleBuilder(11, TexlipseProperties.OUTPUT_FORMAT_PDF, 0);
+        builderList[12] = new TexCycleBuilder(12, TexlipseProperties.OUTPUT_FORMAT_PDF, 1);
+        builderList[13] = new TexCycleBuilder(13, TexlipseProperties.OUTPUT_FORMAT_PDF, 2);
     }
     
     /**

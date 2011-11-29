@@ -229,6 +229,11 @@
             name="Latex Temp Files"
             id="net.sourceforge.texlipse.properties.LatexTempExtsPreferencePage"/>            
       <page
+            class="net.sourceforge.texlipse.properties.BuilderCyclePreferencePage"
+            category="TexlipseBuilderPreferencePage"
+            name="Build Cycle"
+            id="net.sourceforge.texlipse.properties.BuilderCyclePreferencePage"/>
+      <page
             class="net.sourceforge.texlipse.properties.ViewerSettingsPreferencePage"
             category="TexlipsePreferencePage"
             name="Viewer Settings"

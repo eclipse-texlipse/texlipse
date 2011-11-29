@@ -1,5 +1,12 @@
 package net.sourceforge.texlipse.builder;
 
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -27,14 +34,20 @@ import org.eclipse.core.runtime.IProgressMonitor;
  */
 public class ProjectFileTracking {
 
+    private static final String MD_ALGORITHM = "SHA-256";
+    private static final int BUFFER_SIZE = 8192;
+
     private final IProject project;
     private final Set<IFolder> excludeFolders;
 
     private IFolder outputDir;
     private IFolder tempDir;
 
-    private Set<IPath> tempDirNames;
+    private Map<IPath, Long> tempDirNames;
+    private Map<IPath, Long> buildTempNames;
+    private Map<IPath, Long> buildAddNames;
     private Map<IPath, Long> buildDirNames;
+    private Map<IPath, byte[]> fileHashValues;
 
     /**
      * Checks if the given file name has any of the extensions in
@@ -111,6 +124,34 @@ public class ProjectFileTracking {
     }
 
     /**
+     * Generates a hash value of the given file.
+     *
+     * @param hashFile IPath reference to the file
+     * @return byte array with file contents hash value
+     * @throws IOException if the file does not exist or cannot be read
+     */
+    private byte[] getFileHash(IPath hashFile) throws IOException {
+        try {
+            MessageDigest digest = MessageDigest.getInstance(MD_ALGORITHM);
+            IFile inIFile = project.getFile(hashFile);
+            File inputFile = new File(inIFile.getLocationURI());
+            byte[] buffer = new byte[BUFFER_SIZE];
+            BufferedInputStream in =
+                    new BufferedInputStream(new FileInputStream(inputFile));
+            int l;
+            while ((l = in.read(buffer)) != -1) {
+                digest.update(buffer, 0, l);
+            }
+            in.close();
+            return digest.digest();
+        }
+        catch (NoSuchAlgorithmException e) {
+            // Should not occur if JRE is set up properly
+            return null;
+        }
+    }
+
+    /**
      * Checks if the given time stamp is newer than the reference time stamp
      * recorded in the snapshot of the build directory. The file is also
      * considered newer, if it had not been recorded before.
@@ -178,7 +219,7 @@ public class ProjectFileTracking {
         final Map<IPath, String> outputNames = new HashMap<IPath, String>();
         final String dotFormat = '.' + format;
         final String currentOutput = sourceBaseName + dotFormat;
-    
+
         for (IResource res : aSourceContainer.members()) {
             // Disregard subfolders
             if (res instanceof IFile) {
@@ -218,6 +259,9 @@ public class ProjectFileTracking {
         excludeFolders.clear();
         tempDirNames = null;
         buildDirNames = null;
+        buildTempNames = null;
+        buildAddNames = null;
+        fileHashValues = null;
         outputDir = TexlipseProperties.getProjectOutputDir(project);
         tempDir = TexlipseProperties.getProjectTempDir(project);
         if (outputDir != null) {
@@ -240,33 +284,54 @@ public class ProjectFileTracking {
     /**
      * Retrieves the current snapshot of temporary files.
      *
-     * @param monitor progress monitor
      * @return a set of paths to all files in the current snapshot
      */
-    public Set<IPath> getTempFiles() {
-        return new HashSet<IPath>(tempDirNames);
+    public Set<IPath> getTempFolderNames() {
+        return new HashSet<IPath>(tempDirNames.keySet());
     }
 
     /**
      * Retrieves the current contents of the temporary files folder.
-     *
+     * 
+     * @param monitor progress monitor
      * @return a set of paths to all files inside the temp folder
      * @throws CoreException if an error occurs
      */
-    public Set<IPath> getTempFolderNames(IProgressMonitor monitor)
+    public Set<IPath> refreshTempFolderNames(IProgressMonitor monitor)
             throws CoreException {
-        final Map<IPath, Long> tempDirFiles = new HashMap<IPath, Long>();
+        final Map<IPath, Long> newTempNames = new HashMap<IPath, Long>();
         if (tempDir != null && tempDir.exists()) {
-            recursiveScanFiles(tempDir, tempDirFiles, monitor);
+            recursiveScanFiles(tempDir, newTempNames, monitor);
         }
+        tempDirNames = newTempNames;
         // We do not need the time stamps in this case.
-        return tempDirFiles.keySet();
+        return new HashSet<IPath>(tempDirNames.keySet());
+    }
+
+    /**
+     * Sets the new file location of temporary files, which have been moved
+     * before a build process.
+     *
+     * @param movedFiles map with old and new location of files
+     */
+    public void setMovedTempFiles(final Map<IPath, IPath> movedFiles) {
+        if (movedFiles != null && tempDirNames != null) {
+            for (Entry<IPath, IPath> fileEntry : movedFiles.entrySet()) {
+                Long timestamp = tempDirNames.get(fileEntry.getKey());
+                // Assign the existing time stamp to a new key
+                if (timestamp != null) {
+                    tempDirNames.remove(fileEntry.getKey());
+                    buildTempNames.put(fileEntry.getValue(), timestamp);
+                }
+            }
+        }
     }
 
     /**
      * Determines the temporary files, which have been added to or changed
-     * within the source container during the last build. Temporary files
-     * are defined by the file extensions given in <code>tempExts</code>.
+     * within the source container during the last build, or had been moved
+     * there before the build process. New or updated temporary files
+     * are determined by the file extensions given in <code>tempExts</code>.
      *
      * @param container source container to scan for new files
      * @param tempExts extensions of temporary files
@@ -274,19 +339,20 @@ public class ProjectFileTracking {
      * @return set of new temporary files
      * @throws CoreException if an error occurs
      */
-    public Set<IPath> getNewTempNames(final IContainer container,
+    public Set<IPath> getUpdatedTempNames(final IContainer container,
             final String[] tempExts, final String format,
             IProgressMonitor monitor) throws CoreException {
         Set<IPath> newNames = new HashSet<IPath>();
         Map<IPath, Long> currentNames = new HashMap<IPath, Long>();
         // Scan for current files in the build folder
         recursiveScanFiles(container, currentNames, monitor);
-        for (Entry<IPath, Long> names : currentNames.entrySet()) {
+        for (Entry<IPath, Long> nameEntry : currentNames.entrySet()) {
             // Check which of the files are new, and if they are temporary files
-            IPath name = names.getKey();
-            Long timestamp = names.getValue();
-            if (isTempFile(name.lastSegment(), tempExts, format)
-                    && isNewer(name, timestamp.longValue())) {
+            IPath name = nameEntry.getKey();
+            Long timestamp = nameEntry.getValue();
+            if (buildTempNames.containsKey(name)
+                    || (isTempFile(name.lastSegment(), tempExts, format)
+                    && isNewer(name, timestamp.longValue()))) {
                 newNames.add(name);
             }
             monitor.worked(1);
@@ -307,23 +373,150 @@ public class ProjectFileTracking {
      * @param monitor progress monitor
      * @throws CoreException if an error occurs
      */
-    public void refreshSnapshots(final IContainer container,
+    public void initSnapshots(final IContainer container,
             IProgressMonitor monitor) throws CoreException {
-        tempDirNames = getTempFolderNames(monitor);
+        refreshTempFolderNames(monitor);
 
         final Map<IPath, Long> newBuildDirFiles = new HashMap<IPath, Long>();
         if (container != null && container.exists()) {
             recursiveScanFiles(container, newBuildDirFiles, monitor);
         }
         buildDirNames = newBuildDirFiles;
+        buildTempNames = new HashMap<IPath, Long>();
+        buildAddNames = new HashMap<IPath, Long>();
     }
 
     /**
-     * Drops the snapshots of the temporary files directory and build directory.
+     * Initializes the list of file hash values with two sets of files:
+     * <ul>
+     * <li>all files which have been moved from the temp folder to the build
+     *  folder prior to the build process;</li>
+     * <li>additional files which have been in the build folder before, and which
+     *  have a temporary file extension. Besides these, additional file extensions
+     *  for monitoring can be provided.</li>
+     * </ul>
+     *
+     * @param tempExts temporary file extensions
+     * @param addExts additional file extensions to be monitored throughout the
+     *  build cycles
+     */
+    public void initFileHashes(final String[] tempExts, final String[] addExts) {
+        Map<IPath, byte[]> initialHashValues = new HashMap<IPath, byte[]>();
+        if (buildDirNames != null) {
+            for (IPath filePath : buildDirNames.keySet()) {
+                final String fileName = filePath.lastSegment();
+                if (hasMatchingExt(fileName, tempExts)
+                        || hasMatchingExt(fileName, addExts)) {
+                    try {
+                        final byte[] hashVal = getFileHash(filePath);
+                        initialHashValues.put(filePath, hashVal);
+                    }
+                    catch (IOException e) {
+                        // ignore file if it cannot be read
+                    }
+                }
+            }
+        }
+        if (buildTempNames != null) {
+            for (IPath filePath : buildTempNames.keySet()) {
+                try {
+                    final byte[] hashVal = getFileHash(filePath);
+                    initialHashValues.put(filePath, hashVal);
+                }
+                catch (IOException e) {
+                    // ignore file if it cannot be read
+                }
+            }
+        }
+        fileHashValues = initialHashValues;
+    }
+
+    /**
+     * Checks the given container for changes since the initialization or last
+     * update of the snapshots. It returns a set of files, which are either new
+     * or by their time stamp appear to have been modified. During this check,
+     * the snapshot of known temporary and additional files are being updated.
+     *
+     * @param container source container
+     * @param tempExts temporary file extensions
+     * @param addExts additional file extensions to be monitored throughout the
+     *  build cycles
+     * @param monitor progress monitor
+     * @return a set of new or modified files
+     * @throws CoreException if an error occurs
+     */
+    public Set<IPath> updateChangedFiles(final IContainer container,
+            final String[] tempExts, final String[] addExts,
+            IProgressMonitor monitor) throws CoreException {
+        container.refreshLocal(IProject.DEPTH_INFINITE, monitor);
+        Set<IPath> newNames = new HashSet<IPath>();
+        Map<IPath, Long> currentNames = new HashMap<IPath, Long>();
+        // Scan for current files in the build folder
+        recursiveScanFiles(container, currentNames, monitor);
+        for (Entry<IPath, Long> nameEntry : currentNames.entrySet()) {
+            // Check which of the files are new
+            IPath filePath = nameEntry.getKey();
+            Long timestamp = nameEntry.getValue();
+            if (isNewer(filePath, timestamp.longValue())) {
+                final String fileName = filePath.lastSegment();
+                if (buildTempNames.containsKey(filePath)
+                        || hasMatchingExt(fileName, tempExts)) {
+                    buildTempNames.put(filePath, timestamp);
+                    newNames.add(filePath);
+                }
+                else if (buildAddNames.containsKey(filePath)
+                        || hasMatchingExt(fileName, addExts)) {
+                    buildAddNames.put(filePath, timestamp);
+                    newNames.add(filePath);
+                }
+            }
+            monitor.worked(1);
+        }
+        return newNames;
+    }
+
+    /**
+     * Updates the file hash values of the given file set, and compares them to
+     * initial or recently updated hash values. It then returns the subset of
+     * files, which are either new or have a changed hash value (i.e. have been
+     * modified in content). During this process, the stored hash values are
+     * also updated.
+     *
+     * @param files set of files to update hash values for
+     * @return set of files which have been modified since the last update
+     */
+    public Set<IPath> updateFileHashes(final Set<IPath> files) {
+        if (files != null) {
+            final Set<IPath> updatedFiles = new HashSet<IPath>();
+            for (IPath filePath : files) {
+                try {
+                    final byte[] oldHashVal = fileHashValues.get(filePath);
+                    final byte[] newHashVal = getFileHash(filePath);
+                    if (oldHashVal == null || !Arrays.equals(oldHashVal, newHashVal)) {
+                        fileHashValues.put(filePath, newHashVal);
+                        updatedFiles.add(filePath);
+                    }
+                }
+                catch (IOException e) {
+                    // Do not consider file if it cannot be read
+                }
+            }
+            return updatedFiles;
+        }
+        else {
+            return null;
+        }
+    }
+
+    /**
+     * Drops all snapshots of the temporary files directory and build directory
+     * and calculated hash values.
      */
     public void clearSnapshots() {
         tempDirNames = null;
         buildDirNames = null;
+        buildTempNames = null;
+        fileHashValues = null;
     }
 
 }

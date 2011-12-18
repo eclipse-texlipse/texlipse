@@ -278,7 +278,7 @@ public class LatexParser {
      */
     private static String findBiblatexBackend(String options) {
         int beIdx = options.indexOf("backend=");
-        if (beIdx > 0) {
+        if (beIdx >= 0) {
             int startIdx = beIdx + 8; // move forward by length of "backend="
             int endIdx = options.indexOf(',', startIdx);
             if (endIdx > startIdx) {

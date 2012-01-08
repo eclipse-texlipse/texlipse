@@ -12,6 +12,7 @@ package net.sourceforge.texlipse.editor;
 import java.util.Arrays;
 
 import net.sourceforge.texlipse.TexlipsePlugin;
+import net.sourceforge.texlipse.editor.partitioner.FastLaTeXPartitionScanner;
 import net.sourceforge.texlipse.properties.TexlipseProperties;
 import net.sourceforge.texlipse.texparser.LatexParserUtils;
 
@@ -20,10 +21,12 @@ import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.DefaultIndentLineAutoEditStrategy;
 import org.eclipse.jface.text.DocumentCommand;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IDocumentExtension3;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.TextUtilities;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
+
 
 /**
  * Defines indentation strategy.
@@ -131,9 +134,19 @@ public class TexAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
                 itemSetted = false;
             }
         }
-        
+
         if (TexAutoIndentStrategy.hardWrap && command.length == 0 && command.text != null) {
-            hlw.doWrapB(document, command, lineLength);
+            try {
+                final String contentType = ((IDocumentExtension3) document).getContentType(
+                        TexEditor.TEX_PARTITIONING, command.offset, true);
+                // Do not wrap in verbatim partitions
+                if (!FastLaTeXPartitionScanner.TEX_VERBATIM.equals(contentType)) {
+                    hlw.doWrapB(document, command, lineLength);
+                }
+            }
+            catch (Exception e) {
+                // If we cannot retrieve the current content type, do not break lines
+            }
         }
     }
     

@@ -12,6 +12,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.Platform;
 
 
 /**
@@ -31,17 +32,38 @@ public class FlsAnalyzer {
     private final IPath flsFilePath;
     private final Set<IPath> inputFiles;
     private final Set<IPath> outputFiles;
+    private final boolean isWindowsPlatform;
 
     private IPath workingDir;
 
     /**
+     * Determines if the given path is absolute in the file system or relative
+     * to the current working directory.
+     *
+     * @param path path to check
+     * @return <code>true</code> if path is absolute, <code>false<code>
+     *  otherwise
+     */
+    private boolean isAbsolutePath(final String path) {
+        if (path.length() < 2) {
+            return false;
+        }
+        else if (isWindowsPlatform) {
+            return path.charAt(1) == ':';
+        }
+        else {
+            return path.charAt(0) == '/';
+        }
+    }
+
+    /**
      * Extracts the file system object name from the given text line string and
      * turns it into an IPath relative to the project root. Absolute file names
-     * (starting with '/') are converted into project relative file names, if they
-     * are inside the project folder structure. Relative file names are interpreted
-     * towards the working directory (declared with <code>PWD ...</code>) inside
-     * the FLS file. If the file or folder name is found to be lying outside of
-     * the project folder structure, <code>null</code> is returned.
+     * are converted into project relative file names, if they are inside the
+     * project folder structure. Relative file names are interpreted towards
+     * the working directory (declared with <code>PWD ...</code>) inside the
+     * FLS file. If the file or folder name is found to be lying outside of the
+     * project folder structure, <code>null</code> is returned.
      *
      * @param prefix prefix to remove in the beginning of the text line
      * @param line entire text line to extract name from
@@ -53,7 +75,7 @@ public class FlsAnalyzer {
         if (prefix.length() + 2 < line.length()) {
             // skip prefix length plus one (space)
             final String name = line.substring(prefix.length() + 1);
-            if (name.charAt(0) == '/') {
+            if (isAbsolutePath(name)) {
                 final IPath absPath = new Path(name);
                 // absolute path, attempt to make project relative
                 if (projectPath.isPrefixOf(absPath)) {
@@ -118,6 +140,7 @@ public class FlsAnalyzer {
         this.flsFilePath = flsDir.append(flsFileName);
         this.inputFiles = new HashSet<IPath>();
         this.outputFiles = new HashSet<IPath>();
+        this.isWindowsPlatform = Platform.getOS().equals(Platform.OS_WIN32);
         // Initialize working dir, but it is likely to be declared on the
         // first line of the FLS file
         this.workingDir = sourceContainer.getProjectRelativePath();
@@ -131,8 +154,8 @@ public class FlsAnalyzer {
      * <li>INPUT [File path]: The file has been read by latex;</li>
      * <li>OUTPUT [File path]: The file has been written to by latex.</li>
      * </ul>
-     * Input and output files are recorded in each one set. Therefore, each
-     * file name is only present once in each collection.
+     * Input and output files are recorded in each one set. Every
+     * file name is only added once per collection.
      *
      * @throws IOException if the FLS file cannot be read
      */

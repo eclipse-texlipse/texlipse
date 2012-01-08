@@ -11,6 +11,7 @@ package net.sourceforge.texlipse.builder;
 
 import net.sourceforge.texlipse.properties.TexlipseProperties;
 
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -21,7 +22,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
  *
  * @author Kimmo Karlsson
  */
-public class DviBuilder extends AbstractBuilder {
+public class DviBuilder extends AbstractBuilder implements AdaptableBuilder {
 
     private Builder dvi;
     private ProgramRunner ps;
@@ -85,5 +86,11 @@ public class DviBuilder extends AbstractBuilder {
         monitor.subTask("Converting dvi to " + output);
         ps.run(resource);
         monitor.worked(15);
+    }
+
+    public void updateBuilder(IProject project) {
+        if (dvi instanceof AdaptableBuilder) {
+            ((AdaptableBuilder) dvi).updateBuilder(project);
+        }
     }
 }

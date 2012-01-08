@@ -8,6 +8,7 @@
  * http://www.eclipse.org/legal/epl-v10.html
  */
 package net.sourceforge.texlipse.editor;
+
 import net.sourceforge.texlipse.TexlipsePlugin;
 import net.sourceforge.texlipse.editor.hover.TexHover;
 import net.sourceforge.texlipse.editor.partitioner.FastLaTeXPartitionScanner;
@@ -16,6 +17,7 @@ import net.sourceforge.texlipse.editor.scanner.TexCommentScanner;
 import net.sourceforge.texlipse.editor.scanner.TexMathScanner;
 import net.sourceforge.texlipse.editor.scanner.TexOptArgScanner;
 import net.sourceforge.texlipse.editor.scanner.TexScanner;
+import net.sourceforge.texlipse.editor.scanner.TexTikzScanner;
 import net.sourceforge.texlipse.properties.TexlipseProperties;
 
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -35,7 +37,6 @@ import org.eclipse.jface.text.presentation.PresentationReconciler;
 import org.eclipse.jface.text.reconciler.IReconciler;
 import org.eclipse.jface.text.reconciler.IReconcilingStrategy;
 import org.eclipse.jface.text.reconciler.MonoReconciler;
-import org.eclipse.jface.text.reconciler.Reconciler;
 import org.eclipse.jface.text.rules.DefaultDamagerRepairer;
 import org.eclipse.jface.text.rules.RuleBasedScanner;
 import org.eclipse.jface.text.rules.Token;
@@ -67,6 +68,7 @@ public class TexSourceViewerConfiguration extends TextSourceViewerConfiguration 
     private TexCommentScanner commentScanner;
     private TexArgScanner argumentScanner;
     private TexOptArgScanner optArgumentScanner;
+    private TexTikzScanner tikzScanner;
     private RuleBasedScanner verbatimScanner;
     private ColorManager colorManager;
     private TexAnnotationHover annotationHover;
@@ -201,8 +203,8 @@ public class TexSourceViewerConfiguration extends TextSourceViewerConfiguration 
         assistant.setContentAssistProcessor(tmcp, FastLaTeXPartitionScanner.TEX_MATH);
         assistant.setContentAssistProcessor(tcp, FastLaTeXPartitionScanner.TEX_CURLY_BRACKETS);
         assistant.setContentAssistProcessor(tcp, FastLaTeXPartitionScanner.TEX_SQUARE_BRACKETS);
+        assistant.setContentAssistProcessor(tcp, FastLaTeXPartitionScanner.TEX_TIKZPIC);
 
-        
         assistant.enableAutoActivation(TexlipsePlugin.getDefault().getPreferenceStore().getBoolean(TexlipseProperties.TEX_COMPLETION));
         assistant.enableAutoInsert(true);
         assistant.setAutoActivationDelay(TexlipsePlugin.getDefault().getPreferenceStore().getInt(TexlipseProperties.TEX_COMPLETION_DELAY));
@@ -239,6 +241,10 @@ public class TexSourceViewerConfiguration extends TextSourceViewerConfiguration 
         dr = new DefaultDamagerRepairer(getTexOptArgScanner());
         reconciler.setDamager(dr, FastLaTeXPartitionScanner.TEX_SQUARE_BRACKETS);
         reconciler.setRepairer(dr, FastLaTeXPartitionScanner.TEX_SQUARE_BRACKETS);
+
+        dr = new DefaultDamagerRepairer(getTexTikzScanner());
+        reconciler.setDamager(dr, FastLaTeXPartitionScanner.TEX_TIKZPIC);
+        reconciler.setRepairer(dr, FastLaTeXPartitionScanner.TEX_TIKZPIC);
 
         dr = new DefaultDamagerRepairer(getTexScanner());
         reconciler.setDamager(dr, IDocument.DEFAULT_CONTENT_TYPE);
@@ -333,6 +339,23 @@ public class TexSourceViewerConfiguration extends TextSourceViewerConfiguration 
                                     colorManager.getStyle(ColorManager.SQUARE_BRACKETS_STYLE))));
         }
         return optArgumentScanner;
+    }
+
+    /**
+     * Defines a tikz environment or single line scanner and sets the default color for it
+     * @return a scanner to detect argument partitions
+     */
+    protected TexTikzScanner getTexTikzScanner() {
+        if (tikzScanner == null) {
+            tikzScanner = new TexTikzScanner(colorManager);
+            tikzScanner.setDefaultReturnToken(
+                    new Token(
+                            new TextAttribute(
+                                    colorManager.getColor(ColorManager.DEFAULT),
+                                    null,
+                                    colorManager.getStyle(ColorManager.DEFAULT_STYLE))));
+        }
+        return tikzScanner;
     }
 
     /**

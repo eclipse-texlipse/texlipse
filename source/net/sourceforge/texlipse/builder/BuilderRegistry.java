@@ -10,7 +10,9 @@
 package net.sourceforge.texlipse.builder;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import net.sourceforge.texlipse.TexlipsePlugin;
 import net.sourceforge.texlipse.properties.TexlipseProperties;
@@ -39,6 +41,9 @@ public class BuilderRegistry {
     
     // array of program runners
     private ProgramRunner[] runnerList;
+
+    private final List<ProgramRunner> runners;
+    private final List<BuilderDescriptor> builders;
 
     // stream to write builder status messages to
     private MessageConsoleStream consoleStream;
@@ -179,6 +184,39 @@ public class BuilderRegistry {
                 new MakeindexNomenclRunner(),
                 new KpsewhichRunner()
         };
+        runners = new ArrayList<ProgramRunner>();
+        runners.add(new LatexRunner());
+        runners.add(new PslatexRunner());
+        runners.add(new PdflatexRunner());
+        runners.add(new XelatexRunner());
+        runners.add(new LualatexRunner());
+        runners.add(new BibtexRunner());
+        runners.add(new BiberRunner());
+        runners.add(new MakeindexRunner());
+        runners.add(new DvipsRunner());
+        runners.add(new DvipdfRunner());
+        runners.add(new Ps2pdfRunner());
+        runners.add(new MakeindexNomenclRunner());
+        runners.add(new KpsewhichRunner());
+        builders = new ArrayList<BuilderDescriptor>();
+        try {
+            builders.add(new BuilderDescriptor(TexBuilder.class, LatexRunner.class));
+            builders.add(new BuilderDescriptor(TexBuilder.class, PslatexRunner.class));
+            builders.add(new BuilderDescriptor(TexBuilder.class, PdflatexRunner.class));
+
+            builders.add(new BuilderDescriptor(DviBuilder.class, DvipsRunner.class));
+            builders.add(new BuilderDescriptor(DviBuilder.class, DvipdfRunner.class));
+
+            builders.add(new BuilderDescriptor(PsBuilder.class, TexBuilder.class, null));
+            builders.add(new BuilderDescriptor(PsBuilder.class, DviBuilder.class, null));
+
+            builders.add(new BuilderDescriptor(TexBuilder.class, XelatexRunner.class));
+            builders.add(new BuilderDescriptor(TexBuilder.class, LualatexRunner.class));
+        }
+        catch (Exception e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
 
     /**

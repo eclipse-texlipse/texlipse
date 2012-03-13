@@ -31,11 +31,12 @@ import org.eclipse.core.runtime.Platform;
 public class TexCycleBuilder extends AbstractBuilder {
 
     private final String output;
+    private final int alternative;
+
     private ProgramRunner latex;
     private ProgramRunner utilRunner;
     private BuildCycleDetector cycleDetector;
     private boolean stopped;
-    private int alternative;
 
     /**
      * Check if '-recorder' command argument is necessary for latex runner and
@@ -116,12 +117,28 @@ public class TexCycleBuilder extends AbstractBuilder {
      */
     public TexCycleBuilder(int i, String outputFormat, int alt) {
         super(i);
-        output = outputFormat;
-        latex = null;
-        utilRunner = null;
-        alternative = alt;
-        cycleDetector = null;
+        this.output = outputFormat;
+        this.latex = null;
+        this.utilRunner = null;
+        this.alternative = alt;
+        this.cycleDetector = null;
         isValid();
+    }
+
+    public TexCycleBuilder(final Class<ProgramRunner> runnerClass) {
+        super(-1);
+        try {
+            this.latex = BuilderFactory.getInstance().getRunnerInstance(runnerClass);
+        }
+        catch (InstantiationException e) {
+        }
+        catch (IllegalAccessException e) {
+        }
+        this.output = latex.getOutputFormat();
+        this.utilRunner = null;
+        this.alternative = -1;
+        this.cycleDetector = null;
+        //isValid();
     }
 
     @Override
@@ -161,13 +178,14 @@ public class TexCycleBuilder extends AbstractBuilder {
     }
 
     /**
-     * Runs the latex builder once. This includes
+     * Runs the latex builder. This includes
      * <ul>
      * <li>running the latex builder once;</li>
      * <li>checking, if any runners need to be triggered afterwards;</li>
      * <li>checking, if these runners require any more runners;</li>
-     * <li>returning to running latex, and repeating as often as necessary
-     *  until the maximum as defined in the preferences has been reached.</li>
+     * <li>returning to running latex, and repeating as often as necessary for
+     *  completing the build process; or until the maximum as defined in the
+     *  preferences has been reached.</li>
      * </ul>
      */
     @Override

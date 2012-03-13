@@ -61,7 +61,7 @@ public class BuildCycleDetector {
             if (bibtex != null) {
                 runners.push(bibtex);
             }
-            bibRerunBool = "true".equals(bibRerun);
+            bibRerunBool = true;
         }
         else {
             bibRerunBool = false;

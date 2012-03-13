@@ -40,28 +40,50 @@ import org.eclipse.swt.widgets.Shell;
  */
 public class TexBuilder extends AbstractBuilder implements AdaptableBuilder {
 
+    private final String output;
+    private final int alternative;
+    private final Class<? extends ProgramRunner> runnerClass;
+    
     private boolean biblatexMode;
     private String biblatexBackend;
     private ProgramRunner latex;
     private ProgramRunner bibtex;
     private ProgramRunner makeIndex;
     private ProgramRunner makeIndexNomencl;
-    private String output;
     private boolean stopped;
-    private int alternative;
-    
+
     public TexBuilder(int i, String outputFormat, int alt) {
         super(i);
-        biblatexMode = false;
-        biblatexBackend = null;
-        output = outputFormat;
-        latex = null;
-        bibtex = null;
-        makeIndex = null;
-        alternative = alt;
+        this.biblatexMode = false;
+        this.biblatexBackend = null;
+        this.output = outputFormat;
+        this.latex = null;
+        this.bibtex = null;
+        this.makeIndex = null;
+        this.alternative = alt;
+        this.runnerClass = null;
         isValid();
     }
-    
+
+    public TexBuilder(final Class<? extends ProgramRunner> runnerClass) {
+        super(-1);
+        this.biblatexMode = false;
+        this.biblatexBackend = null;
+        try {
+            this.latex = BuilderFactory.getInstance().getRunnerInstance(runnerClass);
+        }
+        catch (InstantiationException e) {
+        }
+        catch (IllegalAccessException e) {
+        }
+        this.output = latex.getOutputFormat();
+        this.bibtex = null;
+        this.makeIndex = null;
+        this.alternative = -1;
+        this.runnerClass = runnerClass;
+        //isValid();
+    }
+
     /**
      * Check if the needed program runners are operational.
      * Update runners from registry if necessary.

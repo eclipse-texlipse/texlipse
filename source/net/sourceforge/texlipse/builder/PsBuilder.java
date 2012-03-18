@@ -9,6 +9,7 @@
  */
 package net.sourceforge.texlipse.builder;
 
+import net.sourceforge.texlipse.builder.factory.BuilderDescription;
 import net.sourceforge.texlipse.properties.TexlipseProperties;
 
 import org.eclipse.core.resources.IProject;
@@ -27,13 +28,11 @@ public class PsBuilder extends AbstractBuilder implements AdaptableBuilder {
 
     private Builder dvi;
     private ProgramRunner pdf;
-    private Class<? extends Builder> builderClass;
     private boolean stopped;
 
-    public PsBuilder(int i, Class<? extends Builder> clazz) {
-        super(i);
-        builderClass = clazz;
-        isValid();
+    public PsBuilder(BuilderDescription description) {
+        super(description);
+        //isValid();
     }
 
     public void reset(final IProgressMonitor monitor) {
@@ -48,26 +47,12 @@ public class PsBuilder extends AbstractBuilder implements AdaptableBuilder {
      */
     public boolean isValid() {
         if (dvi == null) {
-            dvi = BuilderRegistry.get(builderClass, TexlipseProperties.OUTPUT_FORMAT_PS);
+            dvi = BuilderRegistry.getBuilder(description.getSecondaryBuilderId());
         }
         if (pdf == null || !pdf.isValid()) {
-            pdf = BuilderRegistry.getRunner(TexlipseProperties.OUTPUT_FORMAT_PS, TexlipseProperties.OUTPUT_FORMAT_PDF, 0);
+            pdf = BuilderRegistry.getRunner(TexlipseProperties.OUTPUT_FORMAT_PS, TexlipseProperties.OUTPUT_FORMAT_PDF);
         }
         return dvi != null && dvi.isValid() && pdf != null && pdf.isValid();
-    }
-
-    /**
-     * @return pdf
-     */
-    public String getOutputFormat() {
-        return TexlipseProperties.OUTPUT_FORMAT_PDF;
-    }
-    
-    /**
-     * @return sequence
-     */
-    public String getSequence() {
-        return dvi.getSequence() + '+' + pdf.getProgramName();
     }
 
     public void stopRunners() {

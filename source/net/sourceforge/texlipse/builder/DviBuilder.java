@@ -9,7 +9,7 @@
  */
 package net.sourceforge.texlipse.builder;
 
-import net.sourceforge.texlipse.properties.TexlipseProperties;
+import net.sourceforge.texlipse.builder.factory.BuilderDescription;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -26,13 +26,11 @@ public class DviBuilder extends AbstractBuilder implements AdaptableBuilder {
 
     private Builder dvi;
     private ProgramRunner ps;
-    private String output;
     private boolean stopped;
 
-    public DviBuilder(int i, String outputFormat) {
-        super(i);
-        output = outputFormat;
-        isValid();
+    public DviBuilder(BuilderDescription description) {
+        super(description);
+        //isValid();
     }
 
     public void reset(final IProgressMonitor monitor) {
@@ -47,26 +45,12 @@ public class DviBuilder extends AbstractBuilder implements AdaptableBuilder {
      */
     public boolean isValid() {
         if (dvi == null) {
-            dvi = BuilderRegistry.get(null, TexlipseProperties.OUTPUT_FORMAT_DVI);
+            dvi = BuilderRegistry.getBuilder("latex");
         }
         if (ps == null || !ps.isValid()) {
-            ps = BuilderRegistry.getRunner(TexlipseProperties.OUTPUT_FORMAT_DVI, output, 0);
+            ps = BuilderRegistry.getRunner(description.getRunnerId());
         }
         return dvi != null && dvi.isValid() && ps != null && ps.isValid();
-    }
-
-    /**
-     * @return output format of the dvi-processor
-     */
-    public String getOutputFormat() {
-        return ps.getOutputFormat();
-    }
-
-    /**
-     * @return sequence
-     */
-    public String getSequence() {
-        return dvi.getSequence() + '+' + ps.getProgramName();
     }
     
     public void stopRunners() {
@@ -83,7 +67,7 @@ public class DviBuilder extends AbstractBuilder implements AdaptableBuilder {
         if (stopped) 
             return;
         
-        monitor.subTask("Converting dvi to " + output);
+        monitor.subTask("Converting dvi to " + description.getOutputFormat());
         ps.run(resource);
         monitor.worked(15);
     }

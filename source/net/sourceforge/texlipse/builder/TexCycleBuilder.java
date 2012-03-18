@@ -8,6 +8,7 @@ import java.util.TreeSet;
 
 import net.sourceforge.texlipse.TexlipsePlugin;
 import net.sourceforge.texlipse.auxparser.AuxFileParser;
+import net.sourceforge.texlipse.builder.factory.BuilderDescription;
 import net.sourceforge.texlipse.model.ReferenceContainer;
 import net.sourceforge.texlipse.model.ReferenceEntry;
 import net.sourceforge.texlipse.properties.TexlipseProperties;
@@ -30,9 +31,6 @@ import org.eclipse.core.runtime.Platform;
  */
 public class TexCycleBuilder extends AbstractBuilder {
 
-    private final String output;
-    private final int alternative;
-
     private ProgramRunner latex;
     private ProgramRunner utilRunner;
     private BuildCycleDetector cycleDetector;
@@ -50,7 +48,8 @@ public class TexCycleBuilder extends AbstractBuilder {
             String arg = latex.getProgramArguments();
             // Check if the flag is already present
             if (arg.indexOf("-recorder") < 0) {
-                latex.setProgramArguments("-recorder ".concat(arg));
+                // TODO clean up
+                //config.setProgramArguments("-recorder ".concat(arg));
             }
         }
     }
@@ -108,35 +107,10 @@ public class TexCycleBuilder extends AbstractBuilder {
         }
     }
 
-    /**
-     * Default constructor.
-     *
-     * @param i builder id
-     * @param outputFormat output format
-     * @param alt selected alternative for the latex runner
-     */
-    public TexCycleBuilder(int i, String outputFormat, int alt) {
-        super(i);
-        this.output = outputFormat;
-        this.latex = null;
+    public TexCycleBuilder(BuilderDescription description) {
+        super(description);
+        this.latex = BuilderRegistry.getRunner(description.getRunnerId());
         this.utilRunner = null;
-        this.alternative = alt;
-        this.cycleDetector = null;
-        isValid();
-    }
-
-    public TexCycleBuilder(final Class<ProgramRunner> runnerClass) {
-        super(-1);
-        try {
-            this.latex = BuilderFactory.getInstance().getRunnerInstance(runnerClass);
-        }
-        catch (InstantiationException e) {
-        }
-        catch (IllegalAccessException e) {
-        }
-        this.output = latex.getOutputFormat();
-        this.utilRunner = null;
-        this.alternative = -1;
         this.cycleDetector = null;
         //isValid();
     }
@@ -144,26 +118,9 @@ public class TexCycleBuilder extends AbstractBuilder {
     @Override
     public boolean isValid() {
         if (latex == null || !latex.isValid()) {
-            latex = BuilderRegistry.getRunner(TexlipseProperties.INPUT_FORMAT_TEX,
-                    output, alternative);
+            latex = BuilderRegistry.getRunner(description.getRunnerId());
         }
         return latex != null && latex.isValid();
-    }
-
-    /**
-     * @return output format of the latex processor
-     */
-    @Override
-    public String getOutputFormat() {
-        return latex.getOutputFormat();
-    }
-
-    /**
-     * @return sequence program sequence along with the cycle detection hint
-     */
-    @Override
-    public String getSequence() {
-        return latex.getProgramName().concat(" (cycle auto-detection)");
     }
 
     @Override

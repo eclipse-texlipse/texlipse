@@ -9,7 +9,8 @@
  */
 package net.sourceforge.texlipse.builder;
 
-import net.sourceforge.texlipse.properties.TexlipseProperties;
+import net.sourceforge.texlipse.builder.factory.RunnerDescription;
+
 
 /**
  * Run the external pslatex program.
@@ -21,26 +22,8 @@ public class PslatexRunner extends LatexRunner {
     /**
      * Create a new ProgramRunner.
      */
-    public PslatexRunner() {
-        super();
+    public PslatexRunner(RunnerDescription description) {
+        super(description);
     }
-    
-    protected String getWindowsProgramName() {
-        return "pslatex.exe";
-    }
-    
-    protected String getUnixProgramName() {
-        return "pslatex";
-    }
-    
-    public String getDescription() {
-        return "PsLatex program";
-    }
-    
-    /**
-     * @return output file format (ps)
-     */
-    public String getOutputFormat() {
-        return TexlipseProperties.OUTPUT_FORMAT_PS;
-    }
+
 }

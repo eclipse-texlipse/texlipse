@@ -93,9 +93,9 @@ public class TexlipseProjectCreationOperation implements IRunnableWithProgress {
             TexlipseProperties.setProjectProperty(project, TexlipseProperties.BIBREF_DIR_PROPERTY, "");
             TexlipseProperties.setProjectProperty(project, TexlipseProperties.OUTPUTFILE_PROPERTY, attributes.getOutputFile());
             TexlipseProperties.setProjectProperty(project, TexlipseProperties.OUTPUT_FORMAT, attributes.getOutputFormat());
-            TexlipseProperties.setProjectProperty(project, TexlipseProperties.BUILDER_NUMBER, attributes.getBuilder()+"");
+            TexlipseProperties.setProjectProperty(project, TexlipseProperties.BUILDER_ID, attributes.getBuilder());
             TexlipsePlugin.getDefault().getPreferenceStore().setValue(TexlipseProperties.OUTPUT_FORMAT, attributes.getOutputFormat());
-            TexlipsePlugin.getDefault().getPreferenceStore().setValue(TexlipseProperties.BUILDER_NUMBER, attributes.getBuilder());
+            TexlipsePlugin.getDefault().getPreferenceStore().setValue(TexlipseProperties.BUILDER_ID, attributes.getBuilder());
             monitor.worked(1);
             
             createMainFile(project, monitor);

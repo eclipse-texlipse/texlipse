@@ -9,7 +9,7 @@
  */
 package net.sourceforge.texlipse.builder;
 
-import net.sourceforge.texlipse.properties.TexlipseProperties;
+import net.sourceforge.texlipse.builder.factory.RunnerDescription;
 
 import org.eclipse.core.resources.IResource;
 
@@ -21,32 +21,8 @@ import org.eclipse.core.resources.IResource;
  */
 public class DvipsRunner extends AbstractProgramRunner {
 
-    public DvipsRunner() {
-        super();
-    }
-
-    protected String getWindowsProgramName() {
-        return "dvips.exe";
-    }
-
-    protected String getUnixProgramName() {
-        return "dvips";
-    }
-
-    public String getDescription() {
-        return "Dvips program";
-    }
-
-    public String getDefaultArguments() {
-        return "-R0 -o %output %input";
-    }
-
-    public String getInputFormat() {
-        return TexlipseProperties.OUTPUT_FORMAT_DVI;
-    }
-
-    public String getOutputFormat() {
-        return TexlipseProperties.OUTPUT_FORMAT_PS;
+    public DvipsRunner(RunnerDescription description) {
+        super(description);
     }
 
     /**

@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<builders>
+    <builder id="latex" legacyId="0">
+        <label>latex</label>
+        <outputFormat>dvi</outputFormat>
+        <builderClass>net.sourceforge.texlipse.builder.TexBuilder</builderClass>
+        <runnerId>latex</runnerId>
+    </builder>
+    <builder id="pslatex" legacyId="1">
+        <label>pslatex</label>
+        <outputFormat>ps</outputFormat>
+        <builderClass>net.sourceforge.texlipse.builder.TexBuilder</builderClass>
+        <runnerId>pslatex</runnerId>
+    </builder>
+    <builder id="pdflatex" legacyId="2">
+        <label>pdflatex</label>
+        <outputFormat>pdf</outputFormat>
+        <builderClass>net.sourceforge.texlipse.builder.TexBuilder</builderClass>
+        <runnerId>pdflatex</runnerId>
+    </builder>
+    <builder id="dvips" legacyId="3">
+        <label>dvips</label>
+        <outputFormat>ps</outputFormat>
+        <builderClass>net.sourceforge.texlipse.builder.DviBuilder</builderClass>
+        <runnerId>dvips</runnerId>
+    </builder>
+    <builder id="latex+dvipdf" legacyId="4">
+        <label>latex+dvipdf</label>
+        <outputFormat>dvi</outputFormat>
+        <builderClass>net.sourceforge.texlipse.builder.DviBuilder</builderClass>
+        <runnerId>dvipdf</runnerId>
+		<secondaryBuilder>latex</secondaryBuilder>
+    </builder>
+    <builder id="pslatex+ps2pdf" legacyId="5">
+        <label>pslatex+ps2pdf</label>
+        <outputFormat>pdf</outputFormat>
+        <builderClass>net.sourceforge.texlipse.builder.PsBuilder</builderClass>
+        <runnerId>ps2pdf</runnerId>
+        <secondaryBuilder>pslatex</secondaryBuilder>
+    </builder>
+    <builder id="latex+dvi2ps+ps2pdf" legacyId="6">
+        <label>latex+dvi2ps+ps2pdf</label>
+        <outputFormat>pdf</outputFormat>
+        <builderClass>net.sourceforge.texlipse.builder.DviBuilder</builderClass>
+        <runnerId>ps2pdf</runnerId>
+        <secondaryBuilder>latex+dvipdf</secondaryBuilder>
+    </builder>
+    <builder id="xelatex" legacyId="7">
+        <label>xelatex</label>
+        <outputFormat>pdf</outputFormat>
+        <builderClass>net.sourceforge.texlipse.builder.TexBuilder</builderClass>
+        <runnerId>xelatex</runnerId>
+    </builder>
+    <builder id="lualatex" legacyId="8">
+        <label>lualatex</label>
+        <outputFormat>pdf</outputFormat>
+        <builderClass>net.sourceforge.texlipse.builder.TexBuilder</builderClass>
+        <runnerId>lualatex</runnerId>
+    </builder>
+    <builder id="latex-cb">
+        <label>latex (cycle auto-detection)</label>
+        <outputFormat>dvi</outputFormat>
+        <builderClass>net.sourceforge.texlipse.builder.TexCycleBuilder</builderClass>
+        <runnerId>latex</runnerId>
+    </builder>
+    <builder id="pslatex-cb">
+        <label>pslatex (cycle auto-detection)</label>
+        <outputFormat>ps</outputFormat>
+        <builderClass>net.sourceforge.texlipse.builder.TexCycleBuilder</builderClass>
+        <runnerId>pslatex</runnerId>
+    </builder>
+    <builder id="pdflatex-cb">
+        <label>pdflatex (cycle auto-detection)</label>
+        <outputFormat>pdf</outputFormat>
+        <builderClass>net.sourceforge.texlipse.builder.TexCycleBuilder</builderClass>
+        <runnerId>pdflatex</runnerId>
+    </builder>
+    <builder id="xelatex-cb">
+        <label>xelatex (cycle auto-detection)</label>
+        <outputFormat>pdf</outputFormat>
+        <builderClass>net.sourceforge.texlipse.builder.TexCycleBuilder</builderClass>
+        <runnerId>xelatex</runnerId>
+    </builder>
+    <builder id="lualatex-cb">
+        <label>lualatex (cycle auto-detection)</label>
+        <outputFormat>pdf</outputFormat>
+        <builderClass>net.sourceforge.texlipse.builder.TexCycleBuilder</builderClass>
+        <runnerId>lualatex</runnerId>
+    </builder>
+</builders>

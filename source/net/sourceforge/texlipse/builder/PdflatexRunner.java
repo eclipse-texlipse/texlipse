@@ -9,7 +9,8 @@
  */
 package net.sourceforge.texlipse.builder;
 
-import net.sourceforge.texlipse.properties.TexlipseProperties;
+import net.sourceforge.texlipse.builder.factory.RunnerDescription;
+
 
 /**
  * Run the external pdflatex program.
@@ -21,33 +22,8 @@ public class PdflatexRunner extends LatexRunner {
     /**
      * Create a new ProgramRunner.
      */
-    public PdflatexRunner() {
-        super();
-    }
-    
-    protected String getWindowsProgramName() {
-        return "pdflatex.exe";
-    }
-    
-    protected String getUnixProgramName() {
-        return "pdflatex";
-    }
-    
-    public String getDescription() {
-        return "PdfLatex program";
-    }
-    
-    /**
-     * Enable SyncTeX
-     */
-    public String getDefaultArguments() {
-        return "-synctex=1 "+super.getDefaultArguments();
+    public PdflatexRunner(RunnerDescription description) {
+        super(description);
     }
 
-    /**
-     * @return output file format (pdf)
-     */
-    public String getOutputFormat() {
-        return TexlipseProperties.OUTPUT_FORMAT_PDF;
-    }
 }

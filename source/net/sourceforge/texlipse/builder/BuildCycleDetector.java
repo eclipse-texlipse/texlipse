@@ -57,7 +57,7 @@ public class BuildCycleDetector {
             // schedule bibtex manually
             final ProgramRunner bibtex = BuilderRegistry.getRunner(
                     TexlipseProperties.INPUT_FORMAT_BIB,
-                    TexlipseProperties.OUTPUT_FORMAT_AUX, 0);
+                    TexlipseProperties.OUTPUT_FORMAT_AUX);
             if (bibtex != null) {
                 runners.push(bibtex);
             }
@@ -98,7 +98,7 @@ public class BuildCycleDetector {
             final String fileExt = changedFile.getFileExtension();
             if (fileExt != null && fileExt.length() > 0
                     && !"tex".equals(fileExt)) {
-                ProgramRunner runner = BuilderRegistry.getRunner(fileExt, null, 0);
+                ProgramRunner runner = BuilderRegistry.getRunner(fileExt, null);
                 if (runner != null) {
                     // Schedule runner before next LaTeX rebuild
                     if (push) {

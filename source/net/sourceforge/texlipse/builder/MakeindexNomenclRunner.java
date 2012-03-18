@@ -9,8 +9,7 @@
  */
 package net.sourceforge.texlipse.builder;
 
-import net.sourceforge.texlipse.properties.TexlipseProperties;
-
+import net.sourceforge.texlipse.builder.factory.RunnerDescription;
 import org.eclipse.core.resources.IResource;
 
 
@@ -21,31 +20,8 @@ import org.eclipse.core.resources.IResource;
  */
 public class MakeindexNomenclRunner extends AbstractProgramRunner {
 
-    public MakeindexNomenclRunner() {
-        super();
-    }
-
-    protected String getWindowsProgramName() {
-        return "makeindex.exe";
-    }
-    
-    protected String getUnixProgramName() {
-        return "makeindex";
-    }
-    
-    public String getDescription() {
-        return "Makeindex program (nomencl)";
-    }
-    
-    public String getDefaultArguments() {
-        return "%input -s nomencl.ist -o %output";
-    }
-    public String getInputFormat() {
-        return TexlipseProperties.INPUT_FORMAT_NOMENCL;
-    }
-    
-    public String getOutputFormat() {
-    	return TexlipseProperties.OUTPUT_FORMAT_NOMENCL;
+    public MakeindexNomenclRunner(RunnerDescription description) {
+        super(description);
     }
     
     /**

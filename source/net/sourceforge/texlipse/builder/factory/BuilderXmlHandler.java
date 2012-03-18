@@ -10,18 +10,33 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 
+/**
+ * Handler for XML input, processing builder information.
+ *
+ * @author Matthias Erll
+ *
+ */
 public class BuilderXmlHandler extends DefaultHandler {
 
+    // builder XML field elements
     private static final String[] BUILDER_PROPERTY_STR = { "label", "outputFormat",
             "builderClass", "runnerId", "secondaryBuilder" };
+    // builder XML field identifiers
     private static enum BuilderProperty { LABEL, OUTPUTFORMAT, BUILDERCLASS, RUNNERID,
             SECONDARYBUILDER };
 
+    // builder description which is currently being read
     private BuilderDescription current;
+
+    // property field of the builder description which is currently being read
     private BuilderProperty property;
 
+    // map of all builders completely read
     private final Map<String, BuilderDescription> builders;
 
+    /**
+     * Constructor.
+     */
     public BuilderXmlHandler() {
         super();
         this.builders = new HashMap<String, BuilderDescription>();
@@ -113,6 +128,11 @@ public class BuilderXmlHandler extends DefaultHandler {
         }
     }
 
+    /**
+     * Returns all builders, which have been read from the XML file.
+     *
+     * @return map with builder ids and descriptions
+     */
     public Map<String, BuilderDescription> getBuilders() {
         return builders;
     }

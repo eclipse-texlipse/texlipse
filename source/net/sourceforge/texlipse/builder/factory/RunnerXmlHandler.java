@@ -13,23 +13,42 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 
+/**
+ * Handler for XML input, processing runner information.
+ *
+ * @author Matthias Erll
+ *
+ */
 public class RunnerXmlHandler extends DefaultHandler {
 
+    // runner XML field elements
     private static final String[] RUNNER_PROPERTY_STR = { "label", "description",
-            "inputFormat", "outputFormat", "runnerClass", "executable",
+            "inputFormat", "outputFormat", "runnerClass", "legacyClass", "executable",
             "executable.windows", "defaultArguments" };
-    private static enum RunnerProperty { LABEL, DESCRIPTION, INPUTFORMAT, OUTPUTFORMAT,
-            RUNNERCLASS, EXECUTABLE, EXECUTABLE_WINDOWS, DEFAULTARGUMENTS };
 
+    // runner XML field identifiers
+    private static enum RunnerProperty { LABEL, DESCRIPTION, INPUTFORMAT, OUTPUTFORMAT,
+            RUNNERCLASS, LEGACYCLASS, EXECUTABLE, EXECUTABLE_WINDOWS, DEFAULTARGUMENTS };
+
+    // runner description which is currently being read
     private RunnerDescription current;
+
+    // property field of the runner description which is currently being read
     private RunnerProperty property;
 
+    // flag for overriding Windows-specific executable settings
     private boolean overrideExecutable;
+    // list of all output formats, used for generating an array
     private List<String> outputFormats;
 
+    // map of all runners completely read
     private final Map<String, RunnerDescription> runners;
+    // used for modifying executable names
     private final boolean isWindowsPlatform;
 
+    /**
+     * Constructor.
+     */
     public RunnerXmlHandler() {
         super();
         this.runners = new HashMap<String, RunnerDescription>();
@@ -42,18 +61,7 @@ public class RunnerXmlHandler extends DefaultHandler {
         if ("runner".equals(qName)) {
             final String id = attributes.getValue("id");
             if (id != null) {
-                final String legacyId = attributes.getValue("legacyId");
-                if (legacyId != null) {
-                    int lid;
-                    try {
-                        lid = Integer.valueOf(legacyId);
-                    } catch (NumberFormatException e) {
-                        lid = -1;
-                    }
-                    current = new RunnerDescription(id, lid);
-                } else {
-                    current = new RunnerDescription(id);
-                }
+                current = new RunnerDescription(id);
             }
             else {
                 throw new SAXException("id attribute is mandatory!");
@@ -145,6 +153,11 @@ public class RunnerXmlHandler extends DefaultHandler {
         }
     }
 
+    /**
+     * Returns all runners, which have been read from the XML file.
+     *
+     * @return map with runner ids and descriptions
+     */
     public Map<String, RunnerDescription> getRunners() {
         return runners;
     }

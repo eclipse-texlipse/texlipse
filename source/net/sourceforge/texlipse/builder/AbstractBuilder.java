@@ -22,6 +22,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
  */
 public abstract class AbstractBuilder implements Runnable, Builder {
 
+    // the description of the builder
     protected final BuilderDescription description;
 
     // the current progress monitor

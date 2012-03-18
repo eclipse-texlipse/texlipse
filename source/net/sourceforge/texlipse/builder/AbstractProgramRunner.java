@@ -34,7 +34,10 @@ import org.eclipse.ui.texteditor.MarkerUtilities;
  */
 public abstract class AbstractProgramRunner implements ProgramRunner {
 
+    // the description of the runner
     protected final RunnerDescription description;
+
+    // the runner configuration
     protected final RunnerConfiguration config;
 
     // the currently running program

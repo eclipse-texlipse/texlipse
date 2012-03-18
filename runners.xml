@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <runners>
-    <runner id="latex" legacyId="0">
+    <runner id="latex">
         <label>latex</label>
         <description>Latex program</description>
         <inputFormat>tex</inputFormat>
@@ -9,38 +9,42 @@
         <runnerClass>net.sourceforge.texlipse.builder.LatexRunner</runnerClass>
         <executable>latex</executable>
     </runner>
-    <runner id="pslatex" legacyId="1">
+    <runner id="pslatex">
         <label>pslatex</label>
         <description>PsLatex program</description>
         <inputFormat>tex</inputFormat>
         <outputFormat>ps</outputFormat>
-        <runnerClass>net.sourceforge.texlipse.builder.PslatexRunner</runnerClass>
+        <runnerClass>net.sourceforge.texlipse.builder.LatexRunner</runnerClass>
+        <legacyRunnerClass>net.sourceforge.texlipse.builder.PslatexRunner</legacyRunnerClass>
         <executable>pslatex</executable>
     </runner>
-    <runner id="pdflatex" legacyId="2">
+    <runner id="pdflatex">
         <label>pdflatex</label>
         <description>PdfLatex program</description>
         <inputFormat>tex</inputFormat>
         <outputFormat>pdf</outputFormat>
-        <runnerClass>net.sourceforge.texlipse.builder.PdflatexRunner</runnerClass>
+        <runnerClass>net.sourceforge.texlipse.builder.LatexRunner</runnerClass>
+        <legacyRunnerClass>net.sourceforge.texlipse.builder.PdflatexRunner</legacyRunnerClass>
         <executable>pdflatex</executable>
         <defaultArguments>-synctex=1 -interaction=nonstopmode --src-specials %input</defaultArguments>
     </runner>
-    <runner id="xelatex" legacyId="3">
+    <runner id="xelatex">
         <label>xelatex</label>
         <description>XeLatex program</description>
         <inputFormat>tex</inputFormat>
         <outputFormat>pdf</outputFormat>
-        <runnerClass>net.sourceforge.texlipse.builder.XelatexRunner</runnerClass>
+        <runnerClass>net.sourceforge.texlipse.builder.LatexRunner</runnerClass>
+        <legacyRunnerClass>net.sourceforge.texlipse.builder.XelatexRunner</legacyRunnerClass>
         <executable>xelatex</executable>
         <defaultArguments>-synctex=1 -interaction=nonstopmode --src-specials %input</defaultArguments>
     </runner>
-    <runner id="lualatex" legacyId="4">
+    <runner id="lualatex">
         <label>lualatex</label>
         <description>LuaLatex program</description>
         <inputFormat>tex</inputFormat>
         <outputFormat>pdf</outputFormat>
-        <runnerClass>net.sourceforge.texlipse.builder.LualatexRunner</runnerClass>
+        <runnerClass>net.sourceforge.texlipse.builder.LatexRunner</runnerClass>
+        <legacyRunnerClass>net.sourceforge.texlipse.builder.LualatexRunner</legacyRunnerClass>
         <executable>lualatex</executable>
         <defaultArguments>-synctex=1 -interaction=nonstopmode --src-specials %input</defaultArguments>
     </runner>

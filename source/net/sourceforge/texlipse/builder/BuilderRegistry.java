@@ -39,8 +39,11 @@ public class BuilderRegistry {
 
     // the singleton instance
     private static BuilderRegistry instance = new BuilderRegistry();
-    
+
+    // map with runner ids and runner descriptions
     private final Map<String, RunnerDescription> runners;
+
+    // map with builder ids and builder descriptions
     private final Map<String, BuilderDescription> builders;
 
     // stream to write builder status messages to
@@ -92,6 +95,13 @@ public class BuilderRegistry {
         return consoleStream;
     }
 
+    /**
+     * Return the builder description for the old builder id.
+     *
+     * @param id legacy builder id
+     * @return the builder description matching the legacy id,
+     *  or <code>null</code> if not found.
+     */
     private static BuilderDescription getBuilderByLegacyId(int id) {
         for (BuilderDescription bd : instance.builders.values()) {
             if (bd.getLegacyId() == id) {
@@ -102,19 +112,31 @@ public class BuilderRegistry {
     }
 
     /**
-     * Find all builders that produce the given output format.
-     * 
+     * Finds all builders that produce the given output format.
+     *
      * @param format output format
-     * @return builder information
+     * @return builder descriptions
      */
     public static Collection<BuilderDescription> getAllBuilders(String format) {
         return instance.findBuilders(format);
     }
 
+    /**
+     * Returns all available runners.
+     *
+     * @return runner descriptions
+     */
     public static Collection<RunnerDescription> getAllRunners() {
         return instance.runners.values();
     }
 
+    /**
+     * Returns the builder description for the unique builder id.
+     *
+     * @param builderId builder id
+     * @return builder description, or <code>null</code> if no builder
+     *  with this id exists
+     */
     public static BuilderDescription getBuilderDescription(String builderId) {
         if (builderId != null) {
             return instance.builders.get(builderId);
@@ -123,6 +145,14 @@ public class BuilderRegistry {
         }
     }
 
+    /**
+     * Looks up the current builder id for given the legacy builder number, which may still
+     * be written in the preferences.
+     *
+     * @param legacyId legacy builder number
+     * @return the unique builder id, or <code>null</code> if no builder with this
+     *  number was found
+     */
     public static String getBuilderIdByLegacy(int legacyId) {
         BuilderDescription bd = getBuilderByLegacyId(legacyId);
         if (bd != null) {
@@ -133,6 +163,13 @@ public class BuilderRegistry {
         }
     }
 
+    /**
+     * Instantiates and returns a new builder for the given id.
+     *
+     * @param builderId builder id
+     * @return the new builder instance; returns <code>null</code> if no such
+     *  id exists or the builder could not be instantiated
+     */
     public static Builder getBuilder(String builderId) {
         try {
             return BuilderFactory.getInstance().getBuilderInstance(
@@ -150,10 +187,24 @@ public class BuilderRegistry {
         }
     }
 
+    /**
+     * Returns the runner description for the unique runner id.
+     *
+     * @param runnerId runner id
+     * @return runner description, or <code>null</code> if no runner
+     *  with this id exists
+     */
     public static RunnerDescription getRunnerDescription(String runnerId) {
         return instance.runners.get(runnerId);
     }
 
+    /**
+     * Instantiates and returns a runner for the given id.
+     *
+     * @param runnerId runner id
+     * @return runner instance; <code>null</code> if no such runner
+     *  exists or it could not be instantiated
+     */
     public static ProgramRunner getRunner(String runnerId) {
         try {
             return BuilderFactory.getInstance().getRunnerInstance(
@@ -173,11 +224,12 @@ public class BuilderRegistry {
 
     /**
      * Get a program runner for the given conversion.
-     * 
+     *
      * @param in input file format
      * @param out output file format
      * @return a program runner capable of converting from the given
-     *         input format to the given output format
+     *         input format to the given output format; <code>null</code>
+     *         if no appropriate runner was found in the registry
      */
     public static ProgramRunner getRunner(String in, String out) {
         String id = instance.findProgramRunner(in, out);

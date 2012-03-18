@@ -7,32 +7,70 @@ import net.sourceforge.texlipse.TexlipsePlugin;
 import org.eclipse.jface.preference.IPreferenceStore;
 
 
+/**
+ * This class initializes, loads and stores the configuration data for a program runner,
+ * which can be modified in the preferences.
+ *
+ * @author Matthias Erll
+ *
+ */
 public class RunnerConfiguration {
 
     private final RunnerDescription runner;
 
     /**
+     * Retrieves the old configuration key, if preferences have not yet been set based on
+     * the builder id.
+     *
      * @return the name of the program runner path -preference in the plugin preferences
      */
     private String getCommandPreferenceNameByClass() {
-        return getClass() + "_prog";
+        String clazz = runner.getLegacyClass();
+        if (clazz == null) {
+            clazz = runner.getClass().getName();
+        }
+        return clazz + "_prog";
     }
 
     /**
+     * Retrieves the old configuration key, if preferences have not yet been set based on
+     * the builder id.
+     *
      * @return the name of the program runner arguments -preference in the plugin preferences
      */
     private String getArgumentsPreferenceNameByClass() {
-        return getClass() + "_args";
+        String clazz = runner.getLegacyClass();
+        if (clazz == null) {
+            clazz = runner.getClass().getName();
+        }
+        return clazz + "_args";
     }
 
-    private String getArgumentsPreferenceName() {
-        return "runner_" + runner.getId() + "_args";
-    }
-
+    /**
+     * Based on the builder id, retrieves the configuration id of the runner preferences.
+     *
+     * @return the preferences name of the program runner path
+     */
     private String getCommandPreferenceName() {
         return "runner_" + runner.getId() + "_prog";
     }
 
+    /**
+     * Based on the builder id, retrieves the configuration id of the runner preferences.
+     *
+     * @return the preferences name of the program runner arguments
+     */
+    private String getArgumentsPreferenceName() {
+        return "runner_" + runner.getId() + "_args";
+    }
+
+    /**
+     * Returns the absolute path of the default program file used for executing this runner.
+     * This includes the given directory and the default executable. 
+     *
+     * @param dir directory where to look for the runner executable
+     * @return the default program file path
+     */
     private String getDefaultProgramFile(String dir) {
         String runnerPath = "";
         if (dir != null && dir.length() > 0) {
@@ -44,6 +82,11 @@ public class RunnerConfiguration {
         return runnerPath;
     }
 
+    /**
+     * Constructor.
+     *
+     * @param runner description of the runner to configure
+     */
     public RunnerConfiguration(RunnerDescription runner) {
         super();
         this.runner = runner;
@@ -108,7 +151,10 @@ public class RunnerConfiguration {
     }
 
     /**
+     * Initializes the default preferences for the runner.
      *
+     * @param pref preferences
+     * @param dir directory for looking up the runner executable
      */
     public void initializeDefaults(IPreferenceStore pref, String dir) {
         pref.setDefault(getCommandPreferenceName(), getDefaultProgramFile(dir));

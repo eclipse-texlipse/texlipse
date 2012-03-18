@@ -7,13 +7,28 @@ import net.sourceforge.texlipse.builder.Builder;
 import net.sourceforge.texlipse.builder.ProgramRunner;
 
 
+/**
+ * This factory is used by the BuilderRegistry for lazy instantiation of
+ * Builder subclasses and ProgramRunner subclasses, parameters
+ * provided in the BuilderDescription and RunnerDescription.
+ *
+ * @author Matthias Erll
+ */
 public class BuilderFactory {
 
+    /**
+     * Singleton instance.
+     */
     protected static BuilderFactory instance;
 
     private BuilderFactory() {
     }
 
+    /**
+     * Retrieves, and if necessary, first creates the BuilderFactory instance.
+     *
+     * @return instance
+     */
     public static synchronized BuilderFactory getInstance() {
         if (instance == null) {
             instance = new BuilderFactory();
@@ -21,6 +36,17 @@ public class BuilderFactory {
         return instance;
     }
 
+    /**
+     * Creates a new builder instance according to the given description. The description
+     * must contain a valid and accessible class to be instantiated.
+     *
+     * @param description the builder description, which is also passed on to the builder
+     *  instance
+     * @return new builder instance
+     * @throws InvocationTargetException if an error occurred while using the constructor
+     * @throws IllegalArgumentException if the description contains invalid parameters, or
+     *  the resulting instance turns out to be invalid
+     */
     public Builder getBuilderInstance(final BuilderDescription description)
                     throws InvocationTargetException, IllegalArgumentException {
         if (description == null) {
@@ -55,6 +81,17 @@ public class BuilderFactory {
         }
     }
 
+    /**
+     * Creates a new runner instance according to the given description. The description
+     * must contain a valid and accessible class to be instantiated.
+     *
+     * @param description the runner description, which is also passed on to the runner
+     *  instance
+     * @return new runner instance
+     * @throws InvocationTargetException if an error occurred while using the constructor
+     * @throws IllegalArgumentException if the description contains invalid parameters, or
+     *  the resulting instance turns out to be invalid
+     */
     public ProgramRunner getRunnerInstance(final RunnerDescription description)
                     throws IllegalArgumentException, InvocationTargetException {
         if (description == null) {

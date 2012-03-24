@@ -14,7 +14,7 @@ public class RunnerDescription {
     private String label;
     private String description;
     private String inputFormat;
-    private String[] outputFormats;
+    private String outputFormat;
     private Class<? extends ProgramRunner> runnerClass;
     private String legacyClass;
     private String executable;
@@ -96,53 +96,22 @@ public class RunnerDescription {
     }
 
     /**
-     * Retrieves all output formats (file extensions), which are produced by this
+     * Retrieves the output format (file extension), which is produced by this
      * program runner.
      *
-     * @return an array of output formats, or <code>null</code> if not specified
+     * @return output format, or <code>null</code> if not specified
      */
-    public String[] getOutputFormats() {
-        return outputFormats;
+    public String getOutputFormat() {
+        return outputFormat;
     }
 
     /**
-     * Sets the output formats for this runner.
+     * Sets the output format for this runner.
      *
-     * @param outputFormats the output formats
+     * @param outputFormat the output format
      */
-    protected void setOutputFormats(String[] outputFormats) {
-        this.outputFormats = outputFormats;
-    }
-
-    /**
-     * Checks if this runner produces the given output format (file extension).
-     *
-     * @param outputFormat the output format to check for
-     * @return <code>true</code> if the description contains this file extension,
-     *  <code>false</code> otherwise
-     */
-    public boolean hasOutputFormat(String outputFormat) {
-        for (String out : outputFormats) {
-            if (out.equals(outputFormat)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Retrieves the first output format (file extension), which is assumed to be the
-     * default output format produced by this program runner.
-     *
-     * @return the default output format
-     */
-    public String getDefaultOutputFormat() {
-        if (outputFormats != null && outputFormats.length > 0) {
-            return outputFormats[0];
-        }
-        else {
-            return null;
-        }
+    protected void setOutputFormat(String outputFormat) {
+        this.outputFormat = outputFormat;
     }
 
     /**

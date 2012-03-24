@@ -30,7 +30,6 @@ public class DviBuilder extends AbstractBuilder implements AdaptableBuilder {
 
     public DviBuilder(BuilderDescription description) {
         super(description);
-        //isValid();
     }
 
     public void reset(final IProgressMonitor monitor) {
@@ -45,7 +44,7 @@ public class DviBuilder extends AbstractBuilder implements AdaptableBuilder {
      */
     public boolean isValid() {
         if (dvi == null) {
-            dvi = BuilderRegistry.getBuilder("latex");
+            dvi = BuilderRegistry.getBuilder(description.getSecondaryBuilderId());
         }
         if (ps == null || !ps.isValid()) {
             ps = BuilderRegistry.getRunner(description.getRunnerId());

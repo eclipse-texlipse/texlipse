@@ -32,7 +32,6 @@ public class PsBuilder extends AbstractBuilder implements AdaptableBuilder {
 
     public PsBuilder(BuilderDescription description) {
         super(description);
-        //isValid();
     }
 
     public void reset(final IProgressMonitor monitor) {

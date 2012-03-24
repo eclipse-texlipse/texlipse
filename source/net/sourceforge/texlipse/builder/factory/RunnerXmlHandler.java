@@ -1,8 +1,6 @@
 package net.sourceforge.texlipse.builder.factory;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import net.sourceforge.texlipse.builder.ProgramRunner;
@@ -38,8 +36,6 @@ public class RunnerXmlHandler extends DefaultHandler {
 
     // flag for overriding Windows-specific executable settings
     private boolean overrideExecutable;
-    // list of all output formats, used for generating an array
-    private List<String> outputFormats;
 
     // map of all runners completely read
     private final Map<String, RunnerDescription> runners;
@@ -66,7 +62,6 @@ public class RunnerXmlHandler extends DefaultHandler {
             else {
                 throw new SAXException("id attribute is mandatory!");
             }
-            outputFormats = new ArrayList<String>();
             overrideExecutable = false;
         } else {
             boolean found = false;
@@ -86,10 +81,6 @@ public class RunnerXmlHandler extends DefaultHandler {
             throws SAXException {
         if ("runner".equals(qName)) {
             if (current != null) {
-                if (!outputFormats.isEmpty()) {
-                    current.setOutputFormats(outputFormats.toArray(new String[0]));
-                }
-                outputFormats = null;
                 runners.put(current.getId(), current);
                 current = null;
             }
@@ -117,7 +108,7 @@ public class RunnerXmlHandler extends DefaultHandler {
             current.setInputFormat(str);
             break;
         case OUTPUTFORMAT:
-            outputFormats.add(str);
+            current.setOutputFormat(str);
             break;
         case RUNNERCLASS:
             try {

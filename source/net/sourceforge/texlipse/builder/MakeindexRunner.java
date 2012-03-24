@@ -48,15 +48,7 @@ public class MakeindexRunner extends AbstractProgramRunner {
         
         return args;
     }
-    
-    public String getInputFormat() {
-        return TexlipseProperties.INPUT_FORMAT_IDX;
-    }
-    
-    public String getOutputFormat() {
-        return TexlipseProperties.OUTPUT_FORMAT_IDX;
-    }
-    
+
     /**
      * Parse the output of the makeindex program.
      * 

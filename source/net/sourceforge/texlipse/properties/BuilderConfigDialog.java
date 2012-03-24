@@ -158,9 +158,10 @@ public class BuilderConfigDialog extends Dialog {
         
         addArgumentsField(composite);
         
-        if (runner.getInputFormat() != null && runner.getInputFormat().length() > 0
-                && runner.getDefaultOutputFormat() != null
-                && runner.getDefaultOutputFormat().length() > 0) {
+        if (runner.getInputFormat() != null
+                && runner.getInputFormat().length() > 0
+                && runner.getOutputFormat() != null
+                && runner.getOutputFormat().length() > 0) {
             addFormatsField(composite);
         }
         
@@ -293,7 +294,7 @@ public class BuilderConfigDialog extends Dialog {
         outputGroup.setLayout(new GridLayout());
         
         Label outputLabel = new Label(outputGroup, SWT.LEFT);
-        outputLabel.setText("." + runner.getDefaultOutputFormat());
+        outputLabel.setText("." + runner.getOutputFormat());
         outputLabel.setLayoutData(new GridData());
     }        
 }

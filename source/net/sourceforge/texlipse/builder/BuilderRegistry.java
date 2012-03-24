@@ -260,8 +260,8 @@ public class BuilderRegistry {
      */
     protected BuilderRegistry() {
         final BuilderXmlReader xmlReader = new BuilderXmlReader();
-        runners = xmlReader.getRunnersFromXml();
-        builders = xmlReader.getBuildersFromXml();
+        runners = xmlReader.getDefaultRunners();
+        builders = xmlReader.getDefaultBuilders();
     }
 
     /**
@@ -293,7 +293,7 @@ public class BuilderRegistry {
 
         for (RunnerDescription runner : instance.runners.values()) {
             if (in.equals(runner.getInputFormat()) && 
-                    (out == null || runner.hasOutputFormat(out))) {
+                    (out == null || out.equals(runner.getOutputFormat()))) {
                 return runner.getId();
             }
         }

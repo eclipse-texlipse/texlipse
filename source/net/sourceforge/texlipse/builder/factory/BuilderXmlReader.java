@@ -24,29 +24,25 @@ import org.xml.sax.helpers.DefaultHandler;
 public class BuilderXmlReader {
 
     /**
-     * Runs the parser for a particular file in the plugin folder, using the given
+     * Runs the parser for a particular file stream, using the given
      * XML handler.
-     * 
-     * @param fileName file name, relative to the Texlipse plugin folder
+     *
+     * @param input stream
      * @param handler XML handler
+     * @throws IOException if the stream could not be read
      */
-    private void runParser(final String fileName, final DefaultHandler handler) {
+    private void runParser(final InputStream in, final DefaultHandler handler)
+            throws IOException {
         final SAXParserFactory factory = SAXParserFactory.newInstance();
         try {
-            final InputStream inputStream = TexlipsePlugin.getDefault().getBundle()
-                    .getEntry(fileName).openStream();
             SAXParser saxParser = factory.newSAXParser();
-            saxParser.parse(inputStream, handler);
+            saxParser.parse(in, handler);
         }
         catch (ParserConfigurationException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
         catch (SAXException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
@@ -60,14 +56,47 @@ public class BuilderXmlReader {
     }
 
     /**
+     * Retrieves information about runners from the given XML stream.
+     *
+     * @param in input stream to read runner information from
+     * @return map with runner ids and descriptions
+     * @throws IOException if the stream could not be read
+     */
+    public Map<String, RunnerDescription> getRunnersFromStream(final InputStream in)
+            throws IOException {
+        RunnerXmlHandler handler = new RunnerXmlHandler();
+        runParser(in, handler);
+        return handler.getRunners();
+    }
+
+    /**
+     * Retrieves information about builders from the given XML stream.
+     *
+     * @param in input stream to read builder information from
+     * @return map with builder ids and descriptions
+     * @throws IOException if the stream could not be read
+     */
+    public Map<String, BuilderDescription> getBuildersFromStream(final InputStream in)
+            throws IOException {
+        BuilderXmlHandler handler = new BuilderXmlHandler();
+        runParser(in, handler);
+        return handler.getBuilders();
+    }
+
+    /**
      * Retrieves information about configurable runners from the default XML file.
      *
      * @return map with builder ids and descriptions
      */
-    public Map<String, RunnerDescription> getRunnersFromXml() {
-        RunnerXmlHandler handler = new RunnerXmlHandler();
-        runParser("runners.xml", handler);
-        return handler.getRunners();
+    public Map<String, RunnerDescription> getDefaultRunners() {
+        try {
+            return getRunnersFromStream(TexlipsePlugin.getDefault().getBundle()
+                    .getEntry("defaultRunners.xml").openStream());
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     /**
@@ -75,10 +104,15 @@ public class BuilderXmlReader {
      *
      * @return map with runner ids and descriptions
      */
-    public Map<String, BuilderDescription> getBuildersFromXml() {
-        BuilderXmlHandler handler = new BuilderXmlHandler();
-        runParser("builders.xml", handler);
-        return handler.getBuilders();
+    public Map<String, BuilderDescription> getDefaultBuilders() {
+        try {
+            return getBuildersFromStream(TexlipsePlugin.getDefault().getBundle()
+                    .getEntry("defaultBuilders.xml").openStream());
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
 }

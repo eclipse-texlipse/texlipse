@@ -49,18 +49,6 @@ public class TexBuilder extends AbstractBuilder implements AdaptableBuilder {
     private ProgramRunner makeIndexNomencl;
     private boolean stopped;
 
-//    public TexBuilder(int i, String outputFormat, int alt) {
-//        super(i);
-//        this.biblatexMode = false;
-//        this.biblatexBackend = null;
-//        this.output = outputFormat;
-//        this.latex = null;
-//        this.bibtex = null;
-//        this.makeIndex = null;
-//        this.runnerClass = null;
-//        isValid();
-//    }
-
     public TexBuilder(BuilderDescription description) {
         super(description);
         this.biblatexMode = false;
@@ -68,7 +56,6 @@ public class TexBuilder extends AbstractBuilder implements AdaptableBuilder {
         this.latex = BuilderRegistry.getRunner(description.getRunnerId());
         this.bibtex = null;
         this.makeIndex = null;
-        //isValid();
     }
 
     /**

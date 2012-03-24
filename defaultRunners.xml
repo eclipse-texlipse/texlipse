@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<runners>
+<runners xmlns="net.sourceforge.texlipse/runners"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="net.sourceforge.texlipse/runners schema/runners.xsd">
     <runner id="latex">
         <label>latex</label>
         <description>Latex program</description>
@@ -8,6 +10,7 @@
         <outputFormat>dvi</outputFormat>
         <runnerClass>net.sourceforge.texlipse.builder.LatexRunner</runnerClass>
         <executable>latex</executable>
+        <defaultArguments>-interaction=nonstopmode --src-specials %input</defaultArguments>
     </runner>
     <runner id="pslatex">
         <label>pslatex</label>
@@ -17,6 +20,7 @@
         <runnerClass>net.sourceforge.texlipse.builder.LatexRunner</runnerClass>
         <legacyRunnerClass>net.sourceforge.texlipse.builder.PslatexRunner</legacyRunnerClass>
         <executable>pslatex</executable>
+        <defaultArguments>-interaction=nonstopmode --src-specials %input</defaultArguments>
     </runner>
     <runner id="pdflatex">
         <label>pdflatex</label>
@@ -51,8 +55,8 @@
     <runner id="bibtex">
         <label>bibtex</label>
         <description>Bibtex program</description>
-        <inputFormat>bib</inputFormat>
-        <outputFormat>aux</outputFormat>
+        <inputFormat>aux</inputFormat>
+        <outputFormat>bbl</outputFormat>
         <runnerClass>net.sourceforge.texlipse.builder.BibtexRunner</runnerClass>
         <executable>bibtex</executable>
     </runner>

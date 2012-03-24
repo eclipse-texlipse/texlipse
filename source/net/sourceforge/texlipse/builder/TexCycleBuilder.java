@@ -112,7 +112,6 @@ public class TexCycleBuilder extends AbstractBuilder {
         this.latex = BuilderRegistry.getRunner(description.getRunnerId());
         this.utilRunner = null;
         this.cycleDetector = null;
-        //isValid();
     }
 
     @Override

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema targetNamespace="net.sourceforge.texlipse/runners"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns="net.sourceforge.texlipse/runners"
+    elementFormDefault="qualified">
+
+    <xs:complexType name="runnerType">
+        <xs:sequence>
+            <xs:element name="label" type="xs:string" />
+            <xs:element name="description" type="xs:string" />
+            <xs:element name="inputFormat" type="xs:string" minOccurs="0" maxOccurs="1" />
+            <xs:element name="outputFormat" type="xs:string" minOccurs="0" maxOccurs="1" />
+            <xs:element name="runnerClass" type="xs:string" />
+            <xs:element name="legacyRunnerClass" type="xs:string" minOccurs="0" maxOccurs="1" />
+            <xs:element name="executable" type="xs:string" />
+            <xs:element name="executable.windows" type="xs:string" minOccurs="0" maxOccurs="1" />
+            <xs:element name="defaultArguments" type="xs:string" minOccurs="0" maxOccurs="1" />
+        </xs:sequence>
+        <xs:attribute name="id" type="xs:string" use="required" />
+    </xs:complexType>
+
+    <xs:element name="runners">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="runner" type="runnerType" minOccurs="0" maxOccurs="unbounded" />
+            </xs:sequence>
+        </xs:complexType>
+
+        <xs:key name="runnerIdKey">
+            <xs:selector xpath="runner" />
+            <xs:field xpath="@id" />
+        </xs:key>
+    </xs:element>
+</xs:schema>

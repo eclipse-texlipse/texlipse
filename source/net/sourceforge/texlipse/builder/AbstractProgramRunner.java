@@ -92,7 +92,7 @@ public abstract class AbstractProgramRunner implements ProgramRunner {
         String name = resource.getName();
         String baseName = name.substring(0, name.length() - ext.length());
         String inputName = baseName + description.getInputFormat();
-        String outputName = baseName + description.getDefaultOutputFormat();
+        String outputName = baseName + description.getOutputFormat();
         if (baseName.indexOf(' ') >= 0) {
             inputName = "\"" + inputName + "\"";
             outputName = "\"" + outputName + "\"";

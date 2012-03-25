@@ -12,6 +12,7 @@ package net.sourceforge.texlipse.outline;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Stack;
 
 import net.sourceforge.texlipse.TexlipsePlugin;
 import net.sourceforge.texlipse.editor.TexEditor;
@@ -197,33 +198,20 @@ public class TexOutlinePage extends ContentOutlinePage {
             Control control= viewer.getControl();
             if (control != null && !control.isDisposed()) {
                 control.setRedraw(false);
-                // save viewer state
-                //ISelection selection = viewer.getSelection();
-                viewer.getTree().deselectAll();
-                
-                Object[] expandedElements = viewer.getExpandedElements();
-                
-                /*
-                 ArrayList oldNodes = new ArrayList(expandedElements.length);
-                 for (int i = 0; i < expandedElements.length; i++) {
-                 oldNodes.add(expandedElements[i]);
-                 }
-                 */
-                
-                // set new input
-                viewer.setInput(input.getRootNodes());
-                
-                // restore viewer state
-                viewer.setExpandedElements(expandedElements);
-                
-                /*
-                 ArrayList newNodes = new ArrayList();
-                 OutlineNode newNode;
-                 for (Iterator iter = this.input.getRootNodes().iterator(); iter.hasNext();) {
-                 newNode = (OutlineNode)iter.next();
-                 restoreExpandState(newNode, oldNodes, newNodes);
-                 }
-                 */
+                                
+                //First try smart update
+                boolean succUpdate = ((TexContentProvider) viewer.getContentProvider()).updateElements(viewer, input.getRootNodes());
+                if (!succUpdate) {
+                    viewer.getTree().deselectAll();
+                    // save viewer state
+                	Object[] expandedElements = viewer.getExpandedElements();
+                    // set new input
+                	viewer.setInput(input.getRootNodes());
+                    /*viewer.getContentProvider().inputChanged(viewer, null, input.getRootNodes());
+                    viewer.refresh(true);*/
+                    // restore viewer state
+                	viewer.setExpandedElements(expandedElements);
+                }
                 control.setRedraw(true);
                 
                 // disable the refresh button, enable context stuff

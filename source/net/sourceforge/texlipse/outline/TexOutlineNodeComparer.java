@@ -36,6 +36,7 @@ public class TexOutlineNodeComparer implements IElementComparer {
      * @see org.eclipse.jface.viewers.IElementComparer#equals(java.lang.Object, java.lang.Object)
 	 */
 	public boolean equals(Object a, Object b) {
+		if (a == b) return true;
 		
 		if (a instanceof OutlineNode && b instanceof OutlineNode) {
 			OutlineNode node1 = (OutlineNode)a;

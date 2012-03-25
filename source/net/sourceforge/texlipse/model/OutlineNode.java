@@ -282,6 +282,36 @@ public class OutlineNode {
         return TYPE_DOCUMENT;
     }
     
+    /**
+     * Updates the node with data from the node n. Assumes that name and
+     * type are equal
+     * @param n
+     * @return Returns true, if an update was necessary
+     */
+    public boolean update(OutlineNode n) {
+    	if (n.beginLine != beginLine || n.endLine != endLine ||
+    			n.offsetOnLine != offsetOnLine || n.declarationLength != declarationLength ||
+    			(n.position == null && position != null) || (position == null && n.position != null) ||
+    			(n.position != null && position != null && !n.position.equals(position))) {
+    		beginLine = n.beginLine;
+    		endLine = n.endLine;
+    		offsetOnLine = n.offsetOnLine;
+    		declarationLength = n.declarationLength;
+
+    		if (position == null && n.position != null) {
+    			position = new Position(n.position.offset, n.position.length);
+    		}
+    		else if (n.position == null) position = null;
+    		else {
+    			position.length = n.position.length;
+    			position.offset = n.position.offset;
+    			position.isDeleted = n.position.isDeleted;
+    		}
+    		return true;
+    	}
+    	return false;
+    }
+    
     /*
     public boolean likelySame(OutlineNode on) {
     	if (on.getType() != this.getType() || !this.getName().equals(on.getName())) {

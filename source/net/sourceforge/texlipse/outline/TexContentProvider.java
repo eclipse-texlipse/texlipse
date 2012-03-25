@@ -10,6 +10,7 @@
 package net.sourceforge.texlipse.outline;
 
 import java.util.List;
+import java.util.Stack;
 
 import net.sourceforge.texlipse.model.OutlineNode;
 
@@ -100,6 +101,49 @@ public class TexContentProvider implements ITreeContentProvider {
     }
 
 	/**
+	 * Tries to update the elements in the viewer without rebuilding the whole
+	 * tree. This is only possible, if only the positions of the elements changed.
+	 * @param viewer
+	 * @param newInput
+	 * @return Return true, if the update was successful. If the return value is false, the state
+	 * of the ContentProvider is not in sync with the content in newInput. 
+	 */
+	public boolean updateElements(Viewer viewer, List<OutlineNode> newInput) {
+		if (rootElements == null) {
+			return false;
+		}
+		
+		Stack<OutlineNode> stackNew = new Stack<OutlineNode>();
+		Stack<OutlineNode> stackOld = new Stack<OutlineNode>();
+		stackNew.addAll(newInput);
+		stackOld.addAll(rootElements);
+		if (stackOld.size() != stackNew.size()) return false;
+
+		while (!stackOld.isEmpty()) {
+			OutlineNode o = stackOld.pop();
+			if (stackNew.isEmpty()) return false;
+			OutlineNode n = stackNew.pop();
+			
+			//Do not update if the number of elements is different
+			if (stackOld.size() != stackNew.size()) return false;
+			
+			//Do not update if the name or the type is different
+			if (o.getType() != n.getType() || !o.getName().equals(n.getName())) return false;
+			
+			o.update(n);
+			if (n.hasChildren()) {
+				if (o.hasChildren()) {
+					stackNew.addAll(n.getChildren());
+					stackOld.addAll(o.getChildren());
+				}
+				else return false;
+			}
+		}
+		
+		return true;
+	}
+	
+	/**
      * Replaces the root elements list with new root elements list.
      * 
      * @param viewer the assosiated viewer
@@ -108,6 +152,5 @@ public class TexContentProvider implements ITreeContentProvider {
 	 */
 	public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
 		this.rootElements = (List<OutlineNode>)newInput;
-		
 	}
 }

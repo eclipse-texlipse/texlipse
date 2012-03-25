@@ -184,15 +184,21 @@ public class TexDocumentModel implements IDocumentListener {
          */
         public IStatus runInUIThread(IProgressMonitor monitor) {
             try {
+            	//long time = System.currentTimeMillis();
                 updateDocumentPositions(rootNodes, monitor);
+                //System.out.println("updateDocPos: " + (System.currentTimeMillis() - time));
                 
                 pollCancel(monitor);
                 
+                //time = System.currentTimeMillis();
                 editor.updateCodeFolder(rootNodes, monitor);
+                //System.out.println("updateCodeFolder: " + (System.currentTimeMillis() - time));
                 pollCancel(monitor);
                 
                 if (editor.getOutlinePage() != null) {
-                    editor.getOutlinePage().update(outlineInput);
+                	//time = System.currentTimeMillis();
+                	editor.getOutlinePage().update(outlineInput);
+                	//System.out.println("updateOutline: " + (System.currentTimeMillis() - time));
                 }
                 
                 //Update FullOutline
@@ -200,8 +206,10 @@ public class TexDocumentModel implements IDocumentListener {
 
                     pollCancel(monitor);
                     if (editor.getFullOutline() != null) {
-                        //createOutlineInput(fullOutlineNodes, monitor);
-                        editor.getFullOutline().update(new TexOutlineInput(new ArrayList<OutlineNode>(fullOutlineNodes)));
+                    	//time = System.currentTimeMillis();
+                    	//createOutlineInput(fullOutlineNodes, monitor);
+                    	editor.getFullOutline().update(new TexOutlineInput(new ArrayList<OutlineNode>(fullOutlineNodes)));
+                    	//System.out.println("updateFullOutline: " + (System.currentTimeMillis() - time));
                     }
                 }
 

@@ -194,7 +194,7 @@ public class TexCycleBuilder extends AbstractBuilder {
                 .getBoolean(TexlipseProperties.BUILD_CYCLE_MAX_ERROR);
         final boolean haltOnInvalid = TexlipsePlugin.getDefault().getPreferenceStore()
                 .getBoolean(TexlipseProperties.BUILD_CYCLE_HALT_INVALID);
-        final String auxFileName = getAuxFileName(project);
+        final String auxFileName = getAuxFileName(resource);
         final IResource auxFile = project.getFile(auxFileName);
         // Initialize file hashes
         cycleDetector.initFileTracking();

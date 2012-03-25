@@ -79,7 +79,7 @@ public class FlsAnalyzer {
                 final IPath absPath = new Path(name);
                 // absolute path, attempt to make project relative
                 if (projectPath.isPrefixOf(absPath)) {
-                    return absPath.removeFirstSegments(projectPath.segmentCount());
+                    return absPath.removeFirstSegments(projectPath.segmentCount()).setDevice(null);
                 }
             }
             else if (workingDir != null) {

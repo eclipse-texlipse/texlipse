@@ -108,6 +108,7 @@ public class BuildCycleDetector {
                     else {
                         runners.add(runner);
                     }
+                    done = false;
                 }
                 if (inputFiles.contains(changedFile)) {
                     // LaTeX incremental build, needs another run-through

@@ -50,7 +50,7 @@ public class ReferenceManager extends PartialRetriever {
     
     public ReferenceEntry getBib(String name) {
         List<ReferenceEntry> bibEntries = bibContainer.getSortedReferences();
-        int nr = getEntry(name.toLowerCase(), bibEntries, true);
+        int nr = getEntry(name, bibEntries, true);
         if (nr != -1) return bibEntries.get(nr);
         else return null;
     }

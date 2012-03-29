@@ -5,10 +5,25 @@ import net.sourceforge.texlipse.builder.ProgramRunner;
 /**
  * Descriptive information and parameters which is used by the BuilderFactory to
  * instantiate a runner. Not all fields necessarily need to be provided.
+ * <p>
+ * This class also provides constants for XML tags.
  *
  * @author Matthias Erll
  */
 public class RunnerDescription {
+
+    public static final String RUNNER_XML_ROOT = "runners";
+    public static final String RUNNER_XML_ELEMENT = "runner";
+    public static final String RUNNER_XML_ID_ATTR = "id";
+
+    // runner XML field elements
+    public static final String[] RUNNER_PROPERTY_STR = { "label", "description",
+            "inputFormat", "outputFormat", "runnerClass", "legacyClass", "executable",
+            "executable.windows", "defaultArguments" };
+
+    // runner XML field identifiers
+    public static enum RunnerProperty { LABEL, DESCRIPTION, INPUTFORMAT, OUTPUTFORMAT,
+            RUNNERCLASS, LEGACYCLASS, EXECUTABLE, EXECUTABLE_WINDOWS, DEFAULTARGUMENTS };
 
     private final String id;
     private String label;
@@ -19,6 +34,31 @@ public class RunnerDescription {
     private String legacyClass;
     private String executable;
     private String defaultArguments;
+
+    /**
+     * Retrieves the RunnerProperty object for the given XML tag name.
+     *
+     * @param propertyStr XML tag name
+     * @return RunnerProperty, or <code>null</code> if none matches
+     */
+    public static RunnerProperty getRunnerProperty(final String propertyStr) {
+        for (int i = 0; i < RUNNER_PROPERTY_STR.length; i++) {
+            if (RUNNER_PROPERTY_STR[i].equals(propertyStr)) {
+                return RunnerProperty.values()[i];
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Retrieves the XML element tag name for the given RunnerProperty object.
+     *
+     * @param property RunnerProperty
+     * @return XML tag name
+     */
+    public static String getXmlPropertyStr(final RunnerProperty property) {
+        return RUNNER_PROPERTY_STR[property.ordinal()];
+    }
 
     /**
      * Constructor for a new runner description.

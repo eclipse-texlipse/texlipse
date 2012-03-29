@@ -4,14 +4,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
+import javax.xml.stream.XMLEventReader;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamException;
 
 import net.sourceforge.texlipse.TexlipsePlugin;
-
-import org.xml.sax.SAXException;
-import org.xml.sax.helpers.DefaultHandler;
 
 
 /**
@@ -23,36 +20,14 @@ import org.xml.sax.helpers.DefaultHandler;
  */
 public class BuilderXmlReader {
 
-    /**
-     * Runs the parser for a particular file stream, using the given
-     * XML handler.
-     *
-     * @param input stream
-     * @param handler XML handler
-     * @throws IOException if the stream could not be read
-     */
-    private void runParser(final InputStream in, final DefaultHandler handler)
-            throws IOException {
-        final SAXParserFactory factory = SAXParserFactory.newInstance();
-        try {
-            SAXParser saxParser = factory.newSAXParser();
-            saxParser.parse(in, handler);
-        }
-        catch (ParserConfigurationException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        catch (SAXException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-    }
+    private final XMLInputFactory factory;
 
     /**
      * Constructor.
      */
     public BuilderXmlReader() {
         super();
+        factory = XMLInputFactory.newInstance();
     }
 
     /**
@@ -60,12 +35,13 @@ public class BuilderXmlReader {
      *
      * @param in input stream to read runner information from
      * @return map with runner ids and descriptions
-     * @throws IOException if the stream could not be read
+     * @throws XMLStreamException if the stream could not be processed
      */
     public Map<String, RunnerDescription> getRunnersFromStream(final InputStream in)
-            throws IOException {
+            throws XMLStreamException {
         RunnerXmlHandler handler = new RunnerXmlHandler();
-        runParser(in, handler);
+        XMLEventReader parser = factory.createXMLEventReader(in);
+        handler.readXmlFile(parser);
         return handler.getRunners();
     }
 
@@ -75,11 +51,13 @@ public class BuilderXmlReader {
      * @param in input stream to read builder information from
      * @return map with builder ids and descriptions
      * @throws IOException if the stream could not be read
+     * @throws XMLStreamException if the stream could not be processed
      */
     public Map<String, BuilderDescription> getBuildersFromStream(final InputStream in)
-            throws IOException {
+            throws IOException, XMLStreamException {
         BuilderXmlHandler handler = new BuilderXmlHandler();
-        runParser(in, handler);
+        XMLEventReader parser = factory.createXMLEventReader(in);
+        handler.readXmlFile(parser);
         return handler.getBuilders();
     }
 
@@ -97,6 +75,10 @@ public class BuilderXmlReader {
             e.printStackTrace();
             return null;
         }
+        catch (XMLStreamException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     /**
@@ -110,6 +92,10 @@ public class BuilderXmlReader {
                     .getEntry("defaultBuilders.xml").openStream());
         }
         catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+        catch (XMLStreamException e) {
             e.printStackTrace();
             return null;
         }

@@ -6,10 +6,25 @@ import net.sourceforge.texlipse.builder.Builder;
 /**
  * Descriptive information and parameters which is used by the BuilderFactory to
  * instantiate a builder. Not all fields necessarily need to be provided.
+ * <p>
+ * This class also provides constants for XML tags.
  *
  * @author Matthias Erll
  */
 public class BuilderDescription {
+
+    public static final String BUILDER_XML_ROOT = "builders";
+    public static final String BUILDER_XML_ELEMENT = "builder";
+    public static final String BUILDER_XML_ID_ATTR = "id";
+    public static final String BUILDER_XML_LEG_ID_ATTR = "legacyId";
+
+    // builder XML field elements
+    public static final String[] BUILDER_PROPERTY_STR = { "label", "outputFormat",
+            "builderClass", "runnerId", "secondaryBuilder" };
+
+    // builder XML field identifiers
+    public static enum BuilderProperty { LABEL, OUTPUTFORMAT, BUILDERCLASS, RUNNERID,
+            SECONDARYBUILDER };
 
     private final String id;
     private final int legacyId;
@@ -18,6 +33,31 @@ public class BuilderDescription {
     private Class<? extends Builder> builderClass;
     private String runnerId;
     private String secondaryBuilderId;
+
+    /**
+     * Retrieves the BuilderProperty object for the given XML tag name.
+     *
+     * @param propertyStr XML tag name
+     * @return BuilderProperty, or <code>null</code> if none matches
+     */
+    public static BuilderProperty getBuilderProperty(final String propertyStr) {
+        for (int i = 0; i < BUILDER_PROPERTY_STR.length; i++) {
+            if (BUILDER_PROPERTY_STR[i].equals(propertyStr)) {
+                return BuilderProperty.values()[i];
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Retrieves the XML element tag name for the given BuilderProperty object.
+     *
+     * @param property BuilderProperty
+     * @return XML tag name
+     */
+    public static String getXmlPropertyStr(final BuilderProperty property) {
+        return BUILDER_PROPERTY_STR[property.ordinal()];
+    }
 
     /**
      * Constructor for a new builder description.

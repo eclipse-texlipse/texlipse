@@ -41,33 +41,75 @@ public class BuildCycleDetector {
     private boolean done;
 
     /**
+     * Schedules a program runner to run, i.e. moves it to the list of runners.
+     * Avoids duplicates.
+     *
+     * @param runner program runner
+     * @param push whether to move the runner to the beginning of the list
+     */
+    private void queueRunner(ProgramRunner runner, boolean push) {
+        int currentPos = runners.indexOf(runner);
+        if (push) {
+            // If scheduled later, move to front of the list
+            if (currentPos > 0) {
+                runners.remove(currentPos);
+            }
+            if (currentPos != 0) {
+                runners.addFirst(runner);
+            }
+        }
+        else {
+            // If already scheduled, there is no use for scheduling
+            // it later
+            if (currentPos < 0) {
+                runners.add(runner);
+            }
+        }
+    }
+
+    /**
+     * Checks whether session variables indicate that bibtex or biblatex needs to run. This should
+     * only be done once per build cycle, since otherwise it leads to infinite loops if citations
+     * are undefined. 
+     */
+    private void checkBibtexVariables() {
+        final String bibRerun = (String) TexlipseProperties.getSessionProperty(
+                project, TexlipseProperties.SESSION_BIBTEX_RERUN);
+        final Boolean bibFilesChanged = (Boolean) TexlipseProperties.getSessionProperty(
+                project, TexlipseProperties.BIBFILES_CHANGED);
+        if ("true".equals(bibRerun)
+                || (Boolean.TRUE.equals(bibFilesChanged))) {
+            final ProgramRunner bibRunner;
+            Boolean biblatexMode = (Boolean) TexlipseProperties.getSessionProperty(project,
+                    TexlipseProperties.SESSION_BIBLATEXMODE_PROPERTY);
+            if (Boolean.TRUE.equals(biblatexMode)) {
+                bibRunner = BuilderRegistry.getRunner(
+                        TexlipseProperties.INPUT_FORMAT_BCF,
+                        TexlipseProperties.OUTPUT_FORMAT_BBL, 0);
+            }
+            else {
+                bibRunner = BuilderRegistry.getRunner(
+                        TexlipseProperties.INPUT_FORMAT_BIB,
+                        TexlipseProperties.OUTPUT_FORMAT_AUX, 0);
+            }
+            if (bibRunner != null) {
+                queueRunner(bibRunner, true);
+                done = false;
+            }
+        }
+    }
+
+    /**
      * Checks if the latex runner has set any session variables, which affect the
      * build process.
      */
     private void checkLatexOutputVariables() {
         final String latexRerun = (String) TexlipseProperties.getSessionProperty(
                 project, TexlipseProperties.SESSION_LATEX_RERUN);
-        boolean bibRerunBool;
-        final String bibRerun = (String) TexlipseProperties.getSessionProperty(
-                project, TexlipseProperties.SESSION_BIBTEX_RERUN);
-        Boolean biblatexMode = (Boolean) TexlipseProperties.getSessionProperty(project,
-                TexlipseProperties.SESSION_BIBLATEXMODE_PROPERTY);
-        if ("true".equals(bibRerun) && !biblatexMode.booleanValue()) {
-            // In biblatex mode we can rely on file output, otherwise we need to
-            // schedule bibtex manually
-            final ProgramRunner bibtex = BuilderRegistry.getRunner(
-                    TexlipseProperties.INPUT_FORMAT_BIB,
-                    TexlipseProperties.OUTPUT_FORMAT_AUX, 0);
-            if (bibtex != null) {
-                runners.push(bibtex);
-            }
-            bibRerunBool = "true".equals(bibRerun);
-        }
-        else {
-            bibRerunBool = false;
-        }
         // Initialize with values from log output
-        done = !"true".equals(latexRerun) && !bibRerunBool;
+        if ("true".equals(latexRerun)) {
+            done = false;
+        }
     }
 
     /**
@@ -101,13 +143,7 @@ public class BuildCycleDetector {
                 ProgramRunner runner = BuilderRegistry.getRunner(fileExt, null, 0);
                 if (runner != null) {
                     // Schedule runner before next LaTeX rebuild
-                    if (push) {
-                        // Schedule runner even before other runners
-                        runners.push(runner);
-                    }
-                    else {
-                        runners.add(runner);
-                    }
+                    queueRunner(runner, push);
                     done = false;
                 }
                 if (inputFiles.contains(changedFile)) {
@@ -150,10 +186,29 @@ public class BuildCycleDetector {
     }
 
     /**
-     * Initializes the hash values for detecting later file modifications.
+     * Reads and initializes the hash values for detecting file modifications.
+     * Additionally, session variables for bibtex / biblatex are evaluated.
+     * If file changes have been made since the cache was stored (or the cache has been
+     * initial), this can also lead to scheduling runners. However, runners are
+     * not run before the first LaTeX run-through.
+     *
+     * @param monitor progress monitor
+     * @throws CoreException if an error occurs
      */
-    public void initFileTracking() {
-        fileTracking.initFileHashes(tempExts, addExts);
+    public void initFileTracking(IProgressMonitor monitor) throws CoreException {
+        Set<IPath> initialChanges = fileTracking.initFileCache(tempExts, addExts, monitor);
+        checkBibtexVariables();
+        checkOutputFiles(initialChanges, false);
+    }
+
+    /**
+     * Make the file tracking persistent, in case the session gets closed.
+     *
+     * @param monitor progress monitor
+     * @throws CoreException if an error occurs
+     */
+    public void saveFileTracking(IProgressMonitor monitor) throws CoreException {
+        fileTracking.saveFileCache(monitor);
     }
 
     /**
@@ -184,6 +239,10 @@ public class BuildCycleDetector {
             done = true;
             return;
         }
+        else {
+            // Initialize depending on queued runners
+            done = runners.isEmpty();
+        }
 
         // Check if further action relies on latex or FLS output
         if (analyzer != null) {
@@ -198,10 +257,8 @@ public class BuildCycleDetector {
         // Check latex output for additional info
         checkLatexOutputVariables();
 
-        final Set<IPath> changedTimestampFiles = fileTracking.updateChangedFiles(
+        final Set<IPath> changedContentFiles = fileTracking.updateChangedFiles(
                 sourceContainer, tempExts, addExts, monitor);
-        final Set<IPath> changedContentFiles = fileTracking.updateFileHashes(
-                changedTimestampFiles);
 
         checkOutputFiles(changedContentFiles, false);
     }
@@ -214,10 +271,8 @@ public class BuildCycleDetector {
      * @throws CoreException if an error occurs
      */
     public void checkRunnerOutput(IProgressMonitor monitor) throws CoreException {
-        final Set<IPath> changedTimestampFiles = fileTracking.updateChangedFiles(
+        final Set<IPath> changedContentFiles = fileTracking.updateChangedFiles(
                 sourceContainer, tempExts, addExts, monitor);
-        final Set<IPath> changedContentFiles = fileTracking.updateFileHashes(
-                changedTimestampFiles);
         checkOutputFiles(changedContentFiles, true);
     }
 

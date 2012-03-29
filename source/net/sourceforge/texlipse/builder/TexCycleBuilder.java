@@ -197,7 +197,7 @@ public class TexCycleBuilder extends AbstractBuilder {
         final String auxFileName = getAuxFileName(resource);
         final IResource auxFile = project.getFile(auxFileName);
         // Initialize file hashes
-        cycleDetector.initFileTracking();
+        cycleDetector.initFileTracking(monitor);
 
         monitor.subTask("Building document");
         latex.run(resource);
@@ -239,6 +239,8 @@ public class TexCycleBuilder extends AbstractBuilder {
             monitor.worked(10);
             cycleDetector.checkLatexOutput(monitor);
         }
+        // Store hash values
+        cycleDetector.saveFileTracking(monitor);
 
         if (cycleDetector.isMaxedOut() && showMaxError) {
             // If the preferences say to throw an error, do that here

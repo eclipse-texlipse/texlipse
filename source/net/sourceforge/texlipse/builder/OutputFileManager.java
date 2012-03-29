@@ -693,6 +693,7 @@ public class OutputFileManager {
             deleteFiles(currentTmpFiles, monitor);
         }
         tracking.clearSnapshots();
+        tracking.clearFileCache(monitor);
     }
 
     /**

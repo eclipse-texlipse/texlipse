@@ -15,6 +15,7 @@ import java.util.List;
 
 import net.sourceforge.texlipse.TexlipsePlugin;
 import net.sourceforge.texlipse.bibeditor.BibEditor;
+import net.sourceforge.texlipse.builder.BuilderRegistry;
 import net.sourceforge.texlipse.builder.KpsewhichRunner;
 import net.sourceforge.texlipse.editor.TexEditor;
 import net.sourceforge.texlipse.model.AbstractEntry;
@@ -220,7 +221,7 @@ public class OpenDeclarationAction implements IEditorActionDelegate {
         	AbstractTextEditor part;
             if (!file.exists()) {
             	//Try kpathsea
-            	KpsewhichRunner filesearch = new KpsewhichRunner();
+            	KpsewhichRunner filesearch = (KpsewhichRunner) BuilderRegistry.getRunner("kpsewhich");
             	String filepath = filesearch.getFile(editor.getDocumentModel().getFile(), refEntry.fileName, "bibtex");
             	if ("".equals(filepath)) {
             	    createStatusLineErrorMessage(TexlipsePlugin.getResourceString("gotoDeclarationNoDeclarationFound"));

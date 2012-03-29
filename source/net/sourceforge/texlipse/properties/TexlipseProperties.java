@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Properties;
 
 import net.sourceforge.texlipse.TexlipsePlugin;
+import net.sourceforge.texlipse.builder.BuilderRegistry;
 
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
@@ -153,6 +154,7 @@ public class TexlipseProperties {
     public static final String OUTLINE_ENVS = "outlineEnvs";
     
     public static final String BUILDER_NUMBER = "builderNum";
+    public static final String BUILDER_ID = "builderId";
     public static final String BUILDER_CONSOLE_OUTPUT = "builderConsole";
     public static final String BUILD_BEFORE_VIEW = "buildBeforeView";
     public static final String BUILDER_RETURN_FOCUS = "returnFocusOnPreivew";
@@ -428,7 +430,20 @@ public class TexlipseProperties {
         setProjectProperty(project, OUTPUT_DIR_PROPERTY, prop.getProperty(OUTPUT_DIR_PROPERTY, ""));
         setProjectProperty(project, TEMP_DIR_PROPERTY, prop.getProperty(TEMP_DIR_PROPERTY, ""));
         setProjectProperty(project, BIBREF_DIR_PROPERTY, prop.getProperty(BIBREF_DIR_PROPERTY, ""));
-        setProjectProperty(project, BUILDER_NUMBER, prop.getProperty(BUILDER_NUMBER, ""));
+        // Only load old builder number if new id is not generated yet; then convert
+        String builderId = prop.getProperty(BUILDER_ID, "");
+        if (builderId.length() == 0) {
+            String legacyId = prop.getProperty(BUILDER_NUMBER, "");
+            int idNum = 0;
+            try {
+                idNum = Integer.valueOf(legacyId);
+            } catch (NumberFormatException e) {
+            }
+            setProjectProperty(project, BUILDER_ID, BuilderRegistry.getBuilderIdByLegacy(idNum));
+        }
+        else {
+            setProjectProperty(project, BUILDER_ID, builderId);
+        }
         setProjectProperty(project, OUTPUT_FORMAT, prop.getProperty(OUTPUT_FORMAT, ""));
         setProjectProperty(project, MARK_TEMP_DERIVED_PROPERTY, prop.getProperty(MARK_TEMP_DERIVED_PROPERTY, "true"));
         setProjectProperty(project, MARK_OUTPUT_DERIVED_PROPERTY, prop.getProperty(MARK_OUTPUT_DERIVED_PROPERTY, "true"));
@@ -469,7 +484,7 @@ public class TexlipseProperties {
         prop.setProperty(OUTPUT_DIR_PROPERTY, getProjectProperty(project, OUTPUT_DIR_PROPERTY));
         prop.setProperty(TEMP_DIR_PROPERTY, getProjectProperty(project, TEMP_DIR_PROPERTY));
         prop.setProperty(BIBREF_DIR_PROPERTY, getProjectProperty(project, BIBREF_DIR_PROPERTY));
-        prop.setProperty(BUILDER_NUMBER, getProjectProperty(project, BUILDER_NUMBER));
+        prop.setProperty(BUILDER_ID, getProjectProperty(project, BUILDER_ID));
         prop.setProperty(OUTPUT_FORMAT, getProjectProperty(project, OUTPUT_FORMAT));
         prop.setProperty(MARK_TEMP_DERIVED_PROPERTY, getProjectProperty(project, MARK_TEMP_DERIVED_PROPERTY));
         prop.setProperty(MARK_OUTPUT_DERIVED_PROPERTY, getProjectProperty(project, MARK_OUTPUT_DERIVED_PROPERTY));

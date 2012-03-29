@@ -118,7 +118,7 @@ public class TexlipseProjectCreationWizardPage extends TexlipseWizardPage {
         GridData ngd = new GridData(GridData.FILL_HORIZONTAL);
         ngd.horizontalSpan = 2;
         outputChooser.getControl().setLayoutData(ngd);
-        outputChooser.setSelectedBuilder(TexlipsePlugin.getDefault().getPreferenceStore().getInt(TexlipseProperties.BUILDER_NUMBER));
+        outputChooser.setSelectedBuilder(TexlipsePlugin.getDefault().getPreferenceStore().getString(TexlipseProperties.BUILDER_ID));
         String o = attributes.getOutputFile();
         attributes.setOutputFile(o.substring(0, o.lastIndexOf('.')+1) + outputChooser.getSelectedFormat());
         attributes.setOutputFormat(outputChooser.getSelectedFormat());

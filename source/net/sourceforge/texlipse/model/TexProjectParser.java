@@ -15,6 +15,7 @@ import java.io.InputStreamReader;
 import java.util.List;
 
 import net.sourceforge.texlipse.TexlipsePlugin;
+import net.sourceforge.texlipse.builder.BuilderRegistry;
 import net.sourceforge.texlipse.builder.KpsewhichRunner;
 import net.sourceforge.texlipse.editor.TexDocumentParseException;
 import net.sourceforge.texlipse.texparser.TexParser;
@@ -88,7 +89,7 @@ public class TexProjectParser {
         IFile file = currentProject.getFile(path);
         if (!file.exists()) {
             //Try Kpsewhich
-            KpsewhichRunner filesearch = new KpsewhichRunner();
+            KpsewhichRunner filesearch = (KpsewhichRunner) BuilderRegistry.getRunner("kpsewhich");
             try {
                 String fName = filesearch.getFile(currentProject, fileName, "latex");
                 if (fName.length() > 0) {

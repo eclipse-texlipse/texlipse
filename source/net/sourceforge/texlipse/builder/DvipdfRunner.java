@@ -9,7 +9,7 @@
  */
 package net.sourceforge.texlipse.builder;
 
-import net.sourceforge.texlipse.properties.TexlipseProperties;
+import net.sourceforge.texlipse.builder.factory.RunnerDescription;
 
 import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -24,28 +24,8 @@ import org.eclipse.ui.PlatformUI;
  */
 public class DvipdfRunner extends AbstractProgramRunner {
 
-    public DvipdfRunner() {
-        super();
-    }
-
-    protected String getWindowsProgramName() {
-        return "dvipdfm.exe";
-    }
-
-    protected String getUnixProgramName() {
-        return "dvipdf";
-    }
-
-    public String getDescription() {
-        return "Dvipdf program";
-    }
-
-    public String getInputFormat() {
-        return TexlipseProperties.OUTPUT_FORMAT_DVI;
-    }
-
-    public String getOutputFormat() {
-        return TexlipseProperties.OUTPUT_FORMAT_PDF;
+    public DvipdfRunner(RunnerDescription description) {
+        super(description);
     }
 
     /**

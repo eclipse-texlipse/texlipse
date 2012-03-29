@@ -55,10 +55,10 @@ public class SetMainFileAction implements IWorkbenchWindowActionDelegate, IEdito
             TexlipseProperties.setProjectProperty(project, TexlipseProperties.OUTPUT_FORMAT, TexlipsePlugin.getPreference(TexlipseProperties.OUTPUT_FORMAT));
         }
         
-        // check that there is a builder number
-        String builderNum = TexlipseProperties.getProjectProperty(project, TexlipseProperties.BUILDER_NUMBER);
-        if (builderNum == null || builderNum.length() == 0) {
-            TexlipseProperties.setProjectProperty(project, TexlipseProperties.BUILDER_NUMBER, TexlipsePlugin.getPreference(TexlipseProperties.BUILDER_NUMBER));
+        // check that there is a builder id
+        String builderId = TexlipseProperties.getProjectProperty(project, TexlipseProperties.BUILDER_ID);
+        if (builderId == null || builderId.length() == 0) {
+            TexlipseProperties.setProjectProperty(project, TexlipseProperties.BUILDER_ID, TexlipsePlugin.getPreference(TexlipseProperties.BUILDER_ID));
         }
         
 	    String name = file.getName();

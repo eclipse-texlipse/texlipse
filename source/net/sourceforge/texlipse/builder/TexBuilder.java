@@ -15,6 +15,7 @@ import java.util.List;
 
 import net.sourceforge.texlipse.TexlipsePlugin;
 import net.sourceforge.texlipse.auxparser.AuxFileParser;
+import net.sourceforge.texlipse.builder.factory.BuilderDescription;
 import net.sourceforge.texlipse.model.ReferenceContainer;
 import net.sourceforge.texlipse.model.ReferenceEntry;
 import net.sourceforge.texlipse.properties.TexlipseProperties;
@@ -46,22 +47,17 @@ public class TexBuilder extends AbstractBuilder implements AdaptableBuilder {
     private ProgramRunner bibtex;
     private ProgramRunner makeIndex;
     private ProgramRunner makeIndexNomencl;
-    private String output;
     private boolean stopped;
-    private int alternative;
-    
-    public TexBuilder(int i, String outputFormat, int alt) {
-        super(i);
-        biblatexMode = false;
-        biblatexBackend = null;
-        output = outputFormat;
-        latex = null;
-        bibtex = null;
-        makeIndex = null;
-        alternative = alt;
-        isValid();
+
+    public TexBuilder(BuilderDescription description) {
+        super(description);
+        this.biblatexMode = false;
+        this.biblatexBackend = null;
+        this.latex = BuilderRegistry.getRunner(description.getRunnerId());
+        this.bibtex = null;
+        this.makeIndex = null;
     }
-    
+
     /**
      * Check if the needed program runners are operational.
      * Update runners from registry if necessary.
@@ -69,41 +65,27 @@ public class TexBuilder extends AbstractBuilder implements AdaptableBuilder {
      */
     public boolean isValid() {
         if (latex == null || !latex.isValid()) {
-            latex = BuilderRegistry.getRunner(TexlipseProperties.INPUT_FORMAT_TEX, output, alternative);
+            latex = BuilderRegistry.getRunner(description.getRunnerId());
         }
         if (bibtex == null || !bibtex.isValid()) {
             if (!biblatexMode || biblatexBackend == null || "bibtex".equals(biblatexBackend)) {
-                bibtex = BuilderRegistry.getRunner(TexlipseProperties.INPUT_FORMAT_BIB, TexlipseProperties.OUTPUT_FORMAT_AUX, 0);
+                bibtex = BuilderRegistry.getRunner(TexlipseProperties.INPUT_FORMAT_BIB, TexlipseProperties.OUTPUT_FORMAT_AUX);
             }
             else if (biblatexMode && "biber".equals(biblatexBackend)) {
-                bibtex = BuilderRegistry.getRunner(TexlipseProperties.INPUT_FORMAT_BCF, TexlipseProperties.OUTPUT_FORMAT_BBL, 0);
+                bibtex = BuilderRegistry.getRunner(TexlipseProperties.INPUT_FORMAT_BCF, TexlipseProperties.OUTPUT_FORMAT_BBL);
             }
         }
         if (makeIndex == null || !makeIndex.isValid()) {
-            makeIndex = BuilderRegistry.getRunner(TexlipseProperties.INPUT_FORMAT_IDX, TexlipseProperties.OUTPUT_FORMAT_IDX, 0);
+            makeIndex = BuilderRegistry.getRunner(TexlipseProperties.INPUT_FORMAT_IDX, TexlipseProperties.OUTPUT_FORMAT_IDX);
         }
         if (makeIndexNomencl == null || !makeIndexNomencl.isValid()) {
-            makeIndexNomencl = BuilderRegistry.getRunner(TexlipseProperties.INPUT_FORMAT_NOMENCL, TexlipseProperties.OUTPUT_FORMAT_NOMENCL, 0);
+            makeIndexNomencl = BuilderRegistry.getRunner(TexlipseProperties.INPUT_FORMAT_NOMENCL, TexlipseProperties.OUTPUT_FORMAT_NOMENCL);
         }
         return latex != null && latex.isValid()
             && bibtex != null && bibtex.isValid()
             && makeIndex != null && makeIndex.isValid();
     }
-    
-    /**
-     * @return output format of the latex processor
-     */
-    public String getOutputFormat() {
-        return latex.getOutputFormat();
-    }
-    
-    /**
-     * @return sequence
-     */
-    public String getSequence() {
-        return latex.getProgramName();
-    }
-    
+
     public void stopRunners() {
         latex.stop();
         bibtex.stop();

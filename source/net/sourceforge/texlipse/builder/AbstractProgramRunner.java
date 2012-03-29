@@ -15,6 +15,8 @@ import java.util.HashMap;
 
 import net.sourceforge.texlipse.PathUtils;
 import net.sourceforge.texlipse.TexlipsePlugin;
+import net.sourceforge.texlipse.builder.factory.RunnerConfiguration;
+import net.sourceforge.texlipse.builder.factory.RunnerDescription;
 import net.sourceforge.texlipse.properties.TexlipseProperties;
 
 import org.eclipse.core.resources.IMarker;
@@ -22,7 +24,6 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.ui.texteditor.MarkerUtilities;
 
 
@@ -32,7 +33,13 @@ import org.eclipse.ui.texteditor.MarkerUtilities;
  * @author Kimmo Karlsson
  */
 public abstract class AbstractProgramRunner implements ProgramRunner {
-    
+
+    // the description of the runner
+    protected final RunnerDescription description;
+
+    // the runner configuration
+    protected final RunnerConfiguration config;
+
     // the currently running program
     private ExternalProgram extrun;
     
@@ -41,38 +48,20 @@ public abstract class AbstractProgramRunner implements ProgramRunner {
      * @param project the project holding the properties
      * @param propertyName name of the property containing the name of the program
      */
-    protected AbstractProgramRunner() {
-        extrun = new ExternalProgram();
+    protected AbstractProgramRunner(RunnerDescription description) {
+        super();
+        this.description = description;
+        this.config = new RunnerConfiguration(description);
+        this.extrun = new ExternalProgram();
     }
 
-    /**
-     * @return the name of the program runner arguments -preference in the plugin preferences
-     */
-    private String getArgumentsPreferenceName() {
-        return getClass() + "_args";
-    }
-    
-    /**
-     * @return the name of the program runner path -preference in the plugin preferences
-     */
-    private String getCommandPreferenceName() {
-        return getClass() + "_prog";
-    }
-    
     /**
      * @return the program path and filename from the preferences
      */
     public String getProgramPath() {
-        return TexlipsePlugin.getPreference(getCommandPreferenceName());
+        return config.getProgramPath();
     }
-    
-    /**
-     * @param path the program path and filename for the preferences
-     */
-    public void setProgramPath(String path) {
-        TexlipsePlugin.getDefault().getPreferenceStore().setValue(getCommandPreferenceName(), path);
-    }
-    
+
     /**
      * Read the command line arguments for the program from the preferences.
      * The input filename is marked with a "%input" and the output file name
@@ -80,46 +69,15 @@ public abstract class AbstractProgramRunner implements ProgramRunner {
      * @return the command line arguments for the program
      */
     public String getProgramArguments() {
-        return TexlipsePlugin.getPreference(getArgumentsPreferenceName());
+        return config.getProgramArguments();
     }
-    
-    /**
-     * @param args the program arguments for the preferences
-     */
-    public void setProgramArguments(String args) {
-        TexlipsePlugin.getDefault().getPreferenceStore().setValue(getArgumentsPreferenceName(), args);
-    }
-    
-    /**
-     *
-     */
-    public void initializeDefaults(IPreferenceStore pref, String path) {
-        pref.setDefault(getCommandPreferenceName(), path);
-        pref.setDefault(getArgumentsPreferenceName(), getDefaultArguments());
-    }
-    
-    /**
-     * Returns the default value for the program arguments -preference.
-     * @return the program arguments
-     */
-    protected String getDefaultArguments() {
-        return "%input";
-    }
-    
+
     /**
      * @return the name of the executable program
      */
     public String getProgramName() {
-        String os = System.getProperty("os.name").toLowerCase();
-        if (os.indexOf("windows") >= 0) {
-            return getWindowsProgramName();
-        } else {
-            return getUnixProgramName();
-        }
+        return description.getExecutable();
     }
-    
-    protected abstract String getWindowsProgramName();
-    protected abstract String getUnixProgramName();
     
     /**
      * @param resource the input file to be processed
@@ -133,8 +91,8 @@ public abstract class AbstractProgramRunner implements ProgramRunner {
         String ext = resource.getFileExtension();
         String name = resource.getName();
         String baseName = name.substring(0, name.length() - ext.length());
-        String inputName = baseName + getInputFormat();
-        String outputName = baseName + getOutputFormat();
+        String inputName = baseName + description.getInputFormat();
+        String outputName = baseName + description.getOutputFormat();
         if (baseName.indexOf(' ') >= 0) {
             inputName = "\"" + inputName + "\"";
             outputName = "\"" + outputName + "\"";

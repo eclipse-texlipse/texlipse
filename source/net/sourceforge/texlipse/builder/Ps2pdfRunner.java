@@ -9,7 +9,7 @@
  */
 package net.sourceforge.texlipse.builder;
 
-import net.sourceforge.texlipse.properties.TexlipseProperties;
+import net.sourceforge.texlipse.builder.factory.RunnerDescription;
 
 import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -23,28 +23,8 @@ import org.eclipse.ui.PlatformUI;
  */
 public class Ps2pdfRunner extends AbstractProgramRunner {
 
-    public Ps2pdfRunner() {
-        super();
-    }
-
-    protected String getWindowsProgramName() {
-        return "ps2pdf.exe";
-    }
-    
-    protected String getUnixProgramName() {
-        return "ps2pdf";
-    }
-    
-    public String getDescription() {
-        return "Ps2pdf program";
-    }
-    
-    public String getInputFormat() {
-        return TexlipseProperties.OUTPUT_FORMAT_PS;
-    }
-    
-    public String getOutputFormat() {
-        return TexlipseProperties.OUTPUT_FORMAT_PDF;
+    public Ps2pdfRunner(RunnerDescription description) {
+        super(description);
     }
     
     /**

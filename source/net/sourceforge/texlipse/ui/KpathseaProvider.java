@@ -10,6 +10,7 @@
 package net.sourceforge.texlipse.ui;
 
 import net.sourceforge.texlipse.TexlipsePlugin;
+import net.sourceforge.texlipse.builder.BuilderRegistry;
 import net.sourceforge.texlipse.builder.KpsewhichRunner;
 import net.sourceforge.texlipse.builder.Kpath;
 
@@ -158,7 +159,7 @@ public class KpathseaProvider implements ITreeContentProvider, ILabelProvider {
 		}
 
 		public Object[] getChildren() {
-			KpsewhichRunner filesearch = new KpsewhichRunner();
+			KpsewhichRunner filesearch = (KpsewhichRunner) BuilderRegistry.getRunner("kpsewhich");
 			try {
 				Kpath[] paths = filesearch.getSearchPaths(parent.getProject(), extension);
 				KpathNode[] nodes = new KpathNode[paths.length];

@@ -9,6 +9,8 @@
  */
 package net.sourceforge.texlipse.builder;
 
+import net.sourceforge.texlipse.builder.factory.BuilderDescription;
+
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -20,30 +22,24 @@ import org.eclipse.core.runtime.IProgressMonitor;
  */
 public abstract class AbstractBuilder implements Runnable, Builder {
 
+    // the description of the builder
+    protected final BuilderDescription description;
+
     // the current progress monitor
     protected IProgressMonitor monitor;
     
     // true, when the build process is running
     protected volatile boolean buildRunning;
 
-    // builder id in the builder registry
-    protected int id;
-
     /**
      * Create a new builder.
      * @param mon
      */
-    protected AbstractBuilder(int i) {
-        id = i;
+    protected AbstractBuilder(BuilderDescription description) {
+        super();
+        this.description = description;
         monitor = null;
         buildRunning = false;
-    }
-    
-    /**
-     * @return id number
-     */
-    public int getId() {
-        return id;
     }
     
     /**
@@ -59,14 +55,7 @@ public abstract class AbstractBuilder implements Runnable, Builder {
         monitor = mon;
         buildRunning = false;
     }
-    
-    /**
-     * @return the name of the format this builder outputs
-     */
-    public abstract String getOutputFormat();
-    
-    public abstract String getSequence();
-    
+
     /**
      * Run the build monitor. If the user interrupts the build, stop the execution.
      */

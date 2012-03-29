@@ -8,6 +8,7 @@ import java.util.TreeSet;
 
 import net.sourceforge.texlipse.TexlipsePlugin;
 import net.sourceforge.texlipse.auxparser.AuxFileParser;
+import net.sourceforge.texlipse.builder.factory.BuilderDescription;
 import net.sourceforge.texlipse.model.ReferenceContainer;
 import net.sourceforge.texlipse.model.ReferenceEntry;
 import net.sourceforge.texlipse.properties.TexlipseProperties;
@@ -30,12 +31,10 @@ import org.eclipse.core.runtime.Platform;
  */
 public class TexCycleBuilder extends AbstractBuilder {
 
-    private final String output;
     private ProgramRunner latex;
     private ProgramRunner utilRunner;
     private BuildCycleDetector cycleDetector;
     private boolean stopped;
-    private int alternative;
 
     /**
      * Check if '-recorder' command argument is necessary for latex runner and
@@ -49,7 +48,8 @@ public class TexCycleBuilder extends AbstractBuilder {
             String arg = latex.getProgramArguments();
             // Check if the flag is already present
             if (arg.indexOf("-recorder") < 0) {
-                latex.setProgramArguments("-recorder ".concat(arg));
+                // TODO clean up
+                //config.setProgramArguments("-recorder ".concat(arg));
             }
         }
     }
@@ -107,46 +107,19 @@ public class TexCycleBuilder extends AbstractBuilder {
         }
     }
 
-    /**
-     * Default constructor.
-     *
-     * @param i builder id
-     * @param outputFormat output format
-     * @param alt selected alternative for the latex runner
-     */
-    public TexCycleBuilder(int i, String outputFormat, int alt) {
-        super(i);
-        output = outputFormat;
-        latex = null;
-        utilRunner = null;
-        alternative = alt;
-        cycleDetector = null;
-        isValid();
+    public TexCycleBuilder(BuilderDescription description) {
+        super(description);
+        this.latex = BuilderRegistry.getRunner(description.getRunnerId());
+        this.utilRunner = null;
+        this.cycleDetector = null;
     }
 
     @Override
     public boolean isValid() {
         if (latex == null || !latex.isValid()) {
-            latex = BuilderRegistry.getRunner(TexlipseProperties.INPUT_FORMAT_TEX,
-                    output, alternative);
+            latex = BuilderRegistry.getRunner(description.getRunnerId());
         }
         return latex != null && latex.isValid();
-    }
-
-    /**
-     * @return output format of the latex processor
-     */
-    @Override
-    public String getOutputFormat() {
-        return latex.getOutputFormat();
-    }
-
-    /**
-     * @return sequence program sequence along with the cycle detection hint
-     */
-    @Override
-    public String getSequence() {
-        return latex.getProgramName().concat(" (cycle auto-detection)");
     }
 
     @Override
@@ -161,13 +134,14 @@ public class TexCycleBuilder extends AbstractBuilder {
     }
 
     /**
-     * Runs the latex builder once. This includes
+     * Runs the latex builder. This includes
      * <ul>
      * <li>running the latex builder once;</li>
      * <li>checking, if any runners need to be triggered afterwards;</li>
      * <li>checking, if these runners require any more runners;</li>
-     * <li>returning to running latex, and repeating as often as necessary
-     *  until the maximum as defined in the preferences has been reached.</li>
+     * <li>returning to running latex, and repeating as often as necessary for
+     *  completing the build process; or until the maximum as defined in the
+     *  preferences has been reached.</li>
      * </ul>
      */
     @Override

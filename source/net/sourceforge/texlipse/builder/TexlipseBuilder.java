@@ -435,32 +435,22 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
             BuilderRegistry.printToConsole(TexlipsePlugin.getResourceString("builderErrorOutputFormatNotSet").replaceAll("%s", project.getName()));
             throw new CoreException(TexlipsePlugin.stat("Project output file format not set."));
         }
-        
-        String str = TexlipseProperties.getProjectProperty(project, TexlipseProperties.BUILDER_NUMBER);
-        if (str == null) {
-            BuilderRegistry.printToConsole(TexlipsePlugin.getResourceString("builderErrorOutputBuilderNotSet").replaceAll("%s", project.getName()));
-            throw new CoreException(TexlipsePlugin.stat("No builder selected."));
-        }
-        
-        int number = 0;
-        try {
-            number = Integer.parseInt(str);
-        } catch (NumberFormatException e) {
-        }
-        
-        Builder builder = BuilderRegistry.get(number);
+
+        String builderId = TexlipseProperties.getProjectProperty(project, TexlipseProperties.BUILDER_ID);
+        Builder builder = BuilderRegistry.getBuilder(builderId);
+
         if (builder instanceof AdaptableBuilder) {
             ((AdaptableBuilder) builder).updateBuilder(project);
         }
         if (builder == null) {
-            BuilderRegistry.printToConsole(TexlipsePlugin.getResourceString("builderErrorBuilderNumberNotSet").replaceAll("%s", project.getName()).replaceAll("%f", format).replaceAll("%i", number+""));
-            throw new CoreException(TexlipsePlugin.stat("Builder (#"
-                    + number + ") for " + format + " output format not configured."));
+            BuilderRegistry.printToConsole(TexlipsePlugin.getResourceString("builderErrorBuilderNumberNotSet").replaceAll("%s", project.getName()).replaceAll("%f", format));
+            throw new CoreException(TexlipsePlugin.stat("Builder for " + format
+                    + " output format not configured."));
         }
         else if (!builder.isValid()) {
-            BuilderRegistry.printToConsole(TexlipsePlugin.getResourceString("builderErrorBuilderNumberInvalid").replaceAll("%s", project.getName()).replaceAll("%f", format).replaceAll("%i", number+""));
-            throw new CoreException(TexlipsePlugin.stat("Builder (#"
-                    + number + ") for " + format + " output format has an invalid configuration. Please check"
+            BuilderRegistry.printToConsole(TexlipsePlugin.getResourceString("builderErrorBuilderNumberInvalid").replaceAll("%s", project.getName()).replaceAll("%f", format));
+            throw new CoreException(TexlipsePlugin.stat("Builder for " + format
+                    + " output format has an invalid configuration. Please check"
                     + "if paths to builder programs are set up correctly."));
         }
         

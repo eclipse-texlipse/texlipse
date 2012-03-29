@@ -26,6 +26,7 @@ import net.sourceforge.texlipse.properties.TexlipseProperties;
 import net.sourceforge.texlipse.texparser.LatexRefExtractingParser;
 import net.sourceforge.texlipse.texparser.TexParser;
 import net.sourceforge.texlipse.treeview.views.TexOutlineTreeView;
+import net.sourceforge.texlipse.builder.BuilderRegistry;
 import net.sourceforge.texlipse.builder.KpsewhichRunner;
 
 import org.eclipse.core.resources.IContainer;
@@ -755,8 +756,8 @@ public class TexDocumentModel implements IDocumentListener {
         if (!path.isEmpty())
             path = path.addTrailingSeparator();
         
-        KpsewhichRunner filesearch = new KpsewhichRunner();
-                
+        KpsewhichRunner filesearch = (KpsewhichRunner) BuilderRegistry.getRunner("kpsewhich");
+
         for (Iterator<String> iter = newBibs.iterator(); iter.hasNext();) {
         	String name = iter.next();
         	try {

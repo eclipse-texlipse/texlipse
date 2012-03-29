@@ -15,6 +15,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import net.sourceforge.texlipse.TexlipsePlugin;
+import net.sourceforge.texlipse.builder.factory.RunnerDescription;
 import net.sourceforge.texlipse.properties.TexlipseProperties;
 
 import org.eclipse.core.resources.IContainer;
@@ -42,40 +43,11 @@ public class LatexRunner extends AbstractProgramRunner {
     /**
      * Create a new ProgramRunner.
      */
-    public LatexRunner() {
-        super();
+    public LatexRunner(RunnerDescription description) {
+        super(description);
         this.parsingStack = new Stack<String>();
     }
-    
-    protected String getWindowsProgramName() {
-        return "latex.exe";
-    }
-    
-    protected String getUnixProgramName() {
-        return "latex";
-    }
-    
-    public String getDescription() {
-        return "Latex program";
-    }
-    
-    public String getDefaultArguments() {
-        return "-interaction=nonstopmode --src-specials %input";
-    }
-    
-    public String getInputFormat() {
-        return TexlipseProperties.INPUT_FORMAT_TEX;
-    }
-    
-    /**
-     * Used by the DviBuilder to figure out what the latex program produces.
-     * 
-     * @return output file format (dvi)
-     */
-    public String getOutputFormat() {
-        return TexlipseProperties.OUTPUT_FORMAT_DVI;
-    }
-    
+
     protected String[] getQueryString() {
         return new String[] { "\nPlease type another input file name:" , "\nEnter file name:" };
     }

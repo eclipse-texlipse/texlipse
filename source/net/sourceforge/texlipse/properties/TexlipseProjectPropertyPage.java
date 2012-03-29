@@ -513,17 +513,9 @@ public class TexlipseProjectPropertyPage extends PropertyPage {
 //        bibRefDirField.setText((bibRef != null) ? bibRef : "");
 
         // find out the default builder
-        String str = TexlipseProperties.getProjectProperty(project,
-                TexlipseProperties.BUILDER_NUMBER);
-        int num = 0;
-        if (str == null) {
-            str = TexlipsePlugin.getPreference(TexlipseProperties.BUILDER_NUMBER);
-        }
-        try {
-            num = Integer.parseInt(str);
-        } catch (NumberFormatException e) {
-        }
-        builderChooser.setSelectedBuilder(num);
+        String builderId = TexlipseProperties.getProjectProperty(project,
+                TexlipseProperties.BUILDER_ID);
+        builderChooser.setSelectedBuilder(builderId);
 
         // read output file name
         String outDir = TexlipseProperties.getProjectProperty(project,
@@ -605,12 +597,8 @@ public class TexlipseProjectPropertyPage extends PropertyPage {
         }
 
         // save values
-        int num = builderChooser.getSelectedBuilder();
-        if (num == -1) {
-            num = 0;
-        }
         TexlipseProperties.setProjectProperty(project,
-                TexlipseProperties.BUILDER_NUMBER, num+"");
+                TexlipseProperties.BUILDER_ID, builderChooser.getSelectedBuilder());
         
         TexlipseProperties.setProjectProperty(project,
                 TexlipseProperties.MARK_TEMP_DERIVED_PROPERTY, derivedTempCheckbox.getSelection()+"");

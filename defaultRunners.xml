@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<runners xmlns="net.sourceforge.texlipse/runners"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="net.sourceforge.texlipse/runners schema/runners.xsd">
+    <runner id="latex">
+        <label>latex</label>
+        <description>Latex program</description>
+        <inputFormat>tex</inputFormat>
+        <outputFormat>dvi</outputFormat>
+        <runnerClass>net.sourceforge.texlipse.builder.LatexRunner</runnerClass>
+        <executable>latex</executable>
+        <defaultArguments>-interaction=nonstopmode --src-specials %input</defaultArguments>
+    </runner>
+    <runner id="pslatex">
+        <label>pslatex</label>
+        <description>PsLatex program</description>
+        <inputFormat>tex</inputFormat>
+        <outputFormat>ps</outputFormat>
+        <runnerClass>net.sourceforge.texlipse.builder.LatexRunner</runnerClass>
+        <legacyRunnerClass>net.sourceforge.texlipse.builder.PslatexRunner</legacyRunnerClass>
+        <executable>pslatex</executable>
+        <defaultArguments>-interaction=nonstopmode --src-specials %input</defaultArguments>
+    </runner>
+    <runner id="pdflatex">
+        <label>pdflatex</label>
+        <description>PdfLatex program</description>
+        <inputFormat>tex</inputFormat>
+        <outputFormat>pdf</outputFormat>
+        <runnerClass>net.sourceforge.texlipse.builder.LatexRunner</runnerClass>
+        <legacyRunnerClass>net.sourceforge.texlipse.builder.PdflatexRunner</legacyRunnerClass>
+        <executable>pdflatex</executable>
+        <defaultArguments>-synctex=1 -interaction=nonstopmode --src-specials %input</defaultArguments>
+    </runner>
+    <runner id="xelatex">
+        <label>xelatex</label>
+        <description>XeLatex program</description>
+        <inputFormat>tex</inputFormat>
+        <outputFormat>pdf</outputFormat>
+        <runnerClass>net.sourceforge.texlipse.builder.LatexRunner</runnerClass>
+        <legacyRunnerClass>net.sourceforge.texlipse.builder.XelatexRunner</legacyRunnerClass>
+        <executable>xelatex</executable>
+        <defaultArguments>-synctex=1 -interaction=nonstopmode --src-specials %input</defaultArguments>
+    </runner>
+    <runner id="lualatex">
+        <label>lualatex</label>
+        <description>LuaLatex program</description>
+        <inputFormat>tex</inputFormat>
+        <outputFormat>pdf</outputFormat>
+        <runnerClass>net.sourceforge.texlipse.builder.LatexRunner</runnerClass>
+        <legacyRunnerClass>net.sourceforge.texlipse.builder.LualatexRunner</legacyRunnerClass>
+        <executable>lualatex</executable>
+        <defaultArguments>-synctex=1 -interaction=nonstopmode --src-specials %input</defaultArguments>
+    </runner>
+    <runner id="bibtex">
+        <label>bibtex</label>
+        <description>Bibtex program</description>
+        <inputFormat>aux</inputFormat>
+        <outputFormat>bbl</outputFormat>
+        <runnerClass>net.sourceforge.texlipse.builder.BibtexRunner</runnerClass>
+        <executable>bibtex</executable>
+    </runner>
+    <runner id="biber">
+        <label>biber</label>
+        <description>Biber (BibLaTeX)</description>
+        <inputFormat>bcf</inputFormat>
+        <outputFormat>bbl</outputFormat>
+        <runnerClass>net.sourceforge.texlipse.builder.BiberRunner</runnerClass>
+        <executable>biber</executable>
+    </runner>
+    <runner id="makeindex">
+        <label>makeindex</label>
+        <description>Makeindex program</description>
+        <inputFormat>idx</inputFormat>
+        <outputFormat>ind</outputFormat>
+        <runnerClass>net.sourceforge.texlipse.builder.MakeindexRunner</runnerClass>
+        <executable>makeindex</executable>
+		<defaultArguments>%input -s %style</defaultArguments>
+    </runner>
+    <runner id="dvips">
+        <label>dvips</label>
+        <description>Dvips program</description>
+        <inputFormat>dvi</inputFormat>
+        <outputFormat>ps</outputFormat>
+        <runnerClass>net.sourceforge.texlipse.builder.DvipsRunner</runnerClass>
+        <executable>dvips</executable>
+		<defaultArguments>-R0 -o %output %input</defaultArguments>
+    </runner>
+    <runner id="dvipdf">
+        <label>dvipdf</label>
+        <description>Dvipdf program</description>
+        <inputFormat>dvi</inputFormat>
+        <outputFormat>pdf</outputFormat>
+        <runnerClass>net.sourceforge.texlipse.builder.DvipdfRunner</runnerClass>
+        <executable>dvipdf</executable>
+		<executable.windows>dvipdfm.exe</executable.windows>
+    </runner>
+    <runner id="ps2pdf">
+        <label>ps2pdf</label>
+        <description>Ps2pdf program</description>
+        <inputFormat>ps</inputFormat>
+        <outputFormat>pdf</outputFormat>
+        <runnerClass>net.sourceforge.texlipse.builder.Ps2pdfRunner</runnerClass>
+        <executable>ps2pdf</executable>
+    </runner>
+    <runner id="nomencl">
+        <label>nomencl</label>
+        <description>Makeindex program (nomencl)</description>
+        <inputFormat>nlo</inputFormat>
+        <outputFormat>nls</outputFormat>
+        <runnerClass>net.sourceforge.texlipse.builder.MakeindexNomenclRunner</runnerClass>
+        <executable>makeindex</executable>
+		<defaultArguments>%input -s nomencl.ist -o %output</defaultArguments>
+    </runner>
+    <runner id="kpsewhich">
+        <label>kpsewhich</label>
+        <description>Kpsewhich program</description>
+        <runnerClass>net.sourceforge.texlipse.builder.KpsewhichRunner</runnerClass>
+        <executable>kpsewhich</executable>
+    </runner>
+</runners>

@@ -85,12 +85,12 @@ public class BuildCycleDetector {
             if (Boolean.TRUE.equals(biblatexMode)) {
                 bibRunner = BuilderRegistry.getRunner(
                         TexlipseProperties.INPUT_FORMAT_BCF,
-                        TexlipseProperties.OUTPUT_FORMAT_BBL, 0);
+                        TexlipseProperties.OUTPUT_FORMAT_BBL);
             }
             else {
                 bibRunner = BuilderRegistry.getRunner(
                         TexlipseProperties.INPUT_FORMAT_BIB,
-                        TexlipseProperties.OUTPUT_FORMAT_AUX, 0);
+                        TexlipseProperties.OUTPUT_FORMAT_AUX);
             }
             if (bibRunner != null) {
                 queueRunner(bibRunner, true);
@@ -140,7 +140,7 @@ public class BuildCycleDetector {
             final String fileExt = changedFile.getFileExtension();
             if (fileExt != null && fileExt.length() > 0
                     && !"tex".equals(fileExt)) {
-                ProgramRunner runner = BuilderRegistry.getRunner(fileExt, null, 0);
+                ProgramRunner runner = BuilderRegistry.getRunner(fileExt, null);
                 if (runner != null) {
                     // Schedule runner before next LaTeX rebuild
                     queueRunner(runner, push);

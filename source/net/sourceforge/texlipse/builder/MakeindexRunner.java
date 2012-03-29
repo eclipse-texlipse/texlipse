@@ -11,6 +11,7 @@ package net.sourceforge.texlipse.builder;
 
 import java.util.StringTokenizer;
 
+import net.sourceforge.texlipse.builder.factory.RunnerDescription;
 import net.sourceforge.texlipse.properties.TexlipseProperties;
 
 import org.eclipse.core.resources.IResource;
@@ -23,26 +24,10 @@ import org.eclipse.core.resources.IResource;
  */
 public class MakeindexRunner extends AbstractProgramRunner {
 
-    public MakeindexRunner() {
-        super();
+    public MakeindexRunner(RunnerDescription description) {
+        super(description);
     }
 
-    protected String getWindowsProgramName() {
-        return "makeindex.exe";
-    }
-    
-    protected String getUnixProgramName() {
-        return "makeindex";
-    }
-    
-    public String getDescription() {
-        return "Makeindex program";
-    }
-    
-    public String getDefaultArguments() {
-        return "%input -s %style";
-    }
-    
     /**
      * Replace also the style file parameter from the arguments.
      * @param resource .tex file to compile
@@ -63,15 +48,7 @@ public class MakeindexRunner extends AbstractProgramRunner {
         
         return args;
     }
-    
-    public String getInputFormat() {
-        return TexlipseProperties.INPUT_FORMAT_IDX;
-    }
-    
-    public String getOutputFormat() {
-        return TexlipseProperties.OUTPUT_FORMAT_IDX;
-    }
-    
+
     /**
      * Parse the output of the makeindex program.
      * 

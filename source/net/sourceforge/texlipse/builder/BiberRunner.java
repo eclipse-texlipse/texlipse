@@ -2,7 +2,7 @@ package net.sourceforge.texlipse.builder;
 
 import java.util.StringTokenizer;
 
-import net.sourceforge.texlipse.properties.TexlipseProperties;
+import net.sourceforge.texlipse.builder.factory.RunnerDescription;
 
 import org.eclipse.core.resources.IResource;
 
@@ -15,30 +15,8 @@ import org.eclipse.core.resources.IResource;
  */
 public class BiberRunner extends AbstractProgramRunner {
 
-    public BiberRunner() {
-        super();
-    }
-
-    public String getDescription() {
-        return "Biber (BibLaTeX)";
-    }
-
-    public String getInputFormat() {
-        return TexlipseProperties.INPUT_FORMAT_BCF;
-    }
-
-    public String getOutputFormat() {
-        return TexlipseProperties.OUTPUT_FORMAT_BBL;
-    }
-
-    @Override
-    protected String getWindowsProgramName() {
-        return "biber.exe";
-    }
-
-    @Override
-    protected String getUnixProgramName() {
-        return "biber";
+    public BiberRunner(RunnerDescription description) {
+        super(description);
     }
 
     @Override

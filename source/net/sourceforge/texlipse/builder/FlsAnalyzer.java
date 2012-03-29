@@ -171,12 +171,12 @@ public class FlsAnalyzer {
         catch (FileNotFoundException e) {
             throw e;
         }
-        catch (IOException e) {
+        finally {
             try {
                 br.close();
-            } catch (IOException e1) {
+            } catch (IOException e) {
+                throw e;
             }
-            throw e;
         }
     }
 

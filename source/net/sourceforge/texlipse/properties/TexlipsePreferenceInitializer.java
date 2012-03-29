@@ -87,7 +87,7 @@ public class TexlipsePreferenceInitializer extends
         
         pref.setDefault(TexlipseProperties.BUILD_ENV_SETTINGS, "");
         pref.setDefault(TexlipseProperties.VIEWER_ENV_SETTINGS, "");
-        pref.setDefault(TexlipseProperties.TEMP_FILE_EXTS, ".aux,.log,.toc,.ind,.ilg,.bbl,.blg,.lot,.lof,.snm,.nav,.out,.vrb,.run.xml,.bcf");
+        pref.setDefault(TexlipseProperties.TEMP_FILE_EXTS, ".aux,.log,.toc,.ind,.ilg,.bbl,.blg,.lot,.lof,.snm,.nav,.out,.vrb,.run.xml,.bcf,.fls");
         pref.setDefault(TexlipseProperties.DERIVED_FILES, ".synctex.gz,.synctex,.pdfsync");
         pref.setDefault(TexlipseProperties.BUILD_CYCLE_FLS_ENABLED, true);
         pref.setDefault(TexlipseProperties.BUILD_CYCLE_MAX, 5);

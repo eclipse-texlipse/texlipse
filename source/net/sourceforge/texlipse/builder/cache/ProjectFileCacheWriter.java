@@ -3,6 +3,7 @@ package net.sourceforge.texlipse.builder.cache;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Collection;
 
@@ -172,11 +173,10 @@ public class ProjectFileCacheWriter {
         this.files = files;
         IFile cacheFile = project.getFile(".fileCache.xml");
         File fn = new File(cacheFile.getLocationURI());
+        OutputStream stream = null;
         try {
-            writeFileCache(new FileOutputStream(fn));
-            cacheFile.refreshLocal(0, monitor);
-            cacheFile.setHidden(true);
-            cacheFile.setDerived(true);
+            stream = new FileOutputStream(fn);
+            writeFileCache(stream);
         }
         catch (FileNotFoundException e) {
             // TODO Auto-generated catch block
@@ -184,6 +184,18 @@ public class ProjectFileCacheWriter {
         catch (XMLStreamException e) {
             // TODO Auto-generated catch block
         }
+        finally {
+            if (stream != null) {
+                try {
+                    stream.close();
+                }
+                catch (IOException e) {
+                }
+            }
+        }
+        cacheFile.refreshLocal(0, monitor);
+        cacheFile.setHidden(true);
+        cacheFile.setDerived(true);
     }
 
 }

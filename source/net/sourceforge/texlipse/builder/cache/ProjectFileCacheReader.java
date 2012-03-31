@@ -1,5 +1,6 @@
 package net.sourceforge.texlipse.builder.cache;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collection;
 import java.util.HashSet;
@@ -178,14 +179,25 @@ public class ProjectFileCacheReader {
     public Collection<ProjectFileInfo> readFiles(IProgressMonitor monitor) throws CoreException {
         this.files = new HashSet<ProjectFileInfo>();
         IFile cacheFile = project.getFile(".fileCache.xml");
+        InputStream stream = null;
         try {
             cacheFile.refreshLocal(0, monitor);
             if (cacheFile.exists()) {
-                readFileCache(cacheFile.getContents());
+                stream = cacheFile.getContents();
+                readFileCache(stream);
             }
         }
         catch (XMLStreamException e) {
             //TODO
+        }
+        finally {
+            if (stream != null) {
+                try {
+                    stream.close();
+                }
+                catch (IOException e) {
+                }
+            }
         }
         return this.files;
     }

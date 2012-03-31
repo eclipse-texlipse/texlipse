@@ -9,6 +9,7 @@
         <inputFormat>tex</inputFormat>
         <outputFormat>dvi</outputFormat>
         <runnerClass>net.sourceforge.texlipse.builder.LatexRunner</runnerClass>
+        <isCoreRunner>true</isCoreRunner>
         <executable>latex</executable>
         <defaultArguments>-interaction=nonstopmode --src-specials %input</defaultArguments>
     </runner>
@@ -19,6 +20,7 @@
         <outputFormat>ps</outputFormat>
         <runnerClass>net.sourceforge.texlipse.builder.LatexRunner</runnerClass>
         <legacyRunnerClass>net.sourceforge.texlipse.builder.PslatexRunner</legacyRunnerClass>
+        <isCoreRunner>true</isCoreRunner>
         <executable>pslatex</executable>
         <defaultArguments>-interaction=nonstopmode --src-specials %input</defaultArguments>
     </runner>
@@ -29,6 +31,7 @@
         <outputFormat>pdf</outputFormat>
         <runnerClass>net.sourceforge.texlipse.builder.LatexRunner</runnerClass>
         <legacyRunnerClass>net.sourceforge.texlipse.builder.PdflatexRunner</legacyRunnerClass>
+        <isCoreRunner>true</isCoreRunner>
         <executable>pdflatex</executable>
         <defaultArguments>-synctex=1 -interaction=nonstopmode --src-specials %input</defaultArguments>
     </runner>
@@ -39,6 +42,7 @@
         <outputFormat>pdf</outputFormat>
         <runnerClass>net.sourceforge.texlipse.builder.LatexRunner</runnerClass>
         <legacyRunnerClass>net.sourceforge.texlipse.builder.XelatexRunner</legacyRunnerClass>
+        <isCoreRunner>true</isCoreRunner>
         <executable>xelatex</executable>
         <defaultArguments>-synctex=1 -interaction=nonstopmode --src-specials %input</defaultArguments>
     </runner>
@@ -49,13 +53,14 @@
         <outputFormat>pdf</outputFormat>
         <runnerClass>net.sourceforge.texlipse.builder.LatexRunner</runnerClass>
         <legacyRunnerClass>net.sourceforge.texlipse.builder.LualatexRunner</legacyRunnerClass>
+        <isCoreRunner>true</isCoreRunner>
         <executable>lualatex</executable>
         <defaultArguments>-synctex=1 -interaction=nonstopmode --src-specials %input</defaultArguments>
     </runner>
     <runner id="bibtex">
         <label>bibtex</label>
         <description>Bibtex program</description>
-        <inputFormat>aux</inputFormat>
+        <inputFormat>bib</inputFormat>
         <outputFormat>bbl</outputFormat>
         <runnerClass>net.sourceforge.texlipse.builder.BibtexRunner</runnerClass>
         <executable>bibtex</executable>
@@ -83,6 +88,7 @@
         <inputFormat>dvi</inputFormat>
         <outputFormat>ps</outputFormat>
         <runnerClass>net.sourceforge.texlipse.builder.DvipsRunner</runnerClass>
+        <isCoreRunner>true</isCoreRunner>
         <executable>dvips</executable>
 		<defaultArguments>-R0 -o %output %input</defaultArguments>
     </runner>
@@ -92,6 +98,7 @@
         <inputFormat>dvi</inputFormat>
         <outputFormat>pdf</outputFormat>
         <runnerClass>net.sourceforge.texlipse.builder.DvipdfRunner</runnerClass>
+        <isCoreRunner>true</isCoreRunner>
         <executable>dvipdf</executable>
 		<executable.windows>dvipdfm.exe</executable.windows>
     </runner>
@@ -101,6 +108,7 @@
         <inputFormat>ps</inputFormat>
         <outputFormat>pdf</outputFormat>
         <runnerClass>net.sourceforge.texlipse.builder.Ps2pdfRunner</runnerClass>
+        <isCoreRunner>true</isCoreRunner>
         <executable>ps2pdf</executable>
     </runner>
     <runner id="nomencl">
@@ -116,6 +124,7 @@
         <label>kpsewhich</label>
         <description>Kpsewhich program</description>
         <runnerClass>net.sourceforge.texlipse.builder.KpsewhichRunner</runnerClass>
+        <isCoreRunner>true</isCoreRunner>
         <executable>kpsewhich</executable>
     </runner>
 </runners>

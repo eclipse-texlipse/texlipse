@@ -224,6 +224,8 @@ public class BuilderRegistry {
 
     /**
      * Get a program runner for the given conversion.
+     * <i>This will only return utility runners. Core runners should be identified
+     * directly</i>.
      *
      * @param in input file format
      * @param out output file format
@@ -292,8 +294,8 @@ public class BuilderRegistry {
     protected String findProgramRunner(String in, String out) {
 
         for (RunnerDescription runner : instance.runners.values()) {
-            if (in.equals(runner.getInputFormat()) && 
-                    (out == null || out.equals(runner.getOutputFormat()))) {
+            if (!runner.isCoreRunner() && in.equals(runner.getInputFormat())
+                    && (out == null || out.equals(runner.getOutputFormat()))) {
                 return runner.getId();
             }
         }

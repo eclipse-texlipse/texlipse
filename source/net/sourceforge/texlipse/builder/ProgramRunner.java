@@ -20,6 +20,7 @@ import org.eclipse.core.runtime.CoreException;
  */
 public interface ProgramRunner {
 
+    public String getId();
     public String getProgramName();
     public String getProgramPath();
     public String getProgramArguments();

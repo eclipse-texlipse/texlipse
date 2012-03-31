@@ -22,7 +22,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
  *
  * @author Kimmo Karlsson
  */
-public class DviBuilder extends AbstractBuilder implements AdaptableBuilder {
+public class DviBuilder extends AbstractBuilder implements AdaptableBuilder, CycleBuilder {
 
     private Builder dvi;
     private ProgramRunner ps;
@@ -76,4 +76,20 @@ public class DviBuilder extends AbstractBuilder implements AdaptableBuilder {
             ((AdaptableBuilder) dvi).updateBuilder(project);
         }
     }
+
+    public BuildCycleDetector getCycleDetector() {
+        if (dvi instanceof CycleBuilder) {
+            return ((CycleBuilder) dvi).getCycleDetector();
+        }
+        else {
+            return null;
+        }
+    }
+
+    public void setCycleDetector(BuildCycleDetector cycleDetector) {
+        if (dvi instanceof CycleBuilder) {
+            ((CycleBuilder) dvi).setCycleDetector(cycleDetector);
+        }
+    }
+
 }

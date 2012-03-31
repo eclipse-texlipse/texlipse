@@ -120,6 +120,9 @@ public class RunnerXmlHandler {
                 throw new XMLStreamException(e);
             }
             break;
+        case ISCORERUNNER:
+            current.setCoreRunner("true".equals(str));
+            break;
         case EXECUTABLE:
             if (isWindowsPlatform) {
                 if (!overrideExecutable) {

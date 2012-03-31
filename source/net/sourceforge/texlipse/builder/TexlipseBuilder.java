@@ -365,10 +365,10 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
         fileManager.setFileTracking(fileTracking);
         fileManager.performBeforeBuild(monitor);
 
-        if (builder instanceof TexCycleBuilder) {
+        if (builder instanceof CycleBuilder) {
             BuildCycleDetector cycleDetector =
                     new BuildCycleDetector(project, resource, fileTracking);
-            ((TexCycleBuilder) builder).setCycleDetector(cycleDetector);
+            ((CycleBuilder) builder).setCycleDetector(cycleDetector);
         }
 
         // start the build

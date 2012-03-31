@@ -29,7 +29,7 @@ import org.eclipse.core.runtime.Platform;
  * @author Matthias Erll
  *
  */
-public class TexCycleBuilder extends AbstractBuilder {
+public class TexCycleBuilder extends AbstractBuilder implements CycleBuilder {
 
     private ProgramRunner latex;
     private ProgramRunner utilRunner;
@@ -188,7 +188,7 @@ public class TexCycleBuilder extends AbstractBuilder {
 
         final Set<String> brokenRunners = new TreeSet<String>();
 
-        cycleDetector.checkLatexOutput(monitor);
+        cycleDetector.checkInitialLatexOutput(monitor);
         while (!cycleDetector.isDone() && (!haltOnInvalid || brokenRunners.isEmpty())) {
             clearMarkers(project);
             utilRunner = cycleDetector.getNextRunner();
@@ -242,21 +242,10 @@ public class TexCycleBuilder extends AbstractBuilder {
         }
     }
 
-    /**
-     * Returns the cycle detector of this builder instance.
-     *
-     * @return cycle detector
-     */
     public BuildCycleDetector getCycleDetector() {
         return cycleDetector;
     }
 
-    /**
-     * Sets the cycle detector, which determines how often latex and other
-     * runners need to be triggered.
-     * 
-     * @param cycleDetector cycle detector instance
-     */
     public void setCycleDetector(BuildCycleDetector cycleDetector) {
         this.cycleDetector = cycleDetector;
     }

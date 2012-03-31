@@ -18,12 +18,13 @@ public class RunnerDescription {
 
     // runner XML field elements
     public static final String[] RUNNER_PROPERTY_STR = { "label", "description",
-            "inputFormat", "outputFormat", "runnerClass", "legacyClass", "executable",
-            "executable.windows", "defaultArguments" };
+            "inputFormat", "outputFormat", "runnerClass", "legacyClass",
+            "isCoreRunner", "executable", "executable.windows", "defaultArguments" };
 
     // runner XML field identifiers
-    public static enum RunnerProperty { LABEL, DESCRIPTION, INPUTFORMAT, OUTPUTFORMAT,
-            RUNNERCLASS, LEGACYCLASS, EXECUTABLE, EXECUTABLE_WINDOWS, DEFAULTARGUMENTS };
+    public static enum RunnerProperty { LABEL, DESCRIPTION, INPUTFORMAT,
+            OUTPUTFORMAT, RUNNERCLASS, LEGACYCLASS, ISCORERUNNER, EXECUTABLE,
+            EXECUTABLE_WINDOWS, DEFAULTARGUMENTS };
 
     private final String id;
     private String label;
@@ -32,6 +33,7 @@ public class RunnerDescription {
     private String outputFormat;
     private Class<? extends ProgramRunner> runnerClass;
     private String legacyClass;
+    private boolean coreRunner;
     private String executable;
     private String defaultArguments;
 
@@ -191,6 +193,26 @@ public class RunnerDescription {
      */
     protected void setLegacyClass(String legacyClass) {
         this.legacyClass = legacyClass;
+    }
+
+    /**
+     * Returns if the runner is used by the core build process, or if it is a
+     * utility runner, which contributes to the latex build.
+     *
+     * @return <code>true</code> for core runners (latex, pdflatex, ps2pdf etc.),
+     *  <code>false</code> for utility runners (bibtex, makeindex etc.).
+     */
+    public boolean isCoreRunner() {
+        return coreRunner;
+    }
+
+    /**
+     * Sets if the current runner is used by the core build process.
+     *
+     * @param coreRunner
+     */
+    protected void setCoreRunner(boolean coreRunner) {
+        this.coreRunner = coreRunner;
     }
 
     /**

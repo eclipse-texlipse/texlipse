@@ -91,4 +91,32 @@
         <builderClass>net.sourceforge.texlipse.builder.TexCycleBuilder</builderClass>
         <runnerId>lualatex</runnerId>
     </builder>
+    <builder id="latex+dvips-cb">
+        <label>dvips (cycle auto-detection)</label>
+        <outputFormat>ps</outputFormat>
+        <builderClass>net.sourceforge.texlipse.builder.DviBuilder</builderClass>
+        <runnerId>dvips</runnerId>
+        <secondaryBuilder>latex-cb</secondaryBuilder>
+    </builder>
+    <builder id="latex+dvipdf-cb">
+        <label>latex+dvipdf (cycle auto-detection)</label>
+        <outputFormat>pdf</outputFormat>
+        <builderClass>net.sourceforge.texlipse.builder.DviBuilder</builderClass>
+        <runnerId>dvipdf</runnerId>
+        <secondaryBuilder>latex-cb</secondaryBuilder>
+    </builder>
+    <builder id="pslatex+ps2pdf-cb">
+        <label>pslatex+ps2pdf (cycle auto-detection)</label>
+        <outputFormat>pdf</outputFormat>
+        <builderClass>net.sourceforge.texlipse.builder.PsBuilder</builderClass>
+        <runnerId>ps2pdf</runnerId>
+        <secondaryBuilder>pslatex-cb</secondaryBuilder>
+    </builder>
+    <builder id="latex+dvips+ps2pdf-cb">
+        <label>latex+dvips+ps2pdf (cycle auto-detection)</label>
+        <outputFormat>pdf</outputFormat>
+        <builderClass>net.sourceforge.texlipse.builder.DviBuilder</builderClass>
+        <runnerId>ps2pdf</runnerId>
+        <secondaryBuilder>latex+dvips-cb</secondaryBuilder>
+    </builder>
 </builders>

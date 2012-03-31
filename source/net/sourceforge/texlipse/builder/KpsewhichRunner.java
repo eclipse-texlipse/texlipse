@@ -50,6 +50,10 @@ public class KpsewhichRunner implements ProgramRunner {
         extrun = new ExternalProgram();
     }
 
+    public String getId() {
+        return description.getId();
+    }
+
 	public String getProgramArguments() {
 		// Not really applicable to us
 		return "(Not applicable)";

@@ -56,6 +56,13 @@ public abstract class AbstractProgramRunner implements ProgramRunner {
     }
 
     /**
+     * @return the id of the program runner
+     */
+    public String getId() {
+        return description.getId();
+    }
+
+    /**
      * @return the program path and filename from the preferences
      */
     public String getProgramPath() {

@@ -10,7 +10,6 @@
 package net.sourceforge.texlipse.builder;
 
 import net.sourceforge.texlipse.builder.factory.BuilderDescription;
-import net.sourceforge.texlipse.properties.TexlipseProperties;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -24,7 +23,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
  *
  * @author Kimmo Karlsson
  */
-public class PsBuilder extends AbstractBuilder implements AdaptableBuilder {
+public class PsBuilder extends AbstractBuilder implements AdaptableBuilder, CycleBuilder {
 
     private Builder dvi;
     private ProgramRunner pdf;
@@ -49,7 +48,7 @@ public class PsBuilder extends AbstractBuilder implements AdaptableBuilder {
             dvi = BuilderRegistry.getBuilder(description.getSecondaryBuilderId());
         }
         if (pdf == null || !pdf.isValid()) {
-            pdf = BuilderRegistry.getRunner(TexlipseProperties.OUTPUT_FORMAT_PS, TexlipseProperties.OUTPUT_FORMAT_PDF);
+            pdf = BuilderRegistry.getRunner("ps2pdf");
         }
         return dvi != null && dvi.isValid() && pdf != null && pdf.isValid();
     }
@@ -78,4 +77,20 @@ public class PsBuilder extends AbstractBuilder implements AdaptableBuilder {
             ((AdaptableBuilder) dvi).updateBuilder(project);
         }
     }
+
+    public BuildCycleDetector getCycleDetector() {
+        if (dvi instanceof CycleBuilder) {
+            return ((CycleBuilder) dvi).getCycleDetector();
+        }
+        else {
+            return null;
+        }
+    }
+
+    public void setCycleDetector(BuildCycleDetector cycleDetector) {
+        if (dvi instanceof CycleBuilder) {
+            ((CycleBuilder) dvi).setCycleDetector(cycleDetector);
+        }
+    }
+
 }

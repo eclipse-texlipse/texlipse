@@ -41,6 +41,21 @@ public class BuildCycleDetector {
     private boolean done;
 
     /**
+     * Checks if a runner with the given id is scheduled already.
+     *
+     * @param id runner id
+     * @return <code>true</code> if the runner is scheduled, <code>false</code> otherwise
+     */
+    private boolean isRunnerQueued(final String id) {
+        for (ProgramRunner runner : runners) {
+            if (runner.getId().equals(id)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Schedules a program runner to run, i.e. moves it to the list of runners.
      * Avoids duplicates.
      *
@@ -48,20 +63,14 @@ public class BuildCycleDetector {
      * @param push whether to move the runner to the beginning of the list
      */
     private void queueRunner(ProgramRunner runner, boolean push) {
-        int currentPos = runners.indexOf(runner);
-        if (push) {
-            // If scheduled later, move to front of the list
-            if (currentPos > 0) {
-                runners.remove(currentPos);
-            }
-            if (currentPos != 0) {
+        // If already scheduled, there is no use for scheduling
+        // it again
+        if (!isRunnerQueued(runner.getId())) {
+            if (push) {
+                // If scheduled later, move to front of the list
                 runners.addFirst(runner);
             }
-        }
-        else {
-            // If already scheduled, there is no use for scheduling
-            // it later
-            if (currentPos < 0) {
+            else {
                 runners.add(runner);
             }
         }
@@ -82,10 +91,19 @@ public class BuildCycleDetector {
             final ProgramRunner bibRunner;
             Boolean biblatexMode = (Boolean) TexlipseProperties.getSessionProperty(project,
                     TexlipseProperties.SESSION_BIBLATEXMODE_PROPERTY);
+            String biblatexBackend = (String) TexlipseProperties.getSessionProperty(project,
+                    TexlipseProperties.SESSION_BIBLATEXBACKEND_PROPERTY);
             if (Boolean.TRUE.equals(biblatexMode)) {
-                bibRunner = BuilderRegistry.getRunner(
-                        TexlipseProperties.INPUT_FORMAT_BCF,
-                        TexlipseProperties.OUTPUT_FORMAT_BBL);
+                if ("biber".equals(biblatexBackend)) {
+                    bibRunner = BuilderRegistry.getRunner(
+                            TexlipseProperties.INPUT_FORMAT_BCF,
+                            TexlipseProperties.OUTPUT_FORMAT_BBL);
+                }
+                else {
+                    bibRunner = BuilderRegistry.getRunner(
+                            TexlipseProperties.INPUT_FORMAT_BIB,
+                            TexlipseProperties.OUTPUT_FORMAT_AUX);
+                }
             }
             else {
                 bibRunner = BuilderRegistry.getRunner(
@@ -142,9 +160,8 @@ public class BuildCycleDetector {
                     && !"tex".equals(fileExt)) {
                 ProgramRunner runner = BuilderRegistry.getRunner(fileExt, null);
                 if (runner != null) {
-                    // Schedule runner before next LaTeX rebuild
+                    // Schedule runner before next LaTeX rebuild, if any
                     queueRunner(runner, push);
-                    done = false;
                 }
                 if (inputFiles.contains(changedFile)) {
                     // LaTeX incremental build, needs another run-through
@@ -197,7 +214,6 @@ public class BuildCycleDetector {
      */
     public void initFileTracking(IProgressMonitor monitor) throws CoreException {
         Set<IPath> initialChanges = fileTracking.initFileCache(tempExts, addExts, monitor);
-        checkBibtexVariables();
         checkOutputFiles(initialChanges, false);
     }
 
@@ -261,6 +277,18 @@ public class BuildCycleDetector {
                 sourceContainer, tempExts, addExts, monitor);
 
         checkOutputFiles(changedContentFiles, false);
+    }
+
+    /**
+     * Does the initial checking, using <code>checkLatexOutput(IProgressMonitor)</code>,
+     * but is used only after the intial latex run for checking additional variables.
+     *
+     * @param monitor progress monitor
+     * @throws CoreException
+     */
+    public void checkInitialLatexOutput(IProgressMonitor monitor) throws CoreException {
+        checkLatexOutput(monitor);
+        checkBibtexVariables();
     }
 
     /**

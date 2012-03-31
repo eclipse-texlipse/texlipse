@@ -61,7 +61,7 @@
         <label>bibtex</label>
         <description>Bibtex program</description>
         <inputFormat>bib</inputFormat>
-        <outputFormat>bbl</outputFormat>
+        <outputFormat>aux</outputFormat>
         <runnerClass>net.sourceforge.texlipse.builder.BibtexRunner</runnerClass>
         <executable>bibtex</executable>
     </runner>

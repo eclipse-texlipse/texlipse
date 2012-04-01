@@ -74,34 +74,6 @@ public class LatexRefExtractingParser {
         this.biblatexBackend = null;
         this.index = false;
     }
-    
-    /**
-     * Evaluates package loading options for biblatex and locates the backend
-     * option.
-     *
-     * @param options string with options in format <code>key=value</code>,
-     *  or simply <code>key</code>, each separated by commas
-     * @return selected biblatex backend, if it was selected; otherwise null
-     */
-    private static String findBiblatexBackend(String options) {
-        int beIdx = options.indexOf("backend=");
-        if (beIdx > 0) {
-            int startIdx = beIdx + 8; // move forward by length of "backend="
-            int endIdx = options.indexOf(',', startIdx);
-            if (endIdx > startIdx) {
-                return options.substring(startIdx, endIdx).trim();
-            }
-            else if (endIdx == -1) {
-                return options.substring(startIdx).trim();
-            }
-            else {
-                return null;
-            }
-        }
-        else {
-            return null;
-        }
-    }
 
     /**
      * Creates a new parser for extracting labels and BibTeX info.
@@ -155,7 +127,7 @@ public class LatexRefExtractingParser {
                             if (t.getText().equals("biblatex")) {
                                 biblatexMode = true;
                                 if (packageOptions != null) {
-                                    biblatexBackend = findBiblatexBackend(packageOptions);
+                                    biblatexBackend = LatexParserUtils.findBiblatexBackend(packageOptions);
                                     // reset
                                     packageOptions = null;
                                 }

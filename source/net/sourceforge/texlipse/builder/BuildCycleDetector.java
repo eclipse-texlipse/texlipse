@@ -164,7 +164,7 @@ public class BuildCycleDetector {
     private void checkOutputFiles(final Set<IPath> changedOutputFiles, boolean push) {
         final Set<IPath> inputFiles = getLogInputFiles();
         for (IPath changedFile : changedOutputFiles) {
-            final String fileExt = changedFile.getFileExtension();
+            final String fileExt = changedFile.getFileExtension().toLowerCase();
             if (fileExt != null && fileExt.length() > 0
                     && !"tex".equals(fileExt)) {
                 ProgramRunner runner = BuilderRegistry.getRunner(fileExt, null);

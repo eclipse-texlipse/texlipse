@@ -44,7 +44,7 @@ public class LatexLogAnalyzer {
     private static final String MULTI_SPACE_STR = " {2,}";
     private static final String LATEX_C_ERROR_STR = "^(.+?\\.\\w{3}):(\\d+): (.+)$";
     private static final String TEX_ERROR_STR = "^!\\s+(.*)$";
-    private static final String BOX_WARNING_STR = "^(Over|Under)full \\\\[hv]box .* at lines? (\\d+)-?-?(\\d+)?";
+    private static final String BOX_WARNING_STR = "^(Over|Under)full \\\\([hv])box .* at lines? (\\d+)-?-?(\\d+)?";
     private static final String GENERAL_WARNING_STR = "^(.+)?\\s?[Ww]arning.*?: (.*)$";
     private static final String AT_LINE_ERROR_STR = "^l\\.(\\d+) (.*?)(\\s+(.*))?$";
     private static final String AT_LINE_WARNING_STR = ".* line (\\d+).*";
@@ -569,6 +569,10 @@ public class LatexLogAnalyzer {
                     if (followMsg.length() > 0) {
                         message += ' ' + followMsg;
                     }
+                    ml = P_AT_LINE_WARNING.matcher(followMsg);
+                    if (ml.matches()) {
+                        lineNumber = getLineNumber(ml.group(1));
+                    }
                     return false;
                 }
                 else {
@@ -716,8 +720,10 @@ public class LatexLogAnalyzer {
         }
         m = P_FULL_BOX.matcher(line);
         if (m.matches()) {
-            reportLayoutWarning(line, getLineNumber(m.group(2)));
-            skip = 1;
+            reportLayoutWarning(line, getLineNumber(m.group(3)));
+            if (!"Under".equals(m.group(1)) || !"v".equals(m.group(2))) {
+                skip = 1;
+            }
             return true;
         }
         m = P_NO_BIB_FILE.matcher(line);
@@ -794,7 +800,12 @@ public class LatexLogAnalyzer {
         // Not using the StringTokenizer, in order to consider empty lines.
         int next = text.indexOf('\n');
         while (next > -1) {
-            parseLine(text.substring(i, next));
+            if (text.charAt(next - 1) == '\r') {
+                parseLine(text.substring(i, next - 1));
+            }
+            else {
+                parseLine(text.substring(i, next));
+            }
             i = next + 1;
             next = text.indexOf('\n', i);
         }

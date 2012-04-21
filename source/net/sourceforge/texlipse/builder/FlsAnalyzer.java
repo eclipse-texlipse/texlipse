@@ -8,7 +8,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.eclipse.core.resources.IContainer;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
@@ -128,11 +127,10 @@ public class FlsAnalyzer {
     /**
      * Constructor.
      *
-     * @param project current project
      * @param resource resource which is being built
      */
-    public FlsAnalyzer(final IProject project, final IResource resource) {
-        this.projectPath = project.getLocation();
+    public FlsAnalyzer(final IResource resource) {
+        this.projectPath = resource.getProject().getLocation();
         final IContainer sourceContainer = resource.getParent();
         final IPath flsDir = sourceContainer.getLocation();
         final String flsFileName = OutputFileManager.stripFileExt(
@@ -172,10 +170,12 @@ public class FlsAnalyzer {
             throw e;
         }
         finally {
-            try {
-                br.close();
-            } catch (IOException e) {
-                throw e;
+            if (br != null) {
+                try {
+                    br.close();
+                } catch (IOException e) {
+                    throw e;
+                }
             }
         }
     }

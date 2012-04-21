@@ -252,8 +252,8 @@ public abstract class AbstractProgramRunner implements ProgramRunner {
      * Create a layout warning marker to the given resource.
      *
      * @param resource the file where the problem occured
-     * @param message error message
      * @param lineNumber line number
+     * @param message error message
      */
     public static void createLayoutMarker(IResource resource, Integer lineNumber, String message) {
         String markerType = TexlipseBuilder.LAYOUT_WARNING_TYPE;
@@ -265,8 +265,8 @@ public abstract class AbstractProgramRunner implements ProgramRunner {
      * Create a marker to the given resource.
      * 
      * @param resource the file where the problem occured
-     * @param message error message
      * @param lineNumber line number
+     * @param message error message
      * @param severity severity of the marker
      */
     public static void createMarker(IResource resource, Integer lineNumber, String message, int severity) {
@@ -278,8 +278,8 @@ public abstract class AbstractProgramRunner implements ProgramRunner {
      * Create a marker to the given resource. The marker's severity will be "ERROR".
      * 
      * @param resource the file where the problem occured
-     * @param message error message
      * @param lineNumber line number
+     * @param message error message
      */
     public static void createMarker(IResource resource, Integer lineNumber, String message) {
         createMarker(resource, lineNumber, message, IMarker.SEVERITY_ERROR);

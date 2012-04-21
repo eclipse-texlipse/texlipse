@@ -4,6 +4,7 @@ import java.util.StringTokenizer;
 
 import net.sourceforge.texlipse.builder.factory.RunnerDescription;
 
+import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 
 
@@ -28,6 +29,8 @@ public class BiberRunner extends AbstractProgramRunner {
             if (s.startsWith("FATAL")) {
                 createMarker(resource, null, s);
                 hasErrors = true;
+            } else if (s.startsWith("WARN")) {
+                createMarker(resource, null, s, IMarker.SEVERITY_WARNING);
             }
         }
         return hasErrors;

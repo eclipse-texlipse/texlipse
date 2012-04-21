@@ -1,6 +1,5 @@
 package net.sourceforge.texlipse.builder;
 
-import java.io.IOException;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;
@@ -30,7 +29,6 @@ public class BuildCycleDetector {
 
     private final IProject project;
     private final ProjectFileTracking fileTracking;
-    private final FlsAnalyzer analyzer;
     private final LinkedList<ProgramRunner> runners;
     private final IContainer sourceContainer;
     private final String[] tempExts;
@@ -110,6 +108,10 @@ public class BuildCycleDetector {
                         TexlipseProperties.INPUT_FORMAT_BIB,
                         TexlipseProperties.OUTPUT_FORMAT_AUX);
             }
+            TexlipseProperties.setSessionProperty(
+                    project, TexlipseProperties.SESSION_BIBTEX_RERUN, null);
+            TexlipseProperties.setSessionProperty(
+                    project, TexlipseProperties.BIBFILES_CHANGED, null);
             if (bibRunner != null) {
                 queueRunner(bibRunner, true);
                 done = false;
@@ -127,6 +129,20 @@ public class BuildCycleDetector {
         // Initialize with values from log output
         if ("true".equals(latexRerun)) {
             done = false;
+        }
+        TexlipseProperties.setSessionProperty(
+                project, TexlipseProperties.SESSION_LATEX_RERUN, null);
+    }
+
+    @SuppressWarnings("unchecked")
+    private Set<IPath> getLogInputFiles() {
+        final Object inputSet = TexlipseProperties.getSessionProperty(project,
+                TexlipseProperties.SESSION_LATEX_INPUTFILE_SET);
+        if (inputSet != null) {
+            return (Set<IPath>) inputSet;
+        }
+        else {
+            return new HashSet<IPath>();
         }
     }
 
@@ -146,14 +162,7 @@ public class BuildCycleDetector {
      *  to be back of the queue, but still started before the next latex process
      */
     private void checkOutputFiles(final Set<IPath> changedOutputFiles, boolean push) {
-        final Set<IPath> inputFiles;
-        if (analyzer != null) {
-            inputFiles = analyzer.getInputFiles();
-        }
-        else {
-            //TODO get file set from log output
-            inputFiles = new HashSet<IPath>();
-        }
+        final Set<IPath> inputFiles = getLogInputFiles();
         for (IPath changedFile : changedOutputFiles) {
             final String fileExt = changedFile.getFileExtension();
             if (fileExt != null && fileExt.length() > 0
@@ -182,14 +191,6 @@ public class BuildCycleDetector {
             final ProjectFileTracking fileTracking) {
         this.project = project;
         this.fileTracking = fileTracking;
-        final String useFlsParser = TexlipsePlugin.getPreference(
-                TexlipseProperties.BUILD_CYCLE_FLS_ENABLED);
-        if ("true".equals(useFlsParser)) {
-            this.analyzer = new FlsAnalyzer(project, resource);
-        }
-        else {
-            this.analyzer = null;
-        }
         this.runners = new LinkedList<ProgramRunner>();
         this.sourceContainer = resource.getParent();
         this.totalMax = TexlipsePlugin.getDefault().getPreferenceStore()
@@ -260,16 +261,6 @@ public class BuildCycleDetector {
             done = runners.isEmpty();
         }
 
-        // Check if further action relies on latex or FLS output
-        if (analyzer != null) {
-            try {
-                analyzer.parse();
-            }
-            catch (IOException e) {
-                throw new CoreException(TexlipsePlugin.stat(TexlipsePlugin
-                        .getResourceString("builderErrorCannotReadFls"), e));
-            }
-        }
         // Check latex output for additional info
         checkLatexOutputVariables();
 
@@ -302,16 +293,6 @@ public class BuildCycleDetector {
         final Set<IPath> changedContentFiles = fileTracking.updateChangedFiles(
                 sourceContainer, tempExts, addExts, monitor);
         checkOutputFiles(changedContentFiles, true);
-    }
-
-    /**
-     * Return if the '-recorder' flag is needed by the cycle detector.
-     *
-     * @return true, if the recorder flag needs to be added to the latex
-     *  command line arguments, false otherwise
-     */
-    public boolean needsRecorderFlag() {
-        return analyzer != null;
     }
 
     /**

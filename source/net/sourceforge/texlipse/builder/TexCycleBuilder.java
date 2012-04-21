@@ -37,24 +37,6 @@ public class TexCycleBuilder extends AbstractBuilder implements CycleBuilder {
     private boolean stopped;
 
     /**
-     * Check if '-recorder' command argument is necessary for latex runner and
-     * add as needed.
-     *
-     * @param latexRunner
-     */
-    private void checkRecorderFlag() {
-        // First check if cycle detector is depending on this
-        if (cycleDetector.needsRecorderFlag()) {
-            String arg = latex.getProgramArguments();
-            // Check if the flag is already present
-            if (arg.indexOf("-recorder") < 0) {
-                // TODO clean up
-                //config.setProgramArguments("-recorder ".concat(arg));
-            }
-        }
-    }
-
-    /**
      * Determines the name of the root aux-file to be used by the 
      * <code>AuxFileParser</code>.
      *
@@ -150,7 +132,6 @@ public class TexCycleBuilder extends AbstractBuilder implements CycleBuilder {
             throw new CoreException(TexlipsePlugin.stat(
                     "Cycle detector has not been initialized."));
         }
-        checkRecorderFlag();
 
         stopped = false;
         // Make sure we close the output document first 

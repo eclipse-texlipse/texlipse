@@ -80,7 +80,6 @@ public class TexlipseProperties {
     public static final String DERIVED_FILES = "derivedFiles";
     public static final String FILE_LOCATION_PORT = "fileLocPort";
     public static final String BUILD_ENV_SETTINGS = "buildEnvSet";
-    public static final String BUILD_CYCLE_FLS_ENABLED = "buildCycleFlsEnabled";
     public static final String BUILD_CYCLE_ADD_EXTS = "buildCycleAddExts";
     public static final String BUILD_CYCLE_MAX = "buildCycleMax";
     public static final String BUILD_CYCLE_MAX_ERROR = "buildCycleMaxError";
@@ -176,6 +175,7 @@ public class TexlipseProperties {
     public static final String OUTPUT_FORMAT_PDF = "pdf";
 
     // session variables
+    public static final String SESSION_LATEX_INPUTFILE_SET = "latexInputFiles";
     public static final String SESSION_BIBTEX_RERUN = "rerunBibtex";
     public static final String SESSION_LATEX_RERUN = "rerunLatex";
     public static final String SESSION_MAKEINDEX_RERUN = "rerunMakeindex";

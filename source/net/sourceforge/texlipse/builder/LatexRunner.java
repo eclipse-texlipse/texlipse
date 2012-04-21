@@ -42,10 +42,10 @@ public class LatexRunner extends AbstractProgramRunner {
         final String arg = getProgramArguments();
         // Check if the flag is already present
         if (arg.contains("-recorder")) {
-            flsAnalyzer = null;
+            flsAnalyzer = new FlsAnalyzer(resource);
         }
         else {
-            flsAnalyzer = new FlsAnalyzer(resource);
+            flsAnalyzer = null;
         }
     }
 

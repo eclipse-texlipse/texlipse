@@ -12,13 +12,14 @@ package net.sourceforge.texlipse.builder;
 import java.io.IOException;
 import java.util.Set;
 
-import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
-
 import net.sourceforge.texlipse.TexlipsePlugin;
 import net.sourceforge.texlipse.builder.factory.RunnerDescription;
 import net.sourceforge.texlipse.properties.TexlipseProperties;
+
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 
 
 /**
@@ -74,34 +75,41 @@ public class LatexRunner extends AbstractProgramRunner {
      * @return true, if error messages were found in the output, false otherwise
      */
     protected boolean parseErrors(IResource resource, String output) {
+        final IProject project = resource.getProject();
         final LatexLogAnalyzer parser = new LatexLogAnalyzer(resource);
         parser.parseText(output);
+
         if (parser.hasParsingStackErrors()) {
             TexlipsePlugin.log("Error while parsing the LaTeX output. " +
                     "Please consult the console output", null);
         }
         if (parser.needsLatexRerun()) {
-            TexlipseProperties.setSessionProperty(resource.getProject(),
+            TexlipseProperties.setSessionProperty(project,
                     TexlipseProperties.SESSION_LATEX_RERUN, "true");
         }
         if (parser.needsBibRerun()) {
-            TexlipseProperties.setSessionProperty(resource.getProject(),
+            TexlipseProperties.setSessionProperty(project,
                     TexlipseProperties.SESSION_BIBTEX_RERUN, "true");
         }
+
         final Set<IPath> inputFiles = parser.getInputFiles();
+        final Set<String> externalNames = parser.getExternalNames();
         if (flsAnalyzer != null) {
             try {
                 flsAnalyzer.parse();
-                final Set<IPath> flsInputFiles = flsAnalyzer.getInputFiles();
-                inputFiles.addAll(flsInputFiles);
+                inputFiles.addAll(flsAnalyzer.getInputFiles());
+                externalNames.addAll(flsAnalyzer.getExternalNames());
             }
             catch (IOException e) {
                 createMarker(resource, -1, TexlipsePlugin
                         .getResourceString("builderErrorCannotReadFls"));
             }
         }
-        TexlipseProperties.setSessionProperty(resource.getProject(),
+        TexlipseProperties.setSessionProperty(project,
                 TexlipseProperties.SESSION_LATEX_INPUTFILE_SET, inputFiles);
+        TexlipseProperties.setSessionProperty(project,
+                TexlipseProperties.SESSION_LATEX_EXTERNALINPUT_SET, externalNames);
+
         return parser.hasErrors();
     }
 

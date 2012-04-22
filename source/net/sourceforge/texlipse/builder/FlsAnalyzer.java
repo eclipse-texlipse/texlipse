@@ -23,13 +23,17 @@ import org.eclipse.core.runtime.Platform;
  */
 public class FlsAnalyzer {
 
-    private static final String WORKING_DIR_KEYWORD_STR = "PWD";
-    private static final String INPUT_KEYWORD_STR = "INPUT";
-    private static final String OUTPUT_KEYWORD_STR = "OUTPUT";
+    private static final String WORKING_DIR_KEYWORD_STR = "PWD ";
+    private static final String INPUT_KEYWORD_STR = "INPUT ";
+    private static final String OUTPUT_KEYWORD_STR = "OUTPUT ";
+    private static final int WORKING_DIR_KEYWORD_LEN = WORKING_DIR_KEYWORD_STR.length();
+    private static final int INPUT_KEYWORD_LEN = INPUT_KEYWORD_STR.length();
+    private static final int OUTPUT_KEYWORD_LEN = OUTPUT_KEYWORD_STR.length();
 
     private final IPath projectPath;
     private final IPath flsFilePath;
     private final Set<IPath> inputFiles;
+    private final Set<String> externalNames;
     private final Set<IPath> outputFiles;
     private final boolean isWindowsPlatform;
 
@@ -56,7 +60,25 @@ public class FlsAnalyzer {
     }
 
     /**
-     * Extracts the file system object name from the given text line string and
+     * Extracts the file name from the given line, removing the first part with
+     * the given length. The line in total must be at least one character
+     * longer than the prefix. Otherwise, <code>null</code> is returned.
+     *
+     * @param line entire of line text
+     * @param prefixLen length of prefix to remove
+     * @return file name, or <code>null</code> if there was nothing to extract
+     */
+    private String extractFileName(final String line, int prefixLen) {
+        if (prefixLen + 1 < line.length()) {
+            return line.substring(prefixLen);
+        }
+        else {
+            return null;
+        }
+    }
+
+    /**
+     * Extracts the file system object name from the given file name string and
      * turns it into an IPath relative to the project root. Absolute file names
      * are converted into project relative file names, if they are inside the
      * project folder structure. Relative file names are interpreted towards
@@ -64,31 +86,25 @@ public class FlsAnalyzer {
      * FLS file. If the file or folder name is found to be lying outside of the
      * project folder structure, <code>null</code> is returned.
      *
-     * @param prefix prefix to remove in the beginning of the text line
-     * @param line entire text line to extract name from
+     * @param name file name, without prefix, from FLS file
      * @return project relative name of the file system object (can be file or
      *  folder), or <code>null</code> if invalid
      */
-    private IPath extractProjectRelativeName(final String prefix,
-            final String line) {
-        if (prefix.length() + 2 < line.length()) {
-            // skip prefix length plus one (space)
-            final String name = line.substring(prefix.length() + 1);
-            if (isAbsolutePath(name)) {
-                final IPath absPath = new Path(name);
-                // absolute path, attempt to make project relative
-                if (projectPath.isPrefixOf(absPath)) {
-                    return absPath.removeFirstSegments(projectPath.segmentCount()).setDevice(null);
-                }
+    private IPath extractProjectRelativeName(final String name) {
+        if (isAbsolutePath(name)) {
+            final IPath absPath = new Path(name);
+            // absolute path, attempt to make project relative
+            if (projectPath.isPrefixOf(absPath)) {
+                return absPath.removeFirstSegments(projectPath.segmentCount()).setDevice(null);
             }
-            else if (workingDir != null) {
-                // working dir relative path, make project relative
-                final IPath relPath = workingDir.append(name);
-                if (relPath.segmentCount() == 1
-                        || !"..".equals(relPath.segment(0))) {
-                    // do not allow higher level than project path
-                    return relPath;
-                }
+        }
+        else if (workingDir != null) {
+            // working dir relative path, make project relative
+            final IPath relPath = workingDir.append(name);
+            if (relPath.segmentCount() == 1
+                    || !"..".equals(relPath.segment(0))) {
+                // do not allow higher level than project path
+                return relPath;
             }
         }
         // return null if path is invalid or in any way cannot be converted
@@ -103,22 +119,36 @@ public class FlsAnalyzer {
      */
     private void processLine(final String line) {
         if (line != null && line.length() > 0) {
+            final IPath path;
+            final String name;
             if (line.startsWith(INPUT_KEYWORD_STR)) {
-                final IPath newName = extractProjectRelativeName(INPUT_KEYWORD_STR, line);
-                if (newName != null) {
-                    inputFiles.add(newName);
+                name = extractFileName(line, INPUT_KEYWORD_LEN);
+                if (name != null) {
+                    path = extractProjectRelativeName(name);
+                    if (path != null) {
+                        inputFiles.add(path);
+                    }
+                    else {
+                        externalNames.add(name);
+                    }
                 }
             }
             else if (line.startsWith(OUTPUT_KEYWORD_STR)) {
-                final IPath newName = extractProjectRelativeName(OUTPUT_KEYWORD_STR, line);
-                if (newName != null) {
-                    outputFiles.add(newName);
+                name = extractFileName(line, OUTPUT_KEYWORD_LEN);
+                if (name != null) {
+                    path = extractProjectRelativeName(name);
+                    if (path != null) {
+                        outputFiles.add(path);
+                    }
                 }
             }
             else if (line.startsWith(WORKING_DIR_KEYWORD_STR)) {
-                final IPath newWorkingDir = extractProjectRelativeName(WORKING_DIR_KEYWORD_STR, line);
-                if (newWorkingDir != null) {
-                    workingDir = newWorkingDir;
+                name = extractFileName(line, WORKING_DIR_KEYWORD_LEN);
+                if (name != null) {
+                    path = extractProjectRelativeName(name);
+                    if (path != null) {
+                        workingDir = path;
+                    }
                 }
             }
         }
@@ -137,6 +167,7 @@ public class FlsAnalyzer {
                 resource.getName(), null).concat(".fls");
         this.flsFilePath = flsDir.append(flsFileName);
         this.inputFiles = new HashSet<IPath>();
+        this.externalNames = new HashSet<String>();
         this.outputFiles = new HashSet<IPath>();
         this.isWindowsPlatform = Platform.getOS().equals(Platform.OS_WIN32);
         // Initialize working dir, but it is likely to be declared on the
@@ -185,6 +216,7 @@ public class FlsAnalyzer {
      */
     public void clear() {
         inputFiles.clear();
+        externalNames.clear();
         outputFiles.clear();
     }
 
@@ -196,6 +228,16 @@ public class FlsAnalyzer {
      */
     public Set<IPath> getInputFiles() {
         return inputFiles;
+    }
+
+    /**
+     * Retrieves the set of input files as read from the FLS text file, that
+     * could not be assigned to the project structure.
+     *
+     * @return set of external input files
+     */
+    public Set<String> getExternalNames() {
+        return externalNames;
     }
 
     /**

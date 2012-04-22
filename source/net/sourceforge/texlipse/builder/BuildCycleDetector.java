@@ -1,18 +1,19 @@
 package net.sourceforge.texlipse.builder;
 
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;
 
+import net.sourceforge.texlipse.TexlipsePlugin;
+import net.sourceforge.texlipse.model.PackageContainer;
+import net.sourceforge.texlipse.properties.TexlipseProperties;
+
 import org.eclipse.core.resources.IContainer;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
-
-import net.sourceforge.texlipse.TexlipsePlugin;
-import net.sourceforge.texlipse.properties.TexlipseProperties;
 
 
 /**
@@ -28,12 +29,16 @@ import net.sourceforge.texlipse.properties.TexlipseProperties;
 public class BuildCycleDetector {
 
     private final IProject project;
+    private final IResource resource;
     private final ProjectFileTracking fileTracking;
     private final LinkedList<ProgramRunner> runners;
     private final IContainer sourceContainer;
     private final String[] tempExts;
     private final String[] addExts;
     private final int totalMax;
+
+    private boolean biblatexMode;
+    private String biblatexBackend;
 
     private int totalCount;
     private boolean done;
@@ -75,6 +80,41 @@ public class BuildCycleDetector {
     }
 
     /**
+     * Provides additional variables for deciding whether biblatex is loaded and
+     * if the biber or biblatex backend is used.
+     *
+     * @param resource resource which is being built
+     * @param packageContainer container with detected packages
+     */
+    private void detectBibConfig(final IResource resource,
+            final PackageContainer packageContainer) {
+        Boolean blMode = (Boolean) TexlipseProperties.getSessionProperty(project,
+                TexlipseProperties.SESSION_BIBLATEXMODE_PROPERTY);
+        biblatexMode = Boolean.TRUE.equals(blMode);
+        biblatexBackend = (String) TexlipseProperties.getSessionProperty(project,
+                TexlipseProperties.SESSION_BIBLATEXBACKEND_PROPERTY);
+    
+        if (packageContainer.hasPackage("biblatex")) {
+            biblatexMode = true;
+    
+            if (biblatexBackend == null) {
+                final String baseFileName = OutputFileManager.stripFileExt(
+                        resource.getProjectRelativePath().toPortableString(), ".tex");
+                final String blxFileName = baseFileName.concat("-blx.bib");
+                final String bcfFileName = baseFileName.concat(".bcf");
+                final IFile blxFile = project.getFile(blxFileName);
+                final IFile bcfFile = project.getFile(bcfFileName);
+                long blxTimestamp = blxFile.exists() ? blxFile.getLocalTimeStamp() : -1;
+                long bcfTimestamp = bcfFile.exists() ? bcfFile.getLocalTimeStamp() : -1;
+    
+                if (blxTimestamp < bcfTimestamp) {
+                    biblatexBackend = "biber";
+                }
+            }
+        }
+    }
+
+    /**
      * Checks whether session variables indicate that bibtex or biblatex needs to run. This should
      * only be done once per build cycle, since otherwise it leads to infinite loops if citations
      * are undefined. 
@@ -87,21 +127,8 @@ public class BuildCycleDetector {
         if ("true".equals(bibRerun)
                 || (Boolean.TRUE.equals(bibFilesChanged))) {
             final ProgramRunner bibRunner;
-            Boolean biblatexMode = (Boolean) TexlipseProperties.getSessionProperty(project,
-                    TexlipseProperties.SESSION_BIBLATEXMODE_PROPERTY);
-            String biblatexBackend = (String) TexlipseProperties.getSessionProperty(project,
-                    TexlipseProperties.SESSION_BIBLATEXBACKEND_PROPERTY);
-            if (Boolean.TRUE.equals(biblatexMode)) {
-                if ("biber".equals(biblatexBackend)) {
-                    bibRunner = BuilderRegistry.getRunner(
-                            TexlipseProperties.INPUT_FORMAT_BCF,
-                            TexlipseProperties.OUTPUT_FORMAT_BBL);
-                }
-                else {
-                    bibRunner = BuilderRegistry.getRunner(
-                            TexlipseProperties.INPUT_FORMAT_BIB,
-                            TexlipseProperties.OUTPUT_FORMAT_AUX);
-                }
+            if (biblatexMode && biblatexBackend != null) {
+                bibRunner = BuilderRegistry.getRunner(biblatexBackend);
             }
             else {
                 bibRunner = BuilderRegistry.getRunner(
@@ -134,18 +161,6 @@ public class BuildCycleDetector {
                 project, TexlipseProperties.SESSION_LATEX_RERUN, null);
     }
 
-    @SuppressWarnings("unchecked")
-    private Set<IPath> getLogInputFiles() {
-        final Object inputSet = TexlipseProperties.getSessionProperty(project,
-                TexlipseProperties.SESSION_LATEX_INPUTFILE_SET);
-        if (inputSet != null) {
-            return (Set<IPath>) inputSet;
-        }
-        else {
-            return new HashSet<IPath>();
-        }
-    }
-
     /**
      * Checks the given latex or runner changed output files for their consequences
      * regarding the required build process:
@@ -162,11 +177,11 @@ public class BuildCycleDetector {
      *  to be back of the queue, but still started before the next latex process
      */
     private void checkOutputFiles(final Set<IPath> changedOutputFiles, boolean push) {
-        final Set<IPath> inputFiles = getLogInputFiles();
+        final Set<IPath> inputFiles = AbstractLatexBuilder.getInputFiles(project);
         for (IPath changedFile : changedOutputFiles) {
             final String fileExt = changedFile.getFileExtension().toLowerCase();
             if (fileExt != null && fileExt.length() > 0
-                    && !"tex".equals(fileExt)) {
+                    && !"tex".equals(fileExt) && !"bib".equals(fileExt)) {
                 ProgramRunner runner = BuilderRegistry.getRunner(fileExt, null);
                 if (runner != null) {
                     // Schedule runner before next LaTeX rebuild, if any
@@ -190,6 +205,7 @@ public class BuildCycleDetector {
     public BuildCycleDetector(final IProject project, final IResource resource,
             final ProjectFileTracking fileTracking) {
         this.project = project;
+        this.resource = resource;
         this.fileTracking = fileTracking;
         this.runners = new LinkedList<ProgramRunner>();
         this.sourceContainer = resource.getParent();
@@ -279,6 +295,11 @@ public class BuildCycleDetector {
      */
     public void checkInitialLatexOutput(IProgressMonitor monitor) throws CoreException {
         checkLatexOutput(monitor);
+        final Object packageContainer = TexlipseProperties.getSessionProperty(project,
+                TexlipseProperties.PACKAGECONTAINER_PROPERTY);
+        if (packageContainer != null) {
+            detectBibConfig(resource, (PackageContainer) packageContainer);
+        }
         checkBibtexVariables();
     }
 

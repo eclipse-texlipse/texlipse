@@ -72,6 +72,7 @@ public class TexlipseProperties {
     public static final String BIBCONTAINER_PROPERTY = "bibContainer";
     public static final String LABELCONTAINER_PROPERTY = "labelContainer";
     public static final String COMCONTAINER_PROPERTY = "commandContainer";
+    public static final String PACKAGECONTAINER_PROPERTY = "latexPackages";
 //    public static final String LISTENERS_PROPERTY = "changeListeners";
 
     // preferences
@@ -176,6 +177,8 @@ public class TexlipseProperties {
 
     // session variables
     public static final String SESSION_LATEX_INPUTFILE_SET = "latexInputFiles";
+    public static final String SESSION_LATEX_EXTERNALINPUT_SET = "latexExternalFiles";
+    public static final String SESSION_LATEX_DOC_CLASS = "latexDocClass";
     public static final String SESSION_BIBTEX_RERUN = "rerunBibtex";
     public static final String SESSION_LATEX_RERUN = "rerunLatex";
     public static final String SESSION_MAKEINDEX_RERUN = "rerunMakeindex";

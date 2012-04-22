@@ -224,7 +224,8 @@ public class TexDocumentModel implements IDocumentListener {
     private ReferenceContainer bibContainer;
     private ReferenceContainer labelContainer;
     private TexCommandContainer commandContainer;
-    
+    private PackageContainer packageContainer;
+
     private ReferenceManager refMana;
     
     private boolean firstRun = true;
@@ -890,6 +891,7 @@ public class TexDocumentModel implements IDocumentListener {
             if (bibContainer == null) bibContainer = new ReferenceContainer();
             if (labelContainer == null) labelContainer = new ReferenceContainer();
             if (commandContainer == null) commandContainer = new TexCommandContainer();
+            if (packageContainer == null) packageContainer = new PackageContainer();
             return;
         }
         ReferenceContainer bibCon = (ReferenceContainer) TexlipseProperties.getSessionProperty(project,
@@ -925,7 +927,18 @@ public class TexDocumentModel implements IDocumentListener {
         } else {
             commandContainer = comCon;
         }
-        
+        PackageContainer pckCon = (PackageContainer) TexlipseProperties.getSessionProperty(project,
+                TexlipseProperties.PACKAGECONTAINER_PROPERTY);
+        if (pckCon == null) {
+            packageContainer = new PackageContainer();
+            TexlipseProperties.setSessionProperty(project,
+                    TexlipseProperties.PACKAGECONTAINER_PROPERTY,
+                    packageContainer);
+            parseAll = true;
+        } else {
+            packageContainer = pckCon;
+        }
+
         if (parseAll) {
             createProjectDatastructs(project);
         }

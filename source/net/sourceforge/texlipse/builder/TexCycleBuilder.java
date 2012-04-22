@@ -1,16 +1,12 @@
 package net.sourceforge.texlipse.builder;
 
-import java.io.File;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.Set;
 import java.util.TreeSet;
 
 import net.sourceforge.texlipse.TexlipsePlugin;
 import net.sourceforge.texlipse.auxparser.AuxFileParser;
 import net.sourceforge.texlipse.builder.factory.BuilderDescription;
-import net.sourceforge.texlipse.model.ReferenceContainer;
-import net.sourceforge.texlipse.model.ReferenceEntry;
 import net.sourceforge.texlipse.properties.TexlipseProperties;
 import net.sourceforge.texlipse.viewer.ViewerManager;
 
@@ -29,79 +25,16 @@ import org.eclipse.core.runtime.Platform;
  * @author Matthias Erll
  *
  */
-public class TexCycleBuilder extends AbstractBuilder implements CycleBuilder {
+public class TexCycleBuilder extends AbstractLatexBuilder implements CycleBuilder {
 
-    private ProgramRunner latex;
     private ProgramRunner utilRunner;
     private BuildCycleDetector cycleDetector;
     private boolean stopped;
 
-    /**
-     * Determines the name of the root aux-file to be used by the 
-     * <code>AuxFileParser</code>.
-     *
-     * @param buildResource resource which is currently being built
-     * @return potential name of the aux file
-     */
-    private String getAuxFileName(IResource buildResource) {
-        final String buildFileName = buildResource.getProjectRelativePath().toPortableString();
-        return OutputFileManager.stripFileExt(buildFileName, ".tex").concat(".aux");
-    }
-
-    /**
-     * Extracts all labels defined in the aux-file and adds them to the
-     * label container
-     *
-     * @param afp the <code>AuxFileParser</code> used to extract the labels
-     */
-    private void extractLabels(AuxFileParser afp) {
-    	ReferenceContainer labelC = (ReferenceContainer) TexlipseProperties
-    			.getSessionProperty(afp.getProject(),
-    					TexlipseProperties.LABELCONTAINER_PROPERTY);
-    	if (labelC != null) {
-    		// Add temp path to aux-File
-    		String tempPath = TexlipseProperties.getProjectProperty(afp.getProject(),
-    				TexlipseProperties.TEMP_DIR_PROPERTY);
-    		String correctedAuxFileName = tempPath + File.separator
-    				+ afp.getRootAuxFile();
-
-    		// First remove the labels
-    		labelC.addRefSource(correctedAuxFileName,
-    				new LinkedList<ReferenceEntry>());
-    		// and reorganize
-    		labelC.organize();
-    		// now add them
-    		labelC.updateRefSource(correctedAuxFileName, afp.getLabels());
-    	}
-    }
-
-    /**
-     * Clears errors and warnings from the problem view. If LaTeX runs more than once, this
-     * makes sure, the view only shows the messages of the last run, which are still valid.
-     *
-     * @param project the project
-     */
-    private void clearMarkers(IProject project) {
-        try {
-            project.deleteMarkers(TexlipseBuilder.MARKER_TYPE, false, IResource.DEPTH_INFINITE);
-            project.deleteMarkers(TexlipseBuilder.LAYOUT_WARNING_TYPE, false, IResource.DEPTH_INFINITE);
-        } catch (CoreException e) {
-        }
-    }
-
     public TexCycleBuilder(BuilderDescription description) {
         super(description);
-        this.latex = BuilderRegistry.getRunner(description.getRunnerId());
         this.utilRunner = null;
         this.cycleDetector = null;
-    }
-
-    @Override
-    public boolean isValid() {
-        if (latex == null || !latex.isValid()) {
-            latex = BuilderRegistry.getRunner(description.getRunnerId());
-        }
-        return latex != null && latex.isValid();
     }
 
     @Override
@@ -143,12 +76,12 @@ public class TexCycleBuilder extends AbstractBuilder implements CycleBuilder {
         }
 
         final IProject project = resource.getProject();
-        final boolean parseAuxFiles = TexlipsePlugin.getDefault().getPreferenceStore()
-                .getBoolean(TexlipseProperties.BUILDER_PARSE_AUX_FILES);
         final boolean showMaxError = TexlipsePlugin.getDefault().getPreferenceStore()
                 .getBoolean(TexlipseProperties.BUILD_CYCLE_MAX_ERROR);
         final boolean haltOnInvalid = TexlipsePlugin.getDefault().getPreferenceStore()
                 .getBoolean(TexlipseProperties.BUILD_CYCLE_HALT_INVALID);
+        final boolean parseAuxFiles = TexlipsePlugin.getDefault().getPreferenceStore()
+                .getBoolean(TexlipseProperties.BUILDER_PARSE_AUX_FILES);
         final String auxFileName = getAuxFileName(resource);
         final IResource auxFile = project.getFile(auxFileName);
         // Initialize file hashes
@@ -162,9 +95,10 @@ public class TexCycleBuilder extends AbstractBuilder implements CycleBuilder {
         }
 
         if (parseAuxFiles && auxFile.exists()) {
-            final AuxFileParser afp = new AuxFileParser(project, auxFileName);
-            // add the labels defined in the .aux-file to the label container
-            extractLabels(afp);
+            updateContainers(resource, new AuxFileParser(project, auxFileName));
+        }
+        else {
+            updateContainers(resource, null);
         }
 
         final Set<String> brokenRunners = new TreeSet<String>();

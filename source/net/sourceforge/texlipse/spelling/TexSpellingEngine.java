@@ -25,7 +25,13 @@ import net.sourceforge.texlipse.TexlipsePlugin;
 import net.sourceforge.texlipse.editor.TeXSpellingReconcileStrategy.TeXSpellingProblemCollector;
 import net.sourceforge.texlipse.properties.TexlipseProperties;
 
+import org.eclipse.core.filebuffers.FileBuffers;
+import org.eclipse.core.filebuffers.ITextFileBuffer;
+import org.eclipse.core.filebuffers.ITextFileBufferManager;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IWorkspace;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
@@ -184,6 +190,26 @@ public class TexSpellingEngine implements ISpellingEngine, SpellCheckListener {
         return dict;
     }
     
+    
+    /**
+     * Returns the project that belongs to the given document.
+     * Thanks to Nitin Dahyabhai for the tip.
+     * 
+     * @param document
+     * @return the project or <code>null</code> if no project was found
+     */
+    private static IProject getProject(IDocument document) {
+        ITextFileBufferManager fileBufferMgr = FileBuffers.getTextFileBufferManager();
+        ITextFileBuffer fileBuffer = fileBufferMgr.getTextFileBuffer(document);
+        
+        if (fileBuffer != null) {
+            IWorkspace workspace = ResourcesPlugin.getWorkspace();
+            IResource res = workspace.getRoot().findMember(fileBuffer.getLocation());
+            if (res != null) return res.getProject();        	
+        }
+        return null;
+    }
+    
     public void check(IDocument document, IRegion[] regions, SpellingContext context, 
             ISpellingProblemCollector collector, IProgressMonitor monitor) {
         
@@ -191,7 +217,8 @@ public class TexSpellingEngine implements ISpellingEngine, SpellCheckListener {
             ignore = new HashSet<String>();
         }
 
-        IProject project = TexlipsePlugin.getCurrentProject();
+        IProject project = getProject(document);
+
         String lang = DEFAULT_LANG;
         if (project != null) {
             lang = TexlipseProperties.getProjectProperty(project, TexlipseProperties.LANGUAGE_PROPERTY);

@@ -1,17 +1,10 @@
 package net.sourceforge.texlipse.builder.cache;
 
+import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.Collection;
-
-import javax.xml.stream.XMLEventFactory;
-import javax.xml.stream.XMLEventWriter;
-import javax.xml.stream.XMLOutputFactory;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.events.XMLEvent;
 
 import net.sourceforge.texlipse.builder.cache.ProjectFileInfo.FileProperty;
 
@@ -26,17 +19,14 @@ import org.eclipse.core.runtime.IProgressMonitor;
  * it can be restored between different TeXlipse sessions.
  *
  * @author Matthias Erll
- *
  */
 public class ProjectFileCacheWriter {
 
-    private final IProject project;
-    private final XMLEventFactory eventFactory;
-    private Collection<ProjectFileInfo> files;
+    private static final int BUFFER_SIZE = 8192;
+    private static final String XML_HEADER_STR = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
 
-    private XMLEvent fileNameEvent;
-    private XMLEvent modStampEvent;
-    private XMLEvent hashValueEvent;
+    private final IProject project;
+    private Collection<ProjectFileInfo> files;
 
     /**
      * Converts the given byte array to a string of hexadecimal values,
@@ -57,77 +47,97 @@ public class ProjectFileCacheWriter {
     }
 
     /**
-     * Creates XML events for writing the one particular cache file object.
+     * Writes a simple open tag.
      *
-     * @param file cached file information
+     * @param out output writer
+     * @param tag tag name
+     * @throws IOException if writing the XML file failed
      */
-    private void createFileEvents(final ProjectFileInfo file) {
-        fileNameEvent = null;
-        modStampEvent = null;
-        hashValueEvent = null;
-        if (file.getName() != null) {
-            fileNameEvent = eventFactory.createAttribute(ProjectFileInfo.FILE_XML_NAME_ATTR, file.getName().toString());
-            if (file.getModificationStamp() > 0) {
-                modStampEvent = eventFactory.createCharacters(file.getModificationStamp().toString());
-            }
-            if (file.getHashValue() != null) {
-                hashValueEvent = eventFactory.createCharacters(byteArrayToHexString(file.getHashValue()));
-            }
-        }
+    private void writeOpenTag(final BufferedWriter out, final String tag)
+            throws IOException {
+        out.write('<');
+        out.write(tag);
+        out.write('>');
+    }
+
+    /**
+     * Writes an open tag with one additional attribute and value.
+     *
+     * @param out output writer
+     * @param tag tag name
+     * @param attributeName attribute name
+     * @param attributeValue attribute value
+     * @throws IOException if writing the XML file failed
+     */
+    private void writeOpenTag(final BufferedWriter out, final String tag,
+            final String attributeName, final String attributeValue)
+                    throws IOException {
+        out.write('<');
+        out.write(tag);
+        out.write(' ');
+        out.write(attributeName);
+        out.write("=\"");
+        out.write(attributeValue);
+        out.write("\">");
+    }
+
+    /**
+     * Writes a simple closing tag.
+     *
+     * @param out output writer
+     * @param tag tag name
+     * @throws IOException if writing the XML file failed
+     */
+    private void writeCloseTag(final BufferedWriter out, final String tag)
+            throws IOException {
+        out.write("</");
+        out.write(tag);
+        out.write('>');
+    }
+
+    /**
+     * Writes characters to the XML file, enclosed by tags.
+     *
+     * @param out output writer
+     * @param tag tag name
+     * @param value characters
+     * @throws IOException if writing the XML file failed
+     */
+    private void writeCharacters(final BufferedWriter out,
+            final String tag, final String value) throws IOException {
+        writeOpenTag(out, tag);
+        out.write(value);
+        writeCloseTag(out, tag);
     }
 
     /**
      * Writes the current file cache into the given output stream.
      *
-     * @param out output stream
-     * @throws XMLStreamException if writing to the XML stream failed
+     * @param out output writer
+     * @throws IOException if writing the XML file failed
      */
-    private void writeFileCache(OutputStream out) throws XMLStreamException {
-        final XMLOutputFactory factory = XMLOutputFactory.newInstance();
-        XMLEventWriter writer = null;
-        try {
-            writer = factory.createXMLEventWriter(out);
-            final XMLEvent headerStartEvent = eventFactory.createStartDocument();
-            final XMLEvent rootStartEvent = eventFactory.createStartElement("", "", ProjectFileInfo.FILE_XML_ROOT);
-            final XMLEvent headerEndEvent = eventFactory.createEndDocument();
-            final XMLEvent rootEndEvent = eventFactory.createEndElement("", "", ProjectFileInfo.FILE_XML_ROOT);
-            final XMLEvent fileStartEvent = eventFactory.createStartElement("", "", ProjectFileInfo.FILE_XML_ELEMENT);
-            final XMLEvent fileEndEvent = eventFactory.createEndElement("", "", ProjectFileInfo.FILE_XML_ELEMENT);
-            final XMLEvent modStartEvent = eventFactory.createStartElement("", "", ProjectFileInfo.getXmlPropertyStr(FileProperty.MODSTAMP));
-            final XMLEvent modEndEvent = eventFactory.createEndElement("", "", ProjectFileInfo.getXmlPropertyStr(FileProperty.MODSTAMP));
-            final XMLEvent hashStartEvent = eventFactory.createStartElement("", "", ProjectFileInfo.getXmlPropertyStr(FileProperty.HASHVALUE));
-            final XMLEvent hashEndEvent = eventFactory.createEndElement("", "", ProjectFileInfo.getXmlPropertyStr(FileProperty.HASHVALUE));
+    private void writeFileCache(BufferedWriter out) throws IOException {
+        out.write(XML_HEADER_STR);
+        writeOpenTag(out, ProjectFileInfo.FILE_XML_ROOT);
 
-            writer.add(headerStartEvent);
-            writer.add(rootStartEvent);
-            if (files != null) {
-                for (ProjectFileInfo file : files) {
-                    writer.add(fileStartEvent);
-                    createFileEvents(file);
-                    if (fileNameEvent != null) {
-                        writer.add(fileNameEvent);
-                        if (modStampEvent != null) {
-                            writer.add(modStartEvent);
-                            writer.add(modStampEvent);
-                            writer.add(modEndEvent);
-                        }
-                        if (hashValueEvent != null) {
-                            writer.add(hashStartEvent);
-                            writer.add(hashValueEvent);
-                            writer.add(hashEndEvent);
-                        }
+        if (files != null) {
+            for (ProjectFileInfo file : files) {
+                if (file.getName() != null) {
+                    writeOpenTag(out, ProjectFileInfo.FILE_XML_ELEMENT,
+                            ProjectFileInfo.FILE_XML_NAME_ATTR, file.getName().toString());
+                    if (file.getModificationStamp() > 0) {
+                        writeCharacters(out, ProjectFileInfo.getXmlPropertyStr(
+                                FileProperty.MODSTAMP), file.getModificationStamp().toString());
                     }
-                    writer.add(fileEndEvent);
+                    if (file.getHashValue() != null) {
+                        writeCharacters(out, ProjectFileInfo.getXmlPropertyStr(
+                                FileProperty.HASHVALUE), byteArrayToHexString(file.getHashValue()));
+                    }
+                    writeCloseTag(out, ProjectFileInfo.FILE_XML_ELEMENT);
                 }
             }
-            writer.add(rootEndEvent);
-            writer.add(headerEndEvent);
         }
-        finally {
-            if (writer != null) {
-                writer.close();
-            }
-        }
+        writeCloseTag(out, ProjectFileInfo.FILE_XML_ROOT);
     }
 
     /**
@@ -138,7 +148,6 @@ public class ProjectFileCacheWriter {
     public ProjectFileCacheWriter(final IProject project) {
         super();
         this.project = project;
-        this.eventFactory = XMLEventFactory.newInstance();
     }
 
     /**
@@ -173,24 +182,26 @@ public class ProjectFileCacheWriter {
         this.files = files;
         IFile cacheFile = project.getFile(".fileCache.xml");
         File fn = new File(cacheFile.getLocationURI());
-        OutputStream stream = null;
+        FileWriter fileWriter = null;
+        BufferedWriter out = null;
         try {
-            stream = new FileOutputStream(fn);
-            writeFileCache(stream);
+            fileWriter = new FileWriter(fn);
+            out = new BufferedWriter(fileWriter, BUFFER_SIZE);
+            writeFileCache(out);
         }
-        catch (FileNotFoundException e) {
-            // TODO Auto-generated catch block
-        }
-        catch (XMLStreamException e) {
-            // TODO Auto-generated catch block
+        catch (IOException e) {
+            e.printStackTrace();
         }
         finally {
-            if (stream != null) {
-                try {
-                    stream.close();
+            try {
+                if (out != null) {
+                    out.close();
                 }
-                catch (IOException e) {
+                if (fileWriter != null) {
+                    fileWriter.close();
                 }
+            }
+            catch (IOException e) {
             }
         }
         cacheFile.refreshLocal(0, monitor);

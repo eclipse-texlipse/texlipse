@@ -5,15 +5,9 @@ import java.io.InputStream;
 import java.util.Collection;
 import java.util.HashSet;
 
-import javax.xml.namespace.QName;
-import javax.xml.stream.XMLEventReader;
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.events.Attribute;
-import javax.xml.stream.events.Characters;
-import javax.xml.stream.events.EndElement;
-import javax.xml.stream.events.StartElement;
-import javax.xml.stream.events.XMLEvent;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 
 import net.sourceforge.texlipse.builder.cache.ProjectFileInfo.FileProperty;
 
@@ -22,6 +16,9 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
 
 
 /**
@@ -34,9 +31,6 @@ public class ProjectFileCacheReader {
 
     private final IProject project;
     private Collection<ProjectFileInfo> files;
-
-    private ProjectFileInfo currentFile;
-    private FileProperty property;
 
     /**
      * Converts the given string of hexadecimal values to a byte array,
@@ -60,65 +54,60 @@ public class ProjectFileCacheReader {
         return byteArray;
     }
 
-    /**
-     * Processes an XML element start tag.
-     *
-     * @param start start element
-     */
-    private void processStartElement(final StartElement start) {
-        final String name = start.getName().getLocalPart();
-        if (ProjectFileInfo.FILE_XML_ELEMENT.equals(name)) {
-            final Attribute pathAttr = start.getAttributeByName(new QName("name"));
-            if (pathAttr != null) {
-                IPath fileName = project.getFile(pathAttr.getValue()).getProjectRelativePath();
-                currentFile = new ProjectFileInfo(fileName);
-            }
-        }
-        else {
-            property = ProjectFileInfo.getFileProperty(name);
-        }
-    }
+    private DefaultHandler getHandler() {
+        return new DefaultHandler() {
+            private ProjectFileInfo currentFile;
+            private FileProperty property;
 
-    /**
-     * Processes an XML element end tag.
-     *
-     * @param end end element
-     */
-    private void processEndElement(final EndElement end) {
-        final String name = end.getName().getLocalPart();
-        if (ProjectFileInfo.FILE_XML_ELEMENT.equals(name)) {
-            files.add(currentFile);
-            currentFile = null;
-        } else {
-            property = null;
-        }
-    }
-
-    /**
-     * Processes characters found in the XML stream and transfers
-     * them to the current object.
-     *
-     * @param characters character object
-     */
-    private void processCharacters(final Characters characters) {
-        if (currentFile != null && property != null) {
-            final String str = characters.getData();
-            switch (property) {
-            case MODSTAMP:
-                try {
-                    Long modStamp = Long.valueOf(str);
-                    currentFile.setModificationStamp(modStamp);
+            @Override
+            public void startElement(String uri, String localName, String qName,
+                    Attributes attributes) throws SAXException {
+                if (ProjectFileInfo.FILE_XML_ELEMENT.equals(qName)) {
+                    final String pathAttr = attributes.getValue("name");
+                    if (pathAttr != null) {
+                        IPath fileName = project.getFile(pathAttr).getProjectRelativePath();
+                        currentFile = new ProjectFileInfo(fileName);
+                    }
                 }
-                catch (NumberFormatException e) {
+                else {
+                    property = ProjectFileInfo.getFileProperty(qName);
                 }
-                break;
-            case HASHVALUE:
-                byte[] hashVal = hexStringToByteArray(str);
-                currentFile.setHashValue(hashVal);
-                break;
-            default:
             }
-        }
+        
+            @Override
+            public void endElement(String uri, String localName, String qName)
+                    throws SAXException {
+                if (ProjectFileInfo.FILE_XML_ELEMENT.equals(qName)) {
+                    files.add(currentFile);
+                    currentFile = null;
+                } else {
+                    property = null;
+                }
+            }
+        
+            @Override
+            public void characters(char[] ch, int start, int length)
+                    throws SAXException {
+                if (currentFile != null && property != null) {
+                    final String str = new String(ch, start, length);
+                    switch (property) {
+                    case MODSTAMP:
+                        try {
+                            Long modStamp = Long.valueOf(str);
+                            currentFile.setModificationStamp(modStamp);
+                        }
+                        catch (NumberFormatException e) {
+                        }
+                        break;
+                    case HASHVALUE:
+                        byte[] hashVal = hexStringToByteArray(str);
+                        currentFile.setHashValue(hashVal);
+                        break;
+                    default:
+                    }
+                }
+            }
+        };
     }
 
     /**
@@ -126,35 +115,15 @@ public class ProjectFileCacheReader {
      * in a list.
      *
      * @param in input stream
-     * @throws XMLStreamException if the XML stream was invalid or could not be read
+     * @throws SAXException if the stream could not be processed
+     * @throws ParserConfigurationException if the parser config was invalid
+     * @throws IOException if the file could not be read
      */
-    private void readFileCache(InputStream in) throws XMLStreamException {
-        final XMLInputFactory factory = XMLInputFactory.newInstance();
-        XMLEventReader parser = null;
-        try {
-            parser = factory.createXMLEventReader(in);
-            XMLEvent event;
-            while (parser.hasNext()) {
-                event = parser.nextEvent();
-                switch (event.getEventType()) {
-                case XMLEvent.START_ELEMENT:
-                    processStartElement(event.asStartElement());
-                    break;
-                case XMLEvent.END_ELEMENT:
-                    processEndElement(event.asEndElement());
-                    break;
-                case XMLEvent.CHARACTERS:
-                    processCharacters(event.asCharacters());
-                    break;
-                default:
-                }
-            }
-        }
-        finally {
-            if (parser != null) {
-                parser.close();
-            }
-        }
+    private void readFileCache(InputStream in) throws SAXException,
+            ParserConfigurationException, IOException {
+        final SAXParserFactory factory = SAXParserFactory.newInstance();
+        SAXParser parser = factory.newSAXParser();
+        parser.parse(in, getHandler());
     }
 
     /**
@@ -187,8 +156,14 @@ public class ProjectFileCacheReader {
                 readFileCache(stream);
             }
         }
-        catch (XMLStreamException e) {
-            //TODO
+        catch (SAXException e) {
+            e.printStackTrace();
+        }
+        catch (ParserConfigurationException e) {
+            e.printStackTrace();
+        }
+        catch (IOException e) {
+            e.printStackTrace();
         }
         finally {
             if (stream != null) {

@@ -3,19 +3,13 @@ package net.sourceforge.texlipse.builder.factory;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.xml.namespace.QName;
-import javax.xml.stream.XMLEventReader;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.events.Attribute;
-import javax.xml.stream.events.Characters;
-import javax.xml.stream.events.EndElement;
-import javax.xml.stream.events.StartElement;
-import javax.xml.stream.events.XMLEvent;
-
 import net.sourceforge.texlipse.builder.ProgramRunner;
 import net.sourceforge.texlipse.builder.factory.RunnerDescription.RunnerProperty;
 
 import org.eclipse.core.runtime.Platform;
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
 
 
 /**
@@ -24,7 +18,7 @@ import org.eclipse.core.runtime.Platform;
  * @author Matthias Erll
  *
  */
-public class RunnerXmlHandler {
+public class RunnerXmlHandler extends DefaultHandler {
 
     // runner description which is currently being read
     private RunnerDescription current;
@@ -40,38 +34,28 @@ public class RunnerXmlHandler {
     // used for modifying executable names
     private final boolean isWindowsPlatform;
 
-    /**
-     * Processes an XML element start tag.
-     *
-     * @param start start start element
-     * @throws XMLStreamException if the input was invalid
-     */
-    private void processStartElement(final StartElement start)
-            throws XMLStreamException {
-        final String name = start.getName().getLocalPart();
-        if (RunnerDescription.RUNNER_XML_ELEMENT.equals(name)) {
-            final Attribute idAttr = start.getAttributeByName(
-                    new QName(RunnerDescription.RUNNER_XML_ID_ATTR));
+    @Override
+    public void startElement(String uri, String localName, String qName,
+            Attributes attributes) throws SAXException {
+        if (RunnerDescription.RUNNER_XML_ELEMENT.equals(qName)) {
+            final String idAttr =
+                    attributes.getValue(RunnerDescription.RUNNER_XML_ID_ATTR);
             if (idAttr != null) {
-                current = new RunnerDescription(idAttr.getValue());
+                current = new RunnerDescription(idAttr);
             }
             else {
-                throw new XMLStreamException("id attribute is mandatory!");
+                throw new SAXException("id attribute is mandatory!");
             }
             overrideExecutable = false;
-        } else if (!RunnerDescription.RUNNER_XML_ROOT.equals(name)) {
-            property = RunnerDescription.getRunnerProperty(name);
+        } else if (!RunnerDescription.RUNNER_XML_ROOT.equals(qName)) {
+            property = RunnerDescription.getRunnerProperty(qName);
         }
     }
 
-    /**
-     * Processes an XML element end tag.
-     *
-     * @param end end element
-     */
-    private void processEndElement(final EndElement end) {
-        final String name = end.getName().getLocalPart();
-        if (RunnerDescription.RUNNER_XML_ELEMENT.equals(name)) {
+    @Override
+    public void endElement(String uri, String localName, String qName)
+            throws SAXException {
+        if (RunnerDescription.RUNNER_XML_ELEMENT.equals(qName)) {
             if (current != null) {
                 runners.put(current.getId(), current);
                 current = null;
@@ -81,20 +65,14 @@ public class RunnerXmlHandler {
         }
     }
 
-    /**
-     * Processes characters found in the XML stream and transfers
-     * them to the current object.
-     *
-     * @param characters character object
-     * @throws XMLStreamException if the contents of the stream are invalid
-     */
-    private void processCharacters(final Characters characters)
-            throws XMLStreamException {
+    @Override
+    public void characters(char[] ch, int start, int length)
+            throws SAXException {
         if (current == null || property == null) {
             return;
         }
 
-        final String str = characters.getData();
+        final String str = new String(ch, start, length);
         switch (property) {
         case LABEL:
             current.setLabel(str);
@@ -114,10 +92,10 @@ public class RunnerXmlHandler {
                 current.setRunnerClass(runnerClass.asSubclass(ProgramRunner.class));
             }
             catch (ClassNotFoundException e) {
-                throw new XMLStreamException(e);
+                throw new SAXException(e);
             }
             catch (ClassCastException e) {
-                throw new XMLStreamException(e);
+                throw new SAXException(e);
             }
             break;
         case ISCORERUNNER:
@@ -152,32 +130,6 @@ public class RunnerXmlHandler {
         super();
         this.runners = new HashMap<String, RunnerDescription>();
         this.isWindowsPlatform = Platform.getOS().equals(Platform.OS_WIN32);
-    }
-
-    /**
-     * Reads the XML file using the given parser.
-     *
-     * @param parser XML parser
-     * @throws XMLStreamException if the stream contains invalid elements or could
-     *  not be read
-     */
-    public void readXmlFile(XMLEventReader parser) throws XMLStreamException {
-        XMLEvent event;
-        while (parser.hasNext()) {
-            event = parser.nextEvent();
-            switch (event.getEventType()) {
-            case XMLEvent.START_ELEMENT:
-                processStartElement(event.asStartElement());
-                break;
-            case XMLEvent.END_ELEMENT:
-                processEndElement(event.asEndElement());
-                break;
-            case XMLEvent.CHARACTERS:
-                processCharacters(event.asCharacters());
-                break;
-            default:
-            }
-        }
     }
 
     /**

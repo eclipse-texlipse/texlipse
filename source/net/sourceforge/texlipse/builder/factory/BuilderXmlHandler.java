@@ -3,14 +3,9 @@ package net.sourceforge.texlipse.builder.factory;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.xml.namespace.QName;
-import javax.xml.stream.XMLEventReader;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.events.Attribute;
-import javax.xml.stream.events.Characters;
-import javax.xml.stream.events.EndElement;
-import javax.xml.stream.events.StartElement;
-import javax.xml.stream.events.XMLEvent;
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
 
 import net.sourceforge.texlipse.builder.Builder;
 import net.sourceforge.texlipse.builder.factory.BuilderDescription.BuilderProperty;
@@ -22,7 +17,7 @@ import net.sourceforge.texlipse.builder.factory.BuilderDescription.BuilderProper
  * @author Matthias Erll
  *
  */
-public class BuilderXmlHandler {
+public class BuilderXmlHandler extends DefaultHandler {
 
     // builder description which is currently being read
     private BuilderDescription current;
@@ -41,50 +36,40 @@ public class BuilderXmlHandler {
         this.builders = new HashMap<String, BuilderDescription>();
     }
 
-    /**
-     * Processes an XML element start tag.
-     *
-     * @param start start element
-     * @throws XMLStreamException if the input was invalid
-     */
-    public void processStartElement(final StartElement start)
-            throws XMLStreamException {
-        final String name = start.getName().getLocalPart();
-        if (BuilderDescription.BUILDER_XML_ELEMENT.equals(name)) {
-            final Attribute idAttr = start.getAttributeByName(
-                    new QName(BuilderDescription.BUILDER_XML_ID_ATTR));
+    @Override
+    public void startElement(String uri, String localName, String qName,
+            Attributes attributes) throws SAXException {
+        if (BuilderDescription.BUILDER_XML_ELEMENT.equals(qName)) {
+            final String idAttr =
+                    attributes.getValue(BuilderDescription.BUILDER_XML_ID_ATTR);
             if (idAttr != null) {
-                final Attribute legacyIdAttr = start.getAttributeByName(
-                        new QName(BuilderDescription.BUILDER_XML_LEG_ID_ATTR));
+                final String legacyIdAttr =
+                        attributes.getValue(BuilderDescription.BUILDER_XML_LEG_ID_ATTR);
                 if (legacyIdAttr != null) {
                     int lid;
                     try {
-                        lid = Integer.valueOf(legacyIdAttr.getValue());
+                        lid = Integer.valueOf(legacyIdAttr);
                     }
                     catch (NumberFormatException e) {
                         lid = -1;
                     }
-                    current = new BuilderDescription(idAttr.getValue(), lid);
+                    current = new BuilderDescription(idAttr, lid);
                 } else {
-                    current = new BuilderDescription(idAttr.getValue());
+                    current = new BuilderDescription(idAttr);
                 }
             }
             else {
-                throw new XMLStreamException("id attribute is obligatory!");
+                throw new SAXException("id attribute is obligatory!");
             }
-        } else if (!BuilderDescription.BUILDER_XML_ROOT.equals(name)) {
-            property = BuilderDescription.getBuilderProperty(name);
+        } else if (!BuilderDescription.BUILDER_XML_ROOT.equals(qName)) {
+            property = BuilderDescription.getBuilderProperty(qName);
         }
     }
 
-    /**
-     * Processes an XML element end tag.
-     *
-     * @param end end element
-     */
-    public void processEndElement(final EndElement end) {
-        final String name = end.getName().getLocalPart();
-        if (BuilderDescription.BUILDER_XML_ELEMENT.equals(name)) {
+    @Override
+    public void endElement(String uri, String localName, String qName)
+            throws SAXException {
+        if (BuilderDescription.BUILDER_XML_ELEMENT.equals(qName)) {
             if (current != null) {
                 builders.put(current.getId(), current);
                 current = null;
@@ -94,20 +79,14 @@ public class BuilderXmlHandler {
         }
     }
 
-    /**
-     * Processes characters found in the XML stream and transfers
-     * them to the current object.
-     *
-     * @param characters character object
-     * @throws XMLStreamException if the contents of the stream are invalid
-     */
-    public void processCharacters(final Characters characters)
-            throws XMLStreamException {
+    @Override
+    public void characters(char[] ch, int start, int length)
+            throws SAXException {
         if (current == null || property == null) {
             return;
         }
 
-        final String str = characters.getData();
+        final String str = new String(ch, start, length);
         switch (property) {
         case LABEL:
             current.setLabel(str);
@@ -121,10 +100,10 @@ public class BuilderXmlHandler {
                 current.setBuilderClass(builderClass.asSubclass(Builder.class));
             }
             catch (ClassNotFoundException e) {
-                throw new XMLStreamException(e);
+                throw new SAXException(e);
             }
             catch (ClassCastException e) {
-                throw new XMLStreamException(e);
+                throw new SAXException(e);
             }
             break;
         case RUNNERID:
@@ -134,32 +113,6 @@ public class BuilderXmlHandler {
             current.setSecondaryBuilderId(str);
             break;
         default:
-        }
-    }
-
-    /**
-     * Reads the XML file using the given parser.
-     *
-     * @param parser XML parser
-     * @throws XMLStreamException if the stream contains invalid elements or could
-     *  not be read
-     */
-    public void readXmlFile(XMLEventReader parser) throws XMLStreamException {
-        XMLEvent event;
-        while (parser.hasNext()) {
-            event = parser.nextEvent();
-            switch (event.getEventType()) {
-            case XMLEvent.START_ELEMENT:
-                processStartElement(event.asStartElement());
-                break;
-            case XMLEvent.END_ELEMENT:
-                processEndElement(event.asEndElement());
-                break;
-            case XMLEvent.CHARACTERS:
-                processCharacters(event.asCharacters());
-                break;
-            default:
-            }
         }
     }
 

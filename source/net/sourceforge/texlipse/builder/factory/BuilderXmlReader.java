@@ -4,9 +4,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 
-import javax.xml.stream.XMLEventReader;
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamException;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+
+import org.xml.sax.SAXException;
 
 import net.sourceforge.texlipse.TexlipsePlugin;
 
@@ -20,14 +22,14 @@ import net.sourceforge.texlipse.TexlipsePlugin;
  */
 public class BuilderXmlReader {
 
-    private final XMLInputFactory factory;
+    private final SAXParserFactory factory;
 
     /**
      * Constructor.
      */
     public BuilderXmlReader() {
         super();
-        factory = XMLInputFactory.newInstance();
+        factory = SAXParserFactory.newInstance();
     }
 
     /**
@@ -35,13 +37,15 @@ public class BuilderXmlReader {
      *
      * @param in input stream to read runner information from
      * @return map with runner ids and descriptions
-     * @throws XMLStreamException if the stream could not be processed
+     * @throws IOException if the file could not be read
+     * @throws SAXException if the stream could not be processed
+     * @throws ParserConfigurationException if the parser config was invalid
      */
     public Map<String, RunnerDescription> getRunnersFromStream(final InputStream in)
-            throws XMLStreamException {
+            throws SAXException, IOException, ParserConfigurationException {
+        SAXParser parser = factory.newSAXParser();
         RunnerXmlHandler handler = new RunnerXmlHandler();
-        XMLEventReader parser = factory.createXMLEventReader(in);
-        handler.readXmlFile(parser);
+        parser.parse(in, handler);
         return handler.getRunners();
     }
 
@@ -50,14 +54,15 @@ public class BuilderXmlReader {
      *
      * @param in input stream to read builder information from
      * @return map with builder ids and descriptions
-     * @throws IOException if the stream could not be read
-     * @throws XMLStreamException if the stream could not be processed
+     * @throws IOException if the file could not be read
+     * @throws SAXException if the stream could not be processed
+     * @throws ParserConfigurationException if the parser config was invalid
      */
     public Map<String, BuilderDescription> getBuildersFromStream(final InputStream in)
-            throws IOException, XMLStreamException {
+            throws SAXException, IOException, ParserConfigurationException {
+        SAXParser parser = factory.newSAXParser();
         BuilderXmlHandler handler = new BuilderXmlHandler();
-        XMLEventReader parser = factory.createXMLEventReader(in);
-        handler.readXmlFile(parser);
+        parser.parse(in, handler);
         return handler.getBuilders();
     }
 
@@ -75,7 +80,11 @@ public class BuilderXmlReader {
             e.printStackTrace();
             return null;
         }
-        catch (XMLStreamException e) {
+        catch (SAXException e) {
+            e.printStackTrace();
+            return null;
+        }
+        catch (ParserConfigurationException e) {
             e.printStackTrace();
             return null;
         }
@@ -95,7 +104,11 @@ public class BuilderXmlReader {
             e.printStackTrace();
             return null;
         }
-        catch (XMLStreamException e) {
+        catch (SAXException e) {
+            e.printStackTrace();
+            return null;
+        }
+        catch (ParserConfigurationException e) {
             e.printStackTrace();
             return null;
         }

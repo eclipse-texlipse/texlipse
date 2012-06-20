@@ -22,7 +22,7 @@
         <runnerId>pdflatex</runnerId>
     </builder>
     <builder id="latex+dvips" legacyId="3">
-        <label>dvips</label>
+        <label>latex+dvips</label>
         <outputFormat>ps</outputFormat>
         <builderClass>net.sourceforge.texlipse.builder.DviBuilder</builderClass>
         <runnerId>dvips</runnerId>
@@ -92,7 +92,7 @@
         <runnerId>lualatex</runnerId>
     </builder>
     <builder id="latex+dvips-cb">
-        <label>dvips (cycle auto-detection)</label>
+        <label>latex+dvips (cycle auto-detection)</label>
         <outputFormat>ps</outputFormat>
         <builderClass>net.sourceforge.texlipse.builder.DviBuilder</builderClass>
         <runnerId>dvips</runnerId>

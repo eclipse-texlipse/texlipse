@@ -27,7 +27,7 @@ public class PackageContainer {
      * value. If the package has already been registered before, the option is added
      * to the existing package entry. Options can be registered more than once; however,
      * duplicates of the particular option/value combination are avoided. The value
-     * is optional, and should be set to <code>null</code>, if it does not exist.
+     * is optional and should be set to <code>null</code> if not applicable.
      * <p>
      * In this method, the <code>option</code> parameter cannot be <code>null</code>.
      * For adding a package entry without any options, please use
@@ -65,6 +65,17 @@ public class PackageContainer {
     }
 
     /**
+     * Returns the package entry associated with the given package name, which
+     * contains the option list and its values.
+     *
+     * @param packageName package name
+     * @return the package entry or <code>null</code> if the package is not present
+     */
+    public PackageEntry getPackageEntry(final String packageName) {
+        return packages.get(packageName);
+    }
+
+    /**
      * Adds a new package without options to the package container. If the package
      * has been present before, existing option entries are not erased.
      *
@@ -75,8 +86,7 @@ public class PackageContainer {
     public PackageEntry putPackage(final String packageName) {
         final PackageEntry packageEntry = packages.get(packageName);
         if (packageEntry == null) {
-            final PackageEntry newEntry = new PackageEntry();
-            newEntry.key = packageName;
+            final PackageEntry newEntry = new PackageEntry(packageName);
             packages.put(packageName, newEntry);
             return newEntry;
         }
@@ -91,7 +101,7 @@ public class PackageContainer {
      * <li>Drops all packages in the container, which are not present in the set
      *  provided by the <code>packageNames</code> parameter.</li>
      * <li>Registers all packages, which were not found in the container, but in
-     *  the <code>packageNames</code> set. The parameter list is emtpy.</li>
+     *  the <code>packageNames</code> set. The parameter list is empty.</li>
      * </ul>
      * Existing packages with parameter lists are not affected, if they are found
      * in both sets.

@@ -17,8 +17,9 @@ public class PackageEntry extends AbstractEntry {
     /**
      * Creates a new package entry, with an empty options list.
      */
-    public PackageEntry() {
+    public PackageEntry(final String key) {
         super();
+        this.key = key;
         this.options = new ArrayList<PackageOptionEntry>();
     }
 

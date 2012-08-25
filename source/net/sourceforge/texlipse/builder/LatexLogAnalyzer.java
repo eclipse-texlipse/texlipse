@@ -33,7 +33,6 @@ public class LatexLogAnalyzer {
     private static enum FollowingItem {
         LATEX_ERROR_MSG,
         PACKAGE_WARNING_MSG,
-        PDFTEX_WARNING_MSG,
         LINE_NUMBER_ERROR,
         LINE_NUMBER_WARNING,
         ERROR_VERB };
@@ -579,13 +578,6 @@ public class LatexLogAnalyzer {
                     packageName = null;
                 }
                 break;
-            case PDFTEX_WARNING_MSG:
-                final String followMsg = line.trim();
-                if (followMsg.length() > 0) {
-                    message += ' ' + followMsg;
-                    return false;
-                }
-                break;
             case LINE_NUMBER_ERROR:
                 ml = P_AT_LINE_ERROR.matcher(line);
                 if (ml.matches()) {
@@ -677,7 +669,6 @@ public class LatexLogAnalyzer {
                 }
             }
             if (warningSource.contains("pdfTeX")) {
-                following = FollowingItem.PDFTEX_WARNING_MSG;
                 // pdfTeX sometimes hides parentheses here
                 parseFileNames();
                 return false;

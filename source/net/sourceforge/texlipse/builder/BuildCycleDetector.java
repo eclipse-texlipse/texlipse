@@ -179,7 +179,8 @@ public class BuildCycleDetector {
     private void checkOutputFiles(final Set<IPath> changedOutputFiles, boolean push) {
         final Set<IPath> inputFiles = AbstractLatexBuilder.getInputFiles(project);
         for (IPath changedFile : changedOutputFiles) {
-            final String fileExt = changedFile.getFileExtension().toLowerCase();
+            final String fileExt = changedFile.getFileExtension() != null ?
+                    changedFile.getFileExtension().toLowerCase() : null;
             if (fileExt != null && fileExt.length() > 0
                     && !"tex".equals(fileExt) && !"bib".equals(fileExt)) {
                 ProgramRunner runner = BuilderRegistry.getRunner(fileExt, null);

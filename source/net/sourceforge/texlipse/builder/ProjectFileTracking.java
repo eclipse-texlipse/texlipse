@@ -150,7 +150,8 @@ public class ProjectFileTracking {
         IResource[] res = container.members();
         for (IResource current : res) {
             if (current instanceof IFolder) {
-                if (!excludeFolders.contains(current)) {
+                if (!excludeFolders.contains(current)
+                        && current.getName().charAt(0) != '.') {
                     // Recurse into subfolders
                     IFolder subFolder = (IFolder) current;
                     recursiveScanFiles(subFolder, nameMap, monitor);

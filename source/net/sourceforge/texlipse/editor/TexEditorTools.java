@@ -24,22 +24,40 @@ import org.eclipse.jface.text.TextUtilities;
  * Offers general tools for different TexEditor features.
  * Tools are used mainly to implement the word wrap and the indentation
  * methods.
- * 
+ *
  * @author Laura Takkinen 
  * @author Antti Pirinen
  * @author Oskar Ojala
  */
 public class TexEditorTools {
-	
+
+    /** Singleton instance. */
+    private static TexEditorTools instance;
+
     /**
      * Matches some simple LaTeX -commands
      */
     private static final Pattern simpleCommandPattern =
         Pattern.compile("\\\\([a-zA-Z]+)\\s*\\{(.*?)\\}\\s*");
-    
-    public TexEditorTools() {
+
+    /**
+     * Default constructor.
+     */
+    protected TexEditorTools() {
     }
-	
+
+    /**
+     * Retrieves the TexEditorTools instance.
+     *
+     * @return instance
+     */
+    public static synchronized TexEditorTools getInstance() {
+        if (instance == null) {
+            instance = new TexEditorTools();
+        }
+        return instance;
+    }
+
 	/**
 	 * Calculates the number of tabs ('\t') in given text.
 	 * @param text 		Text where tabs are calculated.
@@ -49,7 +67,7 @@ public class TexEditorTools {
 		int count = 0;
 		char[] array = text.toCharArray();
 		if (array.length == 0) {
-                   return count;	
+                   return count;
                 }
 		for (int i = 0; i < array.length; i++){
 			if (array[i] == '\t'){
@@ -58,7 +76,7 @@ public class TexEditorTools {
 		}
 		return count;
 	}
-	
+
 	/**
 	 * Calculates the number of spaces (' ') in given text.
 	 * @param text 	Text where spaces are calculated.
@@ -82,8 +100,8 @@ public class TexEditorTools {
 	}
 
 	/**
-	 * Returns the indentation of the given string. If the 
-	 * indentation contains tabular characters they are 
+	 * Returns the indentation of the given string. If the
+	 * indentation contains tabular characters they are
 	 * converted to the spaces.
 	 * @param text 		source where to find the indentation
 	 * @param tabWidth 	how many spaces one tabular character is
@@ -92,13 +110,13 @@ public class TexEditorTools {
 	public String getIndentation(String text, int tabWidth) {
 		String indentation = "";
 		char[] array = text.toCharArray();
-		
+
 		if (array.length == 0){
 			return indentation;
 		}
-		
+
 		if (array[0] == ' ' || array[0] == '\t'){
-			int tabs = numberOfTabs(text);		
+			int tabs = numberOfTabs(text);
 			int spaces = numberOfSpaces(text) - tabs + (tabs * tabWidth);
 			if (spaces > 0) {
 				for (int i = 0; i < spaces; i++) {
@@ -108,9 +126,9 @@ public class TexEditorTools {
 		}
 		return indentation;
 	}
-	
+
 	/**
-	 * Returs indentation string without tabs. Method calculates 
+	 * Returs indentation string without tabs. Method calculates
 	 * number of tabs of text and converts them to spaces.
 	 * @param document 	Document that contains the text.
 	 * @param line 		Line for whitch the indentation is calculated.
@@ -118,7 +136,7 @@ public class TexEditorTools {
 	 * @param tabWidth 	Number of spaces in tab.
 	 * @return 			Indentation String.
 	 */
-	public String getIndentation(IDocument document, int line, String text, 
+	public String getIndentation(IDocument document, int line, String text,
 			int tabWidth) {
 		String indentation = "";
 		if (line == -1 || line >= document.getNumberOfLines()) {
@@ -139,7 +157,7 @@ public class TexEditorTools {
 		}
 		return indentation;
 	}
-		
+
 	/**
 	 * Gets substring of the given text by removing the given prexif from the string. 
 	 * Removes also white spaces from the substring.
@@ -150,13 +168,13 @@ public class TexEditorTools {
 	 * @return 			Substring of the text.
 	 * @throws IndexOutOfBoundsException
 	 */
-	public String getEndLine(String text, String prefix) throws 
+	public String getEndLine(String text, String prefix) throws
 		IndexOutOfBoundsException {
-		
+
 		String endOfLine = text.substring(prefix.length());
-		return endOfLine.trim();	
+		return endOfLine.trim();
 	}
-	
+
 	/**
 	 * Gets environment string from the given text.
 	 * @param text 	Text where the string is searched.
@@ -167,20 +185,20 @@ public class TexEditorTools {
 	public String getEnvironment(String text) throws IndexOutOfBoundsException {
 		int begin = text.indexOf('{');
 		int end  = text.indexOf('}');
-		
+
 		//"{" has to be to the first character of the text 
 		if (begin == 0 && end > begin){
 			return text.substring(begin + 1, end);
 		}
 		return "";
 	}
-	
+
 	/**
 	 * Finds matching \begin{environment} expression to the given \end{environment} line.
 	 * @param document 		Document that contains line.
 	 * @param line 			End line for which the matching beging line is searched.
 	 * @param environment 	String that defines begin-end environment type (itemize, enumerate...)
-	 * @return 				Returs line number of matching begin equation, 
+	 * @return 				Returs line number of matching begin equation,
 	 * 						if match does not found -1 is returned.
 	 * @throws BadLocationException
 	 */
@@ -192,17 +210,17 @@ public class TexEditorTools {
 		String lineText = document.get(startOffset, lineLength).trim();
 		boolean noMatch = true;
 		int beginCounter = 0;
-		int endCounter = 1; //one end has been detected earlier	
-		
+		int endCounter = 1; //one end has been detected earlier
+
 		while(noMatch){
 			if (lineText.startsWith("\\begin")){
 				String end = getEndLine(lineText, "\\begin");
 				if (getEnvironment(end).equals(environment)){
 					beginCounter++;
-					
+
 					if (beginCounter == endCounter){
 						return startLine;
-					}				
+					}
 				}
 			}
 			else if (lineText.startsWith("\\end")){
@@ -210,7 +228,7 @@ public class TexEditorTools {
 				if (getEnvironment(end).equals(environment)){
 					endCounter++;
 				}
-			}				
+			}
 			if(startLine > 0){
 				startLine--;
 				startOffset = document.getLineOffset(startLine);
@@ -223,9 +241,9 @@ public class TexEditorTools {
 		}
 		return -1;
 	}
-	
-   /** 
-	 * Returns the longest legal line delimiter. 
+
+   /**
+	 * Returns the longest legal line delimiter.
 	 * @param document 	IDocument
 	 * @param command 	DocumentCommand
 	 * @return 			the longest legal line delimiter
@@ -239,35 +257,35 @@ public class TexEditorTools {
         }
         return delimiter == null ? "\n" : delimiter;
 	}
-    
-    
+
     public String getLineDelimiter(IDocument document) {
         return getLineDelimiter(document, null);
     }
-    	
+
 	/**
 	 * Returns a length of a line.
 	 * @param document 	IDocument that contains the line.
 	 * @param command 	DocumentCommand that determines the line.
 	 * @param delim 	are line delimiters counted to the line length 
-	 * @return 			the line length 
+	 * @return 			the line length
 	 */	
 	public int getLineLength(IDocument document, DocumentCommand command, 
 			boolean delim) {
 		return getLineLength(document, command, delim, 0);
 	}
+
 	/**
 	 * Returns a length of a line.
 	 * @param document 	IDocument that contains the line.
 	 * @param command 	DocumentCommand that determines the line.
-	 * @param delim 	are line delimiters counted to the line length 
+	 * @param delim 	are line delimiters counted to the line length
 	 * @param target 	-1 = previous line, 0 = current line, 1 = next line etc... 
-	 * @return 			the line length 
+	 * @return 			the line length
 	 */
-	public int getLineLength(IDocument document, DocumentCommand command, 
+	public int getLineLength(IDocument document, DocumentCommand command,
 			boolean delim, int target) {
 		int line;
-		
+
 		int length = 0;
 		try{
 			line = document.getLineOfOffset(command.offset) + target;
@@ -275,7 +293,7 @@ public class TexEditorTools {
 				//line = document.getLineOfOffset(command.offset);
 				return 0;
 			}
-			
+
 			length = document.getLineLength(line);
 			if (length == 0){
 				return 0;
@@ -285,7 +303,7 @@ public class TexEditorTools {
 				String[] del = document.getLegalLineDelimiters();
 				int cnt = TextUtilities.endsWith(del ,txt);
 				if (!delim && cnt > -1){
-					length = length - del[cnt].length();				
+					length = length - del[cnt].length();
 				}
 			}
 		}catch(BadLocationException e){
@@ -324,7 +342,7 @@ public class TexEditorTools {
 	}
 
     /**
-	 * Returns a text String of the line. 
+	 * Returns a text String of the line.
 	 * @param d IDocument that contains the line.
 	 * @param c DocumentCommand that determines the line.
 	 * @param del Are delimiters included?
@@ -333,14 +351,14 @@ public class TexEditorTools {
 	public String getStringAt(IDocument d, DocumentCommand c, boolean del) {
 		return getStringAt(d, c, del, 0);
 	}
-	
+
 	/**
 	 * Detects the position of the first white space character
 	 * smaller than the limit.
 	 * The first character at a row is 0 and last is lineText.length-1
 	 * @param text 		to search
 	 * @param limit		the detected white space must be before this
-	 * @return 			index of last white space character, 
+	 * @return 			index of last white space character,
 	 * 					returns -1 if not found.
 	 */
 	public int getLastWSPosition(String text, int limit) {
@@ -361,9 +379,9 @@ public class TexEditorTools {
 	 * @param text	 	to search
 	 * @param limit		the detected white space is the first white space 
 	 * 					after this
-	 * @return 			index of first white space character, 
+	 * @return 			index of first white space character,
 	 * 					returns -1 if not found.
-	 */	
+	 */
 	public int getFirstWSPosition(String text, int limit) {
 		int index = -1;
         if (text.length() > limit && limit > -1) {
@@ -381,8 +399,7 @@ public class TexEditorTools {
         }
         return index;
 	}
-	
-	
+
 	/**
 	 * Trims the beginning of the given text.
 	 * @param text 	String that will be trimmed.
@@ -396,7 +413,7 @@ public class TexEditorTools {
 		}
 		return text.substring(i);
 	}
-	
+
 	/**
 	 * Trims the end of the given text.
 	 * @param text 	String that will be trimmed.
@@ -410,7 +427,6 @@ public class TexEditorTools {
 		}
 		return text.substring(0, i+1);
 	}
-	
 
     /**
 	 * Checks if the target text begins with a LaTeX command. 
@@ -426,18 +442,17 @@ public class TexEditorTools {
         }
 	    return false;
 	}
-	
-	
+
 	/**
 	 * Checks if the target txt is a comment line
 	 * @param text 	source text
-	 * @return 		<code>true</code> if line starts with %-character, 
+	 * @return 		<code>true</code> if line starts with %-character,
 	 * 				<code>false</code> otherwise
 	 */
 	public boolean isLineCommentLine(String text) {
         return text.trim().startsWith("%");
 	}
-	
+
 	/**
 	 * Checks is the line begins with \item keyword
 	 * @param text	string to test
@@ -447,17 +462,17 @@ public class TexEditorTools {
 	public boolean isLineItemLine(String text){
 		return text.trim().startsWith("\\item");		
 	}
-	
+
     /**
      * This method will return the starting index of first
      * comment on the given line or -1 if non is found.
-     * 
+     *
      * This method looks for the first occurrence of an unescaped %
-     * 
+     *
      * No special treatment of newlines is done.
-     * 
+     *
      * @param line The line on which to look for a comment.
-     *          
+     *
      * @return the index of the first % which marks the beginning of a comment
      *         or -1 if there is no comment on the given line.
      */
@@ -475,26 +490,25 @@ public class TexEditorTools {
         }
         return -1; // not found
     }
-    
-    
+
     // Oskar's additions
-    
+
     /**
      * Returns the indentation of the given string taking
      * into account if the string starts with a comment.
      * The comment character is included in the output.
-     * 
+     *
      * @param text      source where to find the indentation
      * @return          The indentation of the line including the comment
      */
     public String getIndentationWithComment(String text) {
         StringBuffer indentation = new StringBuffer();
         char[] array = text.toCharArray();
-        
+
         if (array.length == 0) {
             return indentation.toString();
         }
-        
+
         int i = 0;
         while (i < array.length
                 && (array[i] == ' ' || array[i] == '\t')) {
@@ -504,20 +518,20 @@ public class TexEditorTools {
         if (i < array.length && array[i] == '%') {
             indentation.append("% ");
         }
-        
+
         return indentation.toString();
     }
-    
+
     /**
      * Returns the indentation of the given string but keeping tabs.
-     * 
+     *
      * @param text      source where to find the indentation
      * @return          The indentation of the line
      */
     public String getIndentation(String text) {
         StringBuffer indentation = new StringBuffer();
         char[] array = text.toCharArray();
-        
+
         int i = 0;
         while (i < array.length
                 && (array[i] == ' ' || array[i] == '\t')) {
@@ -526,7 +540,7 @@ public class TexEditorTools {
         }
         return indentation.toString();
     }
-    
+
     public String wrapWordString(String input, String indent, int width, String delim) {
         String[] words = input.split("\\s");
         if (input.length() == 0 || words.length == 0) {
@@ -574,5 +588,5 @@ public class TexEditorTools {
         }
         return sb.toString();
     }
-    
+
 }

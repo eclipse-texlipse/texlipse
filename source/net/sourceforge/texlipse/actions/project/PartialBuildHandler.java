@@ -7,48 +7,51 @@
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  */
-package net.sourceforge.texlipse.actions;
+package net.sourceforge.texlipse.actions.project;
+
+import java.util.Map;
 
 import net.sourceforge.texlipse.TexlipsePlugin;
-import net.sourceforge.texlipse.editor.TexEditor;
+import net.sourceforge.texlipse.actions.TexlipseHandlerUtil;
 import net.sourceforge.texlipse.properties.TexlipseProperties;
 
+import org.eclipse.core.commands.AbstractHandler;
+import org.eclipse.core.commands.Command;
+import org.eclipse.core.commands.ExecutionEvent;
+import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.jface.action.IAction;
-import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.ui.IEditorActionDelegate;
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.IWorkbenchWindowActionDelegate;
-import org.eclipse.ui.part.FileEditorInput;
+import org.eclipse.ui.commands.IElementUpdater;
+import org.eclipse.ui.handlers.HandlerUtil;
+import org.eclipse.ui.menus.UIElement;
 
 
 /**
- * This action enables the partial building mode 
+ * This action enables the partial building mode
  * on the current project.
- * 
+ *
  * @author Kimmo Karlsson
  * @author Boris von Loesch
+ * @author Matthias Erll
  */
-public class PartialBuildAction implements IWorkbenchWindowActionDelegate, IEditorActionDelegate {
-    
-    // the current window
-    private IWorkbenchWindow window;
-    
-    // the current editor
-    private IEditorPart editor;
+public class PartialBuildHandler extends AbstractHandler
+    implements IElementUpdater {
 
-	/**
-     * 
-	 */
-	public void run(IAction action) {
-	    
-        String value = action.isChecked() ? "true" : null;
-        IProject project = ((FileEditorInput)editor.getEditorInput()).getFile().getProject();
+    /** Command ID string. */
+    private static final String COMMAND_ID_STR = "net.sourceforge.texlipse.commands.partialBuild";
+
+    /**
+     * {@inheritDoc}
+     */
+    public final Object execute(final ExecutionEvent event) throws ExecutionException {
+        Command command = event.getCommand();
+        boolean oldState = HandlerUtil.toggleCommandState(command);
+        String value = oldState ? null : "true";
+
+        IProject project = TexlipseHandlerUtil.getProject(event);
         TexlipseProperties.setProjectProperty(project, TexlipseProperties.PARTIAL_BUILD_PROPERTY, value);
         if (value == null) {
             TexlipseProperties.setSessionProperty(project, TexlipseProperties.PARTIAL_BUILD_FILE, null);
@@ -64,13 +67,13 @@ public class PartialBuildAction implements IWorkbenchWindowActionDelegate, IEdit
                     if (res[i].getName().startsWith("tempPartial0000"))
                         res[i].delete(true, null);
                 }
-                
+
                 IFolder projectTempDir = TexlipseProperties.getProjectTempDir(project);
                 if (projectTempDir != null && projectTempDir.exists())
                     res = projectTempDir.members();
                 else
                     res = project.members();
-                
+
                 for (int i = 0; i < res.length; i++) {
                     if (res[i].getName().startsWith("tempPartial0000"))
                         res[i].delete(true, null);
@@ -82,47 +85,36 @@ public class PartialBuildAction implements IWorkbenchWindowActionDelegate, IEdit
                         res[i].delete(true, null);
                 }
 
-            } catch (CoreException e) {
+            }
+            catch (CoreException e) {
                 TexlipsePlugin.log("Error while deleting temp files", e);
             }
         }
-	}
 
-	/**
-     * Nothing to do.
-     */
-	public void selectionChanged(IAction action, ISelection selection) {
-	}
+        return null;
+    }
 
-	/**
-     * Nothing to do.
-	 */
-	public void dispose() {
-	}
-
-	/**
-	 * Cache the window object in order to be able to provide
-     * UI components for the action.
-	 */
-	public void init(IWorkbenchWindow window) {
-		this.window = window;
-	}
-
-    /**
-     * 
-     */
-    public void setActiveEditor(IAction action, IEditorPart targetEditor) {
-        editor = targetEditor;
-        action.setEnabled(editor instanceof TexEditor);
-        if (action.isEnabled()) {
-            IProject project = ((TexEditor) editor).getProject();
-            if (project == null) {
-                action.setEnabled(false);
-                return;
-            }
-            //System.out.println("partial-build-running-from");
-            action.setChecked(TexlipseProperties.getProjectProperty(project, TexlipseProperties.PARTIAL_BUILD_PROPERTY) != null);
-            run(action);
+    @Override
+    public final void setEnabled(final Object evaluationContext) {
+        super.setEnabled(evaluationContext);
+        IProject project = TexlipseHandlerUtil.getProject(evaluationContext);
+        if (project != null) {
+            TexlipseHandlerUtil.setStateChecked(COMMAND_ID_STR,
+                    TexlipseProperties.getProjectProperty(project, TexlipseProperties.PARTIAL_BUILD_PROPERTY) != null);
+        }
+        else {
+            TexlipseHandlerUtil.setStateChecked(COMMAND_ID_STR,
+                    false);
         }
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    @SuppressWarnings("rawtypes")
+    public final void updateElement(final UIElement element, final Map parameters) {
+        boolean checked = TexlipseHandlerUtil.isStateChecked(COMMAND_ID_STR);
+        element.setChecked(checked);
+    }
+
 }

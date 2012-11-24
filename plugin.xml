@@ -83,7 +83,7 @@
             id="net.sourceforge.texlipse.expressions.isInTexEditor">
          <iterate
                ifEmpty="false"
-               operator="or">
+               operator="and">
             <with
                   variable="activeEditorId">
                <equals
@@ -100,7 +100,7 @@
             </reference>
             <iterate
                   ifEmpty="false"
-                  operator="or">
+                  operator="and">
                <with
                      variable="activeEditorInput">
                   <adapt
@@ -113,6 +113,23 @@
                </with>
             </iterate>
          </and>
+      </definition>
+      <definition
+            id="net.sourceforge.texlipse.expressions.isInTexProject">
+         <iterate
+               ifEmpty="false"
+               operator="and">
+            <with
+                  variable="activeEditorInput">
+               <adapt
+                     type="org.eclipse.core.resources.IResource">
+                  <test
+                        property="org.eclipse.core.resources.projectNature"
+                        value="net.sourceforge.texlipse.builder.TexlipseNature">
+                  </test>
+               </adapt>
+            </with>
+         </iterate>
       </definition>
    </extension>
 <!-- Icon is missing 
@@ -866,10 +883,20 @@ ${cursor}
       <handler
             class="net.sourceforge.texlipse.actions.project.PartialBuildHandler"
             commandId="net.sourceforge.texlipse.commands.partialBuild">
+         <enabledWhen>
+            <reference
+                  definitionId="net.sourceforge.texlipse.expressions.isInTexProject">
+            </reference>
+         </enabledWhen>
       </handler>
       <handler
             class="net.sourceforge.texlipse.actions.editor.TexWordWrapHandler"
             commandId="net.sourceforge.texlipse.commands.texWordWrap">
+         <enabledWhen>
+            <reference
+                  definitionId="net.sourceforge.texlipse.expressions.isInTexProject">
+            </reference>
+         </enabledWhen>
       </handler>
       <handler
             class="net.sourceforge.texlipse.actions.editor.TexCommentHandler"
@@ -982,10 +1009,20 @@ ${cursor}
       <handler
             class="net.sourceforge.texlipse.actions.project.ForceRebuildHandler"
             commandId="net.sourceforge.texlipse.commands.forceBuild">
+         <enabledWhen>
+            <reference
+                  definitionId="net.sourceforge.texlipse.expressions.isInTexProject">
+            </reference>
+         </enabledWhen>
       </handler>
       <handler
             class="net.sourceforge.texlipse.actions.project.RunBibOnNextBuildHandler"
             commandId="net.sourceforge.texlipse.commands.runBibOnNextBuild">
+         <enabledWhen>
+            <reference
+                  definitionId="net.sourceforge.texlipse.expressions.isInTexProject">
+            </reference>
+         </enabledWhen>
       </handler>
    </extension>
    <!-- Keys: M1=Ctrl M2=Shift M3=Alt-->
@@ -1144,7 +1181,7 @@ ${cursor}
                mnemonic="L">
             <visibleWhen>
                <reference
-                     definitionId="net.sourceforge.texlipse.expressions.isInTexEditor">
+                     definitionId="net.sourceforge.texlipse.expressions.isInTexProject">
                </reference>
             </visibleWhen>
             <command

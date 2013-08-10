@@ -133,7 +133,7 @@ public class OutputScanner {
                 if (consoleOutput != null && (char)nextByte == '\n') {
                     
                     int lf = 1;
-                    if (sb.charAt(sb.length()-2) == '\r') { // fix for windows linefeeds
+                    if (sb.length() >= 2 && sb.charAt(sb.length()-2) == '\r') { // fix for windows linefeeds
                         lf++;
                     }
                     // don't print the whole buffer as the printToConsole() outputs a linefeed

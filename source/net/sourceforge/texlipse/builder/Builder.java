@@ -26,25 +26,10 @@ public interface Builder {
     public boolean isValid();
 
     /**
-     * @return id number for the registry
-     */
-    public int getId();
-    
-    /**
      * Resets the builder to be ready for a new build.
      */
     public void reset(final IProgressMonitor mon);
 
-    /**
-     * @return the name of the format this builder outputs
-     */
-    public String getOutputFormat();
-
-    /**
-     * @return the build sequence for the user interface, e.g. "latex+dvips+ps2pdf"
-     */
-    public String getSequence();
-    
     /**
      * Stops the execution of the whole building process.
      */

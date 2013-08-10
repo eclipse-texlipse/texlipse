@@ -9,21 +9,15 @@
  */
 package net.sourceforge.texlipse.builder;
 
-import java.io.File;
-import java.util.LinkedList;
 import java.util.List;
-
-import javax.swing.text.StyledEditorKit.BoldAction;
 
 import net.sourceforge.texlipse.TexlipsePlugin;
 import net.sourceforge.texlipse.auxparser.AuxFileParser;
-import net.sourceforge.texlipse.model.ReferenceContainer;
-import net.sourceforge.texlipse.model.ReferenceEntry;
+import net.sourceforge.texlipse.builder.factory.BuilderDescription;
 import net.sourceforge.texlipse.properties.TexlipseProperties;
 import net.sourceforge.texlipse.viewer.ViewerManager;
 
 import org.eclipse.core.resources.IContainer;
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
@@ -40,72 +34,48 @@ import org.eclipse.swt.widgets.Shell;
  * @author Tor Arne Vestbø
  * @author Boris von Loesch
  */
-public class TexBuilder extends AbstractBuilder implements AdaptableBuilder {
+public class TexBuilder extends AbstractLatexBuilder implements AdaptableBuilder {
 
     private boolean biblatexMode;
     private String biblatexBackend;
-    private ProgramRunner latex;
     private ProgramRunner bibtex;
     private ProgramRunner makeIndex;
     private ProgramRunner makeIndexNomencl;
-    private String output;
     private boolean stopped;
-    private int alternative;
-    
-    public TexBuilder(int i, String outputFormat, int alt) {
-        super(i);
-        biblatexMode = false;
-        biblatexBackend = null;
-        output = outputFormat;
-        latex = null;
-        bibtex = null;
-        makeIndex = null;
-        alternative = alt;
-        isValid();
+
+    public TexBuilder(BuilderDescription description) {
+        super(description);
+        this.biblatexMode = false;
+        this.biblatexBackend = null;
+        this.bibtex = null;
+        this.makeIndex = null;
     }
-    
+
     /**
      * Check if the needed program runners are operational.
      * Update runners from registry if necessary.
      * @return true, if this builder is ready for operation, false otherwise
      */
     public boolean isValid() {
-        if (latex == null || !latex.isValid()) {
-            latex = BuilderRegistry.getRunner(TexlipseProperties.INPUT_FORMAT_TEX, output, alternative);
-        }
         if (bibtex == null || !bibtex.isValid()) {
             if (!biblatexMode || biblatexBackend == null || "bibtex".equals(biblatexBackend)) {
-                bibtex = BuilderRegistry.getRunner(TexlipseProperties.INPUT_FORMAT_BIB, TexlipseProperties.OUTPUT_FORMAT_AUX, 0);
+                bibtex = BuilderRegistry.getRunner(TexlipseProperties.INPUT_FORMAT_BIB, TexlipseProperties.OUTPUT_FORMAT_AUX);
             }
             else if (biblatexMode && "biber".equals(biblatexBackend)) {
-                bibtex = BuilderRegistry.getRunner(TexlipseProperties.INPUT_FORMAT_BCF, TexlipseProperties.OUTPUT_FORMAT_BBL, 0);
+                bibtex = BuilderRegistry.getRunner(TexlipseProperties.INPUT_FORMAT_BCF, TexlipseProperties.OUTPUT_FORMAT_BBL);
             }
         }
         if (makeIndex == null || !makeIndex.isValid()) {
-            makeIndex = BuilderRegistry.getRunner(TexlipseProperties.INPUT_FORMAT_IDX, TexlipseProperties.OUTPUT_FORMAT_IDX, 0);
+            makeIndex = BuilderRegistry.getRunner(TexlipseProperties.INPUT_FORMAT_IDX, TexlipseProperties.OUTPUT_FORMAT_IDX);
         }
         if (makeIndexNomencl == null || !makeIndexNomencl.isValid()) {
-            makeIndexNomencl = BuilderRegistry.getRunner(TexlipseProperties.INPUT_FORMAT_NOMENCL, TexlipseProperties.OUTPUT_FORMAT_NOMENCL, 0);
+            makeIndexNomencl = BuilderRegistry.getRunner(TexlipseProperties.INPUT_FORMAT_NOMENCL, TexlipseProperties.OUTPUT_FORMAT_NOMENCL);
         }
-        return latex != null && latex.isValid()
+        return super.isValid()
             && bibtex != null && bibtex.isValid()
             && makeIndex != null && makeIndex.isValid();
     }
-    
-    /**
-     * @return output format of the latex processor
-     */
-    public String getOutputFormat() {
-        return latex.getOutputFormat();
-    }
-    
-    /**
-     * @return sequence
-     */
-    public String getSequence() {
-        return latex.getProgramName();
-    }
-    
+
     public void stopRunners() {
         latex.stop();
         bibtex.stop();
@@ -165,69 +135,6 @@ public class TexBuilder extends AbstractBuilder implements AdaptableBuilder {
     }
     
     /**
-     * Calculates the name of the root aux-file to be used by the 
-     * <code>AuxFileParser</code>.
-     * 
-     * @param project
-     * @return
-     */
-    private String getAuxFileName(IProject project) {
-        // evaluate the .aux file
-        String auxFileName = TexlipseProperties.getProjectProperty(project, TexlipseProperties.MAINFILE_PROPERTY);
-        //Check for partial build
-        Object s = TexlipseProperties.getProjectProperty(project, TexlipseProperties.PARTIAL_BUILD_PROPERTY);
-        if (s != null) {
-            IFile tmpFile = (IFile)TexlipseProperties.getSessionProperty(project, TexlipseProperties.PARTIAL_BUILD_FILE);
-            if (tmpFile != null) {
-                auxFileName = tmpFile.getProjectRelativePath().toPortableString();
-            }
-        }
-        auxFileName = auxFileName.replaceFirst("\\.tex$", "\\.aux");
-        return auxFileName;
-    }
-    
-    /**
-     * Extracts all labels defined in the aux-file and adds them to the
-     * label container
-     * 
-     * @param afp the <code>AuxFileParser</code> used to extract the labels
-     */
-	private void extractLabels(AuxFileParser afp) {
-		ReferenceContainer labelC = (ReferenceContainer) TexlipseProperties
-				.getSessionProperty(afp.getProject(),
-						TexlipseProperties.LABELCONTAINER_PROPERTY);
-		if (labelC != null) {
-			// Add temp path to aux-File
-			String tempPath = TexlipseProperties.getProjectProperty(afp.getProject(),
-					TexlipseProperties.TEMP_DIR_PROPERTY);
-			String correctedAuxFileName = tempPath + File.separator
-					+ afp.getRootAuxFile();
-
-			// First remove the labels
-			labelC.addRefSource(correctedAuxFileName,
-					new LinkedList<ReferenceEntry>());
-			// and reorganize
-			labelC.organize();
-			// now add them
-			labelC.updateRefSource(correctedAuxFileName, afp.getLabels());
-		}
-    }
-
-	/**
-	 * Clears errors and warnings from the problem view. If LaTeX runs more than once, this
-	 * makes sure, the view only shows the messages of the last run, which are still valid.
-	 *
-	 * @param project the project
-	 */
-	private void clearMarkers(IProject project) {
-        try {
-            project.deleteMarkers(TexlipseBuilder.MARKER_TYPE, false, IResource.DEPTH_INFINITE);
-            project.deleteMarkers(TexlipseBuilder.LAYOUT_WARNING_TYPE, false, IResource.DEPTH_INFINITE);
-        } catch (CoreException e) {
-        }
-	}
-    
-    /**
      * Run latex and optionally bibtex to produce a dvi file.
      * @throws CoreException if the build fails at any point
      */
@@ -285,7 +192,10 @@ public class TexBuilder extends AbstractBuilder implements AdaptableBuilder {
 			}
 
 			// add the labels defined in the .aux-file to the label container
-			extractLabels(afp);
+			updateContainers(resource, afp);
+		}
+		else {
+		    updateContainers(resource, null);
 		}
         
         // if bibtex is used, the bibliography might be changed

@@ -10,9 +10,13 @@
 package net.sourceforge.texlipse.builder;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Map;
 
 import net.sourceforge.texlipse.TexlipsePlugin;
+import net.sourceforge.texlipse.builder.factory.BuilderDescription;
 import net.sourceforge.texlipse.properties.TexlipseProperties;
 
 import org.eclipse.swt.SWT;
@@ -46,11 +50,14 @@ public class BuilderChooser {
     // list of possible sequences to choose from
     private Combo sequenceChooser;
     
-    // mapping of output format indexes to possible sequences
-    private String[][] mapping;
-    
-    // mapping of sequences to builder ids
-    private HashMap<String, Integer> idMap;
+    // mapping of output formats to possible sequences
+    private Map<String, BuilderDescription[]> mappings;
+
+    // mapping for box indexes to output formats
+    private String[] mappingIdx;
+
+    // mapping for box indexes to builders
+    private BuilderDescription[] currentMap;
 
     // list of (format-) selection listeners
     private ArrayList<SelectionListener> selectionListeners;
@@ -85,7 +92,7 @@ public class BuilderChooser {
             public void widgetSelected(SelectionEvent event) {
                 int index = formatChooser.getSelectionIndex();
                 if (index >= 0) {
-                    sequenceChooser.setItems(mapping[index]);
+                    setCurrentMap(index);
                     sequenceChooser.select(0);
                     fireSelectionEvent(event);
                 }
@@ -101,7 +108,7 @@ public class BuilderChooser {
         sequenceChooser = new Combo(formatGroup, SWT.DROP_DOWN | SWT.READ_ONLY);
         sequenceChooser.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         sequenceChooser.setToolTipText(TexlipsePlugin.getResourceString("propertiesOutputSequenceTooltip"));
-        sequenceChooser.setItems(mapping[0]);
+        setCurrentMap(0);
         sequenceChooser.select(0);
         sequenceChooser.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -131,27 +138,61 @@ public class BuilderChooser {
      * Creates the Sequence to Id mappings
      */
     private void createMappings() {
-        idMap = new HashMap<String, Integer>();
-        
-        Builder[] dvis = BuilderRegistry.getAll(TexlipseProperties.OUTPUT_FORMAT_DVI);
-        Builder[] pses = BuilderRegistry.getAll(TexlipseProperties.OUTPUT_FORMAT_PS);
-        Builder[] pdfs = BuilderRegistry.getAll(TexlipseProperties.OUTPUT_FORMAT_PDF);
-        
-        mapping = new String[3][];
-        mapping[0] = new String[dvis.length];
-        for (int i = 0; i < dvis.length; i++) {
-            mapping[0][i] = dvis[i].getSequence();
-            idMap.put(mapping[0][i], new Integer(dvis[i].getId()));
+        mappings = new HashMap<String, BuilderDescription[]>();
+        mappingIdx = new String[] { TexlipseProperties.OUTPUT_FORMAT_DVI,
+                TexlipseProperties.OUTPUT_FORMAT_PS,
+                TexlipseProperties.OUTPUT_FORMAT_PDF };
+        for (String m : mappingIdx) {
+            BuilderDescription[] builders = BuilderRegistry.getAllBuilders(m).toArray(
+                    new BuilderDescription[0]);
+            Arrays.sort(builders, new Comparator<BuilderDescription>() {
+                public int compare(BuilderDescription o1, BuilderDescription o2) {
+                    return o1.getLabel().compareTo(o2.getLabel());
+                }
+            });
+            mappings.put(m, builders);
         }
-        mapping[1] = new String[pses.length];
-        for (int i = 0; i < pses.length; i++) {
-            mapping[1][i] = pses[i].getSequence();
-            idMap.put(mapping[1][i], new Integer(pses[i].getId()));
+    }
+
+    private void setCurrentMap(int mapIdx) {
+        if (mapIdx > 0 && mapIdx < mappingIdx.length) {
+            currentMap = mappings.get(mappingIdx[mapIdx]);
         }
-        mapping[2] = new String[pdfs.length];
-        for (int i = 0; i < pdfs.length; i++) {
-            mapping[2][i] = pdfs[i].getSequence();
-            idMap.put(mapping[2][i], new Integer(pdfs[i].getId()));
+        else {
+            currentMap = mappings.get(mappingIdx[0]);
+        }
+        formatChooser.select(mapIdx);
+        sequenceChooser.removeAll();
+        for (BuilderDescription bd : currentMap) {
+            sequenceChooser.add(bd.getLabel());
+        }
+    }
+
+    private int getMapIndex(String outputFormat) {
+        boolean found = false;
+        int i = 0;
+        while (!found && i < mappingIdx.length) {
+            found = mappingIdx[i].equals(outputFormat);
+            i++;
+        }
+        if (found) {
+            return i - 1;
+        } else {
+            return 0;
+        }
+    }
+
+    private int getBuilderIndex(String builderId) {
+        boolean found = false;
+        int i = 0;
+        while (!found && i < currentMap.length) {
+            found = currentMap[i].getId().equals(builderId);
+            i++;
+        }
+        if (found) {
+            return i - 1;
+        } else {
+            return 0;
         }
     }
 
@@ -187,46 +228,29 @@ public class BuilderChooser {
     /**
      * @return the id of the currently selected builder
      */
-    public int getSelectedBuilder() {
-        
+    public String getSelectedBuilder() {
+
         int index = sequenceChooser.getSelectionIndex();
-        if (index >= 0) {
-            
-            String seq = sequenceChooser.getItem(index);
-            Integer num = (Integer) idMap.get(seq);
-            
-            index = -1;
-            if (num != null) {
-                index = num.intValue();
-            }
+        if (currentMap != null && index >= 0
+                && index < currentMap.length) {
+            return currentMap[index].getId();
         }
-        
-        return index;
+        else {
+            return null;
+        }
     }
 
     /**
      * Selects the correct values from combo components.
-     * @param num the builder id to select
+     *
+     * @param builderId the builder id to select
      */
-    public void setSelectedBuilder(int num) {
-        
-        Builder b = BuilderRegistry.get(num);
+    public void setSelectedBuilder(String builderId) {
+
+        BuilderDescription b = BuilderRegistry.getBuilderDescription(builderId);
         if (b != null) {
-            
-            String sequence = b.getSequence();
-            int index = formatChooser.indexOf(b.getOutputFormat());
-            if (index < 0) {
-                index = 0;
-            }
-            
-            formatChooser.select(index);
-            sequenceChooser.setItems(mapping[index]);
-            index = sequenceChooser.indexOf(sequence);
-            if (index < 0) {
-                index = 0;
-            }
-            
-            sequenceChooser.select(index);
+            setCurrentMap(getMapIndex(b.getOutputFormat()));
+            sequenceChooser.select(getBuilderIndex(builderId));
         }
     }
 	

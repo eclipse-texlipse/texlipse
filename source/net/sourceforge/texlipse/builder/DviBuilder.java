@@ -9,8 +9,9 @@
  */
 package net.sourceforge.texlipse.builder;
 
-import net.sourceforge.texlipse.properties.TexlipseProperties;
+import net.sourceforge.texlipse.builder.factory.BuilderDescription;
 
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -21,17 +22,14 @@ import org.eclipse.core.runtime.IProgressMonitor;
  *
  * @author Kimmo Karlsson
  */
-public class DviBuilder extends AbstractBuilder {
+public class DviBuilder extends AbstractBuilder implements AdaptableBuilder, CycleBuilder {
 
     private Builder dvi;
     private ProgramRunner ps;
-    private String output;
     private boolean stopped;
 
-    public DviBuilder(int i, String outputFormat) {
-        super(i);
-        output = outputFormat;
-        isValid();
+    public DviBuilder(BuilderDescription description) {
+        super(description);
     }
 
     public void reset(final IProgressMonitor monitor) {
@@ -46,26 +44,12 @@ public class DviBuilder extends AbstractBuilder {
      */
     public boolean isValid() {
         if (dvi == null) {
-            dvi = BuilderRegistry.get(null, TexlipseProperties.OUTPUT_FORMAT_DVI);
+            dvi = BuilderRegistry.getBuilder(description.getSecondaryBuilderId());
         }
         if (ps == null || !ps.isValid()) {
-            ps = BuilderRegistry.getRunner(TexlipseProperties.OUTPUT_FORMAT_DVI, output, 0);
+            ps = BuilderRegistry.getRunner(description.getRunnerId());
         }
         return dvi != null && dvi.isValid() && ps != null && ps.isValid();
-    }
-
-    /**
-     * @return output format of the dvi-processor
-     */
-    public String getOutputFormat() {
-        return ps.getOutputFormat();
-    }
-
-    /**
-     * @return sequence
-     */
-    public String getSequence() {
-        return dvi.getSequence() + '+' + ps.getProgramName();
     }
     
     public void stopRunners() {
@@ -82,8 +66,30 @@ public class DviBuilder extends AbstractBuilder {
         if (stopped) 
             return;
         
-        monitor.subTask("Converting dvi to " + output);
+        monitor.subTask("Converting dvi to " + description.getOutputFormat());
         ps.run(resource);
         monitor.worked(15);
     }
+
+    public void updateBuilder(IProject project) {
+        if (dvi instanceof AdaptableBuilder) {
+            ((AdaptableBuilder) dvi).updateBuilder(project);
+        }
+    }
+
+    public BuildCycleDetector getCycleDetector() {
+        if (dvi instanceof CycleBuilder) {
+            return ((CycleBuilder) dvi).getCycleDetector();
+        }
+        else {
+            return null;
+        }
+    }
+
+    public void setCycleDetector(BuildCycleDetector cycleDetector) {
+        if (dvi instanceof CycleBuilder) {
+            ((CycleBuilder) dvi).setCycleDetector(cycleDetector);
+        }
+    }
+
 }

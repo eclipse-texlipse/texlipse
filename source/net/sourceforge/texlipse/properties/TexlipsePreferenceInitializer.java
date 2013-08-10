@@ -9,13 +9,12 @@
  */
 package net.sourceforge.texlipse.properties;
 
-import java.io.File;
-
 import net.sourceforge.texlipse.PathUtils;
 import net.sourceforge.texlipse.TexlipsePlugin;
 import net.sourceforge.texlipse.bibeditor.BibColorProvider;
 import net.sourceforge.texlipse.builder.BuilderRegistry;
-import net.sourceforge.texlipse.builder.ProgramRunner;
+import net.sourceforge.texlipse.builder.factory.RunnerConfiguration;
+import net.sourceforge.texlipse.builder.factory.RunnerDescription;
 import net.sourceforge.texlipse.editor.ColorManager;
 import net.sourceforge.texlipse.spelling.SpellChecker;
 import net.sourceforge.texlipse.viewer.ViewerAttributeRegistry;
@@ -48,16 +47,10 @@ public class TexlipsePreferenceInitializer extends
      */
     private void initializePaths(IPreferenceStore pref) {
         String path = PathUtils.findInEnvPath("latex", "/usr/bin", "latex.exe", "C:\\texmf\\miktex\\bin");
-        
-        int size = BuilderRegistry.getNumberOfRunners();
-        for (int i = 0; i < size; i++) {
-            ProgramRunner runner = BuilderRegistry.getRunner(i);
-            File prog = new File(path + File.separator + runner.getProgramName());
-            if (prog.exists()) {
-                runner.initializeDefaults(pref, prog.getAbsolutePath());
-            } else {
-                runner.initializeDefaults(pref, "");
-            }
+
+        for (RunnerDescription runner : BuilderRegistry.getAllRunners()) {
+            RunnerConfiguration config = new RunnerConfiguration(runner);
+            config.initializeDefaults(pref, path);
         }
     }
     
@@ -69,7 +62,7 @@ public class TexlipsePreferenceInitializer extends
         
         pref.setDefault(TexlipseProperties.BIB_DIR, "");
         pref.setDefault(TexlipseProperties.OUTPUT_FORMAT, TexlipseProperties.OUTPUT_FORMAT_DVI);
-        pref.setDefault(TexlipseProperties.BUILDER_NUMBER, 0);
+        pref.setDefault(TexlipseProperties.BUILDER_ID, "latex");
         pref.setDefault(TexlipseProperties.BUILDER_CONSOLE_OUTPUT, true);
         pref.setDefault(TexlipseProperties.BUILDER_PARSE_AUX_FILES, true);
         pref.setDefault(TexlipseProperties.BUILD_BEFORE_VIEW, false);
@@ -87,8 +80,11 @@ public class TexlipsePreferenceInitializer extends
         
         pref.setDefault(TexlipseProperties.BUILD_ENV_SETTINGS, "");
         pref.setDefault(TexlipseProperties.VIEWER_ENV_SETTINGS, "");
-        pref.setDefault(TexlipseProperties.TEMP_FILE_EXTS, ".aux,.log,.toc,.ind,.ilg,.bbl,.blg,.lot,.lof,.snm,.nav,.out,.vrb,.run.xml,.bcf");
+        pref.setDefault(TexlipseProperties.TEMP_FILE_EXTS, ".aux,.log,.toc,.ind,.ilg,.bbl,.blg,.lot,.lof,.snm,.nav,.out,.vrb,.run.xml,.bcf,.fls");
         pref.setDefault(TexlipseProperties.DERIVED_FILES, ".synctex.gz,.synctex,.pdfsync");
+        pref.setDefault(TexlipseProperties.BUILD_CYCLE_MAX, 5);
+        pref.setDefault(TexlipseProperties.BUILD_CYCLE_MAX_ERROR, true);
+        pref.setDefault(TexlipseProperties.BUILD_CYCLE_HALT_INVALID, true);
         
         pref.setDefault(TexlipseProperties.BIB_COMPLETION, true);
         pref.setDefault(TexlipseProperties.BIB_COMPLETION_DELAY, 500);

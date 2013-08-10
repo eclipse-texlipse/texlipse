@@ -63,12 +63,11 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
 	 * @see IncrementalProjectBuilder.build
 	 */
     @Override
-	protected IProject[] build(int kind, Map args,
-	        IProgressMonitor monitor) throws CoreException {
+	protected IProject[] build(int kind, Map args, IProgressMonitor monitor)
+	        throws CoreException {
 
         final IProject project = getProject();
-        final ProjectFileTracking fileTracking = new ProjectFileTracking(project);
-        final OutputFileManager fileManager = new OutputFileManager(project, fileTracking);
+        final OutputFileManager fileManager = new OutputFileManager(project);
 
         Object rebuild = TexlipseProperties.getSessionProperty(project,
                 TexlipseProperties.FORCED_REBUILD);
@@ -97,9 +96,9 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
         Object s = TexlipseProperties.getProjectProperty(project,
                 TexlipseProperties.PARTIAL_BUILD_PROPERTY);
 		if (s != null) {
-			partialBuild(project, fileManager, monitor);
+			partialBuild(project, monitor);
 		} else {
-			buildFile(project, null, fileManager, monitor);
+			buildFile(project, null, monitor);
 		}
 
 		TexlipseProperties.setSessionProperty(project,
@@ -117,8 +116,9 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
 	protected void clean(IProgressMonitor monitor) throws CoreException {
 
         IProject project = getProject();
+        final OutputFileManager fileManager = new OutputFileManager(project);
         final ProjectFileTracking fileTracking = new ProjectFileTracking(project);
-        final OutputFileManager fileManager = new OutputFileManager(project, fileTracking);
+        fileManager.setFileTracking(fileTracking);
 
         BuilderRegistry.clearConsole();
 
@@ -148,12 +148,10 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
      * Perform a partial build.
      *
      * @param project current project
-     * @param fileManager output file manager instance
      * @param monitor progress monitor
      * @throws CoreException if an error occurs
      */
     private void partialBuild(final IProject project,
-            final OutputFileManager fileManager,
             final IProgressMonitor monitor) throws CoreException {
 
         IEditorPart part = TexlipsePlugin.getCurrentWorkbenchPage().getActiveEditor();
@@ -188,14 +186,14 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
             // main file can't be built partially
             // also, bib file changes need full build
             TexlipseProperties.setSessionProperty(project, TexlipseProperties.PARTIAL_BUILD_FILE, null);
-        	buildFile(project, null, fileManager, monitor);
+        	buildFile(project, null, monitor);
         	return;
         } else if (LatexParserUtils.findCommand(content, "\\documentclass", 0) != -1
                 || LatexParserUtils.findCommand(content, "\\documentstyle", 0) != -1
                 || LatexParserUtils.findBeginEnvironment(content, "document", 0) != null) {
             // A complete tex file (just build it)
             TexlipseProperties.setSessionProperty(project, TexlipseProperties.PARTIAL_BUILD_FILE, file);
-            buildFile(project, file, fileManager, monitor);
+            buildFile(project, file, monitor);
             return;
         }
         String tempFileContents = getTempFileContents(file, project, monitor);
@@ -222,7 +220,7 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
         tmpFile.setDerived(true);
         
         // build temp file
-        buildFile(project, tmpFile, fileManager, monitor);
+        buildFile(project, tmpFile, monitor);
     }
     
     /**
@@ -319,13 +317,11 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
      *
      * @param project the current project
      * @param resource the file to build, if <code>null</code> build main document
-     * @param fileManager output file manager instance
      * @param monitor progress monitor
      * @throws CoreException if an error occurs
      */
     private void buildFile(final IProject project, IFile resource,
-            final OutputFileManager fileManager, IProgressMonitor monitor)
-                    throws CoreException {
+            IProgressMonitor monitor) throws CoreException {
 
         //load settings, if changed on disk
         if (TexlipseProperties.isProjectPropertiesFileChanged(project)) {
@@ -362,8 +358,18 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
         builder.reset(monitor);
 
         // run file processes before build (e.g. moving temp files in)
+        final ProjectFileTracking fileTracking = new ProjectFileTracking(project);
+        final OutputFileManager fileManager = new OutputFileManager(project);
+
         fileManager.setCurrentSourceFile(resource);
+        fileManager.setFileTracking(fileTracking);
         fileManager.performBeforeBuild(monitor);
+
+        if (builder instanceof CycleBuilder) {
+            BuildCycleDetector cycleDetector =
+                    new BuildCycleDetector(project, resource, fileTracking);
+            ((CycleBuilder) builder).setCycleDetector(cycleDetector);
+        }
 
         // start the build
         try {
@@ -429,32 +435,22 @@ public class TexlipseBuilder extends IncrementalProjectBuilder {
             BuilderRegistry.printToConsole(TexlipsePlugin.getResourceString("builderErrorOutputFormatNotSet").replaceAll("%s", project.getName()));
             throw new CoreException(TexlipsePlugin.stat("Project output file format not set."));
         }
-        
-        String str = TexlipseProperties.getProjectProperty(project, TexlipseProperties.BUILDER_NUMBER);
-        if (str == null) {
-            BuilderRegistry.printToConsole(TexlipsePlugin.getResourceString("builderErrorOutputBuilderNotSet").replaceAll("%s", project.getName()));
-            throw new CoreException(TexlipsePlugin.stat("No builder selected."));
-        }
-        
-        int number = 0;
-        try {
-            number = Integer.parseInt(str);
-        } catch (NumberFormatException e) {
-        }
-        
-        Builder builder = BuilderRegistry.get(number);
+
+        String builderId = TexlipseProperties.getProjectProperty(project, TexlipseProperties.BUILDER_ID);
+        Builder builder = BuilderRegistry.getBuilder(builderId);
+
         if (builder instanceof AdaptableBuilder) {
             ((AdaptableBuilder) builder).updateBuilder(project);
         }
         if (builder == null) {
-            BuilderRegistry.printToConsole(TexlipsePlugin.getResourceString("builderErrorBuilderNumberNotSet").replaceAll("%s", project.getName()).replaceAll("%f", format).replaceAll("%i", number+""));
-            throw new CoreException(TexlipsePlugin.stat("Builder (#"
-                    + number + ") for " + format + " output format not configured."));
+            BuilderRegistry.printToConsole(TexlipsePlugin.getResourceString("builderErrorBuilderNumberNotSet").replaceAll("%s", project.getName()).replaceAll("%f", format));
+            throw new CoreException(TexlipsePlugin.stat("Builder for " + format
+                    + " output format not configured."));
         }
         else if (!builder.isValid()) {
-            BuilderRegistry.printToConsole(TexlipsePlugin.getResourceString("builderErrorBuilderNumberInvalid").replaceAll("%s", project.getName()).replaceAll("%f", format).replaceAll("%i", number+""));
-            throw new CoreException(TexlipsePlugin.stat("Builder (#"
-                    + number + ") for " + format + " output format has an invalid configuration. Please check"
+            BuilderRegistry.printToConsole(TexlipsePlugin.getResourceString("builderErrorBuilderNumberInvalid").replaceAll("%s", project.getName()).replaceAll("%f", format));
+            throw new CoreException(TexlipsePlugin.stat("Builder for " + format
+                    + " output format has an invalid configuration. Please check"
                     + "if paths to builder programs are set up correctly."));
         }
         

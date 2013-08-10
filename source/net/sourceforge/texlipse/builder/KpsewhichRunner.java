@@ -18,9 +18,11 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.jface.preference.IPreferenceStore;
 
 import net.sourceforge.texlipse.builder.Kpath;
+import net.sourceforge.texlipse.builder.factory.RunnerConfiguration;
+import net.sourceforge.texlipse.builder.factory.RunnerDescription;
+
 
 /**
  * Access functionality of the kpathsea library via kpsewhich
@@ -35,28 +37,22 @@ import net.sourceforge.texlipse.builder.Kpath;
  */
 public class KpsewhichRunner implements ProgramRunner {
 
+    private final RunnerDescription description;
+    private final RunnerConfiguration config;
+
     // the currently running program
     private ExternalProgram extrun;
-    
-    public KpsewhichRunner() {
+
+    public KpsewhichRunner(RunnerDescription description) {
+        super();
+        this.description = description;
+        this.config = new RunnerConfiguration(description);
         extrun = new ExternalProgram();
     }
-	
 
-
-	public String getDescription() {
-		return "Kpsewhich program";
-	}
-
-	public String getInputFormat() {
-		// Kpsewhich doesn't have an input format
-		return null;
-	}
-
-	public String getOutputFormat() {
-		// Kpsewhich doesn't have an output format
-		return null;
-	}
+    public String getId() {
+        return description.getId();
+    }
 
 	public String getProgramArguments() {
 		// Not really applicable to us
@@ -67,26 +63,15 @@ public class KpsewhichRunner implements ProgramRunner {
      * @return the name of the executable program
      */
     public String getProgramName() {
-        String os = System.getProperty("os.name").toLowerCase();
-        if (os.indexOf("windows") >= 0) {
-            return getWindowsProgramName();
-        } else {
-            return getUnixProgramName();
-        }
+        return description.getExecutable();
     }
 
     /**
      * @return the program path and filename from the preferences
      */
     public String getProgramPath() {
-        return TexlipsePlugin.getPreference(getCommandPreferenceName());
+        return config.getProgramPath();
     }
-
-	public void initializeDefaults(IPreferenceStore pref, String path) {
-        pref.setDefault(getCommandPreferenceName(), path);
-        //Not sure default argument makes sense for kpsewhich
-        //pref.setDefault(getArgumentsPreferenceName(), getDefaultArguments());
-	}
 
     /**
      * Check to see if this program is ready for operation.
@@ -105,38 +90,11 @@ public class KpsewhichRunner implements ProgramRunner {
 		
 	}
 
-	public void setProgramArguments(String args) {
-		// This method isn't really applicable for kpsewhich
-		
-	}
-
-    /**
-     * @param path the program path and filename for the preferences
-     */
-    public void setProgramPath(String path) {
-        TexlipsePlugin.getDefault().getPreferenceStore().setValue(getCommandPreferenceName(), path);
-    }
-
 	public void stop() {
         if (extrun != null) {
             extrun.stop();
         }
 	}
-	
-    /**
-     * @return the name of the program runner path -preference in the plugin preferences
-     */
-    private String getCommandPreferenceName() {
-        return getClass() + "_prog";
-    }
-    
-    protected String getWindowsProgramName() {
-        return "kpsewhich.exe";
-    }
-    
-    protected String getUnixProgramName() {
-        return "kpsewhich";
-    }
     
     /**
      * 

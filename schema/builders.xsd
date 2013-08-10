@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema targetNamespace="net.sourceforge.texlipse"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns="net.sourceforge.texlipse"
+    elementFormDefault="qualified">
+
+    <xs:complexType name="builderType">
+        <xs:sequence>
+            <xs:element name="label" type="xs:string" />
+            <xs:element name="outputFormat" type="xs:string" />
+            <xs:element name="builderClass" type="xs:string" />
+            <xs:element name="runnerId" type="xs:string" />
+            <xs:element name="secondaryBuilder" type="xs:string"
+                minOccurs="0" maxOccurs="1" />
+        </xs:sequence>
+        <xs:attribute name="id" type="xs:string" use="required" />
+        <xs:attribute name="legacyId" type="xs:int" />
+    </xs:complexType>
+
+    <xs:element name="builders" >
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="builder" type="builderType"
+                    minOccurs="0" maxOccurs="unbounded" />
+            </xs:sequence>
+        </xs:complexType>
+
+        <xs:key name="builderIdKey">
+            <xs:selector xpath="builder" />
+            <xs:field xpath="@id" />
+        </xs:key>
+        <xs:key name="builderLegacyIdKey" >
+            <xs:selector xpath="builder" />
+            <xs:field xpath="@legacyId" />
+        </xs:key>
+        <xs:keyref name="secondaryBuilderRef" refer="builderIdKey">
+            <xs:selector xpath="builder" />
+            <xs:field xpath="secondaryBuilder" />
+        </xs:keyref>
+    </xs:element>
+</xs:schema>

@@ -269,6 +269,34 @@ public class LatexParser {
     }
 
     /**
+     * Evaluates package loading options for biblatex and locates the backend
+     * option.
+     *
+     * @param options string with options in format <code>key=value</code>,
+     *  or simply <code>key</code>, each separated by commas
+     * @return selected biblatex backend, if it was selected; otherwise null
+     */
+    private static String findBiblatexBackend(String options) {
+        int beIdx = options.indexOf("backend=");
+        if (beIdx >= 0) {
+            int startIdx = beIdx + 8; // move forward by length of "backend="
+            int endIdx = options.indexOf(',', startIdx);
+            if (endIdx > startIdx) {
+                return options.substring(startIdx, endIdx).trim();
+            }
+            else if (endIdx == -1) {
+                return options.substring(startIdx).trim();
+            }
+            else {
+                return null;
+            }
+        }
+        else {
+            return null;
+        }
+    }
+        
+    /**
      * Parses a LaTeX document. Uses the given lexer's <code>next()</code>
      * method to receive tokens that are processed.
      * 

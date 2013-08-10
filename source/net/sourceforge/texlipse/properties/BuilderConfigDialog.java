@@ -12,7 +12,8 @@ package net.sourceforge.texlipse.properties;
 import java.io.File;
 
 import net.sourceforge.texlipse.TexlipsePlugin;
-import net.sourceforge.texlipse.builder.ProgramRunner;
+import net.sourceforge.texlipse.builder.factory.RunnerConfiguration;
+import net.sourceforge.texlipse.builder.factory.RunnerDescription;
 
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.resource.JFaceResources;
@@ -41,18 +42,21 @@ import org.eclipse.swt.widgets.Text;
  */
 public class BuilderConfigDialog extends Dialog {
 
+    private final RunnerDescription runner;
+    private final RunnerConfiguration config;
+
     protected File lastPath;
     private Text fileField;
     private Text argsField;
     private Label statusField;
-    private ProgramRunner builder;
     
     /**
      * @param parentShell
      */
-    public BuilderConfigDialog(Shell parentShell, ProgramRunner runner) {
+    public BuilderConfigDialog(Shell parentShell, RunnerDescription runner) {
         super(parentShell);
-        builder = runner;
+        this.runner = runner;
+        this.config = new RunnerConfiguration(runner);
     }
 
     /**
@@ -74,8 +78,8 @@ public class BuilderConfigDialog extends Dialog {
             return;
         }
 
-        builder.setProgramPath(path);
-        builder.setProgramArguments(argsField.getText());
+        config.setProgramPath(path);
+        config.setProgramArguments(argsField.getText());
         
         setReturnCode(OK);
         close();
@@ -121,7 +125,7 @@ public class BuilderConfigDialog extends Dialog {
      * @return initial status message for the dialog 
      */
     private String resolveStatus() {
-        String path = builder.getProgramPath();
+        String path = config.getProgramPath();
         
         if (path == null || path.length() == 0) {
             return TexlipsePlugin.getResourceString("preferenceBuilderDialogFileEmpty");
@@ -145,7 +149,7 @@ public class BuilderConfigDialog extends Dialog {
         gl.numColumns = 2;
         
         Label descrLabel = new Label(composite, SWT.LEFT);
-        descrLabel.setText(TexlipsePlugin.getResourceString("preferenceBuilderDialogDescriptionLabel").replaceAll("%s", builder.getDescription()));
+        descrLabel.setText(TexlipsePlugin.getResourceString("preferenceBuilderDialogDescriptionLabel").replaceAll("%s", runner.getDescription()));
         GridData dgd = new GridData(GridData.FILL_HORIZONTAL);
         dgd.horizontalSpan = 2;
         descrLabel.setLayoutData(dgd);
@@ -154,8 +158,10 @@ public class BuilderConfigDialog extends Dialog {
         
         addArgumentsField(composite);
         
-        if (builder.getInputFormat() != null && builder.getInputFormat().length() > 0
-                && builder.getOutputFormat() != null && builder.getOutputFormat().length() > 0) {
+        if (runner.getInputFormat() != null
+                && runner.getInputFormat().length() > 0
+                && runner.getOutputFormat() != null
+                && runner.getOutputFormat().length() > 0) {
             addFormatsField(composite);
         }
         
@@ -189,7 +195,7 @@ public class BuilderConfigDialog extends Dialog {
         browser.setLayout(bgl);
 
         fileField = new Text(browser, SWT.SINGLE | SWT.BORDER);
-        fileField.setText(builder.getProgramPath());
+        fileField.setText(config.getProgramPath());
         fileField.setToolTipText(TexlipsePlugin.getResourceString("preferenceBuilderCommandTooltip"));
         fileField.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         fileField.addModifyListener(new ModifyListener() {
@@ -244,7 +250,7 @@ public class BuilderConfigDialog extends Dialog {
         label.setLayoutData(new GridData());
         
         argsField = new Text(parent, SWT.SINGLE | SWT.BORDER);
-        argsField.setText(builder.getProgramArguments());
+        argsField.setText(config.getProgramArguments());
         argsField.setToolTipText(TexlipsePlugin.getResourceString("preferenceBuilderArgsTooltip"));
         argsField.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
     }
@@ -270,7 +276,7 @@ public class BuilderConfigDialog extends Dialog {
         inputGroup.setLayout(new GridLayout());
         
         Label inputLabel = new Label(inputGroup, SWT.LEFT);
-        inputLabel.setText("." + builder.getInputFormat());
+        inputLabel.setText("." + runner.getInputFormat());
         inputLabel.setLayoutData(new GridData());
         
         Composite rightPart = new Composite(parent, SWT.NULL);
@@ -288,7 +294,7 @@ public class BuilderConfigDialog extends Dialog {
         outputGroup.setLayout(new GridLayout());
         
         Label outputLabel = new Label(outputGroup, SWT.LEFT);
-        outputLabel.setText("." + builder.getOutputFormat());
+        outputLabel.setText("." + runner.getOutputFormat());
         outputLabel.setLayoutData(new GridData());
     }        
 }

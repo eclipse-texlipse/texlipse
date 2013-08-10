@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<builders xmlns="net.sourceforge.texlipse"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="net.sourceforge.texlipse schema/builders.xsd">
+    <builder id="latex" legacyId="0">
+        <label>latex</label>
+        <outputFormat>dvi</outputFormat>
+        <builderClass>net.sourceforge.texlipse.builder.TexBuilder</builderClass>
+        <runnerId>latex</runnerId>
+    </builder>
+    <builder id="pslatex" legacyId="1">
+        <label>pslatex</label>
+        <outputFormat>ps</outputFormat>
+        <builderClass>net.sourceforge.texlipse.builder.TexBuilder</builderClass>
+        <runnerId>pslatex</runnerId>
+    </builder>
+    <builder id="pdflatex" legacyId="2">
+        <label>pdflatex</label>
+        <outputFormat>pdf</outputFormat>
+        <builderClass>net.sourceforge.texlipse.builder.TexBuilder</builderClass>
+        <runnerId>pdflatex</runnerId>
+    </builder>
+    <builder id="latex+dvips" legacyId="3">
+        <label>dvips</label>
+        <outputFormat>ps</outputFormat>
+        <builderClass>net.sourceforge.texlipse.builder.DviBuilder</builderClass>
+        <runnerId>dvips</runnerId>
+        <secondaryBuilder>latex</secondaryBuilder>
+    </builder>
+    <builder id="latex+dvipdf" legacyId="4">
+        <label>latex+dvipdf</label>
+        <outputFormat>pdf</outputFormat>
+        <builderClass>net.sourceforge.texlipse.builder.DviBuilder</builderClass>
+        <runnerId>dvipdf</runnerId>
+		<secondaryBuilder>latex</secondaryBuilder>
+    </builder>
+    <builder id="pslatex+ps2pdf" legacyId="5">
+        <label>pslatex+ps2pdf</label>
+        <outputFormat>pdf</outputFormat>
+        <builderClass>net.sourceforge.texlipse.builder.PsBuilder</builderClass>
+        <runnerId>ps2pdf</runnerId>
+        <secondaryBuilder>pslatex</secondaryBuilder>
+    </builder>
+    <builder id="latex+dvips+ps2pdf" legacyId="6">
+        <label>latex+dvips+ps2pdf</label>
+        <outputFormat>pdf</outputFormat>
+        <builderClass>net.sourceforge.texlipse.builder.DviBuilder</builderClass>
+        <runnerId>ps2pdf</runnerId>
+        <secondaryBuilder>latex+dvips</secondaryBuilder>
+    </builder>
+    <builder id="xelatex" legacyId="7">
+        <label>xelatex</label>
+        <outputFormat>pdf</outputFormat>
+        <builderClass>net.sourceforge.texlipse.builder.TexBuilder</builderClass>
+        <runnerId>xelatex</runnerId>
+    </builder>
+    <builder id="lualatex" legacyId="8">
+        <label>lualatex</label>
+        <outputFormat>pdf</outputFormat>
+        <builderClass>net.sourceforge.texlipse.builder.TexBuilder</builderClass>
+        <runnerId>lualatex</runnerId>
+    </builder>
+    <builder id="latex-cb">
+        <label>latex (cycle auto-detection)</label>
+        <outputFormat>dvi</outputFormat>
+        <builderClass>net.sourceforge.texlipse.builder.TexCycleBuilder</builderClass>
+        <runnerId>latex</runnerId>
+    </builder>
+    <builder id="pslatex-cb">
+        <label>pslatex (cycle auto-detection)</label>
+        <outputFormat>ps</outputFormat>
+        <builderClass>net.sourceforge.texlipse.builder.TexCycleBuilder</builderClass>
+        <runnerId>pslatex</runnerId>
+    </builder>
+    <builder id="pdflatex-cb">
+        <label>pdflatex (cycle auto-detection)</label>
+        <outputFormat>pdf</outputFormat>
+        <builderClass>net.sourceforge.texlipse.builder.TexCycleBuilder</builderClass>
+        <runnerId>pdflatex</runnerId>
+    </builder>
+    <builder id="xelatex-cb">
+        <label>xelatex (cycle auto-detection)</label>
+        <outputFormat>pdf</outputFormat>
+        <builderClass>net.sourceforge.texlipse.builder.TexCycleBuilder</builderClass>
+        <runnerId>xelatex</runnerId>
+    </builder>
+    <builder id="lualatex-cb">
+        <label>lualatex (cycle auto-detection)</label>
+        <outputFormat>pdf</outputFormat>
+        <builderClass>net.sourceforge.texlipse.builder.TexCycleBuilder</builderClass>
+        <runnerId>lualatex</runnerId>
+    </builder>
+    <builder id="latex+dvips-cb">
+        <label>dvips (cycle auto-detection)</label>
+        <outputFormat>ps</outputFormat>
+        <builderClass>net.sourceforge.texlipse.builder.DviBuilder</builderClass>
+        <runnerId>dvips</runnerId>
+        <secondaryBuilder>latex-cb</secondaryBuilder>
+    </builder>
+    <builder id="latex+dvipdf-cb">
+        <label>latex+dvipdf (cycle auto-detection)</label>
+        <outputFormat>pdf</outputFormat>
+        <builderClass>net.sourceforge.texlipse.builder.DviBuilder</builderClass>
+        <runnerId>dvipdf</runnerId>
+        <secondaryBuilder>latex-cb</secondaryBuilder>
+    </builder>
+    <builder id="pslatex+ps2pdf-cb">
+        <label>pslatex+ps2pdf (cycle auto-detection)</label>
+        <outputFormat>pdf</outputFormat>
+        <builderClass>net.sourceforge.texlipse.builder.PsBuilder</builderClass>
+        <runnerId>ps2pdf</runnerId>
+        <secondaryBuilder>pslatex-cb</secondaryBuilder>
+    </builder>
+    <builder id="latex+dvips+ps2pdf-cb">
+        <label>latex+dvips+ps2pdf (cycle auto-detection)</label>
+        <outputFormat>pdf</outputFormat>
+        <builderClass>net.sourceforge.texlipse.builder.DviBuilder</builderClass>
+        <runnerId>ps2pdf</runnerId>
+        <secondaryBuilder>latex+dvips-cb</secondaryBuilder>
+    </builder>
+</builders>

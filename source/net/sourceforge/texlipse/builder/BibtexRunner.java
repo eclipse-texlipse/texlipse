@@ -13,6 +13,7 @@ import java.io.File;
 import java.util.StringTokenizer;
 
 import net.sourceforge.texlipse.TexlipsePlugin;
+import net.sourceforge.texlipse.builder.factory.RunnerDescription;
 import net.sourceforge.texlipse.properties.TexlipseProperties;
 
 import org.eclipse.core.resources.IContainer;
@@ -31,29 +32,8 @@ public class BibtexRunner extends AbstractProgramRunner {
     /**
      * Create a new bibtex program runner
      */
-    public BibtexRunner() {
-        super();
-    }
-
-    /**
-     * @return bibtex program name in windows
-     */
-    protected String getWindowsProgramName() {
-        return "bibtex.exe";
-    }
-    
-    /**
-     * @return bibtex program name in unix systems
-     */
-    protected String getUnixProgramName() {
-        return "bibtex";
-    }
-    
-    /**
-     * @return bibtex program description
-     */
-    public String getDescription() {
-        return "Bibtex program";
+    public BibtexRunner(RunnerDescription description) {
+        super(description);
     }
     
     protected String[] getQueryString() {
@@ -69,10 +49,10 @@ public class BibtexRunner extends AbstractProgramRunner {
         //Bibtex stops if there is a fileextension, so remove it
         String name = resource.getName();
         String baseName = name.substring(0, name.lastIndexOf('.'));
-        int bPos = args.indexOf(baseName + "." + getInputFormat());
+        int bPos = args.indexOf(baseName + "." + description.getInputFormat());
         if (bPos >= 0) {
             args = args.substring(0, bPos + baseName.length()) + 
-            args.substring(bPos + baseName.length() + 1 + getInputFormat().length());
+            args.substring(bPos + baseName.length() + 1 + description.getInputFormat().length());
         }
         return args;
         // String args = "";
@@ -141,14 +121,6 @@ public class BibtexRunner extends AbstractProgramRunner {
         
         sb.append(' ');
         return sb.toString();
-    }
-
-    public String getInputFormat() {
-        return TexlipseProperties.INPUT_FORMAT_BIB;
-    }
-    
-    public String getOutputFormat() {
-        return TexlipseProperties.OUTPUT_FORMAT_AUX;
     }
 
     /**

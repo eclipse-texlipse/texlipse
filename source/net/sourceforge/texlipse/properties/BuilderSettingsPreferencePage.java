@@ -10,10 +10,13 @@
 package net.sourceforge.texlipse.properties;
 
 import java.io.File;
+import java.util.Arrays;
+import java.util.Comparator;
 
 import net.sourceforge.texlipse.TexlipsePlugin;
 import net.sourceforge.texlipse.builder.BuilderRegistry;
-import net.sourceforge.texlipse.builder.ProgramRunner;
+import net.sourceforge.texlipse.builder.factory.RunnerConfiguration;
+import net.sourceforge.texlipse.builder.factory.RunnerDescription;
 
 import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.jface.resource.JFaceResources;
@@ -44,6 +47,8 @@ public class BuilderSettingsPreferencePage extends PreferencePage
 
     // list of builders to configure
     private List builderList;
+
+    private RunnerDescription[] runnerIdx;
     
     // checkbox for enabling console output
     private Button consoleOutputCheckBox;
@@ -68,18 +73,25 @@ public class BuilderSettingsPreferencePage extends PreferencePage
         setPreferenceStore(TexlipsePlugin.getDefault().getPreferenceStore());
         //setDescription(TexlipsePlugin.getResourceString("preferenceBuilderPageDescription"));
         lastPath = new File(resolveTexDir());
+        runnerIdx = BuilderRegistry.getAllRunners().toArray(new RunnerDescription[0]);
+        Arrays.sort(runnerIdx, new Comparator<RunnerDescription>() {
+            public int compare(RunnerDescription o1, RunnerDescription o2) {
+                return o1.getDescription().compareTo(o2.getDescription());
+            }
+        });
     }
 
 	/**
      * @return the supposed directory of the tex distribution binaries
      */
     private String resolveTexDir() {
-        ProgramRunner runner = BuilderRegistry.getRunner(0);
+        RunnerDescription runner = BuilderRegistry.getRunnerDescription("latex");
+        RunnerConfiguration config = new RunnerConfiguration(runner);
         if (runner == null) {
             return File.separator;
         }
         
-        String dir = runner.getProgramPath();
+        String dir = config.getProgramPath();
         if (dir == null || dir.length() == 0) {
             return File.separator;
         }
@@ -280,20 +292,9 @@ public class BuilderSettingsPreferencePage extends PreferencePage
 
         String texDir = texDirField.getText();
         if (texDir != null && texDir.length() > 0) {
-
-            File dir = new File(texDir);
-            if (dir != null && dir.exists() && dir.isDirectory()) {
-
-                int size = BuilderRegistry.getNumberOfRunners();
-                for (int i = 0; i < size; i++) {
-
-                    ProgramRunner prog = BuilderRegistry.getRunner(i);
-                    File file = new File(dir, prog.getProgramName());
-                    
-                    if (file != null && file.exists() && file.isFile()) {
-                        prog.setProgramPath(file.getAbsolutePath());
-                    }
-                }
+            for (RunnerDescription runner : BuilderRegistry.getAllRunners()) {
+                RunnerConfiguration config = new RunnerConfiguration(runner);
+                config.setProgramDir(texDir);
             }
         }
     }
@@ -302,7 +303,7 @@ public class BuilderSettingsPreferencePage extends PreferencePage
      * @return list of labels for configurable builders
      */
     private String[] getBuilderItems() {
-        int number = BuilderRegistry.getNumberOfRunners();
+        int number = runnerIdx.length;
         String[] array = new String[number];
         for (int i = 0; i < number; i++) {
             array[i] = getRunnerLabel(i);
@@ -315,17 +316,18 @@ public class BuilderSettingsPreferencePage extends PreferencePage
      * @return label for configurable builder
      */
     private String getRunnerLabel(int i) {
-        ProgramRunner runner = BuilderRegistry.getRunner(i);
-        return runner.getDescription() + "        (" + runner.getProgramPath() + ')';
+        RunnerDescription runner = runnerIdx[i];
+        RunnerConfiguration config = new RunnerConfiguration(runner);
+        return runner.getDescription() + "        (" + config.getProgramPath() + ')';
     }
-    
+
     /**
      * Opens the BuilderConfigDialog.
      * @param index index of the configurable builder
      */
     private void openEditorDialog(int index) {
         BuilderConfigDialog dialog = new BuilderConfigDialog(getShell(),
-                BuilderRegistry.getRunner(index));
+                runnerIdx[index]);
         int code = dialog.open();
         if (code == BuilderConfigDialog.OK) {
             builderList.setItem(index, getRunnerLabel(index));

@@ -86,6 +86,9 @@ public class LatexLogAnalyzer {
     private String packageName;
     private String message;
     private Integer lineNumber;
+    private boolean errorTextPending;
+    private boolean errorVerbPending;
+    private boolean skipBlankBeforeDetail;
     private int severity;
 
     /**
@@ -582,16 +585,35 @@ public class LatexLogAnalyzer {
                 ml = P_AT_LINE_ERROR.matcher(line);
                 if (ml.matches()) {
                     lineNumber = getLineNumber(ml.group(1));
-                    message += ml.group(2);
+                    if (errorTextPending) {
+                        message += ' ' + ml.group(2);
+                        errorTextPending = false;
+                    }
+                    else {
+                        message += " (followed by: " + ml.group(2) + ")";
+                        errorVerbPending = false;
+                    }
                     final String part2 = ml.group(4);
-                    if (part2 != null) { 
+                    if (errorVerbPending && part2 != null) {
                         if (part2.length() > 0) {
                             message += " (followed by: " + part2 + ")";
+                            errorVerbPending = false;
                         }
                     }
                     else {
                         // Verbatim text with additional info should be on the next line
                         following = FollowingItem.ERROR_VERB;
+                        return false;
+                    }
+                }
+                else {
+                    final String trimLine = line.trim();
+                    if (!"".equals(trimLine)) {
+                        message += ' ' + trimLine;
+                        errorTextPending = false;
+                        return false;
+                    }
+                    else if (skipBlankBeforeDetail && lineNumber == null) {
                         return false;
                     }
                 }
@@ -604,11 +626,17 @@ public class LatexLogAnalyzer {
                 }
                 break;
             case ERROR_VERB:
-                message += " (followed by: " + line + ")";
+                final String trimLine = line.trim();
+                if (!"".equals(trimLine)) {
+                    message += " (followed by: " + trimLine + ")";
+                }
                 break;
             }
             processUnreported();
             following = null;
+            errorTextPending = false;
+            errorVerbPending = false;
+            skipBlankBeforeDetail = false;
             return true;
         }
 
@@ -690,7 +718,8 @@ public class LatexLogAnalyzer {
             final String errorMessage = m.group(1);
             if (errorMessage.startsWith("Undefined control sequence.")){
                 // Undefined Control Sequence
-                message = "Undefined control sequence: ";
+                message = "Undefined control sequence:";
+                skipBlankBeforeDetail = true;
             }
             else if (errorMessage.startsWith("LaTeX Error: ")) {
                 message = line.substring("LaTeX Error: ".length());
@@ -707,6 +736,8 @@ public class LatexLogAnalyzer {
             }
             severity = IMarker.SEVERITY_ERROR;
             following = FollowingItem.LINE_NUMBER_ERROR;
+            errorTextPending = true;
+            errorVerbPending = true;
             return false;
         }
         m = P_FULL_BOX.matcher(line);
@@ -826,6 +857,9 @@ public class LatexLogAnalyzer {
         packageName = null;
         lineNumber = null;
         message = null;
+        errorTextPending = false;
+        errorVerbPending = false;
+        skipBlankBeforeDetail = false;
         severity = 0;
     }
 

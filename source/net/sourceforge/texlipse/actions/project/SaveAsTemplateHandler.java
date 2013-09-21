@@ -7,52 +7,44 @@
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  */
-package net.sourceforge.texlipse.actions;
+package net.sourceforge.texlipse.actions.project;
 
 import net.sourceforge.texlipse.TexlipsePlugin;
+import net.sourceforge.texlipse.actions.InputQueryDialog;
 import net.sourceforge.texlipse.templates.ProjectTemplateManager;
 
+import org.eclipse.core.commands.AbstractHandler;
+import org.eclipse.core.commands.ExecutionEvent;
+import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IFile;
-import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.dialogs.IInputValidator;
 import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.ui.IEditorActionDelegate;
 import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.IWorkbenchWindowActionDelegate;
+import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.part.FileEditorInput;
-import org.eclipse.ui.texteditor.ITextEditor;
 
 
 /**
- * This action sets the currently open file as project's main file.
- * 
+ * This handler saves the currently open file as a project template file.
+ *
  * @author Kimmo Karlsson
  */
-public class SaveAsTemplateAction implements IWorkbenchWindowActionDelegate, IEditorActionDelegate {
-    
-    // the window
-    private IWorkbenchWindow window;
-    
-    // the editor
-    private IEditorPart editor;
-    
+public class SaveAsTemplateHandler extends AbstractHandler {
+
     /**
-     * Creates a window for entering the template name, checks the user's input and
-     * proceeds to save the template. 
+     * {@inheritDoc}
      */
-    public void run(IAction action) {
-        
-        IFile file = ((FileEditorInput)editor.getEditorInput()).getFile();
+    public final Object execute(final ExecutionEvent event) throws ExecutionException {
+        IEditorPart editor = HandlerUtil.getActiveEditorChecked(event);
+        IFile file = ((FileEditorInput) editor.getEditorInput()).getFile();
         String fullname = file.getFullPath().toString();
-        
+
         // create dialog
         InputQueryDialog dialog = new InputQueryDialog(editor.getEditorSite().getShell(),
                 TexlipsePlugin.getResourceString("templateSaveDialogTitle"),
                 TexlipsePlugin.getResourceString("templateSaveDialogMessage").replaceAll("%s", fullname),
-                file.getName().substring(0,file.getName().lastIndexOf('.')),
+                file.getName().substring(0, file.getName().lastIndexOf('.')),
                 new IInputValidator() {
             public String isValid(String newText) {
                 if (newText != null && newText.length() > 0) {
@@ -60,10 +52,10 @@ public class SaveAsTemplateAction implements IWorkbenchWindowActionDelegate, IEd
                 }
                 return TexlipsePlugin.getResourceString("templateSaveErrorFileName");
             }});
-        
+
         if (dialog.open() == InputDialog.OK) {
             String newName = dialog.getInput();
-            
+
             // check existing
             boolean reallySave = true;
             if (ProjectTemplateManager.templateExists(newName)) {
@@ -71,38 +63,12 @@ public class SaveAsTemplateAction implements IWorkbenchWindowActionDelegate, IEd
                         TexlipsePlugin.getResourceString("templateSaveOverwriteTitle"),
                         TexlipsePlugin.getResourceString("templateSaveOverwriteText").replaceAll("%s", newName));
             }
-            
+
             if (reallySave) {
                 ProjectTemplateManager.saveProjectTemplate(file, newName);
             }
         }
+        return null;
     }
-    
-    /**
-     * Nothing to do.
-     */
-    public void selectionChanged(IAction action, ISelection selection) {
-    }
-    
-    /**
-     * Nothing to do.
-     */
-    public void dispose() {
-    }
-    
-    /**
-     * Cache the window object in order to be able to provide
-     * UI components for the action.
-     */
-    public void init(IWorkbenchWindow window) {
-        this.window = window;
-    }
-    
-    /**
-     * 
-     */
-    public void setActiveEditor(IAction action, IEditorPart targetEditor) {
-        editor = targetEditor;
-        action.setEnabled(editor instanceof ITextEditor);
-    }
+
 }

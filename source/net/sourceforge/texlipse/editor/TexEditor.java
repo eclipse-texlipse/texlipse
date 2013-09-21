@@ -28,12 +28,13 @@ import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.IVerticalRuler;
 import org.eclipse.jface.text.source.projection.ProjectionSupport;
 import org.eclipse.jface.text.source.projection.ProjectionViewer;
+import org.eclipse.jface.util.IPropertyChangeListener;
+import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.IPostSelectionProvider;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
-import org.eclipse.swt.custom.VerifyKeyListener;
-import org.eclipse.swt.events.VerifyEvent;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.editors.text.TextEditor;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
@@ -44,7 +45,7 @@ import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 
 /**
  * The Latex editor.
- * 
+ *
  * @author Oskar Ojala
  * @author Taavi Hupponen
  * @author Boris von Loesch
@@ -55,7 +56,7 @@ public class TexEditor extends TextEditor {
 
     /** The editor's bracket matcher */
     private TexPairMatcher fBracketMatcher = new TexPairMatcher("()[]{}");
-    
+
     private TexOutlinePage outlinePage;
     private TexOutlineTreeView fullOutline;
     private TexDocumentModel documentModel;
@@ -63,8 +64,30 @@ public class TexEditor extends TextEditor {
     private ProjectionSupport fProjectionSupport;
     private BracketInserter fBracketInserter;
     private TexlipseAnnotationUpdater fAnnotationUpdater;
-    
-    
+
+    /**
+     * Checks the type of the word wrap and activates the correct type.
+     */
+    private void updateWrapType() {
+        ISourceViewer viewer = getSourceViewer();
+        boolean enabled = TexlipsePlugin.getDefault().getPreferenceStore()
+                .getBoolean(TexlipseProperties.WORDWRAP_DEFAULT);
+        String wrapStyle = TexlipsePlugin.getPreference(TexlipseProperties.WORDWRAP_TYPE);
+
+        if (wrapStyle.equals(TexlipseProperties.WORDWRAP_TYPE_SOFT)) {
+            TexAutoIndentStrategy.setHardWrap(false);
+            if (viewer != null) {
+                viewer.getTextWidget().setWordWrap(enabled);
+            }
+        }
+        else if (wrapStyle.equals(TexlipseProperties.WORDWRAP_TYPE_HARD)) {
+            TexAutoIndentStrategy.setHardWrap(enabled);
+            if (viewer != null) {
+                viewer.getTextWidget().setWordWrap(false);
+            }
+        }
+    }
+
     /**
      * Constructs a new editor.
      */
@@ -72,9 +95,19 @@ public class TexEditor extends TextEditor {
         super();
         //setRangeIndicator(new DefaultRangeIndicator());
         folder = new TexCodeFolder(this);
+        TexlipsePlugin.getDefault().getPreferenceStore()
+            .addPropertyChangeListener(new IPropertyChangeListener() {
+            public void propertyChange(final PropertyChangeEvent event) {
+                String ev = event.getProperty();
+                if (ev.equals(TexlipseProperties.WORDWRAP_TYPE)
+                        || ev.equals(TexlipseProperties.WORDWRAP_DEFAULT)) {
+                    updateWrapType();
+                }
+            }
+        });
     }
 
-    /** 
+    /**
      * Create the part control.
      * 
      * @see org.eclipse.ui.IWorkbenchPart#createPartControl(org.eclipse.swt.widgets.Composite)
@@ -142,6 +175,7 @@ public class TexEditor extends TextEditor {
     protected ISourceViewer createSourceViewer(Composite parent, IVerticalRuler ruler, int styles) {
         ProjectionViewer viewer = new ProjectionViewer(parent, ruler, getOverviewRuler(), true, styles); 
         getSourceViewerDecorationSupport(viewer);
+        //updateWrapView(viewer);
         return viewer;
     }
 
@@ -158,7 +192,13 @@ public class TexEditor extends TextEditor {
 
         super.configureSourceViewerDecorationSupport(support);
     }
-    
+
+    @Override
+    protected void updateState(IEditorInput input) {
+        super.updateState(input);
+        updateWrapType();
+    }
+
     /** 
      * @see org.eclipse.ui.texteditor.AbstractTextEditor#createActions()
      */
@@ -334,5 +374,7 @@ public class TexEditor extends TextEditor {
      */
     protected void initializeKeyBindingScopes() {
         setKeyBindingScopes(new String[] { "org.eclipse.ui.textEditorScope", "net.sourceforge.texlipse.texEditorScope" });  //$NON-NLS-1$
-    }}
+    }
+
+}
 

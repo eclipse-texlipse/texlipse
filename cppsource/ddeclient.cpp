@@ -1,7 +1,5 @@
-/*
- * $Id$
- *
- * Copyright (c) 2004-2006 by the TeXlapse Team.
+/**
+ * Copyright (c) 2004-2017 the TeXlapse team.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -31,7 +29,7 @@ HDDEDATA CALLBACK DdeCallback(UINT uType, UINT uFmt, HCONV hconv,
 }
 
 
-JNIEXPORT jint JNICALL Java_net_sourceforge_texlipse_DDEClient_execute
+JNIEXPORT jint JNICALL Java_org_eclipse_texlipse_DDEClient_execute
   (JNIEnv* env, jclass obj, jstring server, jstring topic, jstring command)
 {
     // Pull unicode strings from the java arguments

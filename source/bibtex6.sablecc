@@ -15,7 +15,7 @@
  * @author Boris von Loesch
  */
 
-Package net.sourceforge.texlipse.bibparser;
+Package org.eclipse.texlipse.bibparser;
 
 // ----------------------------------------------------------------------------
 Helpers

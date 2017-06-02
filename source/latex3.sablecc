@@ -15,7 +15,7 @@
  */
 
 //Package texparser2;
-Package net.sourceforge.texlipse.texparser;
+Package org.eclipse.texlipse.texparser;
 
 // ----------------------------------------------------------------------------
 Helpers

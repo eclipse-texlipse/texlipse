@@ -2,9 +2,9 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Vendor: TeXlapse Team
 Bundle-Name: TeXlipse
-Bundle-SymbolicName: net.sourceforge.texlipse;singleton:=true
+Bundle-SymbolicName: org.eclipse.texlipse;singleton:=true
 Bundle-Version: 1.5.0
-Bundle-Activator: net.sourceforge.texlipse.TexlipsePlugin
+Bundle-Activator: org.eclipse.texlipse.TexlipsePlugin
 Bundle-RequiredExecutionEnvironment: J2SE-1.5
 Bundle-ClassPath: texlipse.jar,
  jazzy-core.jar
@@ -19,32 +19,32 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.ui.console,
  org.eclipse.debug.ui,
  org.eclipse.core.resources
-Export-Package: net.sourceforge.texlipse,
- net.sourceforge.texlipse.actions,
- net.sourceforge.texlipse.bibeditor,
- net.sourceforge.texlipse.bibparser,
- net.sourceforge.texlipse.bibparser.analysis,
- net.sourceforge.texlipse.bibparser.lexer,
- net.sourceforge.texlipse.bibparser.node,
- net.sourceforge.texlipse.bibparser.parser,
- net.sourceforge.texlipse.builder,
- net.sourceforge.texlipse.editor,
- net.sourceforge.texlipse.editor.hover,
- net.sourceforge.texlipse.editor.scanner,
- net.sourceforge.texlipse.extension,
- net.sourceforge.texlipse.model,
- net.sourceforge.texlipse.outline,
- net.sourceforge.texlipse.properties,
- net.sourceforge.texlipse.properties.editor,
- net.sourceforge.texlipse.spelling,
- net.sourceforge.texlipse.tableview.views,
- net.sourceforge.texlipse.templates,
- net.sourceforge.texlipse.texparser,
- net.sourceforge.texlipse.texparser.analysis,
- net.sourceforge.texlipse.texparser.lexer,
- net.sourceforge.texlipse.texparser.node,
- net.sourceforge.texlipse.treeview.views,
- net.sourceforge.texlipse.ui,
- net.sourceforge.texlipse.viewer,
- net.sourceforge.texlipse.viewer.util,
- net.sourceforge.texlipse.wizards
+Export-Package: org.eclipse.texlipse,
+ org.eclipse.texlipse.actions,
+ org.eclipse.texlipse.bibeditor,
+ org.eclipse.texlipse.bibparser,
+ org.eclipse.texlipse.bibparser.analysis,
+ org.eclipse.texlipse.bibparser.lexer,
+ org.eclipse.texlipse.bibparser.node,
+ org.eclipse.texlipse.bibparser.parser,
+ org.eclipse.texlipse.builder,
+ org.eclipse.texlipse.editor,
+ org.eclipse.texlipse.editor.hover,
+ org.eclipse.texlipse.editor.scanner,
+ org.eclipse.texlipse.extension,
+ org.eclipse.texlipse.model,
+ org.eclipse.texlipse.outline,
+ org.eclipse.texlipse.properties,
+ org.eclipse.texlipse.properties.editor,
+ org.eclipse.texlipse.spelling,
+ org.eclipse.texlipse.tableview.views,
+ org.eclipse.texlipse.templates,
+ org.eclipse.texlipse.texparser,
+ org.eclipse.texlipse.texparser.analysis,
+ org.eclipse.texlipse.texparser.lexer,
+ org.eclipse.texlipse.texparser.node,
+ org.eclipse.texlipse.treeview.views,
+ org.eclipse.texlipse.ui,
+ org.eclipse.texlipse.viewer,
+ org.eclipse.texlipse.viewer.util,
+ org.eclipse.texlipse.wizards

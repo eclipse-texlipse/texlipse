@@ -1,9 +1,9 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!-- Schema file written by PDE -->
-<schema targetNamespace="net.sourceforge.texlipse" xmlns="http://www.w3.org/2001/XMLSchema">
+<schema targetNamespace="org.eclipse.texlipse" xmlns="http://www.w3.org/2001/XMLSchema">
 <annotation>
       <appInfo>
-         <meta.schema plugin="net.sourceforge.texlipse" id="BibEditorOutlineAction" name="BibEditorOutlineAction"/>
+         <meta.schema plugin="org.eclipse.texlipse" id="BibEditorOutlineAction" name="BibEditorOutlineAction"/>
       </appInfo>
       <documentation>
          This is an extension point that allows you to add some more buttons the the small outline window from the Bib-Editor.
@@ -53,7 +53,7 @@ You also get control over the currently opened file and its outlinetree.
                   
                </documentation>
                <appInfo>
-                  <meta.attribute kind="java" basedOn=":net.sourceforge.texlipse.extension.BibOutlineActionProvider"/>
+                  <meta.attribute kind="java" basedOn=":org.eclipse.texlipse.extension.BibOutlineActionProvider"/>
                </appInfo>
             </annotation>
          </attribute>

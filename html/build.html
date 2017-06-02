@@ -196,7 +196,7 @@ actually need any setting up).
       <p><img src="images/yap1.gif" atl="Yap config in Texlipse"></p></li>
 
   <li>You need to create a bat-file that contains the following line: 
-      <pre>java -classpath %ECLIPSEDIR%\plugins\texlipse\texlipse.jar net.sourceforge.texlipse.viewer.util.FileLocationClient -p 55000 -f %1 -l %2</pre>
+      <pre>java -classpath %ECLIPSEDIR%\plugins\texlipse\texlipse.jar org.eclipse.texlipse.viewer.util.FileLocationClient -p 55000 -f %1 -l %2</pre>
       where <code>%ECLIPSEDIR%</code> is the directory in which Eclipse is installed,
       <code>texlipse</code> is the directory of TeXlipse under the <strong>plugins</strong>
       ditectory (where TeXlipse is installed), <code>-p 55000</code> is the port that TeXlipse is listening
@@ -272,7 +272,7 @@ because this is not so easy to configure.
            to: <code>~/Library/Application Support/iTexMac/bin/</code> -directory
            (where &#39;~&#39; is your home directory).
            To this file write the following line:
-           <pre>java -classpath $ECLIPSEDIR/plugins/texlipse/texlipse.jar net.sourceforge.texlipse.viewer.util.FileLocationClient -f ${file} -l ${line}</pre>
+           <pre>java -classpath $ECLIPSEDIR/plugins/texlipse/texlipse.jar org.eclipse.texlipse.viewer.util.FileLocationClient -f ${file} -l ${line}</pre>
            where <code>$ECLIPSEDIR</code> is the directory where Eclipse is installed.
       <li> Now, bring the iTeXMac&#39;s PDF viewer window to the front. It should 
       	   show the PDF document built in the previous steps. Double-clicking on the 

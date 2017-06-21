@@ -1,0 +1,139 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+	<link rel="STYLESHEET" href="book.css" charset="ISO-8859-1" type="text/css">
+	<title>Miscellaneous editor functions</title>
+</head>
+
+<body>
+<h1>Miscellaneous editor functions</h1>
+
+<h2><a name="declaration"></a>Open declaration</h2>
+
+<p>
+TeXlipse supports the <i>Open declaration</i> command (Hotkey: F3). You can
+use it to
+<ul>
+<li>jump to the defining label, if cursor is on a reference</li>
+<li>jump to the definition of a selected custom command that was created via \newcommand,</li>
+<li>open the file of a selected \input, \include or \bibliography command in the editor,</li>
+<li>jump to corresponding BibTex entry, if cursor is on a citation.</li> 
+</ul>
+
+<h2><a name="com"></a>Code commenting</h2>
+
+<p>
+The plug-in offers an effective way to comment (and uncomment) multiple lines 
+at once. There are four ways to do this: Select the area to comment and</p>
+
+<p><ol>
+<li>Click the "Comment selection" button at the tool bar. 
+(Yellow arrow to the right towards a %-character.)<br>
+<img src="images/comment.gif" alt="Comment selection"><br>
+To uncomment a selection, click the "Uncomment selection" button at the tool bar.
+(Yellow arrow to the left away from the %-character.) </li>
+<li>Select <b>Latex &gt; Comment</b> from the menu bar<br>
+To uncomment select <b>Latex &gt; Uncomment</b> from the menu bar
+<li>Press <b>ctrl + 5</b> to comment the selection<br>
+or press <b>esc</b> <b>ctrl + 5</b> to uncomment the selection.</li>
+<li>Open the context menu (click the right button of the mouse on the editor view)
+	and select (under the Source-menu)
+	<b>Comment</b> to comment or <b>Uncomment</b> to uncomment the selected area.</li>
+</ol></p>
+
+<p>
+Note: The command will add a "% "-string to every selected line. If there are no
+lines selected, the "% "-string is added to the line where the cursor is. If
+the command is executed multiple times, then a "% "-string is added
+at the beginning of the selected lines every time the command is executed.
+Uncommenting is similarly cumulative,
+that is, it removes the first "% " (or "%") from the beginning of the line.
+</p>
+
+<p> If you wish to fold commented sections, you can use \begin{comment} 
+and \end{comment} to mark the commented area.
+</p>
+
+<h2><a name="fol"></a>Code folding</h2>
+
+<p>The user can fold text blocks by clicking the small triangles in the text editor's
+left margin. The following blocks can be folded: 
+
+<ul>
+	<li>Sectioning areas: <code>\part, \chapter, \section, \subsection,
+	\subsubsection, \paragraph</code></li>
+	<li>The preamble</li>
+
+<!--<li>Sections,</li><li>Subsections,</li><li>Subsubsections,</li>
+,<li>Parts,</li><li>Chapters,</li><li>Paragraphs and</li>-->
+
+<li>All environments (e.g. figures, tables &mdash; those defined with 
+<i>\begin{...}</i> and <i>\end{...}</i>) except <i>\begin{document} ... \end{document}</i></li>
+</ul>
+</p>
+
+<p>Folds are hierarchical, e.g. folding a section folds all subsections
+under it.</p>
+
+<p>
+Note: If you wish to fold comments, you have to mark a commented block with the
+<i>\begin{comment} </i> and <i>\end{comment}</i> keywords.
+</p>
+
+<p>You can also select what environments are folded initially when the
+editor is opened. This can be done via <b>Code Folding</b> page at 
+the Preferences. (<b>Window &gt; Preferences &gt; Texlipse &gt; Editor &gt; 
+Code Folding</b>)</p>
+
+<p>
+<img src="images/folding.gif" alt="Preferences - Code Folding"><br>
+Check the environments that you want to be folded. 
+</p>
+
+<p>If you wish to add new environments, click the <b>New...</b> -utton and type 
+the name of the environment. For example, if you want to have every
+<code>equation</code> block folded initially, click the <b>New...</b> button, type
+<code><b>equation</b></code> (do <em>not</em> write 
+\begin{equation}) and accept the value
+by clicking the <b>OK</b> button. 
+</p>
+
+<p> If you don't want to have some environment folded automatically anymore, 
+select the environment and click the <b>Remove</b>-button.</p>
+
+<p>The <i>Up</i> and <i>Down</i> buttons do not affect anything.</p>
+
+<h2><a name="wor"></a>Word counting</h2>
+
+<p>
+To count how many words there are in the selected area, select
+<b>Latex &gt; Word count</b> from the menu bar. Word counting can also
+be performed by clicking the Word count icon in the toolbar.
+</p>
+
+<p>The aim is to count the words that will appear in the output document.
+Every word in the text is counted as one word, one citation as one word 
+and the words in the argument of a sectioning command are counted, 
+everything else is not considered. If the selection contains commented lines, 
+the words on those lines are not counted.
+</p>
+
+<h2><a name="excluding"></a>Excluding parts of the document from the parser</h2>
+
+<p>
+Sometimes one might one to mark a section to be excluded from parsing, e.g.
+to support a custom-verbatim environment. To do that, simply surround
+the are to be excluded by %### -comments, e.g.
+<pre>
+%###
+\begin{myverbatim}
+write whatever you want here
+\end{myverbatim}
+%###
+</pre>
+</p>
+
+</body>
+</html>

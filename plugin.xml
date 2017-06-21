@@ -1,0 +1,1271 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<!--
+ ###############################################################################
+ #
+ # Copyright (c) 2005-2017 the TeXlipse team.
+ # All rights reserved. This program and the accompanying materials
+ # are made available under the terms of the Eclipse Public License v1.0
+ # which accompanies this distribution, and is available at
+ # http://www.eclipse.org/legal/epl-v10.html
+ #
+ ###############################################################################
+-->
+
+<plugin>
+   <extension-point id="CiteAutocompleteExtension" name="CiteAutocompleteExtension" schema="schema/CiteAutocompleteExtension.exsd"/>
+   <extension-point id="BibEditorOutlineExtension" name="BibEditorOutlineExtension" schema="schema/BibEditorOutlineExtension.exsd"/>
+   <extension
+         point="org.eclipse.core.runtime.contentTypes">
+      <content-type
+            base-type="org.eclipse.core.runtime.text"
+            file-extensions="tex,ltx,sty,cls"
+            id="org.eclipse.texlipse.contentTypes.Latex"
+            name="LaTeX File"
+            priority="normal">
+      </content-type>
+   </extension>
+
+   <extension
+	     point="org.eclipse.core.filebuffers.documentSetup">
+	  <participant
+		    extensions="bib"
+		    class="org.eclipse.texlipse.bibeditor.BibSetupParticipant">
+	  </participant>
+   </extension>
+   <extension
+	     point="org.eclipse.core.filebuffers.documentSetup">
+	   <participant
+	         class="org.eclipse.texlipse.editor.TexDocumentSetupParticipant"
+	         contentTypeId="org.eclipse.texlipse.contentTypes.Latex"/>
+   </extension>
+
+   <extension
+         point="org.eclipse.ui.editors">
+      <editor
+            class="org.eclipse.texlipse.editor.TexEditor"
+            contributorClass="org.eclipse.texlipse.editor.TexEditorActionContributor"
+            default="true"
+            icon="icons/texfile.gif"
+            id="org.eclipse.texlipse.TexEditor"
+            name="LaTeX Editor">
+         <contentTypeBinding
+               contentTypeId="org.eclipse.texlipse.contentTypes.Latex">
+         </contentTypeBinding>
+      </editor>
+      <editor
+            class="org.eclipse.texlipse.bibeditor.BibEditor"
+            icon="icons/bibfile.gif"
+            contributorClass="org.eclipse.ui.editors.text.TextEditorActionContributor"
+            name="BibTeX Editor"
+            id="org.eclipse.texlipse.bibeditor.BibEditor"
+            extensions="bib"/>
+   </extension>
+   <extension
+         id="org.eclipse.texlipse.builder.TexlipseBuilder"
+         name="Latex Builder"
+         point="org.eclipse.core.resources.builders">
+      <builder >
+         <run class="org.eclipse.texlipse.builder.TexlipseBuilder"/>
+      </builder>
+   </extension>
+   <extension
+         id="org.eclipse.texlipse.builder.TexlipseNature"
+         name="Latex Nature"
+         point="org.eclipse.core.resources.natures">
+      <runtime>
+         <run class="org.eclipse.texlipse.builder.TexlipseNature"/>
+      </runtime>
+   </extension>
+<!-- Icon is missing 
+   <extension
+         id="properties.projectNatureImage1"
+         name="Latex Nature"
+         point="org.eclipse.ui.ide.projectNatureImages">
+      <image
+            natureId="org.eclipse.texlipse.builder.TexlipseNature"
+            icon="icons/texnature.gif"
+            id="org.eclipse.texlipse.ui.projectNatureImage"/>
+   </extension>
+-->
+   <extension
+         point="org.eclipse.ui.newWizards">
+      <wizard
+            category="texlipse.category1"
+            class="org.eclipse.texlipse.wizards.TexlipseProjectCreationWizard"
+            finalPerspective="org.eclipse.texlipse.TexlipsePerspective"
+            icon="icons/logo.gif"
+            id="org.eclipse.texlipse.TexProjectWizard"
+            name="LaTeX Project"
+            project="true">
+         <description>
+            Create a LaTeX project
+         </description>
+      </wizard>
+      <category
+            name="Texlipse"
+            id="texlipse.category1"/>
+      <wizard
+            category="texlipse.category1"
+            class="org.eclipse.texlipse.wizards.TexlipseNewTexFileWizard"
+            icon="icons/texfile.gif"
+            id="org.eclipse.texlipse.wizards.TexlipseNewTexFileWizard"
+            name="New LaTeX file">
+      </wizard>
+   </extension>
+   <extension
+         id="properties.propertyPage1"
+         name="Latex Properties Page"
+         point="org.eclipse.ui.propertyPages">
+      <page
+            objectClass="org.eclipse.core.resources.IProject"
+            class="org.eclipse.texlipse.properties.TexlipseProjectPropertyPage"
+            nameFilter="*"
+            name="Latex Project Properties"
+            id="properties.TexlipseProjectPropertyPage">
+         <filter
+               value="org.eclipse.texlipse.builder.TexlipseNature"
+               name="projectNature"/>
+      </page>
+   </extension>
+   <extension
+         point="org.eclipse.ui.views">
+      <category
+            name="TeXlipse"
+            id="TeXlipse"/>
+      <view
+            icon="icons/tableview.gif"
+            class="org.eclipse.texlipse.tableview.views.TexTableView"
+            category="TeXlipse"
+            name="LaTeX Table View"
+            id="org.eclipse.texlipse.TableView"/>
+      <view
+            icon="icons/outline_co.gif"
+            class="org.eclipse.texlipse.treeview.views.TexOutlineTreeView"
+            category="TeXlipse"
+            name="Full Latex Outline"
+            id="org.eclipse.texlipse.FullOutline"/>
+   </extension>
+
+   <extension
+         point="org.eclipse.ui.preferencePages">
+      <page
+            class="org.eclipse.texlipse.properties.TexlipsePreferencePage"
+            name="Texlipse"
+            id="TexlipsePreferencePage"/>
+      <page
+            class="org.eclipse.texlipse.properties.BibtexPreferencePage"
+            category="TexlipsePreferencePage"
+            name="BibTeX Editor"
+            id="BibtexPreferencePage"/>
+      <page
+            class="org.eclipse.texlipse.properties.BibColoringPreferencePage"
+            category="BibtexPreferencePage"
+            name="Syntax Highlighting"
+            id="org.eclipse.texlipse.properties.BibColoringPreferencePage"/>            
+      <page
+            class="org.eclipse.texlipse.templates.BibTexTemplatePreferencesPage"
+            category="BibtexPreferencePage"
+            name="Templates"
+            id="org.eclipse.texlipse.templates.BibTexTemplatePreferencesPage"/>
+      <page
+            class="org.eclipse.texlipse.properties.editor.TexEditorPreferencePage"
+            category="TexlipsePreferencePage"
+            name="Editor"
+            id="TexlipseEditorPreferencePage"/>
+      <page
+            class="org.eclipse.texlipse.properties.editor.StyleCompletionPreferencePage"
+            category="TexlipseEditorPreferencePage"
+            name="Style completions"
+            id="StyleCompletionPreferencePage"/>
+      <page
+            class="org.eclipse.texlipse.properties.editor.SmartKeyPreferencePage"
+            category="TexlipseEditorPreferencePage"
+            name="Smart keys"
+            id="SmartKeyPreferencePage"/>
+      <page
+            class="org.eclipse.texlipse.properties.editor.ColoringPreferencePage"
+            category="TexlipseEditorPreferencePage"
+            name="Syntax Highlighting"
+            id="org.eclipse.texlipse.properties.editor.ColoringPreferencePage"/>
+      <page
+            class="org.eclipse.texlipse.properties.editor.OutlinePreferencePage"
+            category="TexlipseEditorPreferencePage"
+            name="Outline"
+            id="org.eclipse.texlipse.properties.editor.OutlinePreferencePage"/>
+      <page
+            class="org.eclipse.texlipse.properties.editor.CodeFoldingPreferencePage"
+            category="TexlipseEditorPreferencePage"
+            name="Code Folding"
+            id="org.eclipse.texlipse.properties.editor.CodeFoldingPreferencePage"/>
+      <page
+            class="org.eclipse.texlipse.templates.TexTemplatePreferencesPage"
+            category="TexlipseEditorPreferencePage"
+            name="Templates"
+            id="org.eclipse.texlipse.properties.TeXPreferencePage"/>
+      <page
+            class="org.eclipse.texlipse.properties.editor.IndentationPreferencePage"
+            category="TexlipseEditorPreferencePage"
+            name="Indentation"
+            id="org.eclipse.texlipse.properties.editor.IndentationPreferencePage"/>
+      <page
+            class="org.eclipse.texlipse.properties.ProjectTemplatesPreferencePage"
+            category="TexlipsePreferencePage"
+            name="Document Templates"
+            id="org.eclipse.texlipse.properties.ProjectTemplatesPreferencePage"/>
+      <page
+            class="org.eclipse.texlipse.properties.BuilderSettingsPreferencePage"
+            category="TexlipsePreferencePage"
+            name="Builder Settings"
+            id="TexlipseBuilderPreferencePage"/>
+      <page
+            class="org.eclipse.texlipse.properties.BuilderEnvPreferencePage"
+            category="TexlipseBuilderPreferencePage"
+            name="Environment"
+            id="org.eclipse.texlipse.properties.BuilderEnvPreferencePage"/>
+      <page
+            class="org.eclipse.texlipse.properties.LatexTempExtsPreferencePage"
+            category="TexlipseBuilderPreferencePage"
+            name="Latex Temp Files"
+            id="org.eclipse.texlipse.properties.LatexTempExtsPreferencePage"/>            
+      <page
+            class="org.eclipse.texlipse.properties.ViewerSettingsPreferencePage"
+            category="TexlipsePreferencePage"
+            name="Viewer Settings"
+            id="TexlipseViewerSettingsPreferencePage"/>
+      <page
+            class="org.eclipse.texlipse.properties.ViewerEnvPreferencePage"
+            category="TexlipseViewerSettingsPreferencePage"
+            name="Environment"
+            id="org.eclipse.texlipse.properties.ViewerEnvPreferencePage"/>
+      <page
+            class="org.eclipse.texlipse.spelling.SpellCheckerPreferencePage"
+            category="TexlipsePreferencePage"
+            name="Spell Checker"
+            id="TexlipseSpellChecker"/>
+      <page
+            class="org.eclipse.texlipse.spelling.SpellCheckerEnvPreferencePage"
+            category="TexlipseSpellChecker"
+            name="Environment"
+            id="org.eclipse.texlipse.spelling.SpellCheckerEnvPreferencePage"/>
+   </extension>
+   <extension
+         point="org.eclipse.core.runtime.preferences">
+      <initializer class="org.eclipse.texlipse.properties.TexlipsePreferenceInitializer"/>
+   </extension>
+   <extension
+         point="org.eclipse.help.toc">
+      <toc
+            primary="true"
+            file="toc.xml"/>
+   </extension>
+   <extension
+         point="org.eclipse.help.contexts">
+      <contexts file="contexts.xml"/>
+   </extension>
+   <extension
+         point="org.eclipse.ui.editors.templates">
+      <contextType
+            class="org.eclipse.texlipse.templates.TexContextType"
+            id="org.eclipse.texlipse.templates.tex"/>
+		<template
+        contextTypeId="org.eclipse.texlipse.templates.tex"
+        icon="icons/template.gif"
+        description="Template for a list (description)"
+        name="description"
+        id="org.eclipse.texlipse.templates.tex.description">
+       	<pattern>
+\begin{description}
+  \item[${item}] ${cursor}
+\end{description}
+        </pattern>
+        </template>
+		<template
+        contextTypeId="org.eclipse.texlipse.templates.tex"
+        icon="icons/template.gif"
+        description="Template for a list (enumerate)"
+        name="enumerate"
+        id="org.eclipse.texlipse.templates.tex.enumerate">
+       	<pattern>
+\begin{enumerate}
+  \item ${cursor}
+\end{enumerate}
+        </pattern>
+        </template>
+		<template
+        contextTypeId="org.eclipse.texlipse.templates.tex"
+        icon="icons/template.gif"
+        description="Template for a list (itemize)"
+        name="itemize"
+        id="org.eclipse.texlipse.templates.tex.itemize">
+       	<pattern>
+\begin{itemize}
+  \item ${cursor}
+\end{itemize}
+        </pattern>
+        </template>
+		<template
+        contextTypeId="org.eclipse.texlipse.templates.tex"
+        icon="icons/template.gif"
+        description="Template for a table"
+        name="table"
+        id="org.eclipse.texlipse.templates.tex.table">
+		<pattern>
+\begin{table}
+\begin{tabular}{${columns}}
+${cursor}
+\end{tabular}
+\caption{${tablecaption}}
+\label{${tablelabel}}
+\end{table}
+		</pattern>
+		</template>
+		<template
+        contextTypeId="org.eclipse.texlipse.templates.tex"
+        icon="icons/template.gif"
+        description="Begin/end pattern"
+        name="begin"
+        id="org.eclipse.texlipse.templates.tex.begin">
+		<pattern>
+\begin{${environment}}${cursor}
+\end{${environment}}
+		</pattern>
+		</template>
+		<template
+        contextTypeId="org.eclipse.texlipse.templates.tex"
+        icon="icons/template.gif"
+        description="Template for Figure"
+        name="figure"
+        id="org.eclipse.texlipse.templates.tex.figure">
+		<pattern>
+%%\usepackage{graphics} is needed for \includegraphics
+\begin{figure}[htp]
+\begin{center}
+  \includegraphics[width=${figureWidth}]{${filename}}
+  \caption[${labelInTOC}]{${figureCaption}}
+  \label{${figureLabel}}
+\end{center}
+\end{figure}
+		</pattern>
+		</template>
+		
+      <contextType
+            class="org.eclipse.texlipse.templates.TexContextType"
+            id="org.eclipse.texlipse.templates.math"/>
+		<template
+        contextTypeId="org.eclipse.texlipse.templates.math"
+        icon="icons/template.gif"
+        description="Big square bracket"
+        name="sqbr"
+        id="org.eclipse.texlipse.templates.tex.sqbr">
+		<pattern>
+\left[ ${formula} \right] ${cursor}
+		</pattern>
+		</template>
+		<template
+        contextTypeId="org.eclipse.texlipse.templates.math"
+        icon="icons/template.gif"
+        description="Big braces"
+        name="braces"
+        id="org.eclipse.texlipse.templates.tex.braces">
+		<pattern>
+\left\{ ${formula} \right\} ${cursor}
+		</pattern>
+		</template>
+		
+		
+		
+  <contextType
+        class="org.eclipse.texlipse.templates.BibTexContextType"
+        id="org.eclipse.texlipse.templates.bibtex"/>
+  <template
+        contextTypeId="org.eclipse.texlipse.templates.bibtex"
+        icon="icons/template.gif"
+        description="Book"
+        name="@book"
+        id="org.eclipse.texlipse.templates.bibtex.book">
+     <pattern>
+@Book{${ID},
+  ALTauthor = 	 {${Author}},
+  ALTeditor = 	 {${Editor}},
+  title = 	 {${Title}},
+  publisher = 	 {${Publisher}},
+  year = 	 {${Year}},
+  OPTkey = 	 {},
+  OPTvolume = 	 {},
+  OPTnumber = 	 {},
+  OPTseries = 	 {},
+  OPTaddress = 	 {},
+  OPTedition = 	 {},
+  OPTmonth = 	 {},
+  OPTnote = 	 {},
+  OPTannote = 	 {}
+}
+     </pattern>
+  </template>		
+  <template
+        contextTypeId="org.eclipse.texlipse.templates.bibtex"
+        icon="icons/template.gif"
+        description="Booklet"
+        name="@booklet"
+        id="org.eclipse.texlipse.templates.bibtex.booklet">
+     <pattern>
+@Booklet{${ID},
+  title = 	 {${Title}},
+  OPTkey = 	 {},
+  OPTauthor = 	 {},
+  OPThowpublished = {},
+  OPTaddress = 	 {},
+  OPTmonth = 	 {},
+  OPTyear = 	 {},
+  OPTnote = 	 {},
+  OPTannote = 	 {}
+}
+     </pattern>
+  </template>		
+  <template
+        contextTypeId="org.eclipse.texlipse.templates.bibtex"
+        icon="icons/template.gif"
+        description="Article in Journal"
+        name="@article"
+        id="org.eclipse.texlipse.templates.bibtex.article">
+     <pattern>
+@Article{${ID},
+  author = 	 {${Author}},
+  title = 	 {${Title}},
+  journal = 	 {${Journal}},
+  year = 	 {${Year}},
+  OPTkey = 	 {},
+  OPTvolume = 	 {},
+  OPTnumber = 	 {},
+  OPTpages = 	 {},
+  OPTmonth = 	 {},
+  OPTnote = 	 {},
+  OPTannote = 	 {}
+}
+     </pattern>
+  </template>
+  <template
+        contextTypeId="org.eclipse.texlipse.templates.bibtex"
+        icon="icons/template.gif"
+        description="Article in Conference Proceedings"
+        name="@inproceedings"
+        id="org.eclipse.texlipse.templates.bibtex.inproceedings">
+     <pattern>
+@InProceedings{${ID},
+  author = 	 {${Author}},
+  title = 	 {${Title}},
+  OPTcrossref =  {},
+  OPTkey = 	 {},
+  OPTbooktitle = {},
+  OPTpages = 	 {},
+  OPTyear = 	 {},
+  OPTeditor = 	 {},
+  OPTvolume = 	 {},
+  OPTnumber = 	 {},
+  OPTseries = 	 {},
+  OPTaddress = 	 {},
+  OPTmonth = 	 {},
+  OPTorganization = {},
+  OPTpublisher = {},
+  OPTnote = 	 {},
+  OPTannote = 	 {}
+}
+     </pattern>
+  </template>
+  <template
+        contextTypeId="org.eclipse.texlipse.templates.bibtex"
+        icon="icons/template.gif"
+        description="Article in a Collection"        
+        name="@incollection"
+        id="org.eclipse.texlipse.templates.bibtex.incollection">
+     <pattern>
+@InCollection{${ID},
+  author = 	 {${Author}},
+  title = 	 {${Title}},
+  booktitle = 	 {${Booktitle}},
+  OPTcrossref =  {},
+  OPTkey = 	 {},
+  OPTpages = 	 {},
+  OPTpublisher = {},
+  OPTyear = 	 {},
+  OPTeditor = 	 {},
+  OPTvolume = 	 {},
+  OPTnumber = 	 {},
+  OPTseries = 	 {},
+  OPTtype = 	 {},
+  OPTchapter = 	 {},
+  OPTaddress = 	 {},
+  OPTedition = 	 {},
+  OPTmonth = 	 {},
+  OPTnote = 	 {},
+  OPTannote = 	 {}
+}
+     </pattern>
+  </template>
+  <template
+        contextTypeId="org.eclipse.texlipse.templates.bibtex"
+        icon="icons/template.gif"
+        description="Chapter or Pages in a Book"        
+        name="@inbook"
+        id="org.eclipse.texlipse.templates.bibtex.inbook">
+     <pattern>
+@InBook{${ID},
+  ALTauthor = 	 {${Author}},
+  ALTeditor = 	 {${Editor}},
+  title = 	 {${Title}},
+  chapter = 	 {${Chapter}},
+  publisher = 	 {${Publisher}},
+  year = 	 {${Year}},
+  OPTkey = 	 {},
+  OPTvolume = 	 {},
+  OPTnumber = 	 {},
+  OPTseries = 	 {},
+  OPTtype = 	 {},
+  OPTaddress = 	 {},
+  OPTedition = 	 {},
+  OPTmonth = 	 {},
+  OPTpages = 	 {},
+  OPTnote = 	 {},
+  OPTannote = 	 {}
+}
+     </pattern>
+  </template>
+  <template
+        contextTypeId="org.eclipse.texlipse.templates.bibtex"
+        icon="icons/template.gif"
+        description="Conference Proceedings"        
+        name="@proceedings"
+        id="org.eclipse.texlipse.templates.bibtex.proceedings">
+     <pattern>
+@Proceedings{${ID},
+  title = 	 {${Title}},
+  year = 	 {${Year}},
+  OPTkey = 	 {},
+  OPTbooktitle = {},
+  OPTeditor = 	 {},
+  OPTvolume = 	 {},
+  OPTnumber = 	 {},
+  OPTseries = 	 {},
+  OPTaddress = 	 {},
+  OPTmonth = 	 {},
+  OPTorganization = {},
+  OPTpublisher = {},
+  OPTnote = 	 {},
+  OPTannote = 	 {}
+}
+     </pattern>
+  </template>
+  <template
+        contextTypeId="org.eclipse.texlipse.templates.bibtex"
+        icon="icons/template.gif"
+        description="PhD. Thesis"        
+        name="@phdthesis"
+        id="org.eclipse.texlipse.templates.bibtex.phdthesis">
+     <pattern>
+@PhdThesis{${ID},
+  author = 	 {${Author}},
+  title = 	 {${Title}},
+  school = 	 {${School}},
+  year = 	 {${Year}},
+  OPTkey = 	 {},
+  OPTtype = 	 {},
+  OPTaddress = 	 {},
+  OPTmonth = 	 {},
+  OPTnote = 	 {},
+  OPTannote = 	 {}
+}
+     </pattern>
+  </template>
+  <template
+        contextTypeId="org.eclipse.texlipse.templates.bibtex"
+        icon="icons/template.gif"
+        description="Master's Thesis"
+        name="@mastersthesis"
+        id="org.eclipse.texlipse.templates.bibtex.mastersthesis">
+     <pattern>
+@MastersThesis{${ID},
+  author = 	 {${Author}},
+  title = 	 {${Title}},
+  school = 	 {${School}},
+  year = 	 {${Year}},
+  OPTkey = 	 {},
+  OPTtype = 	 {},
+  OPTaddress = 	 {},
+  OPTmonth = 	 {},
+  OPTnote = 	 {},
+  OPTannote = 	 {}
+}
+     </pattern>
+  </template>
+  <template
+        contextTypeId="org.eclipse.texlipse.templates.bibtex"
+        icon="icons/template.gif"
+        description="Technical Report"        
+        name="@techreport"
+        id="org.eclipse.texlipse.templates.bibtex.techreport">
+     <pattern>
+@TechReport{${ID},
+  author = 	 {${Author}},
+  title = 	 {${Title}},
+  institution =  {${Institution}},
+  year = 	 {${Year}},
+  OPTkey = 	 {},
+  OPTtype = 	 {},
+  OPTnumber = 	 {},
+  OPTaddress = 	 {},
+  OPTmonth = 	 {},
+  OPTnote = 	 {},
+  OPTannote = 	 {}
+}
+     </pattern>
+  </template>
+  <template
+        contextTypeId="org.eclipse.texlipse.templates.bibtex"
+        icon="icons/template.gif"
+        description="Technical Manual"
+        name="@manual"
+        id="org.eclipse.texlipse.templates.bibtex.manual">
+     <pattern>
+@Manual{${ID},
+  title = 	 {${Title}},
+  OPTkey = 	 {},
+  OPTauthor = 	 {},
+  OPTorganization = {},
+  OPTaddress = 	 {},
+  OPTedition = 	 {},
+  OPTmonth = 	 {},
+  OPTyear = 	 {},
+  OPTnote = 	 {},
+  OPTannote = 	 {}
+}
+     </pattern>
+  </template>
+  <template
+        contextTypeId="org.eclipse.texlipse.templates.bibtex"
+        icon="icons/template.gif"
+        description="Unpublished"        
+        name="@unpublished"
+        id="org.eclipse.texlipse.templates.bibtex.unpublished">
+     <pattern>
+@Unpublished{${ID},
+  author = 	 {${Author}},
+  title = 	 {${Title}},
+  note = 	 {${Note}},
+  OPTkey = 	 {},
+  OPTmonth = 	 {},
+  OPTyear = 	 {},
+  OPTannote = 	 {}
+}
+     </pattern>
+  </template>
+  <template
+        contextTypeId="org.eclipse.texlipse.templates.bibtex"
+        icon="icons/template.gif"
+        description="Miscellaneous"        
+        name="@misc"
+        id="org.eclipse.texlipse.templates.bibtex.misc">
+     <pattern>
+@Misc{${ID},
+  OPTkey = 	 {},
+  OPTauthor = 	 {},
+  OPTtitle = 	 {},
+  OPThowpublished = {},
+  OPTmonth = 	 {},
+  OPTyear = 	 {},
+  OPTnote = 	 {},
+  OPTannote = 	 {}
+}
+     </pattern>
+  </template>
+  <template
+        contextTypeId="org.eclipse.texlipse.templates.bibtex"
+        icon="icons/template.gif"
+        description="String"        
+        name="@string"
+        id="org.eclipse.texlipse.templates.bibtex.string">
+     <pattern>
+@String{${variable} = {${value}}}
+     </pattern>
+  </template>
+  <template
+        contextTypeId="org.eclipse.texlipse.templates.bibtex"
+        icon="icons/template.gif"
+        description="Preamble"        
+        name="@preamble"
+        id="org.eclipse.texlipse.templates.bibtex.preamble">
+     <pattern>
+@Preamble{}
+     </pattern>
+  </template>		
+   </extension>
+   <extension
+         point="org.eclipse.ui.popupMenus">
+      <viewerContribution
+            targetID="org.eclipse.texlipse.texEditorScope"
+            id="org.eclipse.texlipse.editor.viewerContribution">
+         <menu
+               label="Source"
+               id="org.eclipse.texlipse.menus.source">
+            <groupMarker name="latexGroup"/>
+         </menu>
+         <action
+               class="org.eclipse.texlipse.actions.SetMainFileAction"
+               definitionId="org.eclipse.texlipse.commands.setAsMainFile"
+               id="org.eclipse.texlipse.actions.setAsMainFile"
+               label="Set As &amp;Main File"
+               menubarPath="org.eclipse.texlipse.menus.source/latexGroup"
+               style="push"/>
+         <action
+               class="org.eclipse.texlipse.actions.SaveAsTemplateAction"
+               definitionId="org.eclipse.texlipse.commands.saveAsTemplate"
+               icon="icons/savetemplate.gif"
+               id="org.eclipse.texlipse.actions.saveAsTemplate"
+               label="Save As &amp;Template"
+               menubarPath="org.eclipse.texlipse.menus.source/latexGroup"
+               style="push"
+               tooltip="Save this file as a project template"/>
+         <action
+               class="org.eclipse.texlipse.actions.TexUncomment"
+               definitionId="org.eclipse.texlipse.commands.texUncomment"
+               icon="icons/uncomment.gif"
+               id="org.eclipse.texlipse.actions.texUncomment"
+               label="&amp;Uncomment"
+               menubarPath="org.eclipse.texlipse.menus.source/latexGroup"
+               style="push"
+               tooltip="Uncomment selection"/>
+         <action
+               class="org.eclipse.texlipse.actions.TexComment"
+               definitionId="org.eclipse.texlipse.commands.texComment"
+               icon="icons/comment.gif"
+               id="org.eclipse.texlipse.actions.texComment"
+               label="&amp;Comment"
+               menubarPath="org.eclipse.texlipse.menus.source/latexGroup"               
+               style="push"
+               tooltip="Comment selection"/>
+         <action
+               class="org.eclipse.texlipse.actions.TexCorrectIndentationAction"
+               definitionId="org.eclipse.texlipse.commands.texCorrectIndentation"
+               id="org.eclipse.texlipse.actions.texCorrectIndentation"
+               label="Correct &amp;Indentation"
+               menubarPath="org.eclipse.texlipse.menus.source/latexGroup"
+               style="push"/>
+         <action
+               class="org.eclipse.texlipse.actions.TexHardLineWrapAction"
+               definitionId="org.eclipse.texlipse.commands.texHardLineWrap"
+               id="org.eclipse.texlipse.actions.texHardLineWrap"
+               label="Correct &amp;Line Wrap"
+               menubarPath="org.eclipse.texlipse.menus.source/latexGroup"
+               style="push"/>
+         <action
+               class="org.eclipse.texlipse.actions.TexCollapseAction"
+               definitionId="org.eclipse.texlipse.commands.texCollapse"
+               id="org.eclipse.texlipse.actions.texCollapse"
+               label="Coll&amp;apse"
+               menubarPath="org.eclipse.texlipse.menus.source/latexGroup"
+               style="push"/>
+         <action
+               class="org.eclipse.texlipse.actions.TexUncollapseAction"
+               definitionId="org.eclipse.texlipse.commands.texUncollapse"
+               id="org.eclipse.texlipse.actions.texUncollapse"
+               label="Uncolla&amp;pse"
+               menubarPath="org.eclipse.texlipse.menus.source/latexGroup"
+               style="push"/>
+         <action
+               class="org.eclipse.texlipse.actions.OpenDeclarationAction"
+               definitionId="org.eclipse.texlipse.commands.openDeclaration"
+               id="org.eclipse.texlipse.actions.openDeclaration"
+               label="&amp;Open Declaration"
+               menubarPath="group.open"
+               style="push"/>
+      </viewerContribution>
+   </extension>
+   <extension
+         point="org.eclipse.ui.editorActions">
+      <editorContribution
+            targetID="org.eclipse.texlipse.TexEditor"
+            id="org.eclipse.texlipse.editor.editorContribution">
+         <menu
+               label="&amp;Latex"
+               id="org.eclipse.texlipse.menus.latex">
+            <separator name="sourceGroup"/>
+            <separator name="latexGroup"/>
+            <separator name="commentGroup"/>
+            <separator name="spellGroup"/>
+         </menu>
+          <action
+                class="org.eclipse.texlipse.actions.WordCountAction"
+                definitionId="org.eclipse.texlipse.commands.wordCount"
+                icon="icons/wordcount.gif"
+                id="org.eclipse.texlipse.actions.wordCount"
+                label="&amp;Word Count"
+                menubarPath="org.eclipse.texlipse.menus.latex/sourceGroup"
+                style="push"
+                toolbarPath="latexGroup"
+                tooltip="Word Count"/>
+         <action
+               class="org.eclipse.texlipse.actions.PreviewAction"
+               definitionId="org.eclipse.texlipse.commands.preview"
+               icon="icons/preview.gif"
+               id="org.eclipse.texlipse.actions.preview"
+               label="Pre&amp;view Document"
+               menubarPath="org.eclipse.texlipse.menus.latex/sourceGroup"
+               style="push"
+               toolbarPath="latexGroup"
+               tooltip="Launch the previewer"/>
+         <action
+               class="org.eclipse.texlipse.actions.SetMainFileAction"
+               definitionId="org.eclipse.texlipse.commands.setAsMainFile"
+               id="org.eclipse.texlipse.actions.setAsMainFile"
+               label="Set As &amp;Main File"
+               menubarPath="org.eclipse.texlipse.menus.latex/latexGroup"
+               style="push"/>
+         <action
+               class="org.eclipse.texlipse.actions.SaveAsTemplateAction"
+               definitionId="org.eclipse.texlipse.commands.saveAsTemplate"
+               icon="icons/savetemplate.gif"
+               id="org.eclipse.texlipse.actions.saveAsTemplate"
+               label="Save As &amp;Template"
+               menubarPath="org.eclipse.texlipse.menus.latex/latexGroup"               
+               style="push"
+               toolbarPath="latexGroup"
+               tooltip="Save this file as a project template"/>
+         <action
+               class="org.eclipse.texlipse.actions.PartialBuildAction"
+               definitionId="org.eclipse.texlipse.commands.partialBuild"
+               icon="icons/buildpartially.gif"
+               id="org.eclipse.texlipse.actions.partialBuild"
+               label="Build &amp;Partially"
+               menubarPath="org.eclipse.texlipse.menus.latex/latexGroup"
+               style="toggle"
+               toolbarPath="latexGroup"
+               tooltip="Toggle partial building on current project"/>
+         <action
+               class="org.eclipse.texlipse.actions.TexWordWrapAction"
+               definitionId="org.eclipse.texlipse.commands.texWordWrap"
+               icon="icons/wrap.gif"
+               id="org.eclipse.texlipse.actions.texWordWrap"
+               label="W&amp;rap text"
+               menubarPath="org.eclipse.texlipse.menus.latex/latexGroup"
+               style="toggle"
+               toolbarPath="latexGroup"
+               tooltip="Use word wrap"/>
+         <action
+               class="org.eclipse.texlipse.actions.TexUncomment"
+               definitionId="org.eclipse.texlipse.commands.texUncomment"
+               icon="icons/uncomment.gif"
+               id="org.eclipse.texlipse.actions.texUncomment"
+               label="&amp;Uncomment"
+               menubarPath="org.eclipse.texlipse.menus.latex/commentGroup"
+               style="push"
+               toolbarPath="latexGroup"
+               tooltip="Uncomment selection"/>
+         <action
+               class="org.eclipse.texlipse.actions.TexComment"
+               definitionId="org.eclipse.texlipse.commands.texComment"
+               icon="icons/comment.gif"
+               id="org.eclipse.texlipse.actions.texComment"
+               label="&amp;Comment"
+               menubarPath="org.eclipse.texlipse.menus.latex/commentGroup"
+               style="push"
+               toolbarPath="latexGroup"
+               tooltip="Comment selection"/>
+         <action
+               class="org.eclipse.texlipse.actions.TexCorrectIndentationAction"
+               definitionId="org.eclipse.texlipse.commands.texCorrectIndentation"
+               id="org.eclipse.texlipse.actions.texCorrectIndentation"
+               label="Correct &amp;Indentation"
+               menubarPath="org.eclipse.texlipse.menus.latex/commentGroup"
+               style="push"/>
+         <action
+               class="org.eclipse.texlipse.actions.TexHardLineWrapAction"
+               definitionId="org.eclipse.texlipse.commands.texHardLineWrap"
+               id="org.eclipse.texlipse.actions.texHardLineWrap"
+               label="Correct &amp;Line Wrap"
+               menubarPath="org.eclipse.texlipse.menus.latex/commentGroup"
+               style="push"/>
+         <action
+               class="org.eclipse.texlipse.spelling.SpellCheckAction"
+               definitionId="org.eclipse.texlipse.commands.spellCheck"
+               id="org.eclipse.texlipse.actions.spellCheck"
+               label="Check Spelling"
+               menubarPath="org.eclipse.texlipse.menus.latex/spellGroup"
+               style="push"/>
+         <action
+               class="org.eclipse.texlipse.spelling.SpellUncheckAction"
+               definitionId="org.eclipse.texlipse.commands.spellUncheck"
+               id="org.eclipse.texlipse.actions.spellUncheck"
+               label="Clear Spelling Errors"
+               menubarPath="org.eclipse.texlipse.menus.latex/spellGroup"
+               style="push"/>
+         <action
+               class="org.eclipse.texlipse.actions.TexCollapseAction"
+               definitionId="org.eclipse.texlipse.commands.texCollapse"
+               id="org.eclipse.texlipse.actions.texCollapse"
+               label="Coll&amp;apse"
+               menubarPath="org.eclipse.texlipse.menus.latex/commentGroup"
+               style="push"/>
+         <action
+               class="org.eclipse.texlipse.actions.TexUncollapseAction"
+               definitionId="org.eclipse.texlipse.commands.texUncollapse"
+               id="org.eclipse.texlipse.actions.texUncollapse"
+               label="Uncolla&amp;pse"
+               menubarPath="org.eclipse.texlipse.menus.latex/commentGroup"
+               style="push"/>
+         <action
+               class="org.eclipse.texlipse.actions.GoToMatchingBracketAction"
+               definitionId="org.eclipse.texlipse.commands.GotoMatchingBracket"
+               id="org.eclipse.texlipse.actions.goToBracket"
+               label="Matching Bracket"
+               menubarPath="navigate/goTo/additions2"
+               style="push"/>
+         <action
+               class="org.eclipse.texlipse.actions.OpenDeclarationAction"
+               definitionId="org.eclipse.texlipse.commands.openDeclaration"
+               id="org.eclipse.texlipse.actions.openDeclaration"
+               label="&amp;Open Declaration"
+               menubarPath="navigate/open.ext"
+               style="push"/>
+         <action
+               class="org.eclipse.texlipse.actions.RunBibTeXOnNextBuildAction"
+               icon="icons/bibfile.gif"
+               id="org.eclipse.texlipse.action1"
+               label="Run BibTeX on next build"
+               menubarPath="org.eclipse.texlipse.menus.latex/latexGroup"
+               style="push">
+         </action>
+         <action
+               class="org.eclipse.texlipse.actions.ForceRebuildAction"
+               icon="icons/build_exec.gif"
+               id="org.eclipse.texlipse.actions.ForceRebuild"
+               label="Force build"
+               menubarPath="org.eclipse.texlipse.menus.latex/latexGroup"
+               style="push">
+         </action>
+      </editorContribution>
+   </extension>
+   <extension
+         point="org.eclipse.ui.contexts">
+      <context
+            id="org.eclipse.texlipse.texEditorScope"
+            name="Editing Latex Source"
+            parentId="org.eclipse.ui.textEditorScope"/>
+   </extension>
+   <extension
+         point="org.eclipse.ui.commands">
+      <category
+            description="Latex Editing"
+            name="Texlipse"
+            id="org.eclipse.texlipse.latexEditingCategory"/>
+      <command
+            categoryId="org.eclipse.texlipse.latexEditingCategory"
+            name="Set As Main File"
+            id="org.eclipse.texlipse.commands.setAsMainFile"/>
+      <command
+            categoryId="org.eclipse.texlipse.latexEditingCategory"
+            name="Save As Template"
+            id="org.eclipse.texlipse.commands.saveAsTemplate"/>
+      <command
+            categoryId="org.eclipse.texlipse.latexEditingCategory"
+            name="Partial Build"
+            id="org.eclipse.texlipse.commands.partialBuild"/>
+      <command
+            categoryId="org.eclipse.texlipse.latexEditingCategory"
+            name="Wrap text"
+            id="org.eclipse.texlipse.commands.texWordWrap"/>
+      <command
+            categoryId="org.eclipse.texlipse.latexEditingCategory"
+            name="Comment"
+            id="org.eclipse.texlipse.commands.texComment"/>
+      <command
+            categoryId="org.eclipse.texlipse.latexEditingCategory"
+            name="Uncomment"
+            id="org.eclipse.texlipse.commands.texUncomment"/>
+      <command
+            categoryId="org.eclipse.texlipse.latexEditingCategory"
+            name="Correct Line Wrap"
+            id="org.eclipse.texlipse.commands.texHardLineWrap"/>
+      <command
+            categoryId="org.eclipse.texlipse.latexEditingCategory"
+            name="Correct Indentation"
+            id="org.eclipse.texlipse.commands.texCorrectIndentation"/>
+      <command
+            categoryId="org.eclipse.texlipse.latexEditingCategory"
+            name="Word Count"
+            id="org.eclipse.texlipse.commands.wordCount"/>
+      <command
+            categoryId="org.eclipse.texlipse.latexEditingCategory"
+            name="Preview document"
+            id="org.eclipse.texlipse.commands.preview"/>
+      <command
+            categoryId="org.eclipse.texlipse.latexEditingCategory"
+            name="Check Spelling"
+            id="org.eclipse.texlipse.commands.spellCheck"/>
+      <command
+            categoryId="org.eclipse.texlipse.latexEditingCategory"
+            name="Clear Spelling Errors"
+            id="org.eclipse.texlipse.commands.spellUncheck"/>
+      <command
+            categoryId="org.eclipse.texlipse.latexEditingCategory"
+            name="Collapse foldings"
+            id="org.eclipse.texlipse.commands.texCollapse"/>
+      <command
+            categoryId="org.eclipse.texlipse.latexEditingCategory"
+            name="Uncollapse foldings"
+            id="org.eclipse.texlipse.commands.texUncollapse"/>
+      <command
+            categoryId="org.eclipse.texlipse.latexEditingCategory"
+            name="Open Declaration"
+            id="org.eclipse.texlipse.commands.openDeclaration"/>
+      <command
+            categoryId="org.eclipse.texlipse.latexEditingCategory"
+            id="org.eclipse.texlipse.commands.GotoMatchingBracket"
+            name="Go to matching bracket"/>
+   </extension>
+   <!-- Keys: M1=Ctrl M2=Shift M3=Alt-->
+   <extension
+         point="org.eclipse.ui.bindings">
+      <key
+            commandId="org.eclipse.texlipse.commands.texComment"
+            contextId="org.eclipse.texlipse.texEditorScope"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+5"/>
+      <key
+            commandId="org.eclipse.texlipse.commands.texUncomment"
+            contextId="org.eclipse.texlipse.texEditorScope"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="Esc M1+5"/>
+      <key
+            commandId="org.eclipse.texlipse.commands.texHardLineWrap"
+            contextId="org.eclipse.texlipse.texEditorScope"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="Esc Q"/>
+      <key
+            commandId="org.eclipse.texlipse.commands.texCorrectIndentation"
+            contextId="org.eclipse.texlipse.texEditorScope"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+I"/>
+      <key
+            commandId="org.eclipse.texlipse.commands.preview"
+            contextId="org.eclipse.texlipse.texEditorScope"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+4"/>
+      <key
+            commandId="org.eclipse.texlipse.commands.spellCheck"
+            contextId="org.eclipse.texlipse.texEditorScope"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+M2+6"/>
+      <key
+            commandId="org.eclipse.texlipse.commands.spellUncheck"
+            contextId="org.eclipse.texlipse.texEditorScope"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+M2+7"/>
+      <key
+            commandId="org.eclipse.texlipse.commands.texCollapse"
+            contextId="org.eclipse.texlipse.texEditorScope"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M3+C"/>            
+      <key
+            commandId="org.eclipse.texlipse.commands.texUncollapse"
+            contextId="org.eclipse.texlipse.texEditorScope"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M3+X"/>            
+      <key
+            commandId="org.eclipse.texlipse.commands.openDeclaration"
+            contextId="org.eclipse.texlipse.texEditorScope"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="F3"/>
+      <key
+            commandId="org.eclipse.texlipse.commands.GotoMatchingBracket"
+            contextId="org.eclipse.texlipse.texEditorScope"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+M2+P"/>            
+    </extension>
+   <extension
+         id="builderproblem"
+         name="Texlipse Build Error"
+         point="org.eclipse.core.resources.markers">
+      <super type="org.eclipse.core.resources.problemmarker"/>
+      <persistent value="true"/>
+   </extension>
+   <extension
+         id="spellingproblem"
+         name="Texlipse Spelling Error"
+         point="org.eclipse.core.resources.markers">
+      <super type="org.eclipse.core.resources.problemmarker"/>
+      <persistent value="false"/>
+   </extension>
+   <extension
+         id="layoutproblem"
+         name="Texlipse layout warning"
+         point="org.eclipse.core.resources.markers">
+      <super type="org.eclipse.core.resources.problemmarker"/>
+      <persistent value="true"/>
+   </extension>
+   <extension
+         point="org.eclipse.ui.ide.markerResolution">
+      <markerResolutionGenerator
+            class="org.eclipse.texlipse.spelling.SpellingResolutionGenerator"
+            markerType="org.eclipse.texlipse.spellingproblem"/>
+   </extension>   
+   <extension
+         point="org.eclipse.ui.ide.resourceFilters">
+      <filter
+            selected="false"
+            pattern="*.aux">
+      </filter>
+      <filter
+            selected="false"
+            pattern="*.log">
+      </filter>
+      <filter
+            selected="false"
+            pattern="*.toc">
+      </filter>
+      <filter
+            selected="false"
+            pattern="*.dvi">
+      </filter>
+      <filter
+            selected="false"
+            pattern="*.ps">
+      </filter>
+      <filter
+            selected="false"
+            pattern="*.bbl">
+      </filter>
+      <filter
+            selected="false"
+            pattern="*.blg">
+      </filter>
+      <filter
+            selected="false"
+            pattern="*.ind">
+      </filter>
+      <filter
+            selected="false"
+            pattern="*.ilg">
+      </filter>
+      <filter
+            selected="false"
+            pattern="*.lot">
+      </filter>
+      <filter
+            selected="false"
+            pattern="*.lof">
+      </filter>
+   </extension>
+   <extension
+         point="org.eclipse.debug.core.launchConfigurationTypes">
+      <launchConfigurationType
+            category="org.eclipse.ui.externaltools"
+            delegate="org.eclipse.texlipse.viewer.TexLaunchConfigurationDelegate"
+            id="org.eclipse.texlipse.viewer.launchConfigurationType"
+            modes="run"
+            name="View Latex Document"
+            public="true"/>
+   </extension>
+   <extension
+         point="org.eclipse.debug.ui.launchConfigurationTabGroups">
+      <launchConfigurationTabGroup
+            type="org.eclipse.texlipse.viewer.launchConfigurationType"
+            class="org.eclipse.texlipse.viewer.TexLaunchConfigurationTabGroup"
+            id="org.eclipse.texlipse.viewer.launchConfigurationTabGroup"/>
+   </extension>
+   <!-- Keys: M1=Ctrl M2=Shift M3=Alt-->
+   <extension point="org.eclipse.debug.ui.launchConfigurationTypeImages">
+	<launchConfigurationTypeImage
+		id="org.eclipse.texlipse.viewer.launchConfigurationTypeImage"
+		configTypeID="org.eclipse.texlipse.viewer.launchConfigurationType"
+		icon="icons/preview.gif">
+	</launchConfigurationTypeImage>	
+   </extension>
+   <extension
+         point="org.eclipse.ui.editors.markerAnnotationSpecification">
+      <specification
+            annotationType="org.eclipse.texlipse.defAnnotation"
+            colorPreferenceKey="highlight.color"
+            colorPreferenceValue="180,207,205"
+            contributesToHeader="false"
+            highlightPreferenceKey="highlight.background"
+            highlightPreferenceValue="true"
+            includeOnPreferencePage="true"
+            isGoToNextNavigationTarget="false"
+            isGoToPreviousNavigationTarget="false"
+            label="Texlipse Occurence"
+            overviewRulerPreferenceKey="highlight.rulers.overview"
+            overviewRulerPreferenceValue="true"
+            presentationLayer="4"
+            textPreferenceKey="highlight.text"
+            textPreferenceValue="false"
+            textStylePreferenceKey="highlight.text.style"
+            textStylePreferenceValue="IBEAM"
+            verticalRulerPreferenceKey="highlight.rulers.vertical"
+            verticalRulerPreferenceValue="false"/>
+   </extension>
+   <extension
+         point="org.eclipse.team.core.fileTypes">
+      <fileTypes
+            extension="tex"
+            type="text">
+      </fileTypes>
+      <fileTypes
+            extension="ltx"
+            type="text">
+      </fileTypes>
+      <fileTypes
+            extension="sty"
+            type="text">
+      </fileTypes>
+      <fileTypes
+            extension="cls"
+            type="text">
+      </fileTypes>
+   </extension>
+   <extension
+         point="org.eclipse.ui.navigator.viewer">
+      <viewerContentBinding
+            viewerId="org.eclipse.ui.navigator.ProjectExplorer">
+         <includes>
+         <contentExtension
+               pattern="org.eclipse.texlipse.KpathNavigatorContent">
+         </contentExtension>
+         </includes>
+      </viewerContentBinding>
+   </extension>
+   <extension
+         point="org.eclipse.ui.navigator.navigatorContent">
+      <navigatorContent
+            contentProvider="org.eclipse.texlipse.ui.KpathseaProvider"
+            id="org.eclipse.texlipse.KpathNavigatorContent"
+            labelProvider="org.eclipse.texlipse.ui.KpathseaProvider"
+            name="Search Paths" activeByDefault="true">
+               <triggerPoints>
+               <and>
+               <adapt type="org.eclipse.core.resources.IProject">
+                <test
+                      property="org.eclipse.core.resources.projectNature"
+                      value="org.eclipse.texlipse.builder.TexlipseNature"/>
+               </adapt>
+               </and>
+               </triggerPoints>
+      </navigatorContent>
+   </extension>
+   <extension
+         point="org.eclipse.ui.perspectives">
+      <perspective
+            class="org.eclipse.texlipse.TexPerspectiveFactory"
+            icon="icons/logo.gif"
+            id="org.eclipse.texlipse.TexlipsePerspective"
+            name="LaTeX">
+      </perspective>
+   </extension>
+   <extension
+         point="org.eclipse.ui.workbench.texteditor.spellingEngine">
+      <engine
+            class="org.eclipse.texlipse.spelling.TexSpellingEngine"
+            id="org.eclipse.texlipse.LaTeXSpellEngine"
+            label="Latex">
+      </engine>
+   </extension>
+</plugin>

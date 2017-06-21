@@ -1,0 +1,80 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+	<link rel="STYLESHEET" href="book.css" charset="ISO-8859-1" type="text/css">
+	<title>Taking advantage of the document outline</title>
+</head>
+
+<body>
+<h1>Taking advantage of the document outline</h1>
+
+<h2> Basic use </h2>
+
+<p> The outline view shows the outline of the document currently
+opened in the editor. Selecting an element in the outline focuses
+the editor to the corresponding text in the document.
+The collapse and expand buttons collapse/expand the outline tree
+one level.</p>
+
+<p>The update button can be used to update the outline if automatic
+parsing is not enabled. This button is disabled when the outline
+is up to date.</p>
+
+<h2> Filtering the elements of the outline </h2>
+
+<p>The contents of the outline can be filtered by using the outline 
+view toolbar buttons. Note that hiding an element also hides all
+the element's children regardless of whether the children would
+otherwise be visible or not. For example, hiding sections will hide
+all the subsections which are children of any sections. However, a 
+single subsection without a section parent would remain visible.</p>
+
+<p>Elements availabe in the outline can be configured through the 
+<b>TeXlipse &gt; Editor &gt; Outline</b> preference page.
+
+<h2><a name="ccp"></a> Manipulating elements with copy, cut, paste and delete </h2>
+
+<p>You can manipulate the elements of the outline by selecting an 
+element and then selecting an operation from the context menu 
+(right-click with the mouse on the element) or from the Edit menu in the
+menubar. All the operations are text based. This means that 
+deleting an element really removes the text from the document and
+copying an element actually copies the text contents of the 
+elements to the clipboard. When using paste in the outline the text 
+in the clipboard is inserted <i>after the text of the target element</i>.</p>
+
+<p>These operations are only enabled when the outline is 
+up to date</p>
+
+
+<h2><a name="dad"></a> Dragging and dropping elements </h2>
+
+<p>Elements can also be manipulated by dragging and dropping. 
+Dragging and dropping an element over another element will move the
+text of the source element <i>after the text of the target element</i>.</p>
+
+<p> Holding down the Ctrl key while dropping will result in a copy 
+operation instead of a move operation.
+An element cannot be dropped over itself or over its
+children. As with the copy/paste operations, dragging and dropping
+is only enabled when the outline is up to date.</p>
+
+<h1>Full document outline</h1>
+
+<p>The full document outline is a separate view that shows an outline of the
+entire project. This is done by starting from the main file of the project
+and merging all included files into the outline. The full documetn outline
+can be viewed by selecting <b>Window &gt; Show view &gt; Other...</b> and from
+there <b>TeXlipse &gt; Full LaTeX outline</b>.</p>
+
+<p>The full document outline works exactly as the single-file outline, but it
+should be noted that only <code>\input</code> and <code>\include</code> -includes
+are handled &ndash; not custom includes. Also, the outline has been designed to
+be fast, which could mean that some omplex include chains may not be resolved
+correctly. If this happens, the document author should consider whether a
+straightforward document hierarchy would suffice.</p>
+
+</body>
+</html>

@@ -1,0 +1,202 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+	<link rel="STYLESHEET" href="book.css" charset="ISO-8859-1" type="text/css">
+	<title>Templates</title>
+</head>
+<body>
+
+<h1>LaTeX Table View</h1>
+
+<p>A very simple table editor is included in TeXlipse, and it can be activated
+  from <b>Window &gt; Show View &gt; Other &gt; Texlipse &gt; LaTeX Table View</b>.
+</p>
+
+<p>Even though (La)TeX is a very good typesetting system (editing text is easy),
+  editing and modifying LaTeX tables is a bit cumbersome (for instance, adding
+  a column in the middle of a large table is very tedious). The purpose of the
+  LaTeX Table View is to make table editing a bit easier.
+</p>
+
+<h2>Using the LaTeX Table View</h2>
+
+<p>Once a cell has been chosen to be edited, you can navigate trough the
+  cells pressing <code>ctrl + ARROW_KEY</code>s. Right clicking the view gives a popup menu
+  with the following operations:
+  <ul>
+    <li><b>Insert row (before)</b></li>
+    <li><b>Delete row</b></li>
+    <li><b>Clear all rows</b></li>
+    <li><b>Move row up</b></li>
+    <li><b>Move row down</b></li>
+    <li><b>Duplicate row</b></li>
+    <li><b>Import selected lines from editor</b>
+      <p>Select the data lines from the editor (for instance,
+        the lines between <code>\begin{tabular}{...}</code>
+        and <code>\end{tabular}</code>). The lines are
+        inserted at (and after) the selected line in the editor &mdash;
+        new rows are generated if necessary (no rows are overwritten).
+      </p>
+      
+      <p>Comments are not imported, i.e. everything after % on a line
+        is ignored, as well as
+        horizontal line commands (\.*line.*) are ignored.
+      </p>
+      </p></li>
+    <li><b>Export to Clipboard</b>
+      <p>The entire contents of the table editor is copied to the clipboard,
+        from which it can be pasted into the document. A few notes about
+        exporting: 
+        <ul><li>Empty rows are not exported</li>
+            <li>Empty cells are not exported, except those that are
+				preceding data cells.<br>
+				To treat a cell as a real empty cell, insert & to it.
+        </ul>
+        </p>
+    <li><b>Raw Export</b>
+      <p>The entire contents of the table editor is copied to the clipboard
+        in a raw text format suitable for use in e.g. Gnuplot. The data is
+		separated by tabs and rows by linefeeds. Otherwise, it works like
+		Export to Clipboard above.
+        </p>
+  </ul>
+		
+      <p>A few examples:<br>
+      <table>
+      <tr>
+      <td><table border=1>
+        <tr><td>1</td><td></td><td>3</td></tr>
+        <tr><td>a</td><td>b</td><td>c</td></tr>      
+      </table></td>
+      <td>exports as</td>
+      <td><table border=0>
+        <tr><td>1 & 3 \\</td></tr>
+        <tr><td>a & b & c \\</td></tr>      
+      </table></td>
+      <td>,</td></tr>
+      </table>
+      <table><tr>
+      <td><table border=1>
+        <tr><td>1</td><td>&</td><td>3</td></tr>
+        <tr><td>a</td><td>b</td><td>c</td></tr>      
+      </table></td>
+      <td>exports as</td>
+      <td><table border=0>
+        <tr><td>1 & & 3 \\</td></tr>
+        <tr><td>a & b & c \\</td></tr>      
+      </table></td>
+      <td>and</td></tr>
+      </table>
+      <table><tr>
+      <td><table border=1>
+        <tr><td>\multicolumn{2}{c}{1 and 2}</td><td></td><td>3</td></tr>
+        <tr><td>a</td><td>b</td><td>c</td></tr>      
+      </table></td>
+      <td>exports as</td>
+      <td><table border=0>
+        <tr><td>\multicolumn{2}{c}{1 and 2} & 3 \\</td></tr>
+        <tr><td>a & b & c \\</td></tr>      
+      </table></td>
+      <td>.</td></tr>
+      </table>
+      </p></li>
+    <li><b>Flip rows and columns</b>, example:<br>
+      <table><tr>
+      <td> <table border=1>
+        <tr><td>1</td><td>2</td><td>3</td></tr>
+        <tr><td>4</td><td>5</td><td>6</td></tr>
+        </table>
+      </td>  
+      <td>becomes</td>
+      <td><table border=1>
+        <tr><td>1</td><td>4</td></tr>
+        <tr><td>2</td><td>5</td></tr>
+        <tr><td>3</td><td>6</td></tr>
+        </table>
+      </td>
+      </tr></table></li>
+    
+    <li><b>Mirror columns</b>, example:<br>
+      <table>
+      <td><table border=1>
+        <tr><td>1</td><td>2</td><td>3</td></tr>
+        <tr><td>4</td><td>5</td><td>6</td></tr>
+        </table>
+      </td>  
+      <td>becomes</td>
+      <td><table border=1>
+        <tr><td>3</td><td>2</td><td>1</td></tr>
+        <tr><td>6</td><td>5</td><td>4</td></tr>
+        </table> 
+      </td>
+      </tr>
+      </table></li>
+      
+    <li><b>Mirror rows</b>, example:<br>
+      <table>
+      <td><table border=1>
+        <tr><td>1</td><td>2</td><td>3</td></tr>
+        <tr><td>4</td><td>5</td><td>6</td></tr>
+        </table>
+      </td>  
+	  <td>becomes</td>
+      <td><table border=1>
+        <tr><td>4</td><td>5</td><td>6</td></tr>
+        <tr><td>1</td><td>2</td><td>3</td></tr>
+        </table>
+      </td>
+      </tr>
+      </table></li>      
+  </p>
+
+<h2>Tips</h2>
+
+<ol><li><p> You can modify columns by first flipping rows and columns and
+  then adding/deleting/inserting rows. After you are ready, then flip
+  the rows and columns again.
+</p></li>
+
+<li><p> Use CTRL+KEYPAD_8,_2,_4 and _4 (with numlock on) to calculate
+  the sum of all cells in the same row/column, starting from
+  the cell next to the current. If the cell is not a number,
+  it is ignored. Examples:<br>
+  <table>
+    <tr>
+    <td><table border=1>
+      <tr><td>1</td><td>2</td><td>3</td><td>last</td></tr>
+      <tr><td>first</td><td>5</td><td>6</td><td bgcolor="lightblue"></td><td>0.5</td></tr>
+      <tr><td>1</td><td>2</td><td>3</td><td></td></tr>
+      </table>
+    </td>  
+	<td>CTRL+KEYPAD_4</td>
+    <td><table border=1>
+      <tr><td>1</td><td>2</td><td>3</td><td>last</td></tr>
+      <tr><td>first</td><td>5</td><td>6</td><td bgcolor="lightblue">11</td><td>0.5</td></tr>
+      <tr><td>1</td><td>2</td><td>3</td><td></td></tr>
+      </table>
+    <td> and </td>
+    </td>
+    </tr>
+    <tr>
+    <td><table border=1>
+      <tr><td>1</td><td>2</td><td>3</td><td>last</td></tr>
+      <tr><td bgcolor="lightblue">first</td><td5</td><td>6</td><td>15</td><td>0.5</td></tr>
+      <tr><td>1</td><td>2</td><td>3</td><td></td></tr>
+      </table>
+    </td>  
+	<td>CTRL+KEYPAD_6</td>
+    <td><table border=1>
+      <tr><td>1</td><td>2</td><td>3</td><td>last</td></tr>
+      <tr><td bgcolor="lightblue">22.5</td><td>5</td><td>6</td><td>11</td><td>0.5</td></tr>
+      <tr><td>1</td><td>2</td><td>3</td><td></td></tr>
+      </table>
+    </td>
+    </tr>
+  </table>
+</p></li>
+</ol>
+
+</body>
+</html>

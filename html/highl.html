@@ -1,0 +1,75 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+	<link rel="STYLESHEET" href="book.css" charset="ISO-8859-1" type="text/css">
+	<title>Highlighting and indenting</title>
+</head>
+
+<body bgcolor="white">
+<h1>Highlighting and indenting</h1>
+
+<h2><a name="sh"></a>Syntax highlighting</h2>
+
+TeXlipse supports real time syntax highlighting for both LaTeX and BibTeX files.
+
+<h3>The LaTeX editor highlights the following entries:</h3> 
+
+<ul>
+<li>LaTeX-keywords, i.e. a slash followed by one or more letters
+<li>LaTeX command symbols, i.e. a slash followed by one symbol (non-letter, 7-bit ascii symbol)
+<li>Special characters, e.g. \
+<li>Comments, i.e. from a % to the end of the current line
+<li>Mathematical commands, e.g. sequences limited by \begin{equation}...\end{equation} or $...$
+<li>Command arguments, i.e. a sequence following a command and limited by { and }
+<li>Optional command arguments, i.e. a sequence following a command and limited by [ and ]
+<li>Verbatim environments, e.g. sequences surrounded by \begin{verbatim} and \end{verbatim} or 
+\begin{lstlisting} and \end{lstlisting}</li>
+</ul>
+
+<h3>The BibTeX editor highlights the following entries:</h3>
+
+<ul>
+<li>BibTeX entry keywords, e.g. @MISC, @BOOK
+<li>Reference keys and field names, e.g. title, author, year
+<li>Strings, e.g. numbers representing years, text delimited by " and "
+<li>Special characters, i.e. # = and ,
+<li>Comments, but only from a % to the end of the current line &mdash; not all that is counted as a BibTeX -comment
+</ul>
+
+The user can determine her own syntax highlight colors for both LaTeX and BibTeX files on the
+<a href="config.html">Texlipse preferences page</a>.
+
+<h2><a name="ind"></a>Indenting</h2>
+
+<p>TeXlipse supports the indentation of different environments, for example:</p>
+
+<p><pre>
+\begin{enumerate}
+  \item a
+  \item b
+\end{enumerate}	
+</pre></p>
+
+<p>In this case the environment used is <code>enumerate</code>. Default 
+environments that are indented are <code>list</code>, <code>enumerate</code> 
+and <code>itemize</code>. Indentation can be done automatically while writing
+or the user can correct the indentation of the selected area by pressing 
+<b><code>ctrl + i</code></b> or <b>Latex &gt; Correct Indentation</b>
+from menubar.</p>
+
+<p><img src="images/ind1.gif" alt="Correct Indentation"></p>
+
+<p>The user can configure which environments she wants to have indented.
+This can be done on the <a href="config.html">Texlipse preferences page</a>.
+The Preferences page contains a checkbox that can be used to determine 
+whether indentation is active. The Preferences page also contains a text 
+field where the width of the indentation can be changed. The environments 
+to indent can be seen in a list. The user can add more LaTeX environments 
+to be indented by clicking the <b>New...</b> button and writing the name of the 
+new environment in the pop up dialog. Environments can be removed by selecting 
+the environment to remove and clicking the <b>Remove</b> button.</p>
+
+</body>
+</html>

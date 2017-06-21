@@ -1,0 +1,73 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+	<link rel="STYLESHEET" href="book.css" charset="ISO-8859-1" type="text/css">
+	<title>Task and error markers</title>
+</head>
+
+<body>
+<h1>Task and error markers</h1>
+
+<h2><a name="taskann"></a>Task markers</h2>
+
+<p>Suppose you want to leave a note somewhere that you should update some section
+    of a document. In the Eclipse Java Editor, it is possible to place TODO, FIXME and XXX
+	keywords in comments, which will in turn appear in the task view along with the
+	comment. A comment which
+    starts with optional whitespace followed by the keyword TODO, FIXME or XXX is interpreted as a
+	task marker and the text in the comment following the keyword is shown in the Task view,
+	along with the file name and line number of the marker in question.
+</p>
+
+<h2><a name="errann"></a>Error annotations</a></h2>
+
+<p>
+The plug-in tries to indicate if there are errors in the document.
+For example, if <b><code>\ref</code></b> or <b><code>\cite</code></b> are 
+referring to references 
+that do not exist, a warning annotation is shown. Also, subsections without a
+preceding section (or subsubsection without a preceding subsection) cause
+a warning annotation (the warning annotation is a yellow triangle with a black
+exclamation mark).
+</p>
+
+<p>It is worth noting that referencing errors are displayed conservatively,
+i.e. a warning always indicates an unresolved reference (unless you use imports
+from outside of the project defining references), but some references without
+an error marker shown can be wrong. Since <code>\thebibliography</code> is not
+supported, bibliography entries defined with it are not taken into
+account when checking <code>\cite</code> -commands.</p>
+
+<p>If there are some serious problems, e.g. unbalanced begin-end -blocks, 
+the error annotation is shown (the error annotation is a red circle 
+with a white X-mark). A common problem is a missing } -brace. { and } are
+always special characters in LaTeX (excluding the <code>verb</code> 
+and <code>verbatim</code> environments) and in text you should escape
+them by writing \{ and \} if you want them to show up in the output.</p>
+
+<p>There are many cases where TeXlipse warns the user
+of a situation that is likely wrong and issues a warning, but in situations that
+are obviously wrong, an error is issued. In particular, unbalanced begin-end blocks
+and missing } make it impossible to continue parsing the document, so the outline and
+code folds cannot be updated until these problems are fixed in the document.
+Some of the errors come as a result of building from the <code>latex</code>-program
+and these are all shown as error annotations.</p>
+
+<p>TeXlipse 1.1.0 introduces the layout error, which is a new class of warning
+markers that represent layout errors reported by the <code>latex</code>-program,
+e.g. overfull hbox. These show up as regular warnings, but if they are
+disturbing, they can be filtered in the problems log.</p>
+
+<p>The rule of thumb is that if the <code>latex</code>-program halts with 
+the problem it is annotated with an error annotation. Otherwise it is annotated
+with a warning annotation.</p>
+
+
+<p>
+&nbsp;
+</p>
+
+</body>
+</html>

@@ -1,0 +1,103 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+	<link rel="STYLESHEET" href="book.css" charset="ISO-8859-1" type="text/css">
+	<title>References</title>
+</head>
+
+<body>
+
+<h1>References</h1>
+
+<h2>What are references?</h3>
+
+  <p>References are a crafty way of referring to a another
+  part of the document, so that you can rearrange the
+  document freely and not mess up your references. Pretty much
+  everything can be referred to &mdash; sections, tables, figures, etc.
+  </p> 
+  
+  <p>Other kind of references are citations, which
+  are references to other article, papers, books or such.
+  See the <a href="bibtex.html">BibTeX</a> part of this
+  help for further information on citations.</p>
+  
+<h3>Sounds nice, so does it work in practice?</h3>
+<a name="label"></a>
+
+  <p>Using references is straightforward, just use the
+  command <i>\label{myref}</i> to mark the part you want
+  to refer to. Hint 1: insert the <i>\label{}</i> as soon
+  as possible, preferably right in the beginning
+  of sections or different environments. Hint 2:
+  for environments in which <i>\caption{}</i> command is
+  used &mdash; like tables and figures &mdash; insert the <i>\label{}</i>
+  command <b>after</b> the <i>\caption{}</i> command.
+  
+  <p>After having your labels defined, you can
+  just use the command <i>\ref{myref}</i> to do the referring.
+  You can also refer to the page where the referrable thing
+  resides with the command <i>\pageref{myref}</i>. Example:    
+
+  <pre>
+\documentclass{article}
+\begin{document}
+You can refer to Table~\ref{table:pi} on page \pageref{table:pi}
+before the actual reference\dots
+
+\begin{table}
+  \begin{tabular}{c|r@{.}l}
+  Variable &amp; \multicolumn{2}{c}{Value} \\
+  \hline
+  $\pi$ &amp; 3 &amp; 14159 \\ 
+  $\pi^3$ &amp; 31 &amp; 01 \\
+  \end{tabular}
+\caption{Some $\pi$ related rounded values}
+\label{table:pi} 
+\end{table}
+
+and referring to Table~\ref{table:pi} works afterwards
+works as well.
+\end{document}
+  </pre>
+  
+  
+  <h2><a name="ref"></a>Yes... the reference system comes with LaTeX, so why gloat about?</h2>
+  
+  <p>When the document gets larger, you just cannot remember
+  all those references anymore (and you have to search the
+  for the references, which just wastes time) &mdash; this is where
+  TeXlipse steps in: just type "\ref{" and hit <code>ctrl + space</code> (or what content 
+      assist is bound to on your system) and
+  you see the list of available references (or if you remember
+  the beginning of the reference, just type it in too to narrow
+  down the shown references.) The command <i>\pageref{}</i>
+  works in the same way.
+  </p>
+  <p>If <i>Highlight selected references and ...</i> is turned on in the preferences, 
+  TeXlipse also highlights the label and all references of the currently
+  selected reference or label in the current file. 
+  </p>
+  <p>But that's not all. If the cursor is on a reference you can use the magic F3 key (or
+  use <i>Open Declaration</i> from the main or context menu) to jump to the correspondig label!
+  How funky is that?</p>
+  <h3>But I use <i>\input{file}</i> to separate my document
+  into several more easily handled files... does this mess up
+  things?</h3>
+  
+  <p>No worries. All references are searched from the
+	LaTeX -files in the project and they will be available in
+	the content assist menu and will be found by <i>Open Declaration</i>.
+  </p>
+
+<h2>My special \label environment doesn't work...</h2>
+
+<p>Basic label commands and labels in self-defined commands are supported so
+that the first mandatory argument must be the label argument. More complex
+environments (e.g. lstlistings) might define their own label environments, which are not
+currently supported in TeXlipse.</p>
+	
+</body>
+</html>

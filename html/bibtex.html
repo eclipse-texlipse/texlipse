@@ -1,0 +1,106 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+	<link rel="STYLESHEET" href="book.css" charset="ISO-8859-1" type="text/css">
+	<title>BibTeX</title>
+</head>
+
+<body>
+<h1><a name="bib"></a>What is BibTeX?</h1>
+
+  <p>The traditional way to do the bibliography is
+  to include the bibliography entries directly into
+  the document, which is a sure but not so robust way
+  to handle the matter.</p>
+
+  <p>BibTeX is an "extension" to LaTeX for handling
+  bibliographic citations in a more elegant way. The
+  idea is to collect a database of bibliographic
+  citations, which can be used with multiple (if not all)
+  documents produced &mdash; instead of copying the same citations
+  over and over again. BibTeX provides the way to create
+  such a database. As an additional bonus, BibTeX allows
+  different presentation formats (and new ones can be created)
+  for the bibliography, so it is possible to change 
+  the look of the bibliography by just by changing
+  parameters (and not rewriting the entries manually).</p> 
+
+  
+  <h2>Using this BibTeX stuff sounds complicated...</h2>
+  
+  <p>... but luckily it is not.   
+  <ol>
+    <li>Create a BibTeX file, like "mybib.bib"</li>
+    <li>Add few entries into it. For example, use 
+      BibTeX <a href="templates.html">templates</a>,
+	  i.e. hit <code>ctrl + space</code> (or what content 
+      assist is bound to on your system) while editing the .bib file.
+    </li>
+    <li>Save the BibTeX file and include it into
+      the document by using the commands
+      <i>\bibliographystyle{alpha}</i> (sets the style)
+      <i>\bibliography{mybib}</i> (inputs the bibliography;
+      the filename extension .bib must be omitted).
+    </li>
+    <li>Save the document; now TeXlipse can show you
+      those bibliography entries (and the full information of
+      that reference in the .bib file): just type 
+      <a name="cite">"\cite{"</a>
+      and hit <code>ctrl + space</code> (or wait for automatics to kick in).
+      As there are many different citation packages available
+      (instead of the default <i>\cite{}</i>), 
+      any "\*cite*{" string can be used for this purpose.
+      Also note that you can enter the beginning of the 
+      citation to shorten the list of displayed citations.
+    </li>
+  </ol>
+  </p>
+  
+  <h2>Alrighty, should I know something else?</h2>
+  
+  <p>Few notes: first, only those bibliography entries
+  show up in the document which are really cited
+  (so using .bib file of thousand entries does not
+  result in a very large bibliography). To include
+  bibliography entries that are not referred to, use
+  <i>\nocite{key}</i> command within the document;
+  the key can be either a key of an entry or * for including
+  all entries.</p>
+  
+  <p>Second, you can use multiple .bib files:
+  just type them all into the
+  <i>\bibliography{}</i> command and separate them with commas
+  (be sure not to put any whitespace surrounding the commas).</p>
+
+  <p>Third, you can (and should) cite multiple
+  citations with one <i>\cite{}</i> command &mdash; separate
+  the citations with a comma. Note that for the content assist
+  to work there must not be any whitespaces. An example:
+  
+  <ul>
+    <li><code>ctrl + space</code> gives a list of of citations after
+      "\cite{citation1,citation2,&lt;CURSOR&gt;"
+    </li>
+    <li>but <code>ctrl + space</code> gives nothing after
+      "\cite{citation1, citation2,&lt;CURSOR&gt;"
+    </li>
+  </ul>
+  </p>
+
+  <h2>Hey &mdash; I use <i>\begin{thebibliography}</i> in my LaTeX file, and the citation
+    completitions do not work!</h2>
+    
+  <p>That is correct, we chose not to support the <i>thebibliography</i> environment
+    simply because we find the BibTeX to be a lot better for handling bibliography.</p>
+
+  <p>Even if you really need to put everything in to the same file (for instance the
+    journal to which you are submitting you paper really wants the submissions
+    be just a single file),
+    we still recommend that you use BibTeX. BibTeX generates the bibliographic entries
+    into .bbl file, and you can manually insert that file into you document
+    just before you submit it.</p>
+    
+</body>
+</html>

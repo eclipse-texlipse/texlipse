@@ -1,0 +1,154 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+	<link rel="STYLESHEET" href="book.css" charset="ISO-8859-1" type="text/css">
+	<title>Spell Checking</title>
+</head>
+<body>
+
+<h1> Spell Checking </h1>
+
+<h3> Introduction </h3>
+
+<p>
+Since version 1.4.0 spell checking is implemented in TeXlipse using 
+the <a href="http://jazzy.sourceforge.net/">Jazzy</a> library. No additional external 
+program is needed.
+</p>
+<p>
+Furthermore there is still the possibility to use <a href="http://aspell.net">Aspell</a>
+as external spell checker. This feature is likely to be removed in a future version.
+</p>
+
+<h3>Setting up spell checking</h3>
+<p>
+In the preferences dialog you have to set the directories where your standard and 
+user dictionaries are. If you decide to add a word to the spell checker, it will be added 
+in your user dictionary. The name of the main dictionaries must be 
+<code>&lt;language code&gt;.dict</code> where language code is the 
+two-letter ISO standard language code. If not existent, the user dictionary will be 
+created automatically if you add a word to it. 
+The name is <code>&lt;language code&gt;_user.dict</code>.
+</p>
+
+<h3> Choosing language </h3>
+<p>
+Not all documents are written in English, so the language of the spell checker
+can be changed by changing the language code field from the project properties.
+This is a text field where you can type the language code of the project.</p>
+<p>
+Some common language codes:<br/>
+<ul>
+<li>English: en</li>
+<li>German: de</li>
+<li>French: fr</li>
+<li>Spanish: es</li>
+<li>Finnish: fi</li>
+</ul>
+</p>
+
+<h3> Using spell checker </h3>
+<p>
+The spell checker checks the text while you type. Beware that spell checking is only 
+performed if a main dictionary for the language was found. 
+</p>
+<p>
+Possible spelling
+errors are marked in the text by a curly underline. You can use Eclipse's 
+<em>Quick Fix</em> feature (standard shortkey: Ctrl+1) to get correction proposals
+and the option to add the word to your user dictionary or ignore it for the rest of the
+session.
+</p>
+
+<h3> Ignored words </h3>
+<p>
+LaTeX has a very special syntax and this is appreciated by the spell checker. It ignores
+all command strings, i.e., strings that start with a backslash. Furthermore words with less
+than three letters are ignored also. Some commands have arguments that normally are not a
+word in a language, e.g., <code>\label, \ref, \begin, \end, \usepackage, ...</code> . The arguments 
+of these commands are also ignored by the spell checker.
+</p>
+
+<h3>Dictionaries</h3>
+<p>
+The dictionaries are UTF-8 encoded plain text word lists. They can be downloaded at various
+places on the internet. You find some dictionaries on our <a href="http://texlipse.sourceforge.net">
+homepage</a>.
+</p>
+
+<h3>Known problems</h3>
+<p>
+In this version, the spell checker is not capable of correctly detecting words 
+where <code>"</code> is used, e.g., H"auser.
+</p>
+
+<font color="gray">
+<h1>Setting up Aspell</h1>
+<p>
+<b>If possible use the build-in spell checker and not Aspell. 
+This feature is likely to be removed in a future version of TeXlipse.</b>
+</p>
+<p>
+First, Aspell needs to be installed. This usually means installing the Aspell
+core program and one or more dictionaries. There are instructions to this in the
+Aspell <a href="http://aspell.net">website</a>.
+</p><p>
+Next, TeXlipse needs to be configured to use Aspell. There is a preference page
+titled <b>Spell Checker</b> under TeXlipse preferences, where the program path
+can be specified. The default arguments should work with at least Aspell version
+0.5. Older versions could also be compatible.
+</p>
+
+
+<h3> Running spell checker </h3>
+
+<p> Once the setup is complete, the spell checker can be run by for the currently
+open LaTeX document by selecting <b>Latex &gt; Check spelling</b> from
+the menu. If all goes well, the incorrectly spelt words in the document should
+get a yellow line under them (only the misspelled words!). By default, Aspell
+will skip the words appearing to be LaTeX commands. (This is controlled by the
+argument <code>-t</code>.)
+</p><p>
+The spelling errors should also appear to the problems
+log. If the problems log is not visible, it can be opened from <b>Window &gt;
+Show view &gt; Problems</b>. If the spelling errors aren't visible in the problems
+log, they are currently filtered out. The filters can be changed by clicking the
+filter-button on the upper right corner of the problems log (the one with a yellow
+arrow on it). Select <code>TeXlipse spelling error</code> from the list under
+&quot;Show errors of type:&quot;.
+</p><p>
+The individual misspelled words can be easily corrected by selecting
+a spelling error entry from the problems log and choosing <b>Quick Fix</b>
+from the menu that opens by clicking right mouse button. Another way is to click
+once on a misspelled word, so that the cursor moves there, then open a list of
+corrections by pressing <code>Ctrl+space</code> (or what ever is the
+auto-completion hot key).
+</p>
+
+<p><strong>NOTE:</strong> the spell-checker is still of experimental nature and thus
+	contains some features which don't work as the user would expect. One is that after
+	correcting many spelling errors, the markers go out of sync and further correction
+	might not be possible unless the document is saved and re-checked.
+</p>
+
+<h3> Choosing language </h3>
+<p>
+Not all documents are written in English, so the language of the spell checker
+can be changed by changing the language code field from the project properties.
+This is a text field where you can type the language code of the project.</p>
+
+<p><b>NOTE:</b> what you type into this text box is passed as
+is to Aspell as the language argument. Therefore, make sure you type the correct
+code and have installed the corresponding Aspell dictionary. The language codes
+Aspell uses are two-letter ISO standard language codes (some are three-letter).
+These codes are listed in the Aspell's supported
+<a href="http://aspell.net/man-html/Supported.html">languages</a> page.
+The language code is also part of the Aspell dictionary package filename.
+For example, the Aspell German dictionary package might be called
+<code>aspell-<b>de</b>-0.50-2.tar.bz2</code>.
+</p>
+</font>
+</body>
+</html>

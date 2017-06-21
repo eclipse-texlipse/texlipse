@@ -1,0 +1,306 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+	<link rel="STYLESHEET" href="book.css" charset="ISO-8859-1" type="text/css">
+	<title>Configuration</title>
+</head>
+
+<body>
+<h1>Configuration</h1>
+
+Configuring TeXlipse is possible through the preferences page.
+Additional project-specific options can be set from the properties page.
+Here is a description of both of these.
+
+
+<h2>Preferences page</h2>
+
+The TeXlipse preferences page is in the Eclipse preferences menu
+(select: <b>Window &gt; Preferences</b>).
+
+
+<h3><a name="pref_bib"></a>BibTeX Editor</h3>
+
+These options are BibTeX-file editor specific. The code completion can be enabled
+or disabled and the delay for the completion menu to appear can be adjusted.
+Code folding can be enabled and all entries can be folded when a BibTeX-file is
+opened.
+
+
+<h3><a name="pref_bib_syn"></a>BibTeX Syntax Highlighting</h3>
+
+These colors are used for highlighting BibTeX keywords when editing BibTeX files.
+
+
+<h3><a name="pref_bib_temp"></a> BibTeX Templates </h3>
+
+The BibTeX templates are like Java templates. To activate a template, write its name or
+the beginning of its name and press the completion key (usually Ctrl+Space). 
+There are controls for adding new templates and editing the existing ones.
+The templates use the same syntax as the Java editor templates. The syntax is
+discussed in more detail in the Java editor help.
+
+
+<h3><a name="builders"></a> Builder Settings </h3>
+
+<p>
+This page contains a list of external programs that are used when building.
+Not all programs are necessary in use, the actual programs needed depends
+on the project output format and build commands -settings.
+</p>
+
+<p>
+Choose one program in the list and press the edit-button. A configuration dialog
+will appear. The program configuration dialog contains a text field for specifying
+the location of the program, and another field for the program arguments. The
+default values that are provided should work on fairly recent systems. 
+LaTeX version 7.3.x doesn't seem to support <code>--src-specials</code>
+-argument, so that may have to be changed when working with an older distribution.
+</p>
+
+<p>
+TeX distribution usually contains one directory, where all the executable programs
+are installed (usually called &quot;bin&quot;). That directory contains a lot of
+programs, and some people don't keep it in their path.
+If the TeX-programs directory is not in the path (or if Eclipse installs
+its own path environment variable at startup), TeXlipse can't find the necessary
+programs. Because it is boring to setup ten programs individually, there is a
+text box to set the paths all at once. Press Browse-button, browse to the TeX-programs directory
+(the directory where <code>latex</code>, <code>bibtex</code>, etc. programs are) and
+press the big Apply-button at the bottom of the page. The program paths should all change.
+</p>
+
+<p>
+The console log means the Console View, which is accessible through
+<b>Window &gt; Show View &gt; Other &gt; Basic &gt; Console</b>.
+If the builder console log is enabled, all the messages printed by external
+programs to standard output will be shown in the console log. It is
+very handy for figuring out why something doesn't work.
+</p>
+
+<p>
+LaTeX writes additional informations into .aux files. Texlipse has a special parser
+for this kind of files that extracts informations about citations and labels. The
+citation information are used to determine whether a BibTeX run is necessary. 
+Some environments like <code>lstlisting</code> have a special syntax to add a label to it. 
+These labels are not detected by Texlipse's LaTeX parser in the source code.
+The .aux file parser can detect them and hence there should be
+no false warnings about undefined labels after a build.  
+</p>
+
+<h3><a name="latextemp"></a> LaTeX Temp Files </h3>
+
+Latex produces some temporary files to help with processing the input files. This page lists
+all the file extensions of the files that should be handled as temporary files. 
+Temporary files are kept in the Temporary Files -directory (set in the project properties page). 
+The extension list can be modified, but it should not contain any of the input file extensions
+(.tex, .ltx, .bib) or output file extensions (.dvi, .ps, .pdf) as that may mess up the building
+process.
+
+<h3><a name="pref_edit_temp"></a>Document templates</h3>
+
+Document templates are templates for creating documents when creating a new
+LaTeX project. This screen can be used to manage the user-defined templates.
+
+
+<h3><a name="pref_edit"></a> Editor </h3>
+
+<p>
+This page contains LaTeX-editor specific options. The code completion can be enabled
+or disabled and the delay for the completion menu to appear can be adjusted. Similarly,
+automatic parsing of documents after the last edit can be enabled. From here,
+automatic wrapping of text can also be adjusted. You can also turn on or off highlighting
+of matching <code>\begin{..}</code> and <code>\end{...}</code> commands. The style of the highlighting 
+can be configured under <i>General/Editors/Text Editors/Annotations</i>. 
+</p>
+
+<h3><a name="pref_edit_ind"></a> Indentation </h3> 
+
+Some Latex environments (those between <code>\begin</code> and <code>\end</code>)
+can have their contents indented to keep the document structure clear. Those environments
+are listed in this page. Also the indentation width, i.e. the number of spaces that is inserted
+to the beginning of a line, can be changed in this page.
+
+
+<h3><a name="pref_edit_out"></a> Outline </h3>
+
+<p>
+The LaTeX-editor has a configurable outline. This page has controls to
+enable or disable some common LaTeX document sections' appearance in the outline.
+There is also a list of environments to show in the outline.
+</p>
+
+<p>These settings also apply for the full LaTeX outline, which display an
+outline of the whole project.</p>
+
+<h3><a name="pref_smartkey"></a>Smart keys</h3>
+
+<p>
+Smart keys is a feature that works similarly as in vim-latex. Enabling smart
+backspace changes the behaviour of backspace so that when pressed when the
+cursor is after an accented character, e.g. \"o, the backspace deletes the entire
+accented character. Conversion of quotation marks converts " to the right kind
+of LaTeX quotation mark. Dollar sign and bracket completion adds a closing
+dollar sign or parenthesis automatically after an opening one has been typed.
+Ldots replacement automatically replaces ... with \ldots in text.
+</p>
+
+<h3><a name="pref_stylecomp"></a>Style completions</h3>
+
+<p>
+Style completions are intended to change the style of a marked region. When
+text is marked in the editor, pressing the content assist key (usually
+ctrl+space) shows a list of styles that can be applied to the given text.
+</p>
+
+
+<h3><a name="pref_edit_syn"></a> TeX Syntax Highlighting </h3>
+
+These colors are used for highlighting LaTeX keywords when editing LaTeX files.
+
+
+<h3><a name="pref_edit_temp"></a> LaTeX Templates </h3>
+
+The LaTeX templates are like Java templates. To activate a template, write its name, or
+the beginning of its name and press the completion key (usually Ctrl+Space). 
+There are controls for adding new templates and editing the existing ones.
+The templates use the same syntax as the Java editor templates. The syntax is
+discussed in more detail in the Java editor help.
+
+
+<h3> <a name="pref_spellcheck"></a>Spellchecker</h3>
+
+<p>
+On the spellchecker page the user can specify the aspell command to use as
+well as command line arguments.
+</p>
+
+<h3> <a name="viewer"></a> Viewer Settings</h3>
+
+<p>
+This page shows the list of configuration defaults for external viewer programs.
+The viewers are sorted by priority, from high to low, and when a preview is launched 
+from the editor the topmost viewer matching the current output format is used.
+Viewer configurations can be edited by choosing a configuration name from the
+list and pressing the edit-button. A viewer configuration dialog will appear.
+The viewer program location and viewer arguments can be changed from this
+dialog. If the arguments-field contains the special string &quot;<code>%file</code>&quot;,
+it will be replaced with the input file name when launching viewer, and if
+the arguments-field contains the string &quot;<code>%fullfile</code>&quot; it's replaced
+with the full path of the input file.
+</p>
+<p>
+On Windows the viewer configuration defaults page also contains
+two group boxes titled "DDE Message to send on view" and "... on rebuild". These
+let you specify DDE messages (a Windows only IPC mechanism) that should be sent
+when launching the viewer and before a rebuild. This is very handy with Acrobat, 
+where you can automatically close the open document before a rebuild. Note that
+for the close document command to work, the document has to be opened using a DDE command.
+Therfore it would be best to remove the <code>%file</code> argument from the acrobat
+configuration if DDE is used.
+</p>
+<p>
+After editing a viewer configuration default you may be asked if you would like to
+update any launch configurations that has been based on this default. This is usually a 
+good thing to do, unless you've made spesific customizations to a launch configuration.
+</p>
+<!-- Depricated:
+	<p>
+	The build before launch -checkbox controls whether the project will be built
+	automatically before launching viewer. If the <b>Project &gt; Build Automatically</b>
+	-option is used, this checkbox has no effect.
+	</p>
+-->
+<p>
+The inverse search port number is the port that is opened for external viewer programs
+to input inverse search (navigation from output file to source file) commands.
+</p>
+<p>
+The return focus to Eclipse checkbox allows you to force Eclipse to regain focus after 
+a preview has been launched. This can be handy when working on dual monitors, when you
+want to get right back to writing after seeing the results.
+</p>
+
+
+<h2><a name="prob"></a> Properties dialog </h2>
+
+<p>
+This dialog opens by selecting <b>Project &gt; Properties</b>
+from the Eclipse menu and choosing <b>Latex project properties</b>.
+This dialog contains options specific to the project.
+</p><p>
+Note: project properties dialog shows only the property pages associated to the current
+Eclipse perspective. If your project is a Java project, your workbench is likely to
+be in Java perspective. Because TeXlipse is built upon Resource perspective, you may have to
+switch to Resource perspective in order to see the Latex project properties.
+</p><p><img src="images/config1.gif" alt="Project properties"></p>
+
+
+<h3><a name="p_main"></a> Project Main File </h3>
+
+<p>
+This field contains the name and path of the project main file. Main file means
+the file that is given to external <code>latex</code> program as a parameter.
+</p>
+<p>
+The project main file is necessary because a Latex project doesn&#39;t always have
+an obvious main file. If the Latex project is, for example, a book project, there
+might be more than ten files with the extension &#39;.tex&#39;. Because of the flexible
+syntax of LaTeX, there is no simple way to determine which of these files is
+the starting point of the document. To prevent weird errors, determining which file is
+the main file is left to the user.
+</p>
+
+
+<h3><a name="p_out"></a> Project Output File </h3>
+
+<p>
+This field contains the name and path of the project output file.
+Note that the extension of this file must be the extension of the 
+output format chosen.
+</p>
+
+
+<h3><a name="p_tdir"></a> Project Temporary Directory </h3>
+
+<p>
+This field contains the name of the directory that is used for storing
+temporary files (e.g. Latex aux- and log-files). Temporary files are
+recognised from their file extension. The list of file extensions
+for temporary files is in the <a href="#latextemp">Latex Temp Files</a> preference page.
+</p>
+
+
+<h3><a name="p_out_f"></a> Project Output Format </h3>
+
+<p>
+This option configures the output file format of the project. There is a
+possibility to choose between
+DVI (Device Independent format), PS (PostScript format) and PDF
+(Portable Data File format). The output file has to have the extension according
+the file format.
+Note that changing this field affects the output file name&#39;s extension, 
+but not the other way around.
+</p>
+
+
+<h3><a name="p_build"></a> Project Build Commands </h3>
+
+<p>
+This option shows which combination of external programs is used to build
+this project. For example, if PostScript (.ps) output is chosen, there is
+a chance to choose between <code>pslatex</code> and <code>latex+dvips</code>. 
+Choosing <code>pslatex</code> here means that the <code>pslatex</code> program is
+used to produce a PostScript file directly, whereas
+<code>latex+dvips</code> means that the <code>latex</code> program is used to
+produce a DVI file and then the <code>dvips</code> program is used to convert
+the DVI file into PostScript format.
+</p>
+<p>
+&nbsp;
+</p>
+
+</body>
+</html>

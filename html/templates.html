@@ -1,0 +1,114 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+	<link rel="STYLESHEET" href="book.css" charset="ISO-8859-1" type="text/css">
+	<title>Templates</title>
+</head>
+<body>
+
+<h1>What are templates?</h1>
+
+<p>We separate templates into two classes: editor templates
+  and document templates. Editor templates are small
+  LaTeX-code pieces, that can
+  be inserted into the document (hence making the 
+  writing process a bit easier and faster.) These templates
+  consist of a fixed part (that the writer does not need to change
+  when inserting the template) and variables, which point out the parts of
+  the template that the writer should change. Document
+  templates are entire LaTeX documents, which serve
+  as a starting point for writing new documents. 
+</p>
+
+<h2><a name="edi"></a>Editor templates</h2>
+
+<p>Two different sets of templates are provided
+  with TeXlipse: LaTeX and BibTeX templates. The
+  former can be used when editing LaTeX files (*.tex, *.ltx)
+  and the latter one with BibTeX files (*.bib).
+</p>
+
+<h3>Using editor templates</h3>
+
+<p>Use them the same way as command completions, just hit <code>ctrl + space</code>
+	(or what your content assist activation key is bound to)
+  and list of available templates shows up. The available
+  templates are determined based on text just before
+  the cursor &mdash; only templates whose beginning match that
+  text are shown (which could be none). If there is
+  whitespace (i.e. spaces, tabs and linebreaks)
+  before the cursor, all templates are shown. 
+</p>
+
+<p>After you have chosen the template, you need to
+  fill in the template&#39;s variables: you can edit
+  the currently selected variable, and you can rotate
+  between variables with TAB. After you are ready with
+  the template, hit ENTER to finish the template.
+</p>
+
+<h3>Sounds nice, can I define my own templates?</h3>
+
+<p>Yes you can. Go to the <b>Window &gt; Preferences</b> and
+  further to <b>Texlipse &gt; Editor &gt; Templates</b> or
+  <b>Texlipse &gt; BibTeX Editor &gt; Templates</b>. The editor templates
+  are managed trough these pages
+  (add, remove, modify, disable or enable).<p>  
+
+<p>When creating templates, use "${variablename}" to
+  insert variables into templates. If the
+  same variable value needs to be used more than once,
+  just use the same variable name. You can use the
+  ${cursor} variable to determine the place where
+  the cursor should be after the template is finished.
+
+  <p>An example:
+<pre>
+\begin{${environment}}
+  ${cursor}
+\end{${environment}}
+</pre> 
+  </p>
+ 
+<h2><a name="doc"></a>Document templates</h2>
+
+<p>There are two different types of document templates,
+  system and user-defined templates. The difference is
+  that you need to have administrative rights to
+  Eclipse to change the system templates (which are available
+  to everyone). The user defined templates are instead
+  personal templates visible only to the corresponding
+  user.</p>
+
+<h3>How are document templates used?</h3>
+
+<p>Document templates can be used when a new LaTeX project
+  is created. The first lines of the document templates
+  are read and the lines starting with "%%" are considered
+  to be descriptions of the templates. (Reading the templates ends
+  immediately after a line that does not start with "%%" is
+  encountered.) So if you define your own templates
+  (see the following sections),
+  it might be useful to add few "%%" lines containing
+  a description in the beginning of the templates.</p>
+
+<h3>Managing user defined templates</h3>
+
+  <p>To add your own document templates, right click
+    the editor area and select "Save As Template".
+    To manage (remove) older user defined templates
+    go to <b>Windows &gt; preferences</b> and further to
+    <b>Texlipse &gt; Project Templates</b>.</p>
+
+
+<h3>Managing system templates</h3>
+
+<p>The system templates are located in the templates -directory
+  under the &lt;texlipse plugin directory&gt;: all .tex
+  files in that directory are considered to be document
+  templates. By adding files there, system administrators can add
+  templates that are available to all users.</p>
+</body>
+</html>

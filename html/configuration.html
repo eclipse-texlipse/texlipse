@@ -1,0 +1,61 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+	<link rel="STYLESHEET" href="book.css" charset="ISO-8859-1" type="text/css">
+	<title>Installation</title>
+</head>
+<body>
+
+
+<h1>Part 2: How to configure TeXlipse </h1>
+<p>
+Before you can configure the TeXlipse plugin you must have some 
+working LaTeX distribution installed on your system.
+</p>
+
+<p><strong>0. </strong> Make sure you have a working Tex distribution. You need 
+to have at least the <strong>latex</strong> program, but <strong>Bibtex</strong>, 
+<strong>Makeindex</strong>, <strong>DviPdf</strong>, <strong>DviPs</strong>,
+<strong>PdfLatex</strong>,<strong>PsLatex</strong> and <strong>Ps2Pdf</strong>
+are also recommended.</p>
+
+<p><Strong>1. </strong> Open <b>Window &gt; Preferences</b>, and from there 
+the <b>TeXlipse &gt; Builder Settings</b> preference page.</p>
+
+<p><img src="images/conf1.gif" alt="Builder Settings"></p>
+
+<p><strong>2.</strong> Use the <Strong>Browse...</strong> button to set the location
+of the <strong>installation (Bin for binary) directory of your LaTeX distribution</strong>. 
+To use the selected 
+directory, click the <strong>Apply</strong> button. The plugin will automatically
+set the correct paths for all the listed programs that are located in the given directory.
+If some of the programs is not found in the directory, the parentheses after the program name
+are empty (in the following image, such a program is the PsLatex-program).</p>
+
+<p><img src="images/conf2.gif" alt="Program paths"></p>
+
+<p><Strong>3.</strong> To set the path of a particular program, select 
+the program and click the <strong>Edit...</strong> button. The following 
+window will appear. Use the <Strong>Browse...</strong> button to set 
+the program path. If you want to change some parameters for the program
+you can also do that here. Confirm the path and the parameters by clicking 
+the <strong>OK</strong> button.</p>
+
+<p><img src="images/conf4d.gif" alt="Set the path"></p>
+
+<p><strong>4.</strong> Next, select the <strong>Viewer settings</strong> page.
+You must set paths of the used viewers. As with the LaTeX distribution at step 2,
+set the correct path for the viewer you are going to use. Also make sure
+that the viewer is registered to the right format (for example, pdf for acroread)</p>
+
+<p>Note also, that the plugin uses the first viewer on the list that matches the current output format</p>
+
+<p><img src="images/conf4.gif" alt="The paths for the viewer."></p>
+
+<p><strong>5.</strong> To configure <code>Inverse Search</code> please
+see <a href="build.html#sourcelink">Building and previewing</a></p>
+
+</body>
+</html>

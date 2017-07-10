@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+   <feature id="org.eclipse.texlipse_feature">
+      <category name="main"/>
+   </feature>
+   <category-def name="main" label="LaTeX support for Eclipse">
+      <description>
+         The TeXlipse project provides an Eclipse extension to support LaTex projects, so that document preparation can be incorporated into the normal Eclipse development activities. General LaTeX users will also find the advanced editing and automatic document generation features of TeXclipse provide a compelling alternative to other LaTeX environments. 
+      </description>
+   </category-def>
+</site>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<?pde?>
+<!-- generated with https://github.com/mbarbero/fr.obeo.releng.targetplatform -->
+<target name="Eclipse TeXlipse Target Platform" sequenceNumber="1499707086">
+  <locations>
+    <location includeMode="planner" includeAllPlatforms="false" includeSource="true" includeConfigurePhase="false" type="InstallableUnit">
+      <unit id="org.eclipse.sdk.feature.group" version="4.6.3.v20170301-0400"/>
+      <repository location="http://download.eclipse.org/releases/neon/"/>
+    </location>
+    <location includeMode="planner" includeAllPlatforms="false" includeSource="true" includeConfigurePhase="false" type="InstallableUnit">
+      <unit id="org.eclipse.license.feature.group" version="1.0.1.v20140414-1359"/>
+      <repository location="http://download.eclipse.org/cbi/updates/license"/>
+    </location>
+  </locations>
+</target>

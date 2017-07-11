@@ -1,0 +1,8 @@
+target "Eclipse TeXlipse Target Platform" with source requirements
+
+location "http://download.eclipse.org/releases/neon/" {
+    org.eclipse.sdk.feature.group
+}
+location "http://download.eclipse.org/cbi/updates/license" {
+	org.eclipse.license.feature.group
+}

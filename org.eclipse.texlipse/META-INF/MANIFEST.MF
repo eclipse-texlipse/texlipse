@@ -1,14 +1,14 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Vendor: TeXlapse Team
+Bundle-Vendor: Eclipse Science
 Bundle-Name: TeXlipse
 Bundle-SymbolicName: org.eclipse.texlipse;singleton:=true
-Bundle-Version: 1.5.0
+Bundle-Version: 2.0.0.qualifier
 Bundle-Activator: org.eclipse.texlipse.TexlipsePlugin
-Bundle-RequiredExecutionEnvironment: J2SE-1.5
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ClassPath: texlipse.jar,
  jazzy-core.jar
-Eclipse-LazyStart: true
+Bundle-ActivationPolicy: lazy
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.ui,
  org.eclipse.jface.text,

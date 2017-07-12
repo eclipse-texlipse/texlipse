@@ -23,7 +23,8 @@
 		<version>2.0.0-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>org.eclipse.texlipse_feature</artifactId>
+	<artifactId>org.eclipse.texlipse_main</artifactId>
+	<name>Eclipse TeXlipse Main Feature</name>
 	<packaging>eclipse-feature</packaging>
 	<version>2.0.0-SNAPSHOT</version>
 

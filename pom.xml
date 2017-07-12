@@ -115,7 +115,7 @@
 	
 	<modules>
 		<module>org.eclipse.texlipse</module>
-		<module>org.eclipse.texlipse_feature</module>
+		<module>org.eclipse.texlipse_main</module>
 		<module>org.eclipse.texlipse_site</module>
 	</modules>
 

@@ -182,7 +182,7 @@
         xsi:type="setup:ResourceCopyTask"
         excludedTriggers="BOOTSTRAP"
         sourceURL="https://resheim.net/texlipse/ddeclient-x86_64.dll"
-        targetURL="${git.clone.texlipse.location|uri}/org.eclipse.texlipsee/ddeclient-x86_64.dll">
+        targetURL="${git.clone.texlipse.location|uri}/org.eclipse.texlipse/ddeclient-x86_64.dll">
       <description>Import prebuilt binary</description>
     </setupTask>
     <setupTask

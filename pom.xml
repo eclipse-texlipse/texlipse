@@ -115,8 +115,8 @@
 	
 	<modules>
 		<module>org.eclipse.texlipse</module>
-		<module>org.eclipse.texlipse_main</module>
-		<module>org.eclipse.texlipse_site</module>
+		<module>org.eclipse.texlipse.main</module>
+		<module>org.eclipse.texlipse-site</module>
 	</modules>
 
 </project>

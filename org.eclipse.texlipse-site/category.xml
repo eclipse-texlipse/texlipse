@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <site>
-   <feature id="org.eclipse.texlipse_main">
+   <feature id="org.eclipse.texlipse.main">
       <category name="main"/>
    </feature>
    <category-def name="main" label="LaTeX support for Eclipse">

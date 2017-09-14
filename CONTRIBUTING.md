@@ -93,7 +93,8 @@ Alternative idea is a bit more elaborated : {GitHubUserName}/{ChangeType}/{issue
 
 1. Submit a pull request via the normal [GitHub UI](https://github.com/eclipse/texlipse) to trigger to request feedback / code review / ... 
 2. Mention issue_id in each comment using syntax like "Adapt this interface for #15" to link to issue 15 in the initial comment for a Pull Request.
-3. The pull request will be reviewed by one of the committers, and then merged into master.
+3. Pay attention to the "Jenkins Build" check, if it fails you will find more information following the "details" link leading to the [Eclipse Texlipse Jenkins instance](https://ci.eclipse.org/texlipse/).
+4. The pull request will be reviewed by one of the committers, and then merged into master.
  
 ## After submitting
 

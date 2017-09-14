@@ -1,4 +1,4 @@
-# Introduction
+# Eclipse TeXlipse™
 The TeXlipse plugin for Eclipse provides support for LaTeX projects. It is primarily aimed at users who already know the basics about LaTeX, newbies will surely find it useful but also a steeper learning curve. The following main features are offered:
 
 * Syntax highlighting
@@ -39,6 +39,9 @@ Please have a look at our [contribution guide](https://github.com/eclipse/texlip
 
 # Resources
 
-* [Official TeXlipse project page](https://projects.eclipse.org/projects/science.texlipse "TeXlipse Project Page")  
+* [Official TeXlipse project page](https://projects.eclipse.org/projects/science.texlipse "TeXlipse Project Page")
+
+---
+_Eclipse TeXlipse, Eclipse, the Eclipse logo, and the Eclipse TeXlipse project logo are either registered trademarks or trademarks of The Eclipse Foundation in the United States and/or other countries._1
 
  

@@ -42,6 +42,6 @@ Please have a look at our [contribution guide](https://github.com/eclipse/texlip
 * [Official TeXlipse project page](https://projects.eclipse.org/projects/science.texlipse "TeXlipse Project Page")
 
 ---
-_Eclipse TeXlipse, Eclipse, the Eclipse logo, and the Eclipse TeXlipse project logo are either registered trademarks or trademarks of The Eclipse Foundation in the United States and/or other countries._1
+_Eclipse TeXlipse, Eclipse, the Eclipse logo, and the Eclipse TeXlipse project logo are either registered trademarks or trademarks of The Eclipse Foundation in the United States and/or other countries._
 
  

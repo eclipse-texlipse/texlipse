@@ -11,6 +11,8 @@
 
 package org.eclipse.texlipse;
 
+import org.eclipse.core.runtime.Platform;
+
 /** 
  * Small wrapper for Win32 DDE execute commands
  * 
@@ -23,10 +25,12 @@ public class DDEClient {
 			String command);
 
 	static {
-		if (System.getProperty("os.arch").contains("64")) { 
-			System.loadLibrary("ddeclient-x86_64");
-		} else {
-			System.loadLibrary("ddeclient-x86");
+		if (Platform.getOS().equals(Platform.OS_WIN32)) {
+			if (Platform.getOSArch().equals(Platform.ARCH_X86_64)) { 
+				System.loadLibrary("ddeclient-x86_64");
+			} else {
+				System.loadLibrary("ddeclient-x86");
+			}
 		}
 	}
 

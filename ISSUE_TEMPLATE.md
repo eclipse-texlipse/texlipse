@@ -10,15 +10,16 @@ X
 
 X
 
-**Please provide steps to reproduce, including full log output:**
+**Please provide steps to reproduce:**
 
 X
 
 **Please describe your environment:**
 
-* TeXlipse version: 2.0.0
-* Eclipse version: 4.7.3
-* Operating system:
+* TeXlipse version: 0.0.0
+* Eclipse version: 0.0.0
+
+Operating system:
 - [ ] Windows
 - [ ] macOS
 - [ ] Linux

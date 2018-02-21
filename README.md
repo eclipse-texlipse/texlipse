@@ -23,6 +23,8 @@ The TeXlipse plugin for Eclipse provides support for LaTeX projects. It is prima
 
 In other words, TeXlipse includes quite a complete set of features for day-to-day editing tasks. This manual explains the use of these features in detail, but please go ahead and explore TeXlipse!
 
+# History
+
 TeXlipse version 1.0 was brought to you by the Texlapse-team as a software project on the SoberIT lab of the Helsinki University of Technology. The Texlapse-team includes (in alphabetical order): Taavi Hupponen, Kimmo Karlsson, Jani Laitinen, Oskar Ojala, Antti Pirinen, Esa Seuranen and Laura Takkinen.
 
 TeXlipse version 1.5.0 was developed from 1.0 as an open source project on SourceForge. The team that developed it consisted of Oskar Ojala, Kimmo Karlsson, Boris von Loesch, Tor Arne Vestbø and Matthias Merll. Additionally, several contributions were received from users of TeXlipse.

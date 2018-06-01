@@ -60,7 +60,7 @@ public class LatexRunner extends AbstractProgramRunner {
     }
     
     public String getDefaultArguments() {
-        return "-interaction=nonstopmode --src-specials %input";
+        return "-interaction=nonstopmode %input";
     }
     
     public String getInputFormat() {

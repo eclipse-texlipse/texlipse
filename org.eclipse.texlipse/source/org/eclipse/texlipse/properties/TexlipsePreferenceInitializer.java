@@ -68,8 +68,8 @@ public class TexlipsePreferenceInitializer extends
         IPreferenceStore pref = TexlipsePlugin.getDefault().getPreferenceStore();
         
         pref.setDefault(TexlipseProperties.BIB_DIR, "");
-        pref.setDefault(TexlipseProperties.OUTPUT_FORMAT, TexlipseProperties.OUTPUT_FORMAT_DVI);
-        pref.setDefault(TexlipseProperties.BUILDER_NUMBER, 0);
+        pref.setDefault(TexlipseProperties.OUTPUT_FORMAT, TexlipseProperties.OUTPUT_FORMAT_PDF);
+        pref.setDefault(TexlipseProperties.BUILDER_NUMBER, 2);
         pref.setDefault(TexlipseProperties.BUILDER_CONSOLE_OUTPUT, true);
         pref.setDefault(TexlipseProperties.BUILDER_PARSE_AUX_FILES, true);
         pref.setDefault(TexlipseProperties.BUILD_BEFORE_VIEW, false);

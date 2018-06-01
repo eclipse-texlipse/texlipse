@@ -31,6 +31,7 @@ import org.eclipse.texlipse.viewer.util.FileLocationClient;
  * Initialize the plugin preferences.
  * 
  * @author Kimmo Karlsson
+ * @author Torkild U. Resheim
  */
 public class TexlipsePreferenceInitializer extends
         AbstractPreferenceInitializer {
@@ -47,7 +48,7 @@ public class TexlipsePreferenceInitializer extends
      * @param pref preferences
      */
     private void initializePaths(IPreferenceStore pref) {
-        String path = PathUtils.findInEnvPath("latex", "/usr/bin", "latex.exe", "C:\\texmf\\miktex\\bin");
+        String path = PathUtils.findInEnvPath("latex", "/Library/TeX/texbin", "latex", "/usr/bin", "latex.exe", "C:\\texmf\\miktex\\bin");
         
         int size = BuilderRegistry.getNumberOfRunners();
         for (int i = 0; i < size; i++) {

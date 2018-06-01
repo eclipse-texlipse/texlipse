@@ -21,12 +21,14 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.texlipse.properties.StringListFieldEditor;
 
 /**
  * Helper methods for environment variable handling.
  * 
  * @author Kimmo Karlsson
+ * @author Torkild U. Resheim
  */
 public class PathUtils {
 
@@ -248,19 +250,27 @@ public class PathUtils {
 
     /**
      * 
-     * @param file file to search for
-     * @param path default path to use if the environment variable "path" doesn't contain the searched file
+     * @param macFile file to search for
+     * @param macPath default path to use if the environment variable "path" doesn't contain the searched file
+     * @param linuxFile file to search for
+     * @param linuxPath default path to use if the environment variable "path" doesn't contain the searched file
      * @param winFile file to search for in windows
      * @param winPath default path in windows
      * @return the path containing the file or default path
      */
-    public static String findInEnvPath(String file, String path, String winFile, String winPath) {
+    public static String findInEnvPath(String macFile, String macPath, String linuxFile, String linuxPath, String winFile, String winPath) {
         // default binary file to search for in the path
-        String defaultFile = file;
-        String defaultPath = path;
+        String defaultFile = linuxFile;
+        String defaultPath = linuxPath;
+        
+        // macos equivalents for the above
+        if (Platform.getOS().equals(Platform.OS_MACOSX)) {
+        		defaultPath = macPath;
+        		defaultFile = macFile;
+        }
         
         // windows equivalents for the above
-        if (System.getProperty("os.name").indexOf("indow") > 0) {
+        if (Platform.getOS().equals(Platform.OS_WIN32)) {
             defaultPath = winPath;
             defaultFile = winFile;
         }

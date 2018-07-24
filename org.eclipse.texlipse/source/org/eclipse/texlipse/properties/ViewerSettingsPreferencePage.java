@@ -17,8 +17,7 @@ import org.eclipse.texlipse.TexlipsePlugin;
 import org.eclipse.texlipse.viewer.util.FileLocationServer;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
-import org.eclipse.ui.help.WorkbenchHelp;
-
+import org.eclipse.ui.PlatformUI;
 
 /**
  * Viewer preferences.
@@ -49,12 +48,7 @@ public class ViewerSettingsPreferencePage extends FieldEditorPreferencePage
         TexlipsePreferencePage.addSpacer(2, getFieldEditorParent());
         ViewerListFieldEditor vfe = new ViewerListFieldEditor(TexlipsePlugin.getResourceString("preferenceViewerConfigsLabel"), getFieldEditorParent());
         addField(vfe);
-        WorkbenchHelp.setHelp(vfe.getListControl(getFieldEditorParent()), TexlipseHelpIds.VIEWER_LIST);
-
-        // Depricated. Eclipse has it's own mechanism for auto rebuild.
-        //TexlipsePreferencePage.addSpacer(2, getFieldEditorParent());
-        //TexlipsePreferencePage.addSeparator(2, getFieldEditorParent());
-        //addField(new BooleanFieldEditor(TexlipseProperties.BUILD_BEFORE_VIEW, TexlipsePlugin.getResourceString("preferenceViewerBuildLabel"), getFieldEditorParent()));
+        PlatformUI.getWorkbench().getHelpSystem().setHelp(vfe.getListControl(getFieldEditorParent()), TexlipseHelpIds.VIEWER_LIST);
         
         TexlipsePreferencePage.addSpacer(2, getFieldEditorParent());
         TexlipsePreferencePage.addSeparator(2, getFieldEditorParent());
@@ -71,7 +65,7 @@ public class ViewerSettingsPreferencePage extends FieldEditorPreferencePage
         
         addField(new BooleanFieldEditor(TexlipseProperties.BUILDER_RETURN_FOCUS, TexlipsePlugin.getResourceString("preferenceViewerReturnFocusLabel"), getFieldEditorParent()));
         
-        WorkbenchHelp.setHelp(port.getTextControl(getFieldEditorParent()), TexlipseHelpIds.VIEWER_PORT);
+        PlatformUI.getWorkbench().getHelpSystem().setHelp(port.getTextControl(getFieldEditorParent()), TexlipseHelpIds.VIEWER_PORT);
     }
 
     /**

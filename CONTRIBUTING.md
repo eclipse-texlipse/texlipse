@@ -45,7 +45,7 @@ This involves following steps :
 
 1. Download and start the [Eclipse Installer](http://www.eclipse.org/downloads/eclipse-packages/)
 2. Select your desired **Oxygen** Eclipse installation package (typically *Eclipse IDE for Eclipse Committers*) and click next
-3. Paste the [URL to the setup file](https://raw.githubusercontent.com/eclipse/texlipse/master/EclipseTeXlipse.setup) as a user project setup in your installer, under the Github projects section. (TODO : we need to add our setup to the standard list at Eclipse)
+3. Paste the [URL to the setup file](https://raw.githubusercontent.com/eclipse/texlipse/master/EclipseTeXlipse.setup) as a user project setup in your installer, under the Github projects section.
 4. Select the "TeXlipse development" setup and click next
 5. Check and adapt the setup variables for e.g. root installation folder, git clone location, github account info. Click next and let the installer do its thing to download the Eclipse IDE package and extra plugins and to start your new Eclipse instance.
 6. When Eclipse is starting, you will see a progress indication at the bottom right for the startup tasks of the Oomph setup for TeXlipse. This will clone the TeXlipse repository, apply default Java code formatting preferences, and set the target platform.
@@ -69,7 +69,7 @@ Create a [GitHub Issue](https://github.com/eclipse/texlipse/issues) for every si
 
 ### Create a new branch for your changes
 
-1. In the Git Repositories tab, expand the triquetrum repository.
+1. In the Git Repositories tab, expand the *texlipse* repository.
 2. Right click on the "Branches" node and select "Switch To" -> "New Branch".  
 3. Enter the new branch name.  
 Branch name should be {GitHubUserName}/{summary or issue id} e.g. ``erwin/integrate-display-actor``.  

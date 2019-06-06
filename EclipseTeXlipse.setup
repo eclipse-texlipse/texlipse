@@ -68,6 +68,9 @@
         name="org.eclipse.emf.ecore.xcore.sdk.feature.group"/>
     <requirement
         name="org.eclipse.cbi.targetplatform-feature.feature.group"/>
+    <requirement
+        name="org.eclipse.mylyn.github.feature.feature.group"
+        filter=""/>
     <repository
         url="https://download.eclipse.org/cbi/tpd/3.0.0-SNAPSHOT"/>
     <repository

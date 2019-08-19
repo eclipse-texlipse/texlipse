@@ -114,6 +114,11 @@ public class AnalysisAdapter implements Analysis
         defaultCase(node);
     }
 
+    public void caseTChref(TChref node)
+    {
+        defaultCase(node);
+    }
+
     public void caseTCref(TCref node)
     {
         defaultCase(node);

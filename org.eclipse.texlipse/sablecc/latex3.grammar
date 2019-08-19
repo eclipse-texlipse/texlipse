@@ -70,7 +70,10 @@ Tokens
     {normal->comcapt, comcapt} cbibstyle = '\bibliographystyle';
     {normal->comcapt, comcapt} clabel = '\label';
 
-//supporting \eqref, \vref, etc.
+// trap \href (from package "hyperref") see https://github.com/eclipse/texlipse/issues/73
+	{normal->comcapt, comcapt} chref = '\href';
+    
+// supporting verification of references \eqref, \vref, etc. 
     {normal->comcapt, comcapt} cref = '\' letter* 'ref';
     
 // can be eg. \cite[pages 90--93]{knuth} or \nocite{*}

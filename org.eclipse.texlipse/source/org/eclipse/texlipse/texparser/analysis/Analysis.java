@@ -21,6 +21,7 @@ public interface Analysis extends Switch
     void caseTCbib(TCbib node);
     void caseTCbibstyle(TCbibstyle node);
     void caseTClabel(TClabel node);
+    void caseTChref(TChref node);
     void caseTCref(TCref node);
     void caseTCcite(TCcite node);
     void caseTCbegin(TCbegin node);

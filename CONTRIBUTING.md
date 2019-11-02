@@ -28,42 +28,6 @@ You do this by adding the `-s` flag when you make the commit(s), e.g.
 
     git commit -s -m "Shave the yak some more"
 
-## Making your changes
-
-### Setting up a TeXlipse development environment
-
-We are using Eclipse Oxygen as development IDE and using the latest Oxygen release as TeXlipse target platform.
-
-#### Using the TeXlipse development Oomph setup
-
-This approach allows you to start almost from scratch (with a JDK 1.8 and a Git client installed already), and to obtain a ready-for-use TeXlipse development environment including :
-* an OSGi / Eclipse RCP development environment
-* plugins to work with [target platform definitions](https://github.com/mbarbero/fr.obeo.releng.targetplatform/).
-* Java code formatting preferences as defined in our [Coding Style](https://wiki.eclipse.org/Triquetrum/Coding_Style)
-
-This involves following steps :
-
-1. Download and start the [Eclipse Installer](http://www.eclipse.org/downloads/eclipse-packages/)
-2. Select your desired **Oxygen** Eclipse installation package (typically *Eclipse IDE for Eclipse Committers*) and click next
-3. Paste the [URL to the setup file](https://raw.githubusercontent.com/eclipse/texlipse/master/EclipseTeXlipse.setup) as a user project setup in your installer, under the Github projects section.
-4. Select the "TeXlipse development" setup and click next
-5. Check and adapt the setup variables for e.g. root installation folder, git clone location, github account info. Click next and let the installer do its thing to download the Eclipse IDE package and extra plugins and to start your new Eclipse instance.
-6. When Eclipse is starting, you will see a progress indication at the bottom right for the startup tasks of the Oomph setup for TeXlipse. This will clone the TeXlipse repository, apply default Java code formatting preferences, and set the target platform.
-7. Wait some minutes (resolving and setting the target can take some time) and you're all set to start contributing to TeXlipse!
-
-#### Manual setup
-
-Use Eclipse to check out the repo.
-
-1. Install [Eclipse IDE for Committers](http://www.eclipse.org/downloads/). Other versions may work. These instructions were tested using Neon under Mac OS X and Windows 10.
-2. Start Eclipse. Create a new workspace.  You may need to close the Welcome tab by clicking on the X.
-3. Open **Window > Show View > Other > Git > Git Repositories**
-4. Click on **Clone a Git repository**
-5. Click on **Clone URI**, then **Next**
-6. Enter the URI ``https://github.com/eclipse/texlipse/``
-7. In the Branch Selection window, keep the default of the Master branch and click Next.
-8. In the Local Destination window, select **Finish**.
-
 ### Create an Issue
 Create a [GitHub Issue](https://github.com/eclipse/texlipse/issues) for every significant piece of work ( > 2 hrs).
 

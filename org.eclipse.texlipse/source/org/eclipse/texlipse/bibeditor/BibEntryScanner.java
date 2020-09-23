@@ -13,7 +13,7 @@ package org.eclipse.texlipse.bibeditor;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.jface.text.Assert;
+import org.eclipse.core.runtime.Assert;
 import org.eclipse.jface.text.TextAttribute;
 import org.eclipse.jface.text.rules.ICharacterScanner;
 import org.eclipse.jface.text.rules.IRule;

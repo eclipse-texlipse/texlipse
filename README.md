@@ -27,7 +27,7 @@ In other words, TeXlipse includes quite a complete set of features for day-to-da
 
 ## Setting up a TeXlipse development environment
 
-We are using Eclipse as development IDE and using the latest 2019-09 release as TeXlipse target platform.
+We are using Eclipse as development IDE and using the latest 2020-20 release as TeXlipse target platform.
 
 ### Using the TeXlipse development Oomph setup
 
@@ -78,4 +78,3 @@ EPL v1.0 see [LICENSE](LICENSE) file.
 ---
 _Eclipse TeXlipse, Eclipse, the Eclipse logo, and the Eclipse TeXlipse project logo are either registered trademarks or trademarks of The Eclipse Foundation in the United States and/or other countries._
 
- 

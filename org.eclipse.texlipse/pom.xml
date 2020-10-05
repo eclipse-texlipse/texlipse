@@ -28,6 +28,22 @@
 	<packaging>eclipse-plugin</packaging>
 	<version>2.0.3-SNAPSHOT</version>
 
+	<dependencies>
+		<dependency>
+			<groupId>com.swabunga</groupId>
+			<artifactId>jazzy</artifactId>
+			<version>1.0.0</version>
+		</dependency>
+	</dependencies>
+
+	<!-- Required for Jazzy -->
+	<repositories>
+		<repository>
+		<id>cogcomp</id>
+		<url>http://cogcomp.org/m2repo/</url>
+	 </repository>
+	</repositories>
+
 	<build>
 		<plugins>
 			<plugin>
@@ -65,6 +81,33 @@
 					<source>1.8</source>
 					<target>1.8</target>
 				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<version>3.1.2</version>
+				<!-- This copies the specified library to the plugin root folder.
+				     Needed for the Jazzy library -->
+				<executions>
+					<execution>
+						<id>copy</id>
+						<phase>initialize</phase>
+						<goals>
+							<goal>copy</goal>
+						</goals>
+						<configuration>
+							<artifactItems>
+								<artifactItem>
+									<groupId>com.swabunga</groupId>
+									<artifactId>jazzy</artifactId>
+									<version>1.0.0</version>
+									<outputDirectory>.</outputDirectory>
+									<destFileName>jazzy-core.jar</destFileName>
+								</artifactItem>
+							</artifactItems>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>

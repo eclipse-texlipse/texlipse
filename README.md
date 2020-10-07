@@ -31,7 +31,7 @@ We are using Eclipse as development IDE and using the latest 2020-20 release as 
 
 ### Using the TeXlipse development Oomph setup
 
-This approach allows you to start almost from scratch (with a JDK 1.8 and a Git client installed already), and to obtain a ready-for-use TeXlipse development environment including :
+This approach allows you to start almost from scratch (with JDK 11 (or newer) and a Git client installed already), and to obtain a ready-for-use TeXlipse development environment including :
 * an OSGi / Eclipse RCP development environment
 * plugins to work with [target platform definitions](https://github.com/mbarbero/fr.obeo.releng.targetplatform/).
 * Java code formatting preferences as defined in our [Coding Style](https://wiki.eclipse.org/Triquetrum/Coding_Style)

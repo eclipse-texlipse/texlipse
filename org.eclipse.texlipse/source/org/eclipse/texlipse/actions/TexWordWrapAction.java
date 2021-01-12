@@ -54,10 +54,19 @@ public class TexWordWrapAction implements IEditorActionDelegate, IActionDelegate
         public void propertyChange(PropertyChangeEvent event) {
             String ev = event.getProperty();
             if (ev.equals("wrapType")) {
-                if (!off) {
-                    setType();
-                }
+                configureWordWrap();
             }
+        }
+    }
+
+    /**
+     * Performs the operations needed on wrap configuration changes
+     *
+     * @author Leonardo Montecchi
+     */
+    private void configureWordWrap() {
+        if (!off) {
+            setType();
         }
     }
 
@@ -66,6 +75,7 @@ public class TexWordWrapAction implements IEditorActionDelegate, IActionDelegate
      */
     public void init(IAction action) {
         action.setChecked(!off);
+        configureWordWrap();
     }
 
     /* (non-Javadoc)

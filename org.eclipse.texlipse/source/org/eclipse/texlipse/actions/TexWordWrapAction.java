@@ -10,7 +10,12 @@
  *******************************************************************************/
 package org.eclipse.texlipse.actions;
 
+import java.net.URL;
+
+import org.eclipse.core.runtime.FileLocator;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.action.IAction;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
@@ -23,6 +28,8 @@ import org.eclipse.texlipse.properties.TexlipseProperties;
 import org.eclipse.ui.IActionDelegate2;
 import org.eclipse.ui.IEditorActionDelegate;
 import org.eclipse.ui.IEditorPart;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.FrameworkUtil;
 
 
 /**
@@ -30,13 +37,21 @@ import org.eclipse.ui.IEditorPart;
  * 
  * @author Laura Takkinen
  * @author Oskar Ojala
+ * @author Leonardo Montecchi
  */
 public class TexWordWrapAction implements IEditorActionDelegate, IActionDelegate2 {
     private IEditorPart targetEditor;
-    private boolean off;
+    private IAction sourceButton;
+
+    private boolean enabled;
+    private boolean hard;
+
+    private String ICON_WRAP = "icons/wrap.gif";
+    private String ICON_WRAP_SOFT = "icons/wrap-soft.gif";
+    private String ICON_WRAP_HARD = "icons/wrap-hard.gif";
 
     public TexWordWrapAction() {
-        this.off = !TexlipsePlugin.getDefault().getPreferenceStore().getBoolean(TexlipseProperties.WORDWRAP_DEFAULT);
+        loadWrapConfig();
         TexlipsePlugin.getDefault().getPreferenceStore().addPropertyChangeListener(new WrapPropertyChangeListener());
     }
 
@@ -53,20 +68,10 @@ public class TexWordWrapAction implements IEditorActionDelegate, IActionDelegate
          */
         public void propertyChange(PropertyChangeEvent event) {
             String ev = event.getProperty();
-            if (ev.equals("wrapType")) {
-                configureWordWrap();
+            if (ev.equals("wrapType") || ev.equals("wrapDefault")) {
+                loadWrapConfig();
+                setWrap();
             }
-        }
-    }
-
-    /**
-     * Performs the operations needed on wrap configuration changes
-     *
-     * @author Leonardo Montecchi
-     */
-    private void configureWordWrap() {
-        if (!off) {
-            setType();
         }
     }
 
@@ -74,8 +79,9 @@ public class TexWordWrapAction implements IEditorActionDelegate, IActionDelegate
      * @see org.eclipse.ui.IActionDelegate2#init(org.eclipse.jface.action.IAction)
      */
     public void init(IAction action) {
-        action.setChecked(!off);
-        configureWordWrap();
+        sourceButton = action;
+        setWrap();
+        action.setChecked(enabled);
     }
 
     /* (non-Javadoc)
@@ -90,34 +96,83 @@ public class TexWordWrapAction implements IEditorActionDelegate, IActionDelegate
      * @see org.eclipse.ui.IActionDelegate#run(org.eclipse.jface.action.IAction)
      */
     public void run(IAction action) {
-        ISourceViewer viewer = getTextEditor().getViewer();
-        if (action.isChecked()) {
-            this.off = false;
-            setType();
+        cycleState();
+        setWrap();
+        action.setChecked(enabled);
+    }
+
+    /**
+     * Cycles between the three wrap states:
+     * off -> soft -> hard -> off ...
+     *
+     * @author Leonardo Montecchi
+     */
+    private void cycleState() {
+        if (!enabled) {
+            enabled = true;
+            hard = false;
         } else {
-            this.off = true;
-            TexAutoIndentStrategy.setHardWrap(false);
-            viewer.getTextWidget().setWordWrap(false);
+            if (hard) {
+                hard = false;
+                enabled = false;
+            } else {
+                hard = true;
+            }
+        }
+
+        saveWrapConfig();
+    }
+
+    /**
+     * Load wrap configuration from Eclipse properties into button state
+     *
+     * @author Leonardo Montecchi
+     */
+    private void loadWrapConfig() {
+        this.enabled = TexlipsePlugin.getDefault().getPreferenceStore().getBoolean(TexlipseProperties.WORDWRAP_DEFAULT);
+        this.hard = TexlipsePlugin.getDefault().getPreferenceStore().getString(TexlipseProperties.WORDWRAP_TYPE) == TexlipseProperties.WORDWRAP_TYPE_HARD;
+
+        if(sourceButton != null) {
+            sourceButton.setChecked(enabled);
         }
     }
 
     /**
-     * Checks the type of the word wrap and activates the correct type.
+     * Save wrap configuration from button state into Eclipse properties
+     *
+     * @author Leonardo Montecchi
      */
-    private void setType() {
-        String wrapStyle = TexlipsePlugin.getPreference(TexlipseProperties.WORDWRAP_TYPE);
+    private void saveWrapConfig() {
+        String currentType = hard ? TexlipseProperties.WORDWRAP_TYPE_HARD : TexlipseProperties.WORDWRAP_TYPE_SOFT; 
+        TexlipsePlugin.getDefault().getPreferenceStore().setValue(TexlipseProperties.WORDWRAP_DEFAULT, enabled);
+        TexlipsePlugin.getDefault().getPreferenceStore().setValue(TexlipseProperties.WORDWRAP_TYPE, currentType);
+    }
+
+    /**
+     * Activates the selected wrap mode (set editor properties).
+     */
+    private void setWrap() {
         ISourceViewer viewer = getTextEditor() != null ? getTextEditor().getViewer() : null;
-        if (wrapStyle.equals(TexlipseProperties.WORDWRAP_TYPE_SOFT)) {
-            TexAutoIndentStrategy.setHardWrap(false);
-            if (viewer != null) {
-                viewer.getTextWidget().setWordWrap(true);
+        if (enabled) {
+            if (hard) {
+                TexAutoIndentStrategy.setHardWrap(true);
+                if (viewer != null) {
+                    viewer.getTextWidget().setWordWrap(false);
+                }
+            } else {
+                TexAutoIndentStrategy.setHardWrap(false);
+                if (viewer != null) {
+                    viewer.getTextWidget().setWordWrap(true);
+                }
             }
-        } else if (wrapStyle.equals(TexlipseProperties.WORDWRAP_TYPE_HARD)) {
-            TexAutoIndentStrategy.setHardWrap(true);
+        } else {
+            TexAutoIndentStrategy.setHardWrap(false);
             if (viewer != null) {
                 viewer.getTextWidget().setWordWrap(false);
             }
         }
+
+        updateIcon();
     }
 
     /**
@@ -152,4 +207,29 @@ public class TexWordWrapAction implements IEditorActionDelegate, IActionDelegate
         run(action);
     }
 
+    /**
+     * Updates the button icon based on current wrap state
+     *
+     * @author Leonardo Montecchi
+     */
+    private void updateIcon() {
+        Bundle bundle = FrameworkUtil.getBundle(getClass());
+
+        String imgToLoad = ICON_WRAP;
+        String toolTip = "Word wrap *disabled*\r\nClick the button to switch mode";
+        if (enabled) {
+            if (hard) {
+                imgToLoad = ICON_WRAP_HARD;
+                toolTip = "*Hard* wrap enabled\r\nClick the button to switch mode";
+            } else {
+                imgToLoad = ICON_WRAP_SOFT;
+                toolTip = "*Soft* wrap enabled\r\nClick the button to switch mode";
+            }
+        }
+
+        URL imgUrl = FileLocator.find(bundle, new Path(imgToLoad),null);
+        ImageDescriptor updatedImage = ImageDescriptor.createFromURL(imgUrl);
+        sourceButton.setImageDescriptor(updatedImage);
+        sourceButton.setToolTipText(toolTip);
+    }
 }

@@ -843,7 +843,6 @@ ${cursor}
          <action
                class="org.eclipse.texlipse.actions.TexWordWrapAction"
                definitionId="org.eclipse.texlipse.commands.texWordWrap"
-               icon="icons/wrap.gif"
                id="org.eclipse.texlipse.actions.texWordWrap"
                label="W&amp;rap text"
                menubarPath="org.eclipse.texlipse.menus.latex/latexGroup"

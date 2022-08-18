@@ -1,15 +1,18 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <?pde?>
-<!-- generated with https://github.com/eclipse-cbi/targetplatform-dsl -->
-<target name="Eclipse TeXlipse Target Platform" sequenceNumber="1573198533">
+<!-- generated with https://github.com/eclipse-cbi/targetplatform-dsl --><target name="Eclipse TeXlipse Target Platform" sequenceNumber="1573198533">
   <locations>
-    <location includeMode="planner" includeAllPlatforms="false" includeSource="true" includeConfigurePhase="false" type="InstallableUnit">
+    <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
       <unit id="org.eclipse.sdk.feature.group" version="4.13.0.v20190916-1323"/>
       <repository location="http://download.eclipse.org/releases/2019-09/"/>
     </location>
-    <location includeMode="planner" includeAllPlatforms="false" includeSource="true" includeConfigurePhase="false" type="InstallableUnit">
+    <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
       <unit id="org.eclipse.license.feature.group" version="2.0.2.v20181016-2210"/>
       <repository location="http://download.eclipse.org/cbi/updates/license"/>
     </location>
+	  <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
+		  <repository location="http://www.gnostice.com/downloads/plugins/eclipseplugins/"/>
+		  <unit id="com.gnostice.documentviewer.feature.feature.group" version="15.17.0.0"/>
+	  </location>
   </locations>
 </target>

@@ -40,7 +40,7 @@
 	<repositories>
 		<repository>
 		<id>cogcomp</id>
-		<url>http://cogcomp.org/m2repo/</url>
+		<url>https://cogcomp.seas.upenn.edu/m2repo/</url>
 	 </repository>
 	</repositories>
 

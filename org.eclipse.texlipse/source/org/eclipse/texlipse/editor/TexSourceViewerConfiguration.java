@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 the TeXlipse team and others.
+ * Copyright (c) 2017, 2024 the TeXlipse team and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -7,11 +7,10 @@
  *
  * Contributors:
  *     The TeXlipse team - initial API and implementation
+ *     Alexander Fedorov (ArSysOp) - further support
  *******************************************************************************/
 package org.eclipse.texlipse.editor;
 
-import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.jface.preference.PreferenceStore;
 import org.eclipse.jface.text.DefaultInformationControl;
 import org.eclipse.jface.text.IAutoEditStrategy;
 import org.eclipse.jface.text.IDocument;
@@ -24,9 +23,6 @@ import org.eclipse.jface.text.contentassist.ContentAssistant;
 import org.eclipse.jface.text.contentassist.IContentAssistant;
 import org.eclipse.jface.text.presentation.IPresentationReconciler;
 import org.eclipse.jface.text.presentation.PresentationReconciler;
-import org.eclipse.jface.text.reconciler.IReconciler;
-import org.eclipse.jface.text.reconciler.IReconcilingStrategy;
-import org.eclipse.jface.text.reconciler.MonoReconciler;
 import org.eclipse.jface.text.rules.DefaultDamagerRepairer;
 import org.eclipse.jface.text.rules.RuleBasedScanner;
 import org.eclipse.jface.text.rules.Token;
@@ -50,7 +46,6 @@ import org.eclipse.texlipse.editor.scanner.TexTikzScanner;
 import org.eclipse.texlipse.properties.TexlipseProperties;
 import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.editors.text.TextSourceViewerConfiguration;
-import org.eclipse.ui.texteditor.spelling.SpellingService;
 
 
 /**
@@ -77,32 +72,6 @@ public class TexSourceViewerConfiguration extends TextSourceViewerConfiguration 
 
     // FIXME check this
     private IAutoEditStrategy autoIndentStrategy;
-    
-    /**
-     * @see org.eclipse.jface.text.source.SourceViewerConfiguration#getReconciler(org.eclipse.jface.text.source.ISourceViewer)
-     */
-    @Override
-    public IReconciler getReconciler(ISourceViewer sourceViewer) {
-        if (fPreferenceStore == null || !fPreferenceStore.getBoolean(SpellingService.PREFERENCE_SPELLING_ENABLED))
-            return null;
-        if (!TexlipsePlugin.getDefault().getPreferenceStore().getBoolean(TexlipseProperties.ECLIPSE_BUILDIN_SPELLCHECKER))
-            return null;
-        //Set TeXlipse spelling Engine as default
-        PreferenceStore store = new PreferenceStore();
-        store.setValue(SpellingService.PREFERENCE_SPELLING_ENGINE, 
-                "org.eclipse.texlipse.LaTeXSpellEngine");
-        store.setValue(SpellingService.PREFERENCE_SPELLING_ENABLED, 
-        true);
-        SpellingService spellingService = new SpellingService(store);
-        if (spellingService.getActiveSpellingEngineDescriptor(store) == null)
-            return null;
-        IReconcilingStrategy strategy= new TeXSpellingReconcileStrategy(sourceViewer, spellingService);
-        
-        MonoReconciler reconciler= new MonoReconciler(strategy, true);
-        reconciler.setDelay(500);
-        reconciler.setProgressMonitor(new NullProgressMonitor());
-        return reconciler;
-    }
     
     /**
      * Creates a new source viewer configuration.

@@ -26,9 +26,28 @@ on:
     types: [created]
 
 jobs:
-  call-license-check:
-    uses: eclipse/dash-licenses/.github/workflows/mavenLicenseCheck.yml@master
-    with:
-      projectId: science.texlipse
-    secrets:
-      gitlabAPIToken: ${{ secrets.GITLAB_API_TOKEN }}
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+    - name: Set up Maven
+      uses: stCarolas/setup-maven@v4.5
+      with:
+        maven-version: 3.9.0
+    - name: Cache local Maven repository
+      uses: actions/cache@v3
+      with:
+        path: ~/.m2/repository
+        key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+        restore-keys: |
+          ${{ runner.os }}-maven-
+    - name: License check
+      run: | 
+        mvn -U -V -e -B -ntp org.eclipse.dash:license-tool-plugin:license-check -Ddash.fail=false --file pom.xml

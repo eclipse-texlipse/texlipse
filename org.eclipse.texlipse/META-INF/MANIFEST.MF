@@ -3,13 +3,12 @@ Bundle-ManifestVersion: 2
 Bundle-Vendor: Eclipse Science
 Bundle-Name: Eclipse TeXlipse
 Bundle-SymbolicName: org.eclipse.texlipse;singleton:=true
-Bundle-Version: 2.0.3.qualifier
+Bundle-Version: 2.0.4.qualifier
 Bundle-Activator: org.eclipse.texlipse.TexlipsePlugin
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-NativeCode: ddeclient-x86_64.dll osname=win32;processor=x86,ddeclient-x86.dll;osname=win32;processor=x86_64,*
 Eclipse-BundleShape: dir
-Bundle-ClassPath: texlipse.jar,
- jazzy-core.jar
+Bundle-ClassPath: texlipse.jar
 Bundle-ActivationPolicy: lazy
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.ui,

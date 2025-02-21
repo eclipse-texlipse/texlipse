@@ -73,7 +73,7 @@ pipeline {
 							mvn \
 							clean \
 							verify \
-							-B \
+							-B -ntp \
 							$MAVEN_PROFILES \
 							-Dmaven.repo.local=$WORKSPACE/.m2/repository \
 							-Dmaven.test.failure.ignore=true \

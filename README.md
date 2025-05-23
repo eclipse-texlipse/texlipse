@@ -73,7 +73,7 @@ Use Eclipse to check out the repository.
 
 # License
 
-EPL v1.0 see [LICENSE](LICENSE) file.
+EPL-2.0 see [LICENSE](LICENSE) file.
 
 ---
 _Eclipse TeXlipse, Eclipse, the Eclipse logo, and the Eclipse TeXlipse project logo are either registered trademarks or trademarks of The Eclipse Foundation in the United States and/or other countries._

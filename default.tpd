@@ -1,3 +1,15 @@
+/*******************************************************************************
+ * Copyright (c) 2017, 2025 Contributors to the Eclipse Foundation.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License v. 2.0 which is available at
+ * https://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ *
+ * Contributors:
+ *     See git history
+ *******************************************************************************/
 target "Eclipse TeXlipse Target Platform" with source requirements
 
 location "https://download.eclipse.org/releases/2019-09/" {
@@ -5,4 +17,8 @@ location "https://download.eclipse.org/releases/2019-09/" {
 }
 location "https://download.eclipse.org/cbi/updates/license" {
 	org.eclipse.license.feature.group
+}
+
+location "https://download.eclipse.org/tools/orbit/simrel/orbit-aggregation/2025-06/" {
+	org.junit
 }

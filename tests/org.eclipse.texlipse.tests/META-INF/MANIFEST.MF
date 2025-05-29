@@ -1,0 +1,10 @@
+Manifest-Version: 1.0
+Automatic-Module-Name: org.eclipse.texlipse.tests
+Bundle-ManifestVersion: 2
+Bundle-SymbolicName: org.eclipse.texlipse.tests
+Bundle-Version: 2.0.4.qualifier
+Require-Bundle: org.junit;bundle-version="4.13.2"
+Bundle-Name: %Bundle-Name
+Bundle-Vendor: %Bundle-Vendor
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-ActivationPolicy: lazy

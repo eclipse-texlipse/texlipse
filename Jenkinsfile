@@ -43,7 +43,7 @@ pipeline {
 				steps {
 						script {
 								env.BUILD_TYPE = params.BUILD_TYPE
-								if (env.BRANCH_NAME == 'main') {
+								if (env.BRANCH_NAME == 'master') {
 									if (params.PROMOTE) {
 										env.MAVEN_PROFILES = "-Psign -Ppromote"
 									} else {

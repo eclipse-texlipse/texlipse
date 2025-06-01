@@ -144,7 +144,7 @@
 	<modules>
 		<module>org.eclipse.texlipse</module>
 		<module>org.eclipse.texlipse.main</module>
-		<module>org.eclipse.texlipse-site</module>
+		<module>sites/org.eclipse.texlipse.repository</module>
 		<module>tests/org.eclipse.texlipse.tests</module>
 	</modules>
 

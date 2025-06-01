@@ -27,6 +27,96 @@
 	<artifactId>org.eclipse.texlipse-site</artifactId>
 	<name>Eclipse TeXlipse p2 Repository</name>
 	<packaging>eclipse-repository</packaging>
+
+	<properties>
+		<eclipse.repo>https://download.eclipse.org/releases/latest</eclipse.repo>
+		<justj.tools.repo>https://download.eclipse.org/justj/tools/updates/nightly/latest</justj.tools.repo>
+		<org.eclipse.storage.user>genie.texlipse</org.eclipse.storage.user>
+		<org.eclipse.justj.p2.manager.args>-remote ${org.eclipse.storage.user}@projects-storage.eclipse.org:/home/data/httpd/download.eclipse.org/texlipse</org.eclipse.justj.p2.manager.args>
+		<org.eclipse.justj.p2.manager.extra.args></org.eclipse.justj.p2.manager.extra.args>
+		<org.eclipse.justj.p2.manager.relative>updates</org.eclipse.justj.p2.manager.relative>
+		<org.eclipse.justj.p2.manager.build.url>http://www.example.com/</org.eclipse.justj.p2.manager.build.url>
+		<git.commit>unknown</git.commit>
+		<build.type>nightly</build.type>
+	</properties>
+
+	<profiles>
+		<profile>
+			<id>promote</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.eclipse.tycho.extras</groupId>
+						<artifactId>tycho-eclipserun-plugin</artifactId>
+						<version>${tycho.version}</version>
+						<configuration>
+							<executionEnvironment>JavaSE-17</executionEnvironment>
+							<dependencies>
+								<dependency>
+									<artifactId>org.eclipse.justj.p2</artifactId>
+									<type>eclipse-plugin</type>
+								</dependency>
+								<dependency>
+									<artifactId>org.apache.felix.scr</artifactId>
+									<type>eclipse-plugin</type>
+								</dependency>
+							</dependencies>
+							<repositories>
+								<repository>
+									<id>eclipse.repo</id>
+									<layout>p2</layout>
+									<url>${eclipse.repo}</url>
+								</repository>
+								<repository>
+									<id>justj.tools.repo</id>
+									<layout>p2</layout>
+									<url>${justj.tools.repo}</url>
+								</repository>
+							</repositories>
+						</configuration>
+						<executions>
+							<execution>
+								<id>promote</id>
+								<goals>
+									<goal>eclipse-run</goal>
+								</goals>
+								<phase>package</phase>
+								<configuration>
+									<argLine></argLine>
+									<appArgLine><![CDATA[
+                                        -consoleLog
+                                        -application org.eclipse.justj.p2.manager
+                                        -data @None
+                                        -nosplash
+                                        ${org.eclipse.justj.p2.manager.args}
+                                        -retain 5
+                                        -label "TeXlipse"
+                                        -build-url ${org.eclipse.justj.p2.manager.build.url}
+                                        -root ${project.build.directory}/texlipse-sync
+                                        -relative ${org.eclipse.justj.p2.manager.relative}
+                                        -version-iu org.eclipse.texlipse.
+                                        -iu-filter-pattern org.eclipse.texlipse.*
+                                        -excluded-categories-pattern .*\.Default
+                                        -commit https://github.com/eclipse-texlipse/texlipse/commit/${git.commit}
+                                        -target-url https://download.eclipse.org/texlipse
+                                        -promote ${project.build.directory}/repository
+                                        -timestamp ${build.timestamp}
+                                        -type ${build.type}
+                                        -breadcrumb "TeXlipse https://www.eclipse.org/texlipse"
+                                        -favicon https://raw.githubusercontent.com/eclipse-texlipse/texlipse/master/org.eclipse.texlipse/eclipse32.png
+                                        -xtitle-image https://www.eclipse.org/jetty/common/images/jetty-logo.svg
+                                        -body-image https://raw.githubusercontent.com/eclipse-texlipse/texlipse/master/org.eclipse.texlipse/eclipse32.png
+                                        ${org.eclipse.justj.p2.manager.extra.args}]]>
+									</appArgLine>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
+
 	<build>
 		<plugins>
 			<plugin>

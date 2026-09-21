@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2024, 2025 Contributors to the Eclipse Foundation
+ * Copyright (c) 2024, 2026 Contributors to the Eclipse Foundation
  * 
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -21,7 +21,7 @@ pipeline {
 	}
 	tools {
 		maven 'apache-maven-latest'
-		jdk 'openjdk-jdk17-latest'
+		jdk 'openjdk-jdk21-latest'
 	}
 	parameters {
 		choice(

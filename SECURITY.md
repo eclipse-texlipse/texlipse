@@ -11,8 +11,8 @@ updates.
 
 | Version | Released   | Supported | 
 | ------- | ---------- | --------- | 
-| 2.0.3   | 2020-10-13 | Yes       | 
-| < 2.0.2 | 2018-07-27 | No        | 
+| 2.1.0   | 2026-11-14 | Yes       | 
+| <=2.0.3 | 2020-10-13 | No        | 
 
 ## Reporting a Vulnerability
 

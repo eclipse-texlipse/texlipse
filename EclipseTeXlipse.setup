@@ -25,7 +25,7 @@
   <setupTask
       xsi:type="setup:EclipseIniTask"
       option="-Xmx"
-      value="1024m"
+      value="2024m"
       vm="true">
     <description>Set the heap space needed to work with the projects of ${scope.project.label}</description>
   </setupTask>
@@ -52,7 +52,7 @@
   <setupTask
       xsi:type="setup:VariableTask"
       name="eclipse.target.platform"
-      defaultValue="2020-09"
+      defaultValue="2022-06"
       storageURI="scope://Workspace"/>
   <setupTask
       xsi:type="setup.p2:P2Task">
@@ -83,11 +83,11 @@
     <repository
         url="https://download.eclipse.org/cbi/tpd/3.0.0-SNAPSHOT"/>
     <repository
-        url="https://download.eclipse.org/releases/2020-09"/>
+        url="https://download.eclipse.org/releases/2022-06"/>
     <repository
-        url="https://download.eclipse.org/technology/epp/packages/2020-09/"/>
+        url="https://download.eclipse.org/technology/epp/packages/2022-06/"/>
     <repository
-        url="http://download.eclipse.org/ecp/releases/releases_125/"/>
+        url="https://download.eclipse.org/ecp/releases/releases_126/1262/"/>
     <description>Install the tools needed in the IDE to work with the source code for ${scope.project.label}</description>
   </setupTask>
   <setupTask
@@ -132,9 +132,9 @@
           rootFolder="${git.clone.texlipse.location}"
           locateNestedProjects="true"/>
       <repositoryList
-          name="2020-09">
+          name="2022-06">
         <repository
-            url="http://download.eclipse.org/releases/2020-09"/>
+            url="http://download.eclipse.org/releases/2022-06"/>
       </repositoryList>
     </targlet>
   </setupTask>
